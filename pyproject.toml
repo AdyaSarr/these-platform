@@ -1,0 +1,90 @@
+[project]
+name = "these-platform"
+version = "0.1.0"
+description = "CIFRE thesis management platform (ST Rousset / LIRMM ARTHEMIS / ED I2S)"
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+dependencies = [
+    "django>=5.2,<5.3",
+    "psycopg[binary]>=3.2",
+    "django-environ>=0.12",
+    "argon2-cffi>=23.1",
+    "django-csp>=4.0,<5",
+    "django-htmx>=1.21",
+    # The [redis] extra lets kombu constrain the redis client to a supported range.
+    "celery[redis]>=5.4",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-django>=4.9",
+    "factory-boy>=3.3",
+    "ruff>=0.8",
+    "mypy>=1.13",
+    "django-stubs[compatible-mypy]>=5.1",
+    "bandit>=1.8",
+    "pip-audit>=2.7",
+    "pre-commit>=4.0",
+    "detect-secrets>=1.5",
+]
+
+[tool.uv]
+# Application, not a library: nothing to build or publish.
+package = false
+
+# --------------------------------------------------------------------------- ruff
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+extend-exclude = ["**/migrations/*.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "DJ", "SIM", "N", "RUF"]
+
+[tool.ruff.lint.per-file-ignores]
+# assert is the pytest idiom; subprocess calls in tests run our own manage.py.
+"**/tests/**" = ["S101", "S603", "S607"]
+"tests/**" = ["S101", "S603", "S607"]
+# Settings use `from .base import *` by design.
+"config/settings/*.py" = ["F403", "F405"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["apps", "config"]
+
+# --------------------------------------------------------------------------- mypy
+[tool.mypy]
+python_version = "3.13"
+strict = true
+plugins = ["mypy_django_plugin.main"]
+exclude = ["/migrations/"]
+
+[[tool.mypy.overrides]]
+# Neither ships type hints (no py.typed, no stubs package). django-csp does.
+module = ["environ.*", "celery.*"]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# factory-boy is only partially typed: its public names are not re-exported
+# explicitly and its declarations (Sequence, post_generation) are untyped.
+module = ["factory", "factory.*"]
+implicit_reexport = true
+
+[[tool.mypy.overrides]]
+module = ["apps.*.tests.*", "tests.*"]
+disallow_untyped_calls = false
+disallow_untyped_decorators = false
+
+[tool.django-stubs]
+django_settings_module = "config.settings.test"
+
+# --------------------------------------------------------------------------- pytest
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.test"
+addopts = "--strict-markers --strict-config -ra"
+testpaths = ["tests", "apps"]
+python_files = ["test_*.py"]
+
+# --------------------------------------------------------------------------- bandit
+[tool.bandit]
+exclude_dirs = ["tests", ".venv"]

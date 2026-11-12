@@ -1,0 +1,41 @@
+# Hooks run the tool versions pinned in uv.lock (`uv run ...`), so pre-commit and
+# CI always use exactly the same versions.
+repos:
+  - repo: local
+    hooks:
+      - id: forbid-env-files
+        name: forbid committing .env files
+        entry: ".env files must never be committed"
+        language: fail
+        files: '(^|/)\.env(\..+)?$'
+        exclude: '(^|/)\.env\.example$'
+
+      - id: ruff-check
+        name: ruff check
+        entry: uv run ruff check --force-exclude
+        language: system
+        types: [python]
+
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format --check --force-exclude
+        language: system
+        types: [python]
+
+      - id: bandit
+        name: bandit
+        entry: uv run bandit -c pyproject.toml -ll
+        language: system
+        types: [python]
+
+      - id: detect-secrets
+        name: detect-secrets
+        entry: uv run detect-secrets-hook --baseline .secrets.baseline
+        language: system
+        exclude: '^(uv\.lock|\.secrets\.baseline)$'
+
+      - id: check-large-files
+        name: forbid files larger than 1 MB
+        entry: uv run python -c "import os,sys; big=[f for f in sys.argv[1:] if os.path.getsize(f)>1_000_000]; print(*big, sep='\n'); sys.exit(bool(big))"
+        language: system
+        exclude: '^docs/specs/'
