@@ -20,3 +20,5 @@ critères d'acceptation de la fiche tous validés.
 
 Le déploiement (Caddy, TLS hybride, sauvegardes) se fait seulement après validation
 de l'hébergement par ST et le LIRMM.
+
+Avant toute mise en production : checklist de `docs/DEPLOYMENT.md` entièrement cochée.
