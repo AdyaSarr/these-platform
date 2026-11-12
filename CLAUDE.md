@@ -103,6 +103,9 @@ la contourner.
 Un module = une conversation = un ou plusieurs commits.
 **Plan → validation par le développeur → tests → code → revue → commit.**
 
+- **Une branche par module** (`m0-socle`, `m1-comptes`, …). Les commits `wip` sont
+  autorisés sur la branche ; la fusion dans `main` se fait seulement après la revue
+  de fin du module, tous tests verts.
 - N'écris aucun fichier tant que le plan n'est pas validé explicitement.
 - Écris les tests des critères d'acceptation avant le code.
 - Lance les tests après chaque étape et montre le résultat.
