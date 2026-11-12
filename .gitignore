@@ -1,0 +1,40 @@
+# Secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# Données locales
+var/
+media/
+*.sqlite3
+dumps/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# LaTeX (rapports générés)
+*.aux
+*.log
+*.fls
+*.fdb_latexmk
+*.out
+*.toc
+
+# Éditeurs
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+
+# Claude Code : réglages personnels
+.claude/settings.local.json

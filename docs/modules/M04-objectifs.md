@@ -1,0 +1,36 @@
+# M4 — Objectifs et indicateurs
+
+## Objectif
+Des objectifs par année de thèse, qui peuvent évoluer, mis à jour par le doctorant,
+avec des statistiques de suivi visibles par les encadrants.
+
+## Modèles
+- `ThesisYear(thesis, number, cifre_start, cifre_end, academic_start, academic_end)`
+- `Objective(thesis, year, title, description, success_criterion, category:
+  RESEARCH|PUBLICATION|TRAINING|ADMIN|OTHER, due_date, weight (1–3), status:
+  PLANNED|IN_PROGRESS|ACHIEVED|PARTIAL|NOT_ACHIEVED|DROPPED, progress (0–100),
+  approved_by, approved_at)`
+- `ObjectiveRevision(objective, changed_by, changed_at, field, old_value,
+  new_value, reason)` — **historique obligatoire** ; un objectif abandonné reste
+  visible avec sa raison.
+- `ProgressUpdate(objective, date, progress, note, evidence (Document facultatif))`
+
+## Fonctionnalités
+1. Le doctorant propose les objectifs d'une année ; le directeur les approuve
+   (ré-authentification) ; ensuite toute modification de titre, critère ou
+   échéance exige une raison et crée une révision.
+2. Mises à jour d'avancement datées, avec preuve facultative.
+3. Encadrants : commentaires sur un objectif (fil simple).
+4. Tableau de bord : taux d'atteinte pondéré par année, objectifs en retard,
+   évolution mensuelle (graphique simple, données agrégées côté serveur),
+   répartition par catégorie.
+5. Résumé hebdomadaire envoyé aux encadrants (lien seulement).
+
+## Critères d'acceptation
+- [ ] Toute modification d'un objectif approuvé sans raison est refusée (test).
+- [ ] Le taux d'atteinte pondéré est calculé correctement (tests unitaires sur
+      `services.compute_stats`).
+- [ ] Un objectif `DROPPED` apparaît dans les statistiques comme abandonné, pas
+      supprimé.
+- [ ] Un membre du CSI voit les objectifs en lecture seule, sans les commentaires
+      internes.
