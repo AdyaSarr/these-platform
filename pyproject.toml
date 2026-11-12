@@ -27,6 +27,7 @@ dev = [
     "pip-audit>=2.7",
     "pre-commit>=4.0",
     "detect-secrets>=1.5",
+    "time-machine>=2.16",
 ]
 
 [tool.uv]

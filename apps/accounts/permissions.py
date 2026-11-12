@@ -1,0 +1,256 @@
+"""Thesis-level access control: the only place where rights are decided (CLAUDE.md rule 4).
+
+Deny by default: an unknown action, an unknown level, an object not attached to a
+saved thesis, an anonymous or deactivated user, or a user with no active
+membership is refused. ``is_superuser`` / ``is_staff`` grant nothing here.
+
+Rights are read from the database on every call (no session cache), so removing
+a member takes effect on their very next request.
+
+The two tables below transcribe docs/ARCHITECTURE.md; tests/test_permissions.py
+holds an independent second transcription and compares them cell by cell.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Callable, Mapping
+from enum import StrEnum
+from functools import wraps
+from types import MappingProxyType
+from typing import TYPE_CHECKING, Any, Concatenate, ParamSpec, Protocol
+
+from django.contrib.auth.views import redirect_to_login
+from django.core.exceptions import ImproperlyConfigured, PermissionDenied, ValidationError
+from django.http import HttpRequest, HttpResponseBase
+
+from apps.core.confidentiality import ConfidentialityLevel
+
+from .models import Membership, Thesis
+from .roles import Role
+
+if TYPE_CHECKING:
+    from django.contrib.auth.base_user import AbstractBaseUser
+    from django.contrib.auth.models import AnonymousUser
+
+    AnyUser = AbstractBaseUser | AnonymousUser
+
+
+class Action(StrEnum):
+    # Thesis and team (M01).
+    VIEW_THESIS = "VIEW_THESIS"
+    VIEW_TEAM = "VIEW_TEAM"
+    INVITE_MEMBER = "INVITE_MEMBER"
+    CHANGE_ROLE = "CHANGE_ROLE"
+    REMOVE_MEMBER = "REMOVE_MEMBER"
+    EXTEND_MEMBERSHIP = "EXTEND_MEMBERSHIP"
+    # Objectives (M4). OBJECTIVE_READ covers the objectives themselves, NOT their
+    # comment thread: comments are internal to the supervision and are shown only
+    # to roles holding OBJECTIVE_COMMENT (so a CSI member reads objectives
+    # without the comments, M04-objectifs.md).
+    OBJECTIVE_READ = "OBJECTIVE_READ"
+    OBJECTIVE_WRITE = "OBJECTIVE_WRITE"
+    OBJECTIVE_COMMENT = "OBJECTIVE_COMMENT"
+    # Meetings (M5).
+    MEETING_READ = "MEETING_READ"
+    MEETING_WRITE = "MEETING_WRITE"
+    # Documents (M2); also subject to can_access_level().
+    DOCUMENT_READ = "DOCUMENT_READ"
+    DOCUMENT_WRITE = "DOCUMENT_WRITE"
+    DOCUMENT_COMMENT = "DOCUMENT_COMMENT"
+    # Administrative file (M3).
+    ADMIN_FILE_READ = "ADMIN_FILE_READ"
+    ADMIN_FILE_WRITE = "ADMIN_FILE_WRITE"
+    CIFRE_FILE_READ = "CIFRE_FILE_READ"
+    # CSI (M8).
+    CSI_FILE_READ = "CSI_FILE_READ"
+    CSI_REPORT_READ = "CSI_REPORT_READ"
+    CSI_OPINION_WRITE = "CSI_OPINION_WRITE"
+    # Validations ("Valide" column).
+    VALIDATE_OBJECTIVES = "VALIDATE_OBJECTIVES"
+    VALIDATE_CSI = "VALIDATE_CSI"
+    VALIDATE_ANRT = "VALIDATE_ANRT"
+    VALIDATE_PUBLICATION = "VALIDATE_PUBLICATION"
+
+
+_A = Action
+
+# Laid out like the ARCHITECTURE.md table: the comment names the cell.
+# fmt: off
+ROLE_ACTIONS: Mapping[Role, frozenset[Action]] = MappingProxyType(
+    {
+        Role.PHD_STUDENT: frozenset(
+            {
+                _A.VIEW_THESIS, _A.VIEW_TEAM,
+                _A.INVITE_MEMBER, _A.CHANGE_ROLE, _A.REMOVE_MEMBER, _A.EXTEND_MEMBERSHIP,
+                _A.OBJECTIVE_READ, _A.OBJECTIVE_WRITE, _A.OBJECTIVE_COMMENT,  # écrire
+                _A.MEETING_READ, _A.MEETING_WRITE,                      # écrire
+                _A.DOCUMENT_READ, _A.DOCUMENT_WRITE, _A.DOCUMENT_COMMENT,  # écrire
+                _A.ADMIN_FILE_READ, _A.ADMIN_FILE_WRITE, _A.CIFRE_FILE_READ,  # écrire
+            }
+        ),
+        Role.DIRECTOR: frozenset(
+            {
+                _A.VIEW_THESIS, _A.VIEW_TEAM,
+                _A.OBJECTIVE_READ, _A.OBJECTIVE_COMMENT,                # commenter
+                _A.MEETING_READ, _A.MEETING_WRITE,                      # écrire
+                _A.DOCUMENT_READ, _A.DOCUMENT_COMMENT,                  # lire, commenter
+                _A.ADMIN_FILE_READ, _A.CIFRE_FILE_READ,                 # lire
+                _A.VALIDATE_OBJECTIVES, _A.VALIDATE_CSI, _A.VALIDATE_ANRT,  # objectifs, CSI, ANRT
+            }
+        ),
+        Role.CO_SUPERVISOR: frozenset(
+            {
+                _A.VIEW_THESIS, _A.VIEW_TEAM,
+                _A.OBJECTIVE_READ, _A.OBJECTIVE_COMMENT,                # commenter
+                _A.MEETING_READ, _A.MEETING_WRITE,                      # écrire
+                _A.DOCUMENT_READ, _A.DOCUMENT_COMMENT,                  # lire, commenter
+            }                                                       # admin : —
+        ),
+        Role.INDUSTRIAL_TUTOR: frozenset(
+            {
+                _A.VIEW_THESIS, _A.VIEW_TEAM,
+                _A.OBJECTIVE_READ, _A.OBJECTIVE_COMMENT,                # commenter
+                _A.MEETING_READ, _A.MEETING_WRITE,                      # écrire
+                _A.DOCUMENT_READ, _A.DOCUMENT_COMMENT,                  # lire, commenter
+                _A.CIFRE_FILE_READ,                                     # partie CIFRE
+                _A.VALIDATE_ANRT, _A.VALIDATE_PUBLICATION,              # ANRT, publications
+            }
+        ),
+        Role.CSI_MEMBER: frozenset(
+            {
+                _A.VIEW_THESIS,                 # no VIEW_TEAM: outside the supervision
+                _A.OBJECTIVE_READ,              # read-only, per M04-objectifs.md
+                _A.CSI_FILE_READ,                                       # dossier CSI
+                _A.CSI_REPORT_READ,                                     # rapport CSI
+                _A.CSI_OPINION_WRITE,                                   # avis CSI
+            }
+        ),
+        # "une réunion", "projet partagé": per-object grants (M5, M2), nothing here.
+        Role.GUEST: frozenset(),
+    }
+)
+# fmt: on
+
+_L = ConfidentialityLevel
+
+LEVEL_ROLES: Mapping[ConfidentialityLevel, frozenset[Role]] = MappingProxyType(
+    {
+        _L.PUBLIC: frozenset(Role),  # tous les membres actifs
+        _L.INTERNAL_LIRMM: frozenset({Role.PHD_STUDENT, Role.DIRECTOR, Role.CO_SUPERVISOR}),
+        _L.INTERNAL_ST: frozenset({Role.PHD_STUDENT, Role.INDUSTRIAL_TUTOR}),
+        # "+ liste explicite": per-document grants, added in M2.
+        _L.CONFIDENTIAL: frozenset({Role.PHD_STUDENT, Role.DIRECTOR, Role.INDUSTRIAL_TUTOR}),
+    }
+)
+
+
+class ThesisOwned(Protocol):
+    @property
+    def thesis(self) -> Thesis: ...
+
+
+# --------------------------------------------------------------------------- checks
+
+
+def roles_of(user: AnyUser, thesis: Thesis) -> frozenset[Role]:
+    """Roles ``user`` holds on ``thesis`` right now (read from the database)."""
+    if not user.is_authenticated or not user.is_active or thesis.pk is None:
+        return frozenset()
+    rows = (
+        Membership.objects.active()
+        .filter(user_id=user.pk, thesis_id=thesis.pk)
+        .values_list("role", flat=True)
+    )
+    return frozenset(Role(r) for r in rows)
+
+
+def _thesis_of(obj: object) -> Thesis | None:
+    thesis = obj if isinstance(obj, Thesis) else getattr(obj, "thesis", None)
+    if isinstance(thesis, Thesis) and thesis.pk is not None and not thesis._state.adding:
+        return thesis
+    return None
+
+
+def can(user: AnyUser, action: Action, obj: Thesis | ThesisOwned) -> bool:
+    """Whether ``user`` may perform ``action`` on ``obj`` (a thesis or an object of one)."""
+    if not isinstance(action, Action):
+        return False
+    thesis = _thesis_of(obj)
+    if thesis is None:
+        return False
+    return any(action in ROLE_ACTIONS[role] for role in roles_of(user, thesis))
+
+
+def can_access_level(user: AnyUser, thesis: Thesis, level: ConfidentialityLevel) -> bool:
+    """Level half of document access; M2 combines it with ``can(DOCUMENT_READ)``."""
+    if not isinstance(level, ConfidentialityLevel):
+        return False
+    thesis_or_none = _thesis_of(thesis)
+    if thesis_or_none is None:
+        return False
+    return bool(roles_of(user, thesis_or_none) & LEVEL_ROLES[level])
+
+
+# --------------------------------------------------------------------------- view guards
+
+THESIS_URL_KWARG = "thesis_id"
+
+
+def _authorize(request: HttpRequest, action: Action, thesis_id: Any) -> Thesis:
+    """Return the thesis or raise PermissionDenied; unknown and forbidden look alike."""
+    try:
+        thesis = Thesis.objects.filter(pk=thesis_id).first() if thesis_id else None
+    except (ValueError, ValidationError):  # malformed id: same answer as forbidden
+        thesis = None
+    if thesis is None or not can(request.user, action, thesis):
+        raise PermissionDenied
+    return thesis
+
+
+class ThesisPermissionRequiredMixin:
+    """Class-based view guard. Subclasses MUST set ``required_action``.
+
+    Resolves ``thesis_id`` from the URL into ``self.thesis`` before the handler
+    runs. Anonymous users are sent to the login page; everyone else without the
+    right gets 403.
+    """
+
+    required_action: Action | None = None
+    thesis: Thesis
+
+    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponseBase:
+        if not isinstance(self.required_action, Action):
+            raise ImproperlyConfigured(
+                f"{type(self).__name__} must set required_action to an Action member."
+            )
+        if not request.user.is_authenticated:
+            return redirect_to_login(request.get_full_path())
+        self.thesis = _authorize(request, self.required_action, kwargs.get(THESIS_URL_KWARG))
+        response: HttpResponseBase = super().dispatch(request, *args, **kwargs)  # type: ignore[misc]
+        return response
+
+
+_P = ParamSpec("_P")
+_View = Callable[Concatenate[HttpRequest, Thesis, _P], HttpResponseBase]
+
+
+def thesis_permission_required(
+    action: Action,
+) -> Callable[[_View[_P]], Callable[..., HttpResponseBase]]:
+    """Function-view guard: replaces the ``thesis_id`` URL argument by ``thesis``."""
+    if not isinstance(action, Action):
+        raise ImproperlyConfigured("thesis_permission_required() needs an Action member.")
+
+    def decorator(view: _View[_P]) -> Callable[..., HttpResponseBase]:
+        @wraps(view)
+        def wrapped(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponseBase:
+            if not request.user.is_authenticated:
+                return redirect_to_login(request.get_full_path())
+            thesis = _authorize(request, action, kwargs.pop(THESIS_URL_KWARG, None))
+            return view(request, thesis, *args, **kwargs)
+
+        # Marker checked by the URL audit test (every /t/ route must be guarded).
+        wrapped.thesis_permission_action = action  # type: ignore[attr-defined]
+        return wrapped
+
+    return decorator

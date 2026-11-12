@@ -32,3 +32,9 @@ chiffrés, avec un niveau de confidentialité, et un journal d'audit infalsifiab
 - [ ] `manage.py audit_verify` détecte une ligne modifiée dans la table (test).
 - [ ] Validation des fichiers : taille, type par contenu (tests).
 - [ ] L'admin Django n'affiche jamais de contenu déchiffré.
+
+## Notes issues de M1
+- Le rapport CSI est stocké au niveau `CONFIDENTIAL`, que `LEVEL_ROLES` ne donne
+  pas au `CSI_MEMBER`. Il y accédera par la **« liste explicite »** du niveau
+  `CONFIDENTIAL` : `can_access_level()` doit accepter une autorisation par
+  document (utilisateur explicitement listé), en plus des rôles de `LEVEL_ROLES`.

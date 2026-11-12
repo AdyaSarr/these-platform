@@ -28,6 +28,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # PostgreSQL-only features: exclusion constraints on membership periods.
+    "django.contrib.postgres",
     "django_htmx",
     "csp",
     "apps.core",

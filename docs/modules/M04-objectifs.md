@@ -34,3 +34,12 @@ avec des statistiques de suivi visibles par les encadrants.
       supprimé.
 - [ ] Un membre du CSI voit les objectifs en lecture seule, sans les commentaires
       internes.
+
+## Notes issues de M1
+- Droits (`apps/accounts/permissions.py`) : `OBJECTIVE_READ` donne accès aux
+  objectifs **mais pas à leur fil de commentaires**. Les commentaires sont internes
+  à l'encadrement et ne s'affichent qu'aux rôles ayant `OBJECTIVE_COMMENT`
+  (doctorant, directeur, co-encadrants, tuteur). Le `CSI_MEMBER` a
+  `OBJECTIVE_READ` seulement : il voit les objectifs en lecture seule, sans les
+  commentaires. Le filtrage se fait dans la vue et le service (`can(...,
+  OBJECTIVE_COMMENT, ...)`), jamais seulement dans le gabarit.

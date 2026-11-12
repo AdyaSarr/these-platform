@@ -28,3 +28,11 @@ La thèse passe à `ACTIVE` quand toutes les pièces obligatoires sont validées
 - [ ] Un co-encadrant ne peut pas valider une pièce dont il n'est pas responsable.
 - [ ] Chaque changement de statut crée un `AuditEvent`.
 - [ ] Les pièces jointes héritent par défaut du niveau `CONFIDENTIAL`.
+
+## Notes issues de M1
+- Validation par pièce : le tuteur industriel et le directeur peuvent valider les
+  pièces dont ils sont responsables. C'est une **autorisation par pièce**, fondée
+  sur `RequiredItem.responsible_role`, en plus de la matrice
+  (`ADMIN_FILE_READ` / `CIFRE_FILE_READ`) : elle n'ajoute pas d'action globale de
+  validation du dossier. Validation = ré-auth avec second facteur
+  (`@recent_auth_required`).
