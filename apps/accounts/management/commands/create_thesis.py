@@ -51,9 +51,12 @@ class Command(BaseCommand):
                 planned_end_date=opts["planned_end"],
             )
             audit(AuditAction.THESIS_CREATED, obj=thesis)
-            inv = services.invite_phd_student(
-                thesis=thesis, email=opts["student_email"], organization=org
-            )
+            try:
+                inv = services.invite_phd_student(
+                    thesis=thesis, email=opts["student_email"], organization=org
+                )
+            except services.TeamError as exc:  # rolls the thesis back too
+                raise CommandError(str(exc)) from exc
         # Sent synchronously: the command works without a Celery worker.
         tasks.send_invitation_email(str(inv.pk))
         inv.refresh_from_db()

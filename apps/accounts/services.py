@@ -17,7 +17,8 @@ import uuid
 from typing import TYPE_CHECKING
 
 from allauth.account.models import EmailAddress
-from django.core.exceptions import PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
+from django.core.validators import validate_email
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 from django.utils.translation import gettext as _
@@ -260,6 +261,12 @@ def _create_invitation(
     enqueue: bool,
 ) -> Invitation:
     email = UserManager.normalize_email(email)
+    # Strict validation here, not only in the form: the address becomes an e-mail
+    # header (CR/LF would be header injection) and every caller goes through here.
+    try:
+        validate_email(email)
+    except ValidationError as exc:
+        raise TeamError(_("Invalid email address.")) from exc
     with transaction.atomic():
         if by is not None:
             _require(by, Action.INVITE_MEMBER, thesis)

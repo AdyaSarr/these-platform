@@ -25,6 +25,12 @@ class AuditAction(StrEnum):
     LOGIN_SUCCEEDED = "LOGIN_SUCCEEDED"
     LOGIN_FAILED = "LOGIN_FAILED"
     LOGOUT = "LOGOUT"
+    # Second factor (allauth.mfa signals).
+    MFA_FACTOR_ADDED = "MFA_FACTOR_ADDED"
+    MFA_FACTOR_REMOVED = "MFA_FACTOR_REMOVED"
+    MFA_FACTOR_RESET = "MFA_FACTOR_RESET"  # e.g. recovery codes regenerated
+    MFA_FACTOR_USED = "MFA_FACTOR_USED"  # sign-in or re-auth; type=recovery_codes included
+    MFA_FAILED = "MFA_FAILED"
     # Theses and team.
     THESIS_CREATED = "THESIS_CREATED"
     INVITATION_CREATED = "INVITATION_CREATED"

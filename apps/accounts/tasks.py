@@ -7,7 +7,7 @@ import smtplib
 
 from celery import shared_task
 from django.conf import settings
-from django.core.mail import send_mail
+from django.core.mail import BadHeaderError, send_mail
 from django.db import transaction
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -45,7 +45,7 @@ def send_invitation_email(invitation_id: str) -> None:
         now = timezone.now()
         try:
             send_mail(subject, body, None, [inv.email])
-        except (smtplib.SMTPException, OSError):
+        except (smtplib.SMTPException, OSError, BadHeaderError):
             # The exception text may contain server details: log the type only.
             logger.warning("invitation e-mail failed (invitation %s)", inv.pk, exc_info=False)
             inv.email_status = Invitation.EmailStatus.FAILED
@@ -90,5 +90,5 @@ def send_password_reset_email(user_id: str) -> None:
     body = render_to_string("accounts/email/password_reset_body.txt", {"url": url})
     try:
         send_mail(subject, body, None, [user.email])
-    except (smtplib.SMTPException, OSError):
+    except (smtplib.SMTPException, OSError, BadHeaderError):
         logger.warning("password reset e-mail failed (user %s)", user.pk, exc_info=False)

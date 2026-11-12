@@ -2,6 +2,7 @@
 
 import datetime as dt
 import secrets
+from typing import Any
 
 import pytest
 from django.test import Client
@@ -102,3 +103,70 @@ def test_refused_actions_leave_no_success_event(student: Membership) -> None:
     with pytest.raises(PermissionDenied):
         services.end_membership(m, by=m.user)
     assert not AuditEvent.objects.filter(action="MEMBER_REMOVED").exists()
+
+
+# --------------------------------------------------------------------------- second factor
+
+
+def test_mfa_events_are_audited_without_secrets(django_capture_on_commit_callbacks: Any) -> None:
+    import datetime as dt
+
+    import time_machine
+    from allauth.mfa.recovery_codes.internal.auth import RecoveryCodes
+
+    from apps.accounts.tests.factories import totp_code
+    from apps.accounts.tests.helpers import mfa_login, password_login
+
+    user = UserFactory.create(password=PASSWORD)
+    codes = RecoveryCodes.activate(user).get_unused_codes()
+    t0 = dt.datetime(2026, 12, 1, 10, 0, tzinfo=dt.UTC)
+    with time_machine.travel(t0):
+        client = Client()
+        mfa_login(client, user, PASSWORD)  # TOTP used
+        other = Client()
+        password_login(other, user, PASSWORD)
+        other.post(reverse("mfa_authenticate"), {"code": "000000"})  # failure (or replay)
+        third = Client()
+        password_login(third, user, PASSWORD)
+        third.post(reverse("mfa_authenticate"), {"code": codes[0]})  # recovery code used
+    with time_machine.travel(t0 + dt.timedelta(minutes=1)):
+        secret: str = user.totp_secret  # type: ignore[attr-defined]  # set by the factory
+        client.post(reverse("mfa_reauthenticate"), {"code": totp_code(secret)})
+        # allauth sends the reset signal on commit
+        with django_capture_on_commit_callbacks(execute=True):
+            client.post(reverse("mfa_generate_recovery_codes"))  # reset
+    events = list(AuditEvent.objects.filter(actor=user).values_list("action", "details_json"))
+    actions = [a for a, _ in events]
+    assert ("MFA_FACTOR_USED", {"type": "totp", "reauthenticated": False}) in events
+    assert ("MFA_FACTOR_USED", {"type": "recovery_codes", "reauthenticated": False}) in events
+    assert ("MFA_FACTOR_USED", {"type": "totp", "reauthenticated": True}) in events
+    assert "MFA_FAILED" in actions
+    assert ("MFA_FACTOR_RESET", {"type": "recovery_codes"}) in events
+    dump = str(list(AuditEvent.objects.values()))
+    assert secret not in dump
+    assert not any(code in dump for code in codes)
+
+
+def test_totp_enrollment_is_audited(django_capture_on_commit_callbacks: Any) -> None:
+    """Real enrollment page: a fresh account adds its TOTP and the event is logged."""
+    from allauth.mfa.totp.internal.auth import SECRET_SESSION_KEY
+
+    from apps.accounts.reauth import record_password_authentication  # noqa: F401  (flow under test)
+    from apps.accounts.tests.factories import totp_code
+
+    user = UserFactory.create(password=PASSWORD, mfa=False)
+    client = Client()
+    client.post(reverse("account_login"), {"login": user.email, "password": PASSWORD})
+    assert client.get(reverse("mfa_activate_totp")).status_code in (200, 302)
+    secret = client.session.get(SECRET_SESSION_KEY)
+    if secret is None:  # allauth asked for a re-auth first: give the password
+        client.post(reverse("account_reauthenticate"), {"password": PASSWORD})
+        client.get(reverse("mfa_activate_totp"))
+        secret = client.session[SECRET_SESSION_KEY]
+    with django_capture_on_commit_callbacks(execute=True):  # signal sent on commit
+        response = client.post(reverse("mfa_activate_totp"), {"code": totp_code(secret)})
+    assert response.status_code == 302
+    # Enrolling TOTP also creates the recovery codes: two additions, both logged.
+    added = AuditEvent.objects.filter(action="MFA_FACTOR_ADDED", actor=user)
+    assert sorted(e.details_json["type"] for e in added) == ["recovery_codes", "totp"]
+    assert secret not in str(list(AuditEvent.objects.values()))
