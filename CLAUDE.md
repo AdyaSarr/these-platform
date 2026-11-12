@@ -70,7 +70,10 @@ uv run python manage.py check --deploy --settings=config.settings.prod
 6. **Authentification** : identifiant = courriel, Argon2id, MFA obligatoire,
    ré-authentification (< 10 min) avant toute validation, changement de rôle,
    téléchargement `CONFIDENTIAL` ou export.
-7. **Courriels sans contenu** : un lien vers la plateforme seulement.
+7. **Courriels sans contenu** : un lien vers la plateforme seulement. **Seule
+   exception** : le point de contrôle hebdomadaire du journal d'audit, envoyé au
+   seul `PHD_STUDENT`, qui contient uniquement `(seq, hash, signature, horodatage)`
+   (ni titre de thèse, ni nom, ni clé publique). Voir `docs/decisions.md`.
 8. **Journal d'audit** chaîné, en ajout seul, via `vault.services.audit(...)` pour
    toute action sensible (connexion, lecture `CONFIDENTIAL`, validation, droits, export).
 9. **Secrets** uniquement par variables d'environnement. **Ne lis jamais `.env`** ni

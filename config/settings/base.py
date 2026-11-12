@@ -166,6 +166,11 @@ SECURE_REFERRER_POLICY = "same-origin"
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin"
 
+# Error reports (technical 500 page, e-mails to ADMINS, logs) hide the locals of
+# @sensitive_variables functions even with DEBUG=True (Django's filter only
+# acts when DEBUG is False). See apps/core/debug.py.
+DEFAULT_EXCEPTION_REPORTER_FILTER = "apps.core.debug.AlwaysSafeExceptionReporterFilter"
+
 # Strict CSP in every environment (docs/decisions.md): no inline script or style.
 CONTENT_SECURITY_POLICY = {
     "DIRECTIVES": {

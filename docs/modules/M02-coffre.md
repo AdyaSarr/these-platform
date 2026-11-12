@@ -42,6 +42,13 @@ chiffrés, avec un niveau de confidentialité, et un journal d'audit infalsifiab
 - [ ] `manage.py audit_verify` détecte une ligne modifiée dans la table (test).
 - [ ] Validation des fichiers : taille, type par contenu (tests).
 - [ ] L'admin Django n'affiche jamais de contenu déchiffré.
+- [ ] Points de contrôle Ed25519 : `audit_checkpoint --export-public-key` exporte la
+      clé publique une seule fois ; `audit_verify` prend cette clé épinglée en
+      paramètre (jamais une clé lue en base ou dans un courriel) et une liste de
+      points de contrôle externes, et détecte une troncature de la fin (tests).
+- [ ] Le courriel de point de contrôle, envoyé au seul `PHD_STUDENT`, ne contient que
+      `(seq, hash, signature, horodatage)` (test) ; export complémentaire vers un
+      fichier externe.
 
 ## Notes issues de M1
 - Le rapport CSI est stocké au niveau `CONFIDENTIAL`, que `LEVEL_ROLES` ne donne

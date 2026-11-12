@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import ipaddress
 import json
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any
@@ -83,6 +84,24 @@ def _check_details(value: Any, path: str = "details") -> None:
         raise AuditError(f"{path}: {type(value).__name__} is not JSON-serializable")
 
 
+def canonical_ip(raw: str) -> str:
+    """Canonical text of an IP address, so that one address has one pseudonym.
+
+    "2001:DB8::1" and "2001:0db8:0:0:0:0:0:1" give "2001:db8::1"; an IPv4-mapped
+    IPv6 address ("::ffff:192.0.2.7") is brought back to IPv4 ("192.0.2.7").
+    A value that is not an IP address is kept as is (stripped): it cannot equal
+    a canonical address, so it never shares a pseudonym with one.
+    """
+    text = raw.strip()
+    try:
+        address = ipaddress.ip_address(text)
+    except ValueError:
+        return text
+    if isinstance(address, ipaddress.IPv6Address) and address.ipv4_mapped is not None:
+        address = address.ipv4_mapped
+    return str(address)
+
+
 def _thesis_of(obj: object) -> Thesis | None:
     candidate = obj if isinstance(obj, Thesis) else getattr(obj, "thesis", None)
     return candidate if isinstance(candidate, Thesis) else None
@@ -118,7 +137,7 @@ def audit(
         details["email_hmac"] = crypto.pseudonym(normalized, purpose="email")
     json.dumps(details)  # last guard: must serialize as is
 
-    ip = request.META.get("REMOTE_ADDR", "") if request is not None else ""
+    ip = canonical_ip(request.META.get("REMOTE_ADDR") or "") if request is not None else ""
     meta = getattr(obj, "_meta", None)
     return AuditEvent.objects.create(
         action=action.value,
