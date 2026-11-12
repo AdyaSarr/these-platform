@@ -32,6 +32,13 @@ SETTING_NAMES = (
     "PASSWORD_HASHERS",
     "INSTALLED_APPS",
     "EMAIL_BACKEND",
+    "CACHES",
+    "MFA_ENCRYPTION_REQUIRED",
+    "MFA_TOTP_INSECURE_BYPASS_CODE",
+    "MFA_PASSKEY_LOGIN_ENABLED",
+    "MFA_TRUST_ENABLED",
+    "ACCOUNT_LOGIN_ON_PASSWORD_RESET",
+    "MFA_WEBAUTHN_ALLOW_INSECURE_ORIGIN",
 )
 
 
@@ -108,6 +115,13 @@ def test_admin_route_does_not_exist_in_prod(prod: dict[str, Any]) -> None:
         ({"DJANGO_SECRET_KEY": PLACEHOLDER_KEY}, "DJANGO_SECRET_KEY"),
         ({"DJANGO_ALLOWED_HOSTS": "*"}, "DJANGO_ALLOWED_HOSTS"),
         ({"DJANGO_ALLOWED_HOSTS": ""}, "DJANGO_ALLOWED_HOSTS"),
+        ({"DJANGO_SITE_URL": None}, "DJANGO_SITE_URL"),
+        ({"DJANGO_SITE_URL": f"http://{PROD_HOST}"}, "DJANGO_SITE_URL"),
+        ({"MASTER_KEY": None}, "MASTER_KEY"),
+        ({"MASTER_KEY": ""}, "MASTER_KEY"),
+        ({"MASTER_KEY": "bm90LTMyLWJ5dGVz"}, "MASTER_KEY"),  # "not-32-bytes"
+        ({"MASTER_KEY": "A" * 43 + "!"}, "MASTER_KEY"),  # not base64
+        ({"MASTER_KEY": "QUFB" * 12}, "MASTER_KEY"),  # 36 bytes
     ],
 )
 def test_prod_refuses_unsafe_environment(
@@ -125,3 +139,17 @@ def test_check_deploy_has_no_warning() -> None:
     result = run_manage("check", "--deploy", "--fail-level", "WARNING", env=prod_env())
     assert result.returncode == 0, result.stdout + result.stderr
     assert "System check identified no issues" in result.stdout
+
+
+def test_shared_redis_cache(prod: dict[str, Any]) -> None:
+    """Rate limits and TOTP anti-replay markers must be shared by all workers."""
+    assert prod["CACHES"]["default"]["BACKEND"] == "django.core.cache.backends.redis.RedisCache"
+
+
+def test_mfa_hardening(prod: dict[str, Any]) -> None:
+    assert prod["MFA_ENCRYPTION_REQUIRED"] is True
+    assert prod["MFA_TOTP_INSECURE_BYPASS_CODE"] is None
+    assert prod["MFA_PASSKEY_LOGIN_ENABLED"] is False
+    assert prod["MFA_TRUST_ENABLED"] is False
+    assert prod["ACCOUNT_LOGIN_ON_PASSWORD_RESET"] is False
+    assert prod["MFA_WEBAUTHN_ALLOW_INSECURE_ORIGIN"] is None  # dev only

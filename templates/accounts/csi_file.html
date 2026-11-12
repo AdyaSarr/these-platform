@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% translate "CSI file" %}{% endblock %}
+{% block content %}
+  <h1>{% translate "CSI file" %}</h1>
+  <p>{{ thesis.title }}</p>
+  <p class="muted">{% translate "The CSI file will be available in a later module." %}</p>
+{% endblock %}

@@ -1,11 +1,16 @@
 from __future__ import annotations
 
+from datetime import datetime
 from typing import TYPE_CHECKING, Any
 
-from django.contrib.auth.base_user import BaseUserManager
+from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.models import AnonymousUser
+from django.db import models
+from django.db.models import Q
+from django.utils import timezone
 
 if TYPE_CHECKING:
-    from .models import User
+    from .models import Membership, Thesis, User  # noqa: F401  (string annotations)
 
 
 class UserManager(BaseUserManager["User"]):
@@ -40,3 +45,29 @@ class UserManager(BaseUserManager["User"]):
         if extra["is_superuser"] is not True:
             raise ValueError("A superuser must have is_superuser=True.")
         return self.create_user(email, password, **extra)
+
+
+class MembershipQuerySet(models.QuerySet["Membership"]):
+    def active(self, at: datetime | None = None) -> MembershipQuerySet:
+        """Memberships in force at ``at`` (default: now) of still-active users.
+
+        The period is half-open, [active_from, active_until): a membership whose
+        ``active_until`` is now has already ended.
+        """
+        at = at or timezone.now()
+        return self.filter(
+            Q(active_until__isnull=True) | Q(active_until__gt=at),
+            active_from__lte=at,
+            user__is_active=True,
+        )
+
+
+class ThesisQuerySet(models.QuerySet["Thesis"]):
+    def visible_to(self, user: AbstractBaseUser | AnonymousUser) -> ThesisQuerySet:
+        """Theses on which ``user`` holds at least one active membership."""
+        if not user.is_authenticated or not user.is_active:
+            return self.none()
+        from .models import Membership
+
+        active = Membership.objects.active().filter(user_id=user.pk)
+        return self.filter(pk__in=active.values("thesis_id"))

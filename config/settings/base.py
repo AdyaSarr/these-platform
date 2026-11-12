@@ -28,10 +28,18 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.humanize",  # used by allauth's WebAuthn key list
+    # PostgreSQL-only features: exclusion constraints on membership periods.
+    "django.contrib.postgres",
     "django_htmx",
     "csp",
     "apps.core",
     "apps.accounts",
+    "apps.vault",
+    # Authentication: sign-in, password reset, mandatory second factor (M1).
+    "allauth",
+    "allauth.account",
+    "allauth.mfa",
 ]
 
 MIDDLEWARE = [
@@ -41,6 +49,9 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
+    # After authentication: no page without an enrolled second factor.
+    "apps.accounts.middleware.MfaRequiredMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "csp.middleware.CSPMiddleware",
@@ -92,9 +103,56 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
+# allauth's backend (a ModelBackend subclass): e-mail login, rate limiting.
+AUTHENTICATION_BACKENDS = ["allauth.account.auth_backends.AuthenticationBackend"]
+
 LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "core:home"
 LOGOUT_REDIRECT_URL = "login"
+
+# --------------------------------------------------------------------------- allauth (M1)
+# Invitation only: sign-up is closed (AccountAdapter.is_open_for_signup).
+ACCOUNT_ADAPTER = "apps.accounts.adapters.AccountAdapter"
+ACCOUNT_LOGIN_METHODS = {"email"}
+ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*"]
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+# The invitation proves the address; e-mail changes are disabled (decisions.md).
+ACCOUNT_EMAIL_VERIFICATION = "none"
+ACCOUNT_CHANGE_EMAIL = False
+ACCOUNT_MAX_EMAIL_ADDRESSES = 1
+# No account enumeration: same answers whether the address exists or not, and
+# no e-mail at all to an unknown address.
+ACCOUNT_PREVENT_ENUMERATION = True
+ACCOUNT_EMAIL_UNKNOWN_ACCOUNTS = False
+ACCOUNT_LOGIN_BY_CODE_ENABLED = False
+ACCOUNT_PASSWORD_RESET_BY_CODE_ENABLED = False
+ACCOUNT_LOGIN_ON_PASSWORD_RESET = False  # a reset never bypasses the second factor
+ACCOUNT_SESSION_REMEMBER = False
+ACCOUNT_EMAIL_SUBJECT_PREFIX = ""
+# Re-authentication: password or second factor (never a code sent by e-mail).
+ACCOUNT_REAUTHENTICATION_REQUIRED = True
+ACCOUNT_REAUTHENTICATION_METHODS = ("password", "mfa")
+ACCOUNT_REAUTHENTICATION_TIMEOUT = 600  # seconds; also apps/accounts/reauth.py
+# Rate limits stay at allauth's defaults (login_failed: 10/min/IP, 5/5 min per
+# address). They live in the cache: CACHES must be shared in production.
+
+MFA_ADAPTER = "apps.accounts.adapters.MFAAdapter"
+MFA_SUPPORTED_TYPES = ["totp", "webauthn", "recovery_codes"]
+MFA_PASSKEY_LOGIN_ENABLED = False  # WebAuthn as a second factor only
+MFA_PASSKEY_SIGNUP_ENABLED = False
+MFA_TRUST_ENABLED = False  # no "trust this browser": the factor is asked every time
+MFA_TOTP_ISSUER = "Plateforme de thèse"
+MFA_RECOVERY_CODE_COUNT = 10
+# Codes are shown once, right after generation; afterwards only regenerating
+# (second factor < 10 min, config/urls.py) gives new ones.
+MFA_RECOVERY_CODES_SHOW_ONCE = True
+# Production refuses to start while MFA secrets are stored unencrypted
+# (MFAAdapter.encrypt is the identity until M2). See config/wsgi.py.
+MFA_ENCRYPTION_REQUIRED = False
+
+# --------------------------------------------------------------------------- cache
+# Per-process memory cache outside production (single runserver / test process).
+CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
 
 # --------------------------------------------------------------------------- sessions & cookies
 SESSION_COOKIE_AGE = 8 * 3600
@@ -138,6 +196,13 @@ STATIC_ROOT = BASE_DIR / "var" / "static"
 
 # --------------------------------------------------------------------------- e-mail
 DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL", default="noreply@localhost")
+
+# Root key of the vault (base64, 32 bytes). Sub-keys are derived from it by HKDF in
+# apps/vault/crypto.py only. Never displayed: Django masks settings named *KEY*.
+MASTER_KEY = env.str("MASTER_KEY", default="")
+
+# Absolute base URL of the platform, for links in e-mails (sent without a request).
+SITE_URL = env.str("DJANGO_SITE_URL", default="http://localhost:8000").rstrip("/")
 
 # --------------------------------------------------------------------------- celery
 CELERY_BROKER_URL = env.str("REDIS_URL")

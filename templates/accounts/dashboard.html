@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{{ thesis.title }}{% endblock %}
+{% block content %}
+  <h1>{{ thesis.title }}</h1>
+  <p class="muted">{{ thesis.get_status_display }}</p>
+  {# Each block was filtered by its own action in the view: never in this template. #}
+  <div class="blocks">
+    {% for block in blocks %}
+      <section class="block" data-block="{{ block.key }}">
+        <h2>{{ block.title }}</h2>
+        {% include block.template %}
+      </section>
+    {% endfor %}
+  </div>
+{% endblock %}

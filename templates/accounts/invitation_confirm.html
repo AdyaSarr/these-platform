@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% translate "Invitation" %}{% endblock %}
+{% block content %}
+  <h1>{% translate "Invitation" %}</h1>
+  <form method="post" action="{% url 'invitation_accept' %}">
+    {% csrf_token %}
+    <button type="submit">{% translate "Accept the invitation" %}</button>
+  </form>
+{% endblock %}

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-12 21:10+0100\n"
+"POT-Creation-Date: 2026-11-12 23:25+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -29,41 +29,391 @@ msgstr "Permissions"
 msgid "Important dates"
 msgstr "Dates importantes"
 
-#: apps/accounts/models.py:22
+#: apps/accounts/forms.py:18
+msgid "First name"
+msgstr "Prénom"
+
+#: apps/accounts/forms.py:19
+msgid "Last name"
+msgstr "Nom"
+
+#: apps/accounts/forms.py:21 templates/account/login.html:14
+msgid "Password"
+msgstr "Mot de passe"
+
+#: apps/accounts/forms.py:27
+msgid "Password confirmation"
+msgstr "Confirmation du mot de passe"
+
+#: apps/accounts/forms.py:40
+msgid "The two passwords do not match."
+msgstr "Les deux mots de passe ne correspondent pas."
+
+#: apps/accounts/forms.py:58 templates/account/login.html:10
+#: templates/accounts/team.html:12 templates/accounts/team.html:74
+msgid "Email address"
+msgstr "Adresse électronique"
+
+#: apps/accounts/forms.py:59 templates/accounts/team.html:13
+#: templates/accounts/team.html:75
+msgid "Role"
+msgstr "Rôle"
+
+#: apps/accounts/forms.py:61 templates/accounts/team.html:14
+msgid "Organization"
+msgstr "Organisation"
+
+#: apps/accounts/forms.py:64
+msgid "Or a new organization"
+msgstr "Ou une nouvelle organisation"
+
+#: apps/accounts/forms.py:67
+msgid "Kind of the new organization"
+msgstr "Type de la nouvelle organisation"
+
+#: apps/accounts/forms.py:77
+msgid "Choose an existing organization or enter a new one."
+msgstr "Choisissez une organisation existante ou saisissez-en une nouvelle."
+
+#: apps/accounts/forms.py:95
+msgid "New role"
+msgstr "Nouveau rôle"
+
+#: apps/accounts/forms.py:100
+msgid "Days"
+msgstr "Jours"
+
+#: apps/accounts/models.py:32 apps/accounts/models.py:237
 msgid "email address"
 msgstr "adresse électronique"
 
-#: apps/accounts/models.py:23
+#: apps/accounts/models.py:33
 msgid "first name"
 msgstr "prénom"
 
-#: apps/accounts/models.py:24
+#: apps/accounts/models.py:34
 msgid "last name"
 msgstr "nom"
 
-#: apps/accounts/models.py:25
+#: apps/accounts/models.py:35
 msgid "active"
 msgstr "actif"
 
-#: apps/accounts/models.py:26
+#: apps/accounts/models.py:36
 msgid "staff status"
 msgstr "statut équipe"
 
-#: apps/accounts/models.py:27
+#: apps/accounts/models.py:37
 msgid "date joined"
 msgstr "date d’inscription"
 
-#: apps/accounts/models.py:36
+#: apps/accounts/models.py:46 apps/accounts/models.py:140
 msgid "user"
 msgstr "utilisateur"
 
-#: apps/accounts/models.py:37
+#: apps/accounts/models.py:47
 msgid "users"
 msgstr "utilisateurs"
 
-#: apps/accounts/models.py:42
+#: apps/accounts/models.py:52
 msgid "A user with this email address already exists."
 msgstr "Un utilisateur avec cette adresse électronique existe déjà."
+
+#: apps/accounts/models.py:78
+msgid "University"
+msgstr "Université"
+
+#: apps/accounts/models.py:79
+msgid "External"
+msgstr "Externe"
+
+#: apps/accounts/models.py:82
+msgid "name"
+msgstr "nom"
+
+#: apps/accounts/models.py:83
+msgid "kind"
+msgstr "type"
+
+#: apps/accounts/models.py:86 apps/accounts/models.py:146
+#: apps/accounts/models.py:240
+msgid "organization"
+msgstr "organisation"
+
+#: apps/accounts/models.py:87
+msgid "organizations"
+msgstr "organisations"
+
+#: apps/accounts/models.py:96
+msgid "Setting up"
+msgstr "En préparation"
+
+#: apps/accounts/models.py:97
+msgid "Active"
+msgstr "Active"
+
+#: apps/accounts/models.py:98
+msgid "Defended"
+msgstr "Soutenue"
+
+#: apps/accounts/models.py:99
+msgid "Closed"
+msgstr "Clôturée"
+
+#: apps/accounts/models.py:102
+msgid "title"
+msgstr "titre"
+
+#: apps/accounts/models.py:103
+msgid "CIFRE start date"
+msgstr "date d'effet CIFRE"
+
+#: apps/accounts/models.py:104
+msgid "first enrollment date"
+msgstr "date de première inscription"
+
+#: apps/accounts/models.py:105
+msgid "planned end date"
+msgstr "date de fin prévue"
+
+#: apps/accounts/models.py:107
+msgid "status"
+msgstr "statut"
+
+#: apps/accounts/models.py:113 apps/accounts/models.py:143
+#: apps/accounts/models.py:235
+msgid "thesis"
+msgstr "thèse"
+
+#: apps/accounts/models.py:114
+msgid "theses"
+msgstr "thèses"
+
+#: apps/accounts/models.py:148 apps/accounts/models.py:238
+msgid "role"
+msgstr "rôle"
+
+#: apps/accounts/models.py:149
+msgid "active from"
+msgstr "actif depuis"
+
+#: apps/accounts/models.py:150
+msgid "active until"
+msgstr "actif jusqu'au"
+
+#: apps/accounts/models.py:155
+msgid "membership"
+msgstr "appartenance"
+
+#: apps/accounts/models.py:156
+msgid "memberships"
+msgstr "appartenances"
+
+#: apps/accounts/models.py:220
+msgid "Queued"
+msgstr "En file d'attente"
+
+#: apps/accounts/models.py:221
+msgid "Sent"
+msgstr "Envoyé"
+
+#: apps/accounts/models.py:222
+msgid "Failed"
+msgstr "Échec"
+
+#: apps/accounts/models.py:225
+msgid "Being sent"
+msgstr "En cours d'envoi"
+
+#: apps/accounts/models.py:226
+msgid "Not sent"
+msgstr "Non parti"
+
+#: apps/accounts/models.py:227
+msgid "Sending failed"
+msgstr "Échec de l'envoi"
+
+#: apps/accounts/models.py:228
+msgid "Sent, awaiting acceptance"
+msgstr "Envoyée, en attente d'acceptation"
+
+#: apps/accounts/models.py:229
+msgid "Expired"
+msgstr "Expirée"
+
+#: apps/accounts/models.py:230
+msgid "Accepted"
+msgstr "Acceptée"
+
+#: apps/accounts/models.py:231
+msgid "Revoked"
+msgstr "Révoquée"
+
+#: apps/accounts/models.py:243
+msgid "expires at"
+msgstr "expire le"
+
+#: apps/accounts/models.py:248
+msgid "used at"
+msgstr "utilisée le"
+
+#: apps/accounts/models.py:249
+msgid "revoked at"
+msgstr "révoquée le"
+
+#: apps/accounts/models.py:259
+msgid "invitation"
+msgstr "invitation"
+
+#: apps/accounts/models.py:260
+msgid "invitations"
+msgstr "invitations"
+
+#: apps/accounts/roles.py:11
+msgid "PhD student"
+msgstr "Doctorant·e"
+
+#: apps/accounts/roles.py:12
+msgid "Thesis director"
+msgstr "Directeur·rice de thèse"
+
+#: apps/accounts/roles.py:13
+msgid "Co-supervisor"
+msgstr "Co-encadrant·e"
+
+#: apps/accounts/roles.py:14
+msgid "Industrial tutor"
+msgstr "Tuteur·rice industriel·le"
+
+#: apps/accounts/roles.py:15
+msgid "CSI member"
+msgstr "Membre du CSI"
+
+#: apps/accounts/roles.py:16
+msgid "Guest"
+msgstr "Invité·e"
+
+#: apps/accounts/services.py:53
+msgid "This person already holds this role on the thesis."
+msgstr "Cette personne a déjà ce rôle sur la thèse."
+
+#: apps/accounts/services.py:54
+msgid "A CSI member cannot also be the PhD student or part of the supervision."
+msgstr ""
+"Un membre du CSI ne peut pas être aussi le ou la doctorant·e ni faire partie "
+"de l'encadrement."
+
+#: apps/accounts/services.py:58
+msgid "This thesis already has a PhD student."
+msgstr "Cette thèse a déjà un·e doctorant·e."
+
+#: apps/accounts/services.py:155
+msgid "The PhD student cannot be removed from their thesis."
+msgstr "Le ou la doctorant·e ne peut pas être retiré·e de sa thèse."
+
+#: apps/accounts/services.py:158 apps/accounts/services.py:179
+msgid "This membership is not active."
+msgstr "Cette appartenance n'est pas active."
+
+#: apps/accounts/services.py:174 apps/accounts/services.py:318
+msgid "The PhD student role cannot be given or taken away."
+msgstr "Le rôle de doctorant·e ne peut être ni attribué ni retiré."
+
+#: apps/accounts/services.py:176
+msgid "This person already holds this role."
+msgstr "Cette personne a déjà ce rôle."
+
+#: apps/accounts/services.py:214
+#, python-format
+msgid "The extension must be between 1 and %(max)d days."
+msgstr "La prolongation doit être comprise entre 1 et %(max)d jours."
+
+#: apps/accounts/services.py:220
+msgid "Only a CSI membership can be extended."
+msgstr "Seule l'appartenance d'un membre du CSI peut être prolongée."
+
+#: apps/accounts/services.py:222
+msgid "An expired CSI membership cannot be extended; invite again."
+msgstr ""
+"Une appartenance CSI expirée ne peut pas être prolongée : invitez à nouveau "
+"la personne."
+
+#: apps/accounts/services.py:269
+msgid "Invalid email address."
+msgstr "Adresse électronique invalide."
+
+#: apps/accounts/services.py:350
+msgid "This invitation is no longer open."
+msgstr "Cette invitation n'est plus ouverte."
+
+#: apps/accounts/team_views.py:86
+msgid "Invitation sent."
+msgstr "Invitation envoyée."
+
+#: apps/accounts/team_views.py:99
+msgid "Choose a valid role."
+msgstr "Choisissez un rôle valide."
+
+#: apps/accounts/team_views.py:104
+msgid "Role changed."
+msgstr "Rôle modifié."
+
+#: apps/accounts/team_views.py:117
+msgid "Member removed: their access ended immediately."
+msgstr "Membre retiré : son accès a pris fin immédiatement."
+
+#: apps/accounts/team_views.py:130
+msgid "The extension must be between 1 and 90 days."
+msgstr "La prolongation doit être comprise entre 1 et 90 jours."
+
+#: apps/accounts/team_views.py:135
+msgid "CSI access extended."
+msgstr "Accès CSI prolongé."
+
+#: apps/accounts/team_views.py:157
+msgid "Invitation sent again."
+msgstr "Invitation renvoyée."
+
+#: apps/accounts/team_views.py:178
+msgid "Invitation revoked."
+msgstr "Invitation révoquée."
+
+#: apps/accounts/views.py:32 templates/accounts/team.html:3
+#: templates/accounts/team.html:6
+msgid "Team"
+msgstr "Équipe"
+
+#: apps/accounts/views.py:34
+msgid "Objectives"
+msgstr "Objectifs"
+
+#: apps/accounts/views.py:36
+msgid "Meetings"
+msgstr "Réunions"
+
+#: apps/accounts/views.py:38
+msgid "Documents"
+msgstr "Documents"
+
+#: apps/accounts/views.py:43
+msgid "Administrative file"
+msgstr "Dossier administratif"
+
+#: apps/core/confidentiality.py:12
+msgid "Public"
+msgstr "Public"
+
+#: apps/core/confidentiality.py:13
+msgid "Internal LIRMM"
+msgstr "Interne LIRMM"
+
+#: apps/core/confidentiality.py:14
+msgid "Internal ST"
+msgstr "Interne ST"
+
+#: apps/core/confidentiality.py:15
+msgid "Confidential"
+msgstr "Confidentiel"
 
 #: apps/core/models.py:14
 msgid "created at"
@@ -76,6 +426,226 @@ msgstr "modifié le"
 #: apps/core/models.py:23
 msgid "created by"
 msgstr "créé par"
+
+#: apps/vault/models.py:30
+msgid "timestamp"
+msgstr "horodatage"
+
+#: apps/vault/models.py:41
+msgid "action"
+msgstr "action"
+
+#: apps/vault/models.py:50
+msgid "audit event"
+msgstr "événement d'audit"
+
+#: apps/vault/models.py:51
+msgid "audit events"
+msgstr "événements d'audit"
+
+#: templates/account/login.html:3 templates/account/login.html:5
+#: templates/account/login.html:18 templates/accounts/invitation_signin.html:7
+msgid "Sign in"
+msgstr "Se connecter"
+
+#: templates/account/login.html:20
+msgid "Forgotten password?"
+msgstr "Mot de passe oublié ?"
+
+#: templates/account/login.html:21
+msgid ""
+"Access is by invitation only. A second authentication factor is required."
+msgstr ""
+"L'accès se fait uniquement sur invitation. Un second facteur "
+"d'authentification est obligatoire."
+
+#: templates/accounts/blocks/team.html:2
+msgid "See the team"
+msgstr "Voir l'équipe"
+
+#: templates/accounts/blocks/upcoming.html:2
+msgid "Coming in a later module."
+msgstr "Disponible dans un prochain module."
+
+#: templates/accounts/csi_file.html:3 templates/accounts/csi_file.html:5
+msgid "CSI file"
+msgstr "Dossier CSI"
+
+#: templates/accounts/csi_file.html:7
+msgid "The CSI file will be available in a later module."
+msgstr "Le dossier CSI sera disponible dans un prochain module."
+
+#: templates/accounts/email/invitation_body.txt:1
+#: templates/accounts/email/password_reset_body.txt:1
+msgid "Hello,"
+msgstr "Bonjour,"
+
+#: templates/accounts/email/invitation_body.txt:3
+msgid ""
+"You are invited to join a thesis follow-up platform. To accept, open this "
+"link (valid for 72 hours, single use):"
+msgstr ""
+"Vous êtes invité·e à rejoindre une plateforme de suivi de thèse. Pour "
+"accepter, ouvrez ce lien (valable 72 heures, à usage unique) :"
+
+#: templates/accounts/email/invitation_body.txt:7
+msgid "If you were not expecting this invitation, ignore this message."
+msgstr "Si vous n'attendiez pas cette invitation, ignorez ce message."
+
+#: templates/accounts/email/invitation_subject.txt:1
+msgid "Invitation to the thesis platform"
+msgstr "Invitation à la plateforme de suivi de thèse"
+
+#: templates/accounts/email/password_reset_body.txt:3
+msgid ""
+"A password reset was requested for your account. To choose a new password, "
+"open this link (single use):"
+msgstr ""
+"Une réinitialisation du mot de passe a été demandée pour votre compte. Pour "
+"choisir un nouveau mot de passe, ouvrez ce lien (à usage unique) :"
+
+#: templates/accounts/email/password_reset_body.txt:7
+msgid ""
+"If you did not request it, ignore this message: your password stays "
+"unchanged."
+msgstr ""
+"Si vous n'en êtes pas à l'origine, ignorez ce message : votre mot de passe "
+"reste inchangé."
+
+#: templates/accounts/email/password_reset_subject.txt:1
+msgid "Password reset on the thesis platform"
+msgstr "Réinitialisation du mot de passe sur la plateforme de suivi de thèse"
+
+#: templates/accounts/invitation_accept.html:3
+#: templates/accounts/invitation_accept.html:5
+msgid "Create your account"
+msgstr "Créez votre compte"
+
+#: templates/accounts/invitation_accept.html:6
+#, python-format
+msgid "Your sign-in identifier will be %(email)s."
+msgstr "Votre identifiant de connexion sera %(email)s."
+
+#: templates/accounts/invitation_accept.html:10
+msgid "Create my account"
+msgstr "Créer mon compte"
+
+#: templates/accounts/invitation_accept.html:12
+msgid "Next step: set up a second authentication factor (mandatory)."
+msgstr ""
+"Étape suivante : configurer un second facteur d'authentification "
+"(obligatoire)."
+
+#: templates/accounts/invitation_confirm.html:3
+#: templates/accounts/invitation_confirm.html:5
+#: templates/accounts/invitation_error.html:3
+#: templates/accounts/invitation_error.html:5
+#: templates/accounts/invitation_invalid.html:3
+#: templates/accounts/invitation_invalid.html:5
+#: templates/accounts/invitation_link.html:3
+#: templates/accounts/invitation_link.html:5
+#: templates/accounts/invitation_signin.html:3
+#: templates/accounts/invitation_signin.html:5
+msgid "Invitation"
+msgstr "Invitation"
+
+#: templates/accounts/invitation_confirm.html:8
+msgid "Accept the invitation"
+msgstr "Accepter l'invitation"
+
+#: templates/accounts/invitation_error.html:7
+msgid "The invitation has not been used. Contact the person who invited you."
+msgstr ""
+"L'invitation n'a pas été utilisée. Contactez la personne qui vous a invité·e."
+
+#: templates/accounts/invitation_invalid.html:6
+msgid ""
+"This invitation link cannot be used. It may have expired, already been used "
+"or been replaced. Ask the person who invited you to send a new invitation."
+msgstr ""
+"Ce lien d'invitation ne peut pas être utilisé : il a peut-être expiré, déjà "
+"servi ou été remplacé. Demandez à la personne qui vous a invité·e de vous "
+"envoyer une nouvelle invitation."
+
+#: templates/accounts/invitation_link.html:6
+msgid "You have been invited to the thesis platform."
+msgstr "Vous avez été invité·e sur la plateforme de suivi de thèse."
+
+#: templates/accounts/invitation_link.html:10
+msgid "Continue"
+msgstr "Continuer"
+
+#: templates/accounts/invitation_signin.html:6
+msgid "You already have an account. Sign in to accept the invitation."
+msgstr "Vous avez déjà un compte. Connectez-vous pour accepter l'invitation."
+
+#: templates/accounts/team.html:11
+msgid "Name"
+msgstr "Nom"
+
+#: templates/accounts/team.html:15
+msgid "Since"
+msgstr "Depuis"
+
+#: templates/accounts/team.html:16
+msgid "Until"
+msgstr "Jusqu'au"
+
+#: templates/accounts/team.html:17 templates/accounts/team.html:78
+msgid "Actions"
+msgstr "Actions"
+
+#: templates/accounts/team.html:36
+msgid "Change role"
+msgstr "Changer le rôle"
+
+#: templates/accounts/team.html:43
+msgid "Extend"
+msgstr "Prolonger"
+
+#: templates/accounts/team.html:49
+msgid "Remove"
+msgstr "Retirer"
+
+#: templates/accounts/team.html:61
+msgid "Invite someone"
+msgstr "Inviter une personne"
+
+#: templates/accounts/team.html:65
+msgid "Send the invitation"
+msgstr "Envoyer l'invitation"
+
+#: templates/accounts/team.html:67
+msgid ""
+"Inviting, changing a role, removing or extending a member asks for your "
+"second factor if you have not used it in the last 10 minutes."
+msgstr ""
+"Inviter, changer un rôle, retirer ou prolonger un membre demande votre "
+"second facteur si vous ne l'avez pas utilisé depuis 10 minutes."
+
+#: templates/accounts/team.html:69
+msgid "Pending invitations"
+msgstr "Invitations en attente"
+
+#: templates/accounts/team.html:76
+msgid "Invited on"
+msgstr "Invitée le"
+
+#: templates/accounts/team.html:77
+msgid "E-mail"
+msgstr "Courriel"
+
+#: templates/accounts/team.html:92
+msgid "Send again"
+msgstr "Renvoyer"
+
+#: templates/accounts/team.html:96
+msgid "Revoke"
+msgstr "Révoquer"
+
+#: templates/accounts/team.html:105
+msgid "No pending invitation."
+msgstr "Aucune invitation en attente."
 
 #: templates/base.html:8 templates/base.html:15
 msgid "CIFRE thesis"
@@ -94,11 +664,17 @@ msgstr "Tableau de bord"
 msgid "Welcome, %(name)s."
 msgstr "Bienvenue, %(name)s."
 
-#: templates/core/home.html:7
-msgid "The platform modules will appear here as they are delivered."
-msgstr "Les modules de la plateforme apparaîtront ici au fur et à mesure de leur livraison."
+#: templates/core/home.html:8
+msgid "My theses"
+msgstr "Mes thèses"
 
-#: templates/registration/login.html:3 templates/registration/login.html:5
-#: templates/registration/login.html:10
-msgid "Sign in"
-msgstr "Se connecter"
+#: templates/core/home.html:15
+msgid ""
+"You do not have access to any thesis. Access is granted by invitation only."
+msgstr ""
+"Vous n'avez accès à aucune thèse. L'accès se fait uniquement sur invitation."
+
+#~ msgid "The platform modules will appear here as they are delivered."
+#~ msgstr ""
+#~ "Les modules de la plateforme apparaîtront ici au fur et à mesure de leur "
+#~ "livraison."

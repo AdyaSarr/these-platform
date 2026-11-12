@@ -24,10 +24,32 @@ Chaque personne impliquée a un compte avec un rôle sur la thèse ; personne n'
 6. Limitation des tentatives de connexion.
 
 ## Critères d'acceptation
-- [ ] Un utilisateur sans `Membership` active ne voit aucune thèse (test).
-- [ ] Jeton d'invitation : usage unique, expiré après 72 h, stocké haché (tests).
-- [ ] Impossible d'accéder au tableau de bord sans second facteur enrôlé (test).
-- [ ] Pour chaque rôle de la matrice : un test « autorisé » et un test « refusé ».
-- [ ] Un membre retiré reçoit 403 sur toutes les pages de la thèse (test).
-- [ ] Les événements connexion, invitation, changement de rôle sont journalisés
+- [x] Un utilisateur sans `Membership` active ne voit aucune thèse (test).
+      *Preuve* : `test_user_without_active_membership_sees_no_thesis`,
+      `test_home_without_thesis_lists_nothing`, `test_user_without_membership_is_refused`.
+- [x] Jeton d'invitation : usage unique, expiré après 72 h, stocké haché (tests).
+      *Preuve* : `test_invitation_is_single_use`, `test_concurrent_acceptances_succeed_only_once`,
+      `test_token_expires_after_72_hours`, `test_invitation_is_sent_with_hashed_token`,
+      `test_clear_token_is_stored_nowhere`, `test_check_token_compares_in_constant_time`.
+- [x] Impossible d'accéder au tableau de bord sans second facteur enrôlé (test).
+      *Preuve* : `test_dashboard_unreachable_without_second_factor`,
+      `test_every_thesis_route_requires_a_second_factor`,
+      `test_password_alone_does_not_sign_in_an_enrolled_user`.
+- [x] Pour chaque rôle de la matrice : un test « autorisé » et un test « refusé ».
+      *Preuve* : `test_can_role_action` (6 rôles × 24 actions), `test_can_access_level`
+      (6 × 4), et par vue : `test_thesis_views.py`, `test_team_actions.py`.
+- [x] Un membre retiré reçoit 403 sur toutes les pages de la thèse (test).
+      *Preuve* : `test_removed_member_gets_403_everywhere_with_existing_session`
+      (toutes les routes `/t/…`, GET et POST, session conservée).
+- [x] Les événements connexion, invitation, changement de rôle sont journalisés
       (journal simple en M1, branché sur le journal chaîné en M2).
+      *Preuve* : `test_account_audit.py` (connexion réussie ou échouée, déconnexion,
+      rôle, retrait, prolongation, attribution, second facteur),
+      `test_invitation_lifecycle_is_audited`, `test_revocation_is_audited`.
+
+## Revue de fin (2026-11-12)
+Audit de sécurité : `tests/test_security_audit_m1.py` (IDOR, escalade, fixation de
+session, redirection ouverte, CSRF sur toutes les routes POST, limitation de l'étape
+TOTP, injection d'en-têtes, compte désactivé). Une faille trouvée et corrigée : le
+service d'invitation acceptait une adresse contenant CR/LF (l'injection était
+bloquée par Django à l'envoi, mais une invitation invalide était créée).

@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% translate "Invitation" %}{% endblock %}
+{% block content %}
+  <h1>{% translate "Invitation" %}</h1>
+  <p class="error">{{ message }}</p>
+  <p>{% translate "The invitation has not been used. Contact the person who invited you." %}</p>
+{% endblock %}

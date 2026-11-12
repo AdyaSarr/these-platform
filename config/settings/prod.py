@@ -4,6 +4,7 @@ only (no .env file) and refuses to start with an unsafe configuration."""
 from django.core.exceptions import ImproperlyConfigured
 
 from .base import *
+from .guards import require_master_key
 
 DEBUG = False
 
@@ -16,6 +17,24 @@ if not ALLOWED_HOSTS or "*" in ALLOWED_HOSTS:
     raise ImproperlyConfigured("DJANGO_ALLOWED_HOSTS must list explicit host names (no '*').")
 
 CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=[])
+
+require_master_key(MASTER_KEY)
+
+# Shared cache: allauth's rate limits and TOTP anti-replay markers live there.
+# A per-process cache would let an attacker spread attempts over workers.
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": CELERY_BROKER_URL,
+        "KEY_PREFIX": "cache",
+    }
+}
+
+MFA_ENCRYPTION_REQUIRED = True
+
+# Links in e-mails must point to the HTTPS site, never to the localhost default.
+if not SITE_URL.startswith("https://"):
+    raise ImproperlyConfigured("DJANGO_SITE_URL must be the public https:// URL of the platform.")
 
 # --------------------------------------------------------------------------- HTTPS
 SECURE_SSL_REDIRECT = True

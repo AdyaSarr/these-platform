@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% translate "Team" %}{% endblock %}
+{% block content %}
+  <p><a href="{% url 'accounts:dashboard' thesis_id=thesis.pk %}">{{ thesis.title }}</a></p>
+  <h1>{% translate "Team" %}</h1>
+  {# Management controls are shown to right holders only; the views re-check (403). #}
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">{% translate "Name" %}</th>
+        <th scope="col">{% translate "Email address" %}</th>
+        <th scope="col">{% translate "Role" %}</th>
+        <th scope="col">{% translate "Organization" %}</th>
+        <th scope="col">{% translate "Since" %}</th>
+        <th scope="col">{% translate "Until" %}</th>
+        {% if can_change_role or can_remove or can_extend %}<th scope="col">{% translate "Actions" %}</th>{% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in memberships %}
+        <tr>
+          <td>{{ m.user.get_full_name|default:"—" }}</td>
+          <td>{{ m.user.email }}</td>
+          <td>{{ m.get_role_display }}</td>
+          <td>{{ m.organization.name }}</td>
+          <td>{{ m.active_from|date:"j F Y" }}</td>
+          <td>{% if m.active_until %}<time data-until="{{ m.active_until|date:'c' }}">{{ m.active_until|date:"j F Y" }}</time>{% else %}—{% endif %}</td>
+          {% if can_change_role or can_remove or can_extend %}
+            <td class="actions">
+              {% if m.role != "PHD_STUDENT" %}
+                {% if can_change_role %}
+                  <form method="post" action="{% url 'accounts:team_change_role' thesis_id=thesis.pk membership_id=m.pk %}">
+                    {% csrf_token %}
+                    {{ role_form.role }}
+                    <button type="submit">{% translate "Change role" %}</button>
+                  </form>
+                {% endif %}
+                {% if can_extend and m.role == "CSI_MEMBER" %}
+                  <form method="post" action="{% url 'accounts:team_extend' thesis_id=thesis.pk membership_id=m.pk %}">
+                    {% csrf_token %}
+                    {{ extend_form.days }}
+                    <button type="submit">{% translate "Extend" %}</button>
+                  </form>
+                {% endif %}
+                {% if can_remove %}
+                  <form method="post" action="{% url 'accounts:team_remove' thesis_id=thesis.pk membership_id=m.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="danger">{% translate "Remove" %}</button>
+                  </form>
+                {% endif %}
+              {% endif %}
+            </td>
+          {% endif %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if can_invite %}
+    <h2>{% translate "Invite someone" %}</h2>
+    <form class="stack" method="post" action="{% url 'accounts:team_invite' thesis_id=thesis.pk %}">
+      {% csrf_token %}
+      {{ invite_form.as_div }}
+      <button type="submit">{% translate "Send the invitation" %}</button>
+    </form>
+    <p class="muted">{% translate "Inviting, changing a role, removing or extending a member asks for your second factor if you have not used it in the last 10 minutes." %}</p>
+
+    <h2>{% translate "Pending invitations" %}</h2>
+    {% if invitations %}
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">{% translate "Email address" %}</th>
+            <th scope="col">{% translate "Role" %}</th>
+            <th scope="col">{% translate "Invited on" %}</th>
+            <th scope="col">{% translate "E-mail" %}</th>
+            <th scope="col">{% translate "Actions" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for inv in invitations %}
+            {% with state=inv.delivery_state %}
+              <tr>
+                <td>{{ inv.email }}</td>
+                <td>{{ inv.get_role_display }}</td>
+                <td>{{ inv.created_at|date:"j F Y H:i" }}</td>
+                <td><span class="delivery delivery-{{ state|lower }}" data-delivery="{{ state }}">{{ state.label }}</span></td>
+                <td class="actions">
+                  <form method="post" action="{% url 'accounts:team_resend_invitation' thesis_id=thesis.pk invitation_id=inv.pk %}">
+                    {% csrf_token %}
+                    <button type="submit">{% translate "Send again" %}</button>
+                  </form>
+                  <form method="post" action="{% url 'accounts:team_revoke_invitation' thesis_id=thesis.pk invitation_id=inv.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="danger">{% translate "Revoke" %}</button>
+                  </form>
+                </td>
+              </tr>
+            {% endwith %}
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted">{% translate "No pending invitation." %}</p>
+    {% endif %}
+  {% endif %}
+{% endblock %}

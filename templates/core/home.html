@@ -4,5 +4,14 @@
 {% block content %}
   <h1>{% translate "Dashboard" %}</h1>
   <p>{% blocktranslate with name=user.get_short_name|default:user.email %}Welcome, {{ name }}.{% endblocktranslate %}</p>
-  <p class="muted">{% translate "The platform modules will appear here as they are delivered." %}</p>
+  {% if theses %}
+    <h2>{% translate "My theses" %}</h2>
+    <ul class="stack">
+      {% for thesis in theses %}
+        <li><a href="{% url 'accounts:dashboard' thesis_id=thesis.pk %}">{{ thesis.title }}</a></li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">{% translate "You do not have access to any thesis. Access is granted by invitation only." %}</p>
+  {% endif %}
 {% endblock %}

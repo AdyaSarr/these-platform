@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% translate "Sign in" %}{% endblock %}
+{% block content %}
+  <h1>{% translate "Sign in" %}</h1>
+  <form class="stack" method="post" action="{% url 'account_login' %}">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+    <div>
+      <label for="id_login">{% translate "Email address" %}</label>
+      <input type="email" name="login" id="id_login" autocomplete="username" required value="{{ form.login.value|default_if_none:'' }}">
+    </div>
+    <div>
+      <label for="id_password">{% translate "Password" %}</label>
+      <input type="password" name="password" id="id_password" autocomplete="current-password" required>
+    </div>
+    {{ redirect_field }}
+    <button type="submit">{% translate "Sign in" %}</button>
+  </form>
+  <p><a href="{% url 'account_reset_password' %}">{% translate "Forgotten password?" %}</a></p>
+  <p class="muted">{% translate "Access is by invitation only. A second authentication factor is required." %}</p>
+{% endblock %}

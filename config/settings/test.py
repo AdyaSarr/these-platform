@@ -1,5 +1,6 @@
 """Test settings (pytest): PostgreSQL, fast Argon2, eager Celery, admin enabled."""
 
+import base64
 import os
 import secrets
 from pathlib import Path
@@ -13,6 +14,7 @@ if _ENV_FILE.exists():
     environ.Env.read_env(_ENV_FILE)
 # A fresh random key per run: no test secret is ever written down.
 os.environ.setdefault("DJANGO_SECRET_KEY", secrets.token_urlsafe(50))
+os.environ.setdefault("MASTER_KEY", base64.b64encode(secrets.token_bytes(32)).decode())
 
 from . import base  # noqa: E402
 from .base import *  # noqa: E402

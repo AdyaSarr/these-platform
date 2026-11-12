@@ -20,3 +20,15 @@ de la plateforme, à relire et compléter, jamais envoyés automatiquement.
       (test d'injection LaTeX).
 - [ ] La compilation se fait sans `shell-escape` et avec un délai maximal.
 - [ ] Le rapport ANRT exige la validation de trois rôles avant l'état `FINAL`.
+
+## Notes issues de M1
+- Droits CSI à ajouter à la matrice (`apps/accounts/permissions.py`) : le
+  **doctorant écrit le dossier CSI** ; **doctorant et directeur lisent le rapport et
+  l'avis du CSI**. En M1, seules les actions du `CSI_MEMBER` existent
+  (`CSI_FILE_READ`, `CSI_REPORT_READ`, `CSI_OPINION_WRITE`) ; M8 ajoute
+  l'écriture du dossier et étend la lecture, avec les deux transcriptions
+  (code et tests) mises à jour ensemble.
+- Page d'accueil du CSI : M1 a créé une page provisoire `accounts:csi_file`
+  (`/t/<id>/csi/`, action `CSI_FILE_READ`) vers laquelle le tableau de bord
+  redirige tout `CSI_MEMBER`. M8 la remplace par le vrai dossier CSI dans
+  `apps/reports/` et met à jour la redirection (`ThesisDashboardView`).
