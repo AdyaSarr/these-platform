@@ -13,6 +13,7 @@ dependencies = [
     "django-htmx>=1.21",
     # The [redis] extra lets kombu constrain the redis client to a supported range.
     "celery[redis]>=5.4",
+    "cryptography>=44",
 ]
 
 [dependency-groups]

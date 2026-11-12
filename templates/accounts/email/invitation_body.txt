@@ -1,0 +1,8 @@
+{% load i18n %}{% autoescape off %}{% translate "Hello," %}
+
+{% translate "You are invited to join a thesis follow-up platform. To accept, open this link (valid for 72 hours, single use):" %}
+
+{{ url }}
+
+{% translate "If you were not expecting this invitation, ignore this message." %}
+{% endautoescape %}

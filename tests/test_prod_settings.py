@@ -108,6 +108,13 @@ def test_admin_route_does_not_exist_in_prod(prod: dict[str, Any]) -> None:
         ({"DJANGO_SECRET_KEY": PLACEHOLDER_KEY}, "DJANGO_SECRET_KEY"),
         ({"DJANGO_ALLOWED_HOSTS": "*"}, "DJANGO_ALLOWED_HOSTS"),
         ({"DJANGO_ALLOWED_HOSTS": ""}, "DJANGO_ALLOWED_HOSTS"),
+        ({"DJANGO_SITE_URL": None}, "DJANGO_SITE_URL"),
+        ({"DJANGO_SITE_URL": f"http://{PROD_HOST}"}, "DJANGO_SITE_URL"),
+        ({"MASTER_KEY": None}, "MASTER_KEY"),
+        ({"MASTER_KEY": ""}, "MASTER_KEY"),
+        ({"MASTER_KEY": "bm90LTMyLWJ5dGVz"}, "MASTER_KEY"),  # "not-32-bytes"
+        ({"MASTER_KEY": "A" * 43 + "!"}, "MASTER_KEY"),  # not base64
+        ({"MASTER_KEY": "QUFB" * 12}, "MASTER_KEY"),  # 36 bytes
     ],
 )
 def test_prod_refuses_unsafe_environment(

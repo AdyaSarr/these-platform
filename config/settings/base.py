@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "csp",
     "apps.core",
     "apps.accounts",
+    "apps.vault",
 ]
 
 MIDDLEWARE = [
@@ -140,6 +141,13 @@ STATIC_ROOT = BASE_DIR / "var" / "static"
 
 # --------------------------------------------------------------------------- e-mail
 DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL", default="noreply@localhost")
+
+# Root key of the vault (base64, 32 bytes). Sub-keys are derived from it by HKDF in
+# apps/vault/crypto.py only. Never displayed: Django masks settings named *KEY*.
+MASTER_KEY = env.str("MASTER_KEY", default="")
+
+# Absolute base URL of the platform, for links in e-mails (sent without a request).
+SITE_URL = env.str("DJANGO_SITE_URL", default="http://localhost:8000").rstrip("/")
 
 # --------------------------------------------------------------------------- celery
 CELERY_BROKER_URL = env.str("REDIS_URL")

@@ -12,7 +12,7 @@ from django.utils.functional import Promise
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import TemplateView
 
-from .models import Membership
+from .models import Invitation, Membership
 from .permissions import Action, ThesisPermissionRequiredMixin, allowed_actions, roles_of
 from .roles import Role
 
@@ -81,6 +81,11 @@ class TeamView(ThesisPermissionRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context["thesis"] = self.thesis
         context["memberships"] = active_team(self.thesis.pk)
+        # Open invitations (with their e-mail delivery state): inviters only.
+        if Action.INVITE_MEMBER in allowed_actions(self.request.user, self.thesis):
+            context["invitations"] = Invitation.objects.filter(
+                thesis_id=self.thesis.pk, used_at__isnull=True, revoked_at__isnull=True
+            ).order_by("-created_at")
         return context
 
 

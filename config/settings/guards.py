@@ -19,3 +19,26 @@ def require_local_hosts(hosts: list[str], module: str) -> None:
             f"{module} only serves local hosts, but DJANGO_ALLOWED_HOSTS contains "
             f"{public}. Use DJANGO_SETTINGS_MODULE=config.settings.prod in production."
         )
+
+
+MASTER_KEY_BYTES = 32
+
+
+def require_master_key(value: str) -> None:
+    """MASTER_KEY must decode (strict base64) to exactly 32 bytes.
+
+    Only checks the format: the derivations live in apps/vault/crypto.py
+    (CLAUDE.md rule 1). base64 is an encoding, not cryptography.
+    """
+    import base64
+    import binascii
+
+    try:
+        decoded = base64.b64decode(value, validate=True)
+    except (binascii.Error, ValueError):
+        decoded = b""
+    if len(decoded) != MASTER_KEY_BYTES:
+        raise ImproperlyConfigured(
+            "MASTER_KEY must be 32 random bytes encoded in base64 "
+            '(python -c "import os,base64;print(base64.b64encode(os.urandom(32)).decode())").'
+        )

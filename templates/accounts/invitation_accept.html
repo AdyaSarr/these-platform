@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% translate "Create your account" %}{% endblock %}
+{% block content %}
+  <h1>{% translate "Create your account" %}</h1>
+  <p>{% blocktranslate %}Your sign-in identifier will be {{ email }}.{% endblocktranslate %}</p>
+  <form class="stack" method="post" action="{% url 'invitation_accept' %}">
+    {% csrf_token %}
+    {{ form.as_div }}
+    <button type="submit">{% translate "Create my account" %}</button>
+  </form>
+  <p class="muted">{% translate "Next step: set up a second authentication factor (mandatory)." %}</p>
+{% endblock %}

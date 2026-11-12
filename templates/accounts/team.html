@@ -28,4 +28,33 @@
       {% endfor %}
     </tbody>
   </table>
+  {% if invitations is not None %}
+    <h2>{% translate "Pending invitations" %}</h2>
+    {% if invitations %}
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">{% translate "Email address" %}</th>
+            <th scope="col">{% translate "Role" %}</th>
+            <th scope="col">{% translate "Invited on" %}</th>
+            <th scope="col">{% translate "E-mail" %}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for inv in invitations %}
+            {% with state=inv.delivery_state %}
+              <tr>
+                <td>{{ inv.email }}</td>
+                <td>{{ inv.get_role_display }}</td>
+                <td>{{ inv.created_at|date:"j F Y H:i" }}</td>
+                <td><span class="delivery delivery-{{ state|lower }}" data-delivery="{{ state }}">{{ state.label }}</span></td>
+              </tr>
+            {% endwith %}
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="muted">{% translate "No pending invitation." %}</p>
+    {% endif %}
+  {% endif %}
 {% endblock %}

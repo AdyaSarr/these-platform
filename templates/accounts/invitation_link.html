@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% translate "Invitation" %}{% endblock %}
+{% block content %}
+  <h1>{% translate "Invitation" %}</h1>
+  <p>{% translate "You have been invited to the thesis platform." %}</p>
+  <form method="post" action="{% url 'invitation_continue' %}">
+    {% csrf_token %}
+    <input type="hidden" name="token" value="{{ token }}">
+    <button type="submit">{% translate "Continue" %}</button>
+  </form>
+{% endblock %}

@@ -1,6 +1,7 @@
 """Team services: CSI incompatibility, removal, role change, CSI period and extension."""
 
 import datetime as dt
+from typing import Any
 
 import pytest
 import time_machine
@@ -282,7 +283,7 @@ def test_extension_default_and_bounds_accepted(
     csi = _member(
         student, Role.CSI_MEMBER, active_from=NOW - dt.timedelta(days=1), active_until=end
     )
-    kwargs = {} if days is None else {"days": days}
+    kwargs: dict[str, Any] = {} if days is None else {"days": days}
     services.extend_membership(csi, by=student.user, **kwargs)
     csi.refresh_from_db()
     assert csi.active_until == end + dt.timedelta(days=expected)

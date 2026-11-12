@@ -15,7 +15,17 @@ chiffrés, avec un niveau de confidentialité, et un journal d'audit infalsifiab
 - `store(thesis, uploaded_file, title, confidentiality, user) -> Document`
 - `add_version(document, uploaded_file, user)`
 - `open(document_version, user) -> bytes` (vérifie les droits, journalise)
-- `audit(actor, action, obj, **details)` utilisé par tous les modules.
+- `audit(action, *, actor=None, obj=None, thesis=None, request=None, **details)`
+  utilisé par tous les modules (créé en M1, chaîné en M2) :
+  - `action` : membre de `AuditAction` (une chaîne quelconque est refusée) ;
+  - `thesis` est déduite de `obj` si elle n'est pas fournie ; si les deux sont
+    fournies et diffèrent, `AuditError` ;
+  - `actor=None` autorisé (connexion échouée, tâche système) ;
+  - `subject_email=` : le courriel concerné (ex. connexion échouée) n'est jamais
+    stocké en clair, seulement son HMAC salé après normalisation, comme `ip_hash` ;
+  - `details` refuse toute clé contenant un fragment interdit (mot de passe,
+    jeton, secret, code TOTP ou de récupération, clé, session, cookie, courriel),
+    à toute profondeur, et toute valeur non sérialisable en JSON.
 - Module `apps/vault/crypto.py` **court et isolé**, seul endroit qui importe les
   bibliothèques cryptographiques ; il ne fait qu'appeler leurs API de haut niveau.
 

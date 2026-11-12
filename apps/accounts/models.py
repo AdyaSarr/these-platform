@@ -1,3 +1,6 @@
+from __future__ import annotations
+
+import datetime as dt
 import uuid
 from typing import Any, ClassVar
 
@@ -199,3 +202,98 @@ class Membership(TimeStampedModel):
 
     def __str__(self) -> str:
         return f"{self.user} - {self.get_role_display()} ({self.thesis})"
+
+
+class Invitation(TimeStampedModel):
+    """An invitation to hold ``role`` on ``thesis``, accepted through an e-mailed link.
+
+    The token never exists in the database: the e-mail task generates it, sends
+    it, and stores only its SHA-256 (``token_hash``) with ``expires_at``. Until
+    then (or if sending failed) ``token_hash`` is NULL and nothing can be accepted.
+    """
+
+    VALIDITY = dt.timedelta(hours=72)
+    # A queued e-mail older than this is reported as "not sent" on the team page.
+    STALLED_AFTER = dt.timedelta(minutes=10)
+
+    class EmailStatus(models.TextChoices):
+        QUEUED = "QUEUED", _("Queued")
+        SENT = "SENT", _("Sent")
+        FAILED = "FAILED", _("Failed")
+
+    class DeliveryState(models.TextChoices):
+        QUEUED = "QUEUED", _("Being sent")
+        NOT_SENT = "NOT_SENT", _("Not sent")
+        FAILED = "FAILED", _("Sending failed")
+        SENT = "SENT", _("Sent, awaiting acceptance")
+        EXPIRED = "EXPIRED", _("Expired")
+        ACCEPTED = "ACCEPTED", _("Accepted")
+        REVOKED = "REVOKED", _("Revoked")
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    thesis = models.ForeignKey(
+        Thesis, on_delete=models.PROTECT, related_name="invitations", verbose_name=_("thesis")
+    )
+    email = models.EmailField(_("email address"), max_length=254)
+    role = models.CharField(_("role"), max_length=20, choices=Role.choices)
+    organization = models.ForeignKey(
+        Organization, on_delete=models.PROTECT, related_name="+", verbose_name=_("organization")
+    )
+    token_hash = models.CharField(max_length=64, null=True, unique=True, editable=False)  # noqa: DJ001
+    expires_at = models.DateTimeField(_("expires at"), null=True, editable=False)
+    email_status = models.CharField(
+        max_length=10, choices=EmailStatus.choices, default=EmailStatus.QUEUED, editable=False
+    )
+    email_status_at = models.DateTimeField(default=timezone.now, editable=False)
+    used_at = models.DateTimeField(_("used at"), null=True, editable=False)
+    revoked_at = models.DateTimeField(_("revoked at"), null=True, editable=False)
+    # NULL: invitation created by the system (manage.py create_thesis).
+    invited_by = models.ForeignKey(
+        User, on_delete=models.PROTECT, null=True, related_name="+", editable=False
+    )
+    accepted_by = models.ForeignKey(
+        User, on_delete=models.PROTECT, null=True, related_name="+", editable=False
+    )
+
+    class Meta:
+        verbose_name = _("invitation")
+        verbose_name_plural = _("invitations")
+        constraints: ClassVar[list[models.BaseConstraint]] = [
+            models.UniqueConstraint(
+                fields=["thesis", "email", "role"],
+                condition=Q(used_at__isnull=True, revoked_at__isnull=True),
+                name="accounts_invitation_one_open",
+            ),
+            models.CheckConstraint(
+                condition=Q(used_at__isnull=True) | Q(revoked_at__isnull=True),
+                name="accounts_invitation_used_xor_revoked",
+            ),
+            models.CheckConstraint(
+                condition=Q(token_hash__isnull=True) | Q(expires_at__isnull=False),
+                name="accounts_invitation_token_expires",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"{self.email} - {self.get_role_display()} ({self.thesis})"
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        self.email = UserManager.normalize_email(self.email)
+        super().save(*args, **kwargs)
+
+    @property
+    def delivery_state(self) -> Invitation.DeliveryState:
+        now = timezone.now()
+        s = self.DeliveryState
+        if self.revoked_at is not None:
+            return s.REVOKED
+        if self.used_at is not None:
+            return s.ACCEPTED
+        if self.email_status == self.EmailStatus.FAILED:
+            return s.FAILED
+        if self.email_status == self.EmailStatus.QUEUED:
+            stalled = now - self.email_status_at >= self.STALLED_AFTER
+            return s.NOT_SENT if stalled else s.QUEUED
+        if self.expires_at is None or now >= self.expires_at:
+            return s.EXPIRED
+        return s.SENT

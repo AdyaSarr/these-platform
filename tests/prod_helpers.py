@@ -5,6 +5,7 @@ can only be configured once per process). The environment is built from scratch:
 nothing is inherited from the developer's shell or from .env.
 """
 
+import base64
 import json
 import os
 import secrets
@@ -26,6 +27,8 @@ def prod_env(**overrides: str | None) -> dict[str, str]:
         "DJANGO_SECRET_KEY": secrets.token_urlsafe(50),
         "DJANGO_ALLOWED_HOSTS": PROD_HOST,
         "DJANGO_CSRF_TRUSTED_ORIGINS": f"https://{PROD_HOST}",
+        "DJANGO_SITE_URL": f"https://{PROD_HOST}",
+        "MASTER_KEY": base64.b64encode(secrets.token_bytes(32)).decode(),
         # Port 1: never reachable; prod tests must not need a database.
         "DATABASE_URL": "postgres://fake:fake@127.0.0.1:1/fake",  # pragma: allowlist secret
         "REDIS_URL": "redis://:fake@127.0.0.1:1/0",  # pragma: allowlist secret
