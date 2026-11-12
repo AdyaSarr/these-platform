@@ -4,6 +4,8 @@ from django.urls import URLPattern, URLResolver, include, path
 
 urlpatterns: list[URLPattern | URLResolver] = [
     path("", include("apps.core.urls")),
+    # Every page of a thesis lives under /t/<id>/ and is guarded by permissions.py.
+    path("t/<uuid:thesis_id>/", include("apps.accounts.urls")),
     # Plain password login until M1 adds mandatory MFA.
     path(
         "accounts/login/",

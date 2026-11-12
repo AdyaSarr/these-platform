@@ -28,3 +28,7 @@ de la plateforme, à relire et compléter, jamais envoyés automatiquement.
   (`CSI_FILE_READ`, `CSI_REPORT_READ`, `CSI_OPINION_WRITE`) ; M8 ajoute
   l'écriture du dossier et étend la lecture, avec les deux transcriptions
   (code et tests) mises à jour ensemble.
+- Page d'accueil du CSI : M1 a créé une page provisoire `accounts:csi_file`
+  (`/t/<id>/csi/`, action `CSI_FILE_READ`) vers laquelle le tableau de bord
+  redirige tout `CSI_MEMBER`. M8 la remplace par le vrai dossier CSI dans
+  `apps/reports/` et met à jour la redirection (`ThesisDashboardView`).

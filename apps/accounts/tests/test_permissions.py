@@ -24,6 +24,7 @@ from apps.accounts.permissions import (
     ROLE_ACTIONS,
     Action,
     ThesisPermissionRequiredMixin,
+    allowed_actions,
     can,
     can_access_level,
     roles_of,
@@ -127,6 +128,20 @@ def test_can_role_action(role: Role, action: Action) -> None:
     """One 'allowed' or 'refused' test per (role, action), through the database."""
     m = MembershipFactory.create(role=role)
     assert can(m.user, action, m.thesis) is (role in EXPECTED[action])
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("role", list(Role))
+def test_allowed_actions_agrees_with_can(role: Role) -> None:
+    m = MembershipFactory.create(role=role)
+    assert allowed_actions(m.user, m.thesis) == {a for a in Action if can(m.user, a, m.thesis)}
+
+
+@pytest.mark.django_db
+def test_allowed_actions_empty_for_outsider_and_unsaved_thesis() -> None:
+    m = MembershipFactory.create(role=Role.PHD_STUDENT)
+    assert allowed_actions(UserFactory.create(), m.thesis) == frozenset()
+    assert allowed_actions(m.user, Thesis(title="x")) == frozenset()
 
 
 # --------------------------------------------------------------------------- can(): who

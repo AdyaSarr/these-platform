@@ -14,3 +14,10 @@ class Role(models.TextChoices):
     INDUSTRIAL_TUTOR = "INDUSTRIAL_TUTOR", _("Industrial tutor")
     CSI_MEMBER = "CSI_MEMBER", _("CSI member")
     GUEST = "GUEST", _("Guest")
+
+
+# Roles a CSI member may not hold on the same thesis at the same time (charte I2S:
+# the CSI is independent from the supervision). Enforced by a database constraint.
+CSI_INCOMPATIBLE_ROLES: frozenset[Role] = frozenset(
+    {Role.PHD_STUDENT, Role.DIRECTOR, Role.CO_SUPERVISOR, Role.INDUSTRIAL_TUTOR}
+)

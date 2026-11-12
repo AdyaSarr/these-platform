@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-12 21:10+0100\n"
+"POT-Creation-Date: 2026-11-12 22:08+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -29,41 +29,231 @@ msgstr "Permissions"
 msgid "Important dates"
 msgstr "Dates importantes"
 
-#: apps/accounts/models.py:22
+#: apps/accounts/models.py:29
 msgid "email address"
 msgstr "adresse électronique"
 
-#: apps/accounts/models.py:23
+#: apps/accounts/models.py:30
 msgid "first name"
 msgstr "prénom"
 
-#: apps/accounts/models.py:24
+#: apps/accounts/models.py:31
 msgid "last name"
 msgstr "nom"
 
-#: apps/accounts/models.py:25
+#: apps/accounts/models.py:32
 msgid "active"
 msgstr "actif"
 
-#: apps/accounts/models.py:26
+#: apps/accounts/models.py:33
 msgid "staff status"
 msgstr "statut équipe"
 
-#: apps/accounts/models.py:27
+#: apps/accounts/models.py:34
 msgid "date joined"
 msgstr "date d’inscription"
 
-#: apps/accounts/models.py:36
+#: apps/accounts/models.py:43 apps/accounts/models.py:137
 msgid "user"
 msgstr "utilisateur"
 
-#: apps/accounts/models.py:37
+#: apps/accounts/models.py:44
 msgid "users"
 msgstr "utilisateurs"
 
-#: apps/accounts/models.py:42
+#: apps/accounts/models.py:49
 msgid "A user with this email address already exists."
 msgstr "Un utilisateur avec cette adresse électronique existe déjà."
+
+#: apps/accounts/models.py:75
+msgid "University"
+msgstr "Université"
+
+#: apps/accounts/models.py:76
+msgid "External"
+msgstr "Externe"
+
+#: apps/accounts/models.py:79
+msgid "name"
+msgstr "nom"
+
+#: apps/accounts/models.py:80
+msgid "kind"
+msgstr "type"
+
+#: apps/accounts/models.py:83 apps/accounts/models.py:143
+msgid "organization"
+msgstr "organisation"
+
+#: apps/accounts/models.py:84
+msgid "organizations"
+msgstr "organisations"
+
+#: apps/accounts/models.py:93
+msgid "Setting up"
+msgstr "En préparation"
+
+#: apps/accounts/models.py:94
+msgid "Active"
+msgstr "Active"
+
+#: apps/accounts/models.py:95
+msgid "Defended"
+msgstr "Soutenue"
+
+#: apps/accounts/models.py:96
+msgid "Closed"
+msgstr "Clôturée"
+
+#: apps/accounts/models.py:99
+msgid "title"
+msgstr "titre"
+
+#: apps/accounts/models.py:100
+msgid "CIFRE start date"
+msgstr "date d'effet CIFRE"
+
+#: apps/accounts/models.py:101
+msgid "first enrollment date"
+msgstr "date de première inscription"
+
+#: apps/accounts/models.py:102
+msgid "planned end date"
+msgstr "date de fin prévue"
+
+#: apps/accounts/models.py:104
+msgid "status"
+msgstr "statut"
+
+#: apps/accounts/models.py:110 apps/accounts/models.py:140
+msgid "thesis"
+msgstr "thèse"
+
+#: apps/accounts/models.py:111
+msgid "theses"
+msgstr "thèses"
+
+#: apps/accounts/models.py:145
+msgid "role"
+msgstr "rôle"
+
+#: apps/accounts/models.py:146
+msgid "active from"
+msgstr "actif depuis"
+
+#: apps/accounts/models.py:147
+msgid "active until"
+msgstr "actif jusqu'au"
+
+#: apps/accounts/models.py:152
+msgid "membership"
+msgstr "appartenance"
+
+#: apps/accounts/models.py:153
+msgid "memberships"
+msgstr "appartenances"
+
+#: apps/accounts/roles.py:11
+msgid "PhD student"
+msgstr "Doctorant·e"
+
+#: apps/accounts/roles.py:12
+msgid "Thesis director"
+msgstr "Directeur·rice de thèse"
+
+#: apps/accounts/roles.py:13
+msgid "Co-supervisor"
+msgstr "Co-encadrant·e"
+
+#: apps/accounts/roles.py:14
+msgid "Industrial tutor"
+msgstr "Tuteur·rice industriel·le"
+
+#: apps/accounts/roles.py:15
+msgid "CSI member"
+msgstr "Membre du CSI"
+
+#: apps/accounts/roles.py:16
+msgid "Guest"
+msgstr "Invité·e"
+
+#: apps/accounts/services.py:36
+msgid "This person already holds this role on the thesis."
+msgstr "Cette personne a déjà ce rôle sur la thèse."
+
+#: apps/accounts/services.py:38
+msgid "This thesis already has a PhD student."
+msgstr "Cette thèse a déjà un·e doctorant·e."
+
+#: apps/accounts/services.py:40
+msgid "A CSI member cannot also be the PhD student or part of the supervision."
+msgstr "Un membre du CSI ne peut pas être aussi le ou la doctorant·e ni faire partie de l'encadrement."
+
+#: apps/accounts/services.py:121
+msgid "The PhD student cannot be removed from their thesis."
+msgstr "Le ou la doctorant·e ne peut pas être retiré·e de sa thèse."
+
+#: apps/accounts/services.py:124 apps/accounts/services.py:142
+msgid "This membership is not active."
+msgstr "Cette appartenance n'est pas active."
+
+#: apps/accounts/services.py:137
+msgid "The PhD student role cannot be given or taken away."
+msgstr "Le rôle de doctorant·e ne peut être ni attribué ni retiré."
+
+#: apps/accounts/services.py:139
+msgid "This person already holds this role."
+msgstr "Cette personne a déjà ce rôle."
+
+#: apps/accounts/services.py:161
+#, python-format
+msgid "The extension must be between 1 and %(max)d days."
+msgstr "La prolongation doit être comprise entre 1 et %(max)d jours."
+
+#: apps/accounts/services.py:167
+msgid "Only a CSI membership can be extended."
+msgstr "Seule l'appartenance d'un membre du CSI peut être prolongée."
+
+#: apps/accounts/services.py:169
+msgid "An expired CSI membership cannot be extended; invite again."
+msgstr "Une appartenance CSI expirée ne peut pas être prolongée : invitez à nouveau la personne."
+
+#: apps/accounts/views.py:32 templates/accounts/team.html:3
+#: templates/accounts/team.html:6
+msgid "Team"
+msgstr "Équipe"
+
+#: apps/accounts/views.py:34
+msgid "Objectives"
+msgstr "Objectifs"
+
+#: apps/accounts/views.py:36
+msgid "Meetings"
+msgstr "Réunions"
+
+#: apps/accounts/views.py:38
+msgid "Documents"
+msgstr "Documents"
+
+#: apps/accounts/views.py:43
+msgid "Administrative file"
+msgstr "Dossier administratif"
+
+#: apps/core/confidentiality.py:12
+msgid "Public"
+msgstr "Public"
+
+#: apps/core/confidentiality.py:13
+msgid "Internal LIRMM"
+msgstr "Interne LIRMM"
+
+#: apps/core/confidentiality.py:14
+msgid "Internal ST"
+msgstr "Interne ST"
+
+#: apps/core/confidentiality.py:15
+msgid "Confidential"
+msgstr "Confidentiel"
 
 #: apps/core/models.py:14
 msgid "created at"
@@ -76,6 +266,46 @@ msgstr "modifié le"
 #: apps/core/models.py:23
 msgid "created by"
 msgstr "créé par"
+
+#: templates/accounts/blocks/team.html:2
+msgid "See the team"
+msgstr "Voir l'équipe"
+
+#: templates/accounts/blocks/upcoming.html:2
+msgid "Coming in a later module."
+msgstr "Disponible dans un prochain module."
+
+#: templates/accounts/csi_file.html:3 templates/accounts/csi_file.html:5
+msgid "CSI file"
+msgstr "Dossier CSI"
+
+#: templates/accounts/csi_file.html:7
+msgid "The CSI file will be available in a later module."
+msgstr "Le dossier CSI sera disponible dans un prochain module."
+
+#: templates/accounts/team.html:10
+msgid "Name"
+msgstr "Nom"
+
+#: templates/accounts/team.html:11
+msgid "Email address"
+msgstr "Adresse électronique"
+
+#: templates/accounts/team.html:12
+msgid "Role"
+msgstr "Rôle"
+
+#: templates/accounts/team.html:13
+msgid "Organization"
+msgstr "Organisation"
+
+#: templates/accounts/team.html:14
+msgid "Since"
+msgstr "Depuis"
+
+#: templates/accounts/team.html:15
+msgid "Until"
+msgstr "Jusqu'au"
 
 #: templates/base.html:8 templates/base.html:15
 msgid "CIFRE thesis"
@@ -94,11 +324,22 @@ msgstr "Tableau de bord"
 msgid "Welcome, %(name)s."
 msgstr "Bienvenue, %(name)s."
 
-#: templates/core/home.html:7
-msgid "The platform modules will appear here as they are delivered."
-msgstr "Les modules de la plateforme apparaîtront ici au fur et à mesure de leur livraison."
+#: templates/core/home.html:8
+msgid "My theses"
+msgstr "Mes thèses"
+
+#: templates/core/home.html:15
+msgid ""
+"You do not have access to any thesis. Access is granted by invitation only."
+msgstr ""
+"Vous n'avez accès à aucune thèse. L'accès se fait uniquement sur invitation."
 
 #: templates/registration/login.html:3 templates/registration/login.html:5
 #: templates/registration/login.html:10
 msgid "Sign in"
 msgstr "Se connecter"
+
+#~ msgid "The platform modules will appear here as they are delivered."
+#~ msgstr ""
+#~ "Les modules de la plateforme apparaîtront ici au fur et à mesure de leur "
+#~ "livraison."

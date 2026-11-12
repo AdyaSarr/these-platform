@@ -5,7 +5,7 @@ from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.contrib.postgres.constraints import ExclusionConstraint
 from django.contrib.postgres.fields import RangeBoundary, RangeOperators
 from django.db import models
-from django.db.models import F, Q
+from django.db.models import Case, F, Q, Value, When
 from django.db.models.functions import Lower
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -14,7 +14,7 @@ from apps.core.db_functions import TsTzRange
 from apps.core.models import TimeStampedModel
 
 from .managers import MembershipQuerySet, ThesisQuerySet, UserManager
-from .roles import Role
+from .roles import CSI_INCOMPATIBLE_ROLES, Role
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -174,6 +174,26 @@ class Membership(TimeStampedModel):
                     (_active_period(), RangeOperators.OVERLAPS),
                 ],
                 condition=Q(role=Role.PHD_STUDENT),
+            ),
+            # A CSI member must stay outside the supervision (charte I2S): for one
+            # user and thesis, a CSI row and a supervision row may not overlap.
+            # Both kinds get a group number; rows of different groups conflict.
+            ExclusionConstraint(
+                name="accounts_membership_csi_independent",
+                expressions=[
+                    ("user", RangeOperators.EQUAL),
+                    ("thesis", RangeOperators.EQUAL),
+                    (_active_period(), RangeOperators.OVERLAPS),
+                    (
+                        Case(
+                            When(role=Role.CSI_MEMBER, then=Value(1)),
+                            default=Value(0),
+                            output_field=models.IntegerField(),
+                        ),
+                        RangeOperators.NOT_EQUAL,
+                    ),
+                ],
+                condition=Q(role__in=sorted({Role.CSI_MEMBER, *CSI_INCOMPATIBLE_ROLES})),
             ),
         ]
 

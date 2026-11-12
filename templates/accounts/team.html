@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% translate "Team" %}{% endblock %}
+{% block content %}
+  <p><a href="{% url 'accounts:dashboard' thesis_id=thesis.pk %}">{{ thesis.title }}</a></p>
+  <h1>{% translate "Team" %}</h1>
+  <table class="table">
+    <thead>
+      <tr>
+        <th scope="col">{% translate "Name" %}</th>
+        <th scope="col">{% translate "Email address" %}</th>
+        <th scope="col">{% translate "Role" %}</th>
+        <th scope="col">{% translate "Organization" %}</th>
+        <th scope="col">{% translate "Since" %}</th>
+        <th scope="col">{% translate "Until" %}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in memberships %}
+        <tr>
+          <td>{{ m.user.get_full_name|default:"—" }}</td>
+          <td>{{ m.user.email }}</td>
+          <td>{{ m.get_role_display }}</td>
+          <td>{{ m.organization.name }}</td>
+          <td>{{ m.active_from|date:"j F Y" }}</td>
+          <td>{% if m.active_until %}<time data-until="{{ m.active_until|date:'c' }}">{{ m.active_until|date:"j F Y" }}</time>{% else %}—{% endif %}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% endblock %}

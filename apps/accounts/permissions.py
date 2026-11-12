@@ -181,6 +181,13 @@ def can(user: AnyUser, action: Action, obj: Thesis | ThesisOwned) -> bool:
     return any(action in ROLE_ACTIONS[role] for role in roles_of(user, thesis))
 
 
+def allowed_actions(user: AnyUser, thesis: Thesis) -> frozenset[Action]:
+    """Every action ``user`` may perform on ``thesis``: one query for a whole page."""
+    if _thesis_of(thesis) is None:
+        return frozenset()
+    return frozenset().union(*(ROLE_ACTIONS[role] for role in roles_of(user, thesis)))
+
+
 def can_access_level(user: AnyUser, thesis: Thesis, level: ConfidentialityLevel) -> bool:
     """Level half of document access; M2 combines it with ``can(DOCUMENT_READ)``."""
     if not isinstance(level, ConfidentialityLevel):
