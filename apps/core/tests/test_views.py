@@ -52,3 +52,14 @@ def test_logout_is_post_only(client: Client) -> None:
     client.force_login(UserFactory.create())
     assert client.get(reverse("logout")).status_code == 405
     assert client.post(reverse("logout")).status_code == 302
+
+
+@pytest.mark.django_db
+def test_interface_is_in_french(client: Client) -> None:
+    """UI strings are English msgids translated by the locale/fr catalogue."""
+    login = client.get(reverse("login")).content.decode()
+    assert "Se connecter" in login
+    client.force_login(UserFactory.create())
+    home = client.get(reverse("core:home")).content.decode()
+    assert "Se déconnecter" in home
+    assert "Tableau de bord" in home
