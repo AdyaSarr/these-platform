@@ -16,6 +16,7 @@ import datetime as dt
 import uuid
 from typing import TYPE_CHECKING
 
+from allauth.account.models import EmailAddress
 from django.core.exceptions import PermissionDenied
 from django.db import IntegrityError, transaction
 from django.utils import timezone
@@ -429,5 +430,8 @@ def accept_invitation_new_user(
         user = User.objects.create_user(
             email=inv.email, password=password, first_name=first_name, last_name=last_name
         )
+        # allauth's copy of the address: verified (the invitation proves it) and
+        # primary. Changing it is disabled, so it cannot diverge from User.email.
+        EmailAddress.objects.create(user=user, email=user.email, verified=True, primary=True)
         _accept(inv, user, request)
         return user

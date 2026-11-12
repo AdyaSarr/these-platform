@@ -67,3 +67,28 @@ def send_invitation_email(invitation_id: str) -> None:
             ]
         )
         audit(AuditAction.INVITATION_EMAIL_SENT, obj=inv)
+
+
+@shared_task(ignore_result=True)  # type: ignore[untyped-decorator]  # Celery is untyped
+def send_password_reset_email(user_id: str) -> None:
+    """Build the reset link here, in the worker: the broker only ever sees the user id."""
+    from allauth.account import app_settings as account_settings
+    from allauth.account.utils import user_pk_to_url_str
+
+    from .models import User
+
+    user = User.objects.filter(pk=user_id, is_active=True).first()
+    if user is None:
+        return
+    key = account_settings.PASSWORD_RESET_TOKEN_GENERATOR().make_token(user)
+    path = reverse(
+        "account_reset_password_from_key",
+        kwargs={"uidb36": user_pk_to_url_str(user), "key": key},
+    )
+    url = settings.SITE_URL + path
+    subject = render_to_string("accounts/email/password_reset_subject.txt").strip()
+    body = render_to_string("accounts/email/password_reset_body.txt", {"url": url})
+    try:
+        send_mail(subject, body, None, [user.email])
+    except (smtplib.SMTPException, OSError):
+        logger.warning("password reset e-mail failed (user %s)", user.pk, exc_info=False)

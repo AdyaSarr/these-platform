@@ -31,3 +31,14 @@ def django_db_modify_db_settings(
         finally:
             connections["default"].close()
     yield
+
+
+@pytest.fixture(autouse=True)
+def _isolated_cache() -> Generator[None]:
+    """Each test starts with an empty cache: allauth keeps rate-limit counters and
+    TOTP anti-replay markers there, which would otherwise leak between tests."""
+    from django.core.cache import cache
+
+    cache.clear()
+    yield
+    cache.clear()

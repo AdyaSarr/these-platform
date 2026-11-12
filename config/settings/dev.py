@@ -21,3 +21,6 @@ ADMIN_ENABLED = True
 INSTALLED_APPS = [*INSTALLED_APPS, "django.contrib.admin"]
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+# WebAuthn needs a secure context; http://localhost is accepted in dev only.
+MFA_WEBAUTHN_ALLOW_INSECURE_ORIGIN = True

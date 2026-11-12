@@ -84,6 +84,18 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       *Vérifier* : deux connexions depuis deux machines produisent deux `ip_hash`
       différents dans `vault_auditevent`.
 
+- [ ] **Secrets MFA chiffrés : `MFAAdapter.encrypt()` branché sur le coffre (M2).**
+      La graine TOTP et la graine des codes de récupération passent par
+      `apps/accounts/adapters.py:MFAAdapter.encrypt()`, qui est l'identité en M1.
+      *Pourquoi* : sans chiffrement, une lecture de la base suffit pour générer
+      les codes TOTP et de récupération de tout le monde, donc contourner le
+      second facteur. La prod **refuse de démarrer** tant que `encrypt()` est
+      l'identité (`apps/accounts/guards.py`, appelé par `config/wsgi.py` et
+      `config/asgi.py`, `MFA_ENCRYPTION_REQUIRED = True` dans `prod.py`).
+      *Vérifier* : `python -c "import config.wsgi"` avec l'environnement de prod
+      se termine sans erreur ; `test_prod_refuses_to_serve_while_encrypt_is_the_identity`
+      a été remplacé en M2 par un test du chiffrement réel.
+
 - [ ] **Téléchargements en `Content-Disposition: attachment` + `nosniff` (M2).**
       *Pourquoi* : la CSP autorise `script-src 'self'` ; un fichier déposé servi
       en ligne depuis notre domaine pourrait être exécuté comme script.

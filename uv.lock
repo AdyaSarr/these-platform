@@ -433,6 +433,25 @@ wheels = [
 ]
 
 [[package]]
+name = "django-allauth"
+version = "65.22.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "asgiref" },
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/d0/bd/a7d34e50c8f26a7056480ce13f18ba0d0a8c086f5e0e1b8666d41052d2f0/django_allauth-65.22.0.tar.gz", hash = "sha256:cdef61e0e12460d331074072d84702184df4f5a989ad005bec2bd1629efd9b4b", size = 2351848, upload-time = "2026-11-11T19:59:21.768Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1d/71/c14070650e8a43b1c82ad616708a1471aa657841f39aa155e4505a1900c4/django_allauth-65.22.0-py3-none-any.whl", hash = "sha256:5ea1501ff5d3c56bffd4bfbf2e7b88e010960ec1baa7c75b6257d51ca13064b5", size = 2118438, upload-time = "2026-11-11T19:59:17.889Z" },
+]
+
+[package.optional-dependencies]
+mfa = [
+    { name = "fido2" },
+    { name = "qrcode" },
+]
+
+[[package]]
 name = "django-csp"
 version = "4.0"
 source = { registry = "https://pypi.org/simple" }
@@ -522,6 +541,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/d9/64/eace8e5941eaf51b62d56a54e3ab8380934b0ab2deef2c640ed1153ea47f/faker-40.54.0.tar.gz", hash = "sha256:38fba73e32699a9f1071724d67e5a66a84bf057987cffb27c9d0c979fda3f135", size = 2037669, upload-time = "2026-11-10T22:05:54.089Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/85/2d/031405437c6ccdc5fb24fc8cc715fbe5fbf9af492749ad070d9cc85f69dc/faker-40.54.0-py3-none-any.whl", hash = "sha256:2dd88ee8cb63a9149e19ef48bdd73879bc3854d8ba2d6c1535e902a762e603f7", size = 2071041, upload-time = "2026-11-10T22:05:51.787Z" },
+]
+
+[[package]]
+name = "fido2"
+version = "2.2.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "cryptography" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ba/ea/6f08c354b7aeb8019249d46a86c2153f8218499cced4d21bf16b6d49fc16/fido2-2.2.1.tar.gz", hash = "sha256:85787428a94c3f8eaf72f0ff30afba983b559a1b1b795c93318c81b4ad4062c4", size = 327147, upload-time = "2026-06-29T17:41:11.927Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/71/84/198d99c3312557ef6121cf78c38281efe9b3bc88cba0e2c05446f38a024d/fido2-2.2.1-py3-none-any.whl", hash = "sha256:ed397da981b9ab133da6ead7309e41f924b566b749956129efe286fae097749f", size = 238354, upload-time = "2026-06-29T17:41:09.921Z" },
 ]
 
 [[package]]
@@ -970,6 +1001,18 @@ wheels = [
 ]
 
 [[package]]
+name = "qrcode"
+version = "8.2"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "colorama", marker = "sys_platform == 'win32'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/8f/b2/7fc2931bfae0af02d5f53b174e9cf701adbb35f39d69c2af63d4a39f81a9/qrcode-8.2.tar.gz", hash = "sha256:35c3f2a4172b33136ab9f6b3ef1c00260dd2f66f858f24d88418a015f446506c", size = 43317, upload-time = "2025-05-01T15:44:24.726Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/dd/b8/d2d6d731733f51684bbf76bf34dab3b70a9148e8f2cef2bb544fccec681a/qrcode-8.2-py3-none-any.whl", hash = "sha256:16e64e0716c14960108e85d853062c9e8bba5ca8252c0b4d0231b9df4060ff4f", size = 45986, upload-time = "2025-05-01T15:44:22.781Z" },
+]
+
+[[package]]
 name = "redis"
 version = "8.1.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1076,6 +1119,7 @@ dependencies = [
     { name = "celery", extra = ["redis"] },
     { name = "cryptography" },
     { name = "django" },
+    { name = "django-allauth", extra = ["mfa"] },
     { name = "django-csp" },
     { name = "django-environ" },
     { name = "django-htmx" },
@@ -1103,6 +1147,7 @@ requires-dist = [
     { name = "celery", extras = ["redis"], specifier = ">=5.4" },
     { name = "cryptography", specifier = ">=44" },
     { name = "django", specifier = ">=5.2,<5.3" },
+    { name = "django-allauth", extras = ["mfa"], specifier = ">=65.4" },
     { name = "django-csp", specifier = ">=4.0,<5" },
     { name = "django-environ", specifier = ">=0.12" },
     { name = "django-htmx", specifier = ">=1.21" },

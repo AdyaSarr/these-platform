@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-12 22:23+0100\n"
+"POT-Creation-Date: 2026-11-12 22:47+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -29,25 +29,59 @@ msgstr "Permissions"
 msgid "Important dates"
 msgstr "Dates importantes"
 
-#: apps/accounts/forms.py:17
+#: apps/accounts/forms.py:18
 msgid "First name"
 msgstr "Prénom"
 
-#: apps/accounts/forms.py:18
+#: apps/accounts/forms.py:19
 msgid "Last name"
 msgstr "Nom"
 
-#: apps/accounts/forms.py:20
+#: apps/accounts/forms.py:21 templates/account/login.html:14
 msgid "Password"
 msgstr "Mot de passe"
 
-#: apps/accounts/forms.py:26
+#: apps/accounts/forms.py:27
 msgid "Password confirmation"
 msgstr "Confirmation du mot de passe"
 
-#: apps/accounts/forms.py:39
+#: apps/accounts/forms.py:40
 msgid "The two passwords do not match."
 msgstr "Les deux mots de passe ne correspondent pas."
+
+#: apps/accounts/forms.py:58 templates/account/login.html:10
+#: templates/accounts/team.html:12 templates/accounts/team.html:74
+msgid "Email address"
+msgstr "Adresse électronique"
+
+#: apps/accounts/forms.py:59 templates/accounts/team.html:13
+#: templates/accounts/team.html:75
+msgid "Role"
+msgstr "Rôle"
+
+#: apps/accounts/forms.py:61 templates/accounts/team.html:14
+msgid "Organization"
+msgstr "Organisation"
+
+#: apps/accounts/forms.py:64
+msgid "Or a new organization"
+msgstr "Ou une nouvelle organisation"
+
+#: apps/accounts/forms.py:67
+msgid "Kind of the new organization"
+msgstr "Type de la nouvelle organisation"
+
+#: apps/accounts/forms.py:77
+msgid "Choose an existing organization or enter a new one."
+msgstr "Choisissez une organisation existante ou saisissez-en une nouvelle."
+
+#: apps/accounts/forms.py:95
+msgid "New role"
+msgstr "Nouveau rôle"
+
+#: apps/accounts/forms.py:100
+msgid "Days"
+msgstr "Jours"
 
 #: apps/accounts/models.py:32 apps/accounts/models.py:237
 msgid "email address"
@@ -259,54 +293,86 @@ msgstr "Membre du CSI"
 msgid "Guest"
 msgstr "Invité·e"
 
-#: apps/accounts/services.py:51
+#: apps/accounts/services.py:52
 msgid "This person already holds this role on the thesis."
 msgstr "Cette personne a déjà ce rôle sur la thèse."
 
-#: apps/accounts/services.py:52
+#: apps/accounts/services.py:53
 msgid "A CSI member cannot also be the PhD student or part of the supervision."
 msgstr ""
 "Un membre du CSI ne peut pas être aussi le ou la doctorant·e ni faire partie "
 "de l'encadrement."
 
-#: apps/accounts/services.py:56
+#: apps/accounts/services.py:57
 msgid "This thesis already has a PhD student."
 msgstr "Cette thèse a déjà un·e doctorant·e."
 
-#: apps/accounts/services.py:153
+#: apps/accounts/services.py:154
 msgid "The PhD student cannot be removed from their thesis."
 msgstr "Le ou la doctorant·e ne peut pas être retiré·e de sa thèse."
 
-#: apps/accounts/services.py:156 apps/accounts/services.py:177
+#: apps/accounts/services.py:157 apps/accounts/services.py:178
 msgid "This membership is not active."
 msgstr "Cette appartenance n'est pas active."
 
-#: apps/accounts/services.py:172 apps/accounts/services.py:310
+#: apps/accounts/services.py:173 apps/accounts/services.py:311
 msgid "The PhD student role cannot be given or taken away."
 msgstr "Le rôle de doctorant·e ne peut être ni attribué ni retiré."
 
-#: apps/accounts/services.py:174
+#: apps/accounts/services.py:175
 msgid "This person already holds this role."
 msgstr "Cette personne a déjà ce rôle."
 
-#: apps/accounts/services.py:212
+#: apps/accounts/services.py:213
 #, python-format
 msgid "The extension must be between 1 and %(max)d days."
 msgstr "La prolongation doit être comprise entre 1 et %(max)d jours."
 
-#: apps/accounts/services.py:218
+#: apps/accounts/services.py:219
 msgid "Only a CSI membership can be extended."
 msgstr "Seule l'appartenance d'un membre du CSI peut être prolongée."
 
-#: apps/accounts/services.py:220
+#: apps/accounts/services.py:221
 msgid "An expired CSI membership cannot be extended; invite again."
 msgstr ""
 "Une appartenance CSI expirée ne peut pas être prolongée : invitez à nouveau "
 "la personne."
 
-#: apps/accounts/services.py:342
+#: apps/accounts/services.py:343
 msgid "This invitation is no longer open."
 msgstr "Cette invitation n'est plus ouverte."
+
+#: apps/accounts/team_views.py:86
+msgid "Invitation sent."
+msgstr "Invitation envoyée."
+
+#: apps/accounts/team_views.py:99
+msgid "Choose a valid role."
+msgstr "Choisissez un rôle valide."
+
+#: apps/accounts/team_views.py:104
+msgid "Role changed."
+msgstr "Rôle modifié."
+
+#: apps/accounts/team_views.py:117
+msgid "Member removed: their access ended immediately."
+msgstr "Membre retiré : son accès a pris fin immédiatement."
+
+#: apps/accounts/team_views.py:130
+msgid "The extension must be between 1 and 90 days."
+msgstr "La prolongation doit être comprise entre 1 et 90 jours."
+
+#: apps/accounts/team_views.py:135
+msgid "CSI access extended."
+msgstr "Accès CSI prolongé."
+
+#: apps/accounts/team_views.py:157
+msgid "Invitation sent again."
+msgstr "Invitation renvoyée."
+
+#: apps/accounts/team_views.py:178
+msgid "Invitation revoked."
+msgstr "Invitation révoquée."
 
 #: apps/accounts/views.py:32 templates/accounts/team.html:3
 #: templates/accounts/team.html:6
@@ -373,6 +439,20 @@ msgstr "événement d'audit"
 msgid "audit events"
 msgstr "événements d'audit"
 
+#: templates/account/login.html:3 templates/account/login.html:5
+#: templates/account/login.html:18 templates/accounts/invitation_signin.html:7
+msgid "Sign in"
+msgstr "Se connecter"
+
+#: templates/account/login.html:20
+msgid "Forgotten password?"
+msgstr "Mot de passe oublié ?"
+
+#: templates/account/login.html:21
+msgid ""
+"Access is by invitation only. A second authentication factor is required."
+msgstr "L'accès se fait uniquement sur invitation. Un second facteur d'authentification est obligatoire."
+
 #: templates/accounts/blocks/team.html:2
 msgid "See the team"
 msgstr "Voir l'équipe"
@@ -390,6 +470,7 @@ msgid "The CSI file will be available in a later module."
 msgstr "Le dossier CSI sera disponible dans un prochain module."
 
 #: templates/accounts/email/invitation_body.txt:1
+#: templates/accounts/email/password_reset_body.txt:1
 msgid "Hello,"
 msgstr "Bonjour,"
 
@@ -397,7 +478,9 @@ msgstr "Bonjour,"
 msgid ""
 "You are invited to join a thesis follow-up platform. To accept, open this "
 "link (valid for 72 hours, single use):"
-msgstr "Vous êtes invité·e à rejoindre une plateforme de suivi de thèse. Pour accepter, ouvrez ce lien (valable 72 heures, à usage unique) :"
+msgstr ""
+"Vous êtes invité·e à rejoindre une plateforme de suivi de thèse. Pour "
+"accepter, ouvrez ce lien (valable 72 heures, à usage unique) :"
 
 #: templates/accounts/email/invitation_body.txt:7
 msgid "If you were not expecting this invitation, ignore this message."
@@ -406,6 +489,22 @@ msgstr "Si vous n'attendiez pas cette invitation, ignorez ce message."
 #: templates/accounts/email/invitation_subject.txt:1
 msgid "Invitation to the thesis platform"
 msgstr "Invitation à la plateforme de suivi de thèse"
+
+#: templates/accounts/email/password_reset_body.txt:3
+msgid ""
+"A password reset was requested for your account. To choose a new password, "
+"open this link (single use):"
+msgstr "Une réinitialisation du mot de passe a été demandée pour votre compte. Pour choisir un nouveau mot de passe, ouvrez ce lien (à usage unique) :"
+
+#: templates/accounts/email/password_reset_body.txt:7
+msgid ""
+"If you did not request it, ignore this message: your password stays "
+"unchanged."
+msgstr "Si vous n'en êtes pas à l'origine, ignorez ce message : votre mot de passe reste inchangé."
+
+#: templates/accounts/email/password_reset_subject.txt:1
+msgid "Password reset on the thesis platform"
+msgstr "Réinitialisation du mot de passe sur la plateforme de suivi de thèse"
 
 #: templates/accounts/invitation_accept.html:3
 #: templates/accounts/invitation_accept.html:5
@@ -423,7 +522,9 @@ msgstr "Créer mon compte"
 
 #: templates/accounts/invitation_accept.html:12
 msgid "Next step: set up a second authentication factor (mandatory)."
-msgstr "Étape suivante : configurer un second facteur d'authentification (obligatoire)."
+msgstr ""
+"Étape suivante : configurer un second facteur d'authentification "
+"(obligatoire)."
 
 #: templates/accounts/invitation_confirm.html:3
 #: templates/accounts/invitation_confirm.html:5
@@ -444,13 +545,17 @@ msgstr "Accepter l'invitation"
 
 #: templates/accounts/invitation_error.html:7
 msgid "The invitation has not been used. Contact the person who invited you."
-msgstr "L'invitation n'a pas été utilisée. Contactez la personne qui vous a invité·e."
+msgstr ""
+"L'invitation n'a pas été utilisée. Contactez la personne qui vous a invité·e."
 
 #: templates/accounts/invitation_invalid.html:6
 msgid ""
 "This invitation link cannot be used. It may have expired, already been used "
 "or been replaced. Ask the person who invited you to send a new invitation."
-msgstr "Ce lien d'invitation ne peut pas être utilisé : il a peut-être expiré, déjà servi ou été remplacé. Demandez à la personne qui vous a invité·e de vous envoyer une nouvelle invitation."
+msgstr ""
+"Ce lien d'invitation ne peut pas être utilisé : il a peut-être expiré, déjà "
+"servi ou été remplacé. Demandez à la personne qui vous a invité·e de vous "
+"envoyer une nouvelle invitation."
 
 #: templates/accounts/invitation_link.html:6
 msgid "You have been invited to the thesis platform."
@@ -464,49 +569,69 @@ msgstr "Continuer"
 msgid "You already have an account. Sign in to accept the invitation."
 msgstr "Vous avez déjà un compte. Connectez-vous pour accepter l'invitation."
 
-#: templates/accounts/invitation_signin.html:7
-#: templates/registration/login.html:3 templates/registration/login.html:5
-#: templates/registration/login.html:10
-msgid "Sign in"
-msgstr "Se connecter"
-
-#: templates/accounts/team.html:10
+#: templates/accounts/team.html:11
 msgid "Name"
 msgstr "Nom"
 
-#: templates/accounts/team.html:11 templates/accounts/team.html:37
-msgid "Email address"
-msgstr "Adresse électronique"
-
-#: templates/accounts/team.html:12 templates/accounts/team.html:38
-msgid "Role"
-msgstr "Rôle"
-
-#: templates/accounts/team.html:13
-msgid "Organization"
-msgstr "Organisation"
-
-#: templates/accounts/team.html:14
+#: templates/accounts/team.html:15
 msgid "Since"
 msgstr "Depuis"
 
-#: templates/accounts/team.html:15
+#: templates/accounts/team.html:16
 msgid "Until"
 msgstr "Jusqu'au"
 
-#: templates/accounts/team.html:32
+#: templates/accounts/team.html:17 templates/accounts/team.html:78
+msgid "Actions"
+msgstr "Actions"
+
+#: templates/accounts/team.html:36
+msgid "Change role"
+msgstr "Changer le rôle"
+
+#: templates/accounts/team.html:43
+msgid "Extend"
+msgstr "Prolonger"
+
+#: templates/accounts/team.html:49
+msgid "Remove"
+msgstr "Retirer"
+
+#: templates/accounts/team.html:61
+msgid "Invite someone"
+msgstr "Inviter une personne"
+
+#: templates/accounts/team.html:65
+msgid "Send the invitation"
+msgstr "Envoyer l'invitation"
+
+#: templates/accounts/team.html:67
+msgid ""
+"Inviting, changing a role, removing or extending a member asks for your "
+"second factor if you have not used it in the last 10 minutes."
+msgstr "Inviter, changer un rôle, retirer ou prolonger un membre demande votre second facteur si vous ne l'avez pas utilisé depuis 10 minutes."
+
+#: templates/accounts/team.html:69
 msgid "Pending invitations"
 msgstr "Invitations en attente"
 
-#: templates/accounts/team.html:39
+#: templates/accounts/team.html:76
 msgid "Invited on"
 msgstr "Invitée le"
 
-#: templates/accounts/team.html:40
+#: templates/accounts/team.html:77
 msgid "E-mail"
 msgstr "Courriel"
 
-#: templates/accounts/team.html:57
+#: templates/accounts/team.html:92
+msgid "Send again"
+msgstr "Renvoyer"
+
+#: templates/accounts/team.html:96
+msgid "Revoke"
+msgstr "Révoquer"
+
+#: templates/accounts/team.html:105
 msgid "No pending invitation."
 msgstr "Aucune invitation en attente."
 

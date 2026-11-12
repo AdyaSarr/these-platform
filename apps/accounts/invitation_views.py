@@ -29,6 +29,7 @@ from django.views.decorators.http import require_GET, require_POST
 from . import services
 from .forms import NewAccountForm
 from .models import Invitation, User
+from .reauth import record_password_authentication
 from .services import InvalidInvitationError, TeamError
 
 SESSION_KEY = "invitation_id"
@@ -117,9 +118,13 @@ class AcceptInvitationView(View):
             return _invalid(request)
         except TeamError as exc:
             return self._error(request, exc)
-        # login() rotates the session key (no session fixation).
-        login(request, user, backend="django.contrib.auth.backends.ModelBackend")
-        return self._done(request)
+        # login() rotates the session key (no session fixation). The password was
+        # just typed: record it, so that enrolling the second factor (mandatory,
+        # next page) does not ask for it again.
+        login(request, user, backend="allauth.account.auth_backends.AuthenticationBackend")
+        record_password_authentication(request, user)
+        request.session.pop(SESSION_KEY, None)
+        return HttpResponse(status=302, headers={"Location": reverse("mfa_activate_totp")})
 
     def _accept_existing(self, request: HttpRequest, inv: Invitation) -> HttpResponse:
         if not request.user.is_authenticated:

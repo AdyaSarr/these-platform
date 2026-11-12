@@ -8,7 +8,8 @@ from django import forms
 from django.contrib.auth import password_validation
 from django.utils.translation import gettext_lazy as _
 
-from .models import User
+from .models import Organization, User
+from .roles import Role
 
 
 class NewAccountForm(forms.Form):
@@ -48,3 +49,53 @@ class NewAccountForm(forms.Form):
             except forms.ValidationError as exc:
                 self.add_error("password1", exc)
         return data
+
+
+INVITABLE_ROLES = [(r.value, r.label) for r in Role if r is not Role.PHD_STUDENT]
+
+
+class InviteForm(forms.Form):
+    email = forms.EmailField(label=_("Email address"), max_length=254)
+    role = forms.ChoiceField(label=_("Role"), choices=INVITABLE_ROLES)
+    organization = forms.ModelChoiceField(
+        label=_("Organization"), queryset=Organization.objects.all(), required=False
+    )
+    new_organization = forms.CharField(
+        label=_("Or a new organization"), max_length=200, required=False
+    )
+    new_organization_kind = forms.ChoiceField(
+        label=_("Kind of the new organization"),
+        choices=Organization.Kind.choices,
+        initial=Organization.Kind.EXTERNAL,
+        required=False,
+    )
+
+    def clean(self) -> dict[str, Any]:
+        data = super().clean() or {}
+        existing, new = data.get("organization"), (data.get("new_organization") or "").strip()
+        if bool(existing) == bool(new):
+            raise forms.ValidationError(_("Choose an existing organization or enter a new one."))
+        data["new_organization"] = new
+        return data
+
+    def resolved_organization(self) -> Organization:
+        if self.cleaned_data["organization"]:
+            org: Organization = self.cleaned_data["organization"]
+            return org
+        org, _created = Organization.objects.get_or_create(
+            name=self.cleaned_data["new_organization"],
+            defaults={
+                "kind": self.cleaned_data["new_organization_kind"] or Organization.Kind.EXTERNAL
+            },
+        )
+        return org
+
+
+class ChangeRoleForm(forms.Form):
+    role = forms.ChoiceField(label=_("New role"), choices=INVITABLE_ROLES)
+
+
+class ExtendForm(forms.Form):
+    days = forms.IntegerField(
+        label=_("Days"), min_value=1, max_value=90, initial=60, required=False
+    )

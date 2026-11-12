@@ -14,6 +14,7 @@ dependencies = [
     # The [redis] extra lets kombu constrain the redis client to a supported range.
     "celery[redis]>=5.4",
     "cryptography>=44",
+    "django-allauth[mfa]>=65.4",
 ]
 
 [dependency-groups]
@@ -62,9 +63,14 @@ plugins = ["mypy_django_plugin.main"]
 exclude = ["/migrations/"]
 
 [[tool.mypy.overrides]]
-# Neither ships type hints (no py.typed, no stubs package). django-csp does.
-module = ["environ.*", "celery.*"]
+# None of these ships type hints (no py.typed, no stubs package). django-csp does.
+module = ["environ.*", "celery.*", "allauth.*"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+# Our allauth adapters subclass allauth's untyped base classes.
+module = ["apps.accounts.adapters", "tests.mfa_fake_adapter"]
+disallow_subclassing_any = false
 
 [[tool.mypy.overrides]]
 # factory-boy is only partially typed: its public names are not re-exported

@@ -73,19 +73,39 @@ def active_team(thesis_id: Any) -> QuerySet[Membership]:
     )
 
 
+def team_context(request: HttpRequest, thesis: Any, **forms: Any) -> dict[str, Any]:
+    """Context of the team page; the management parts only for the right holders."""
+    from .forms import ChangeRoleForm, ExtendForm, InviteForm
+
+    allowed = allowed_actions(request.user, thesis)
+    context: dict[str, Any] = {
+        "thesis": thesis,
+        "memberships": active_team(thesis.pk),
+        "can_invite": Action.INVITE_MEMBER in allowed,
+        "can_change_role": Action.CHANGE_ROLE in allowed,
+        "can_remove": Action.REMOVE_MEMBER in allowed,
+        "can_extend": Action.EXTEND_MEMBERSHIP in allowed,
+    }
+    if context["can_invite"]:
+        # Open invitations (with their e-mail delivery state): inviters only.
+        context["invitations"] = Invitation.objects.filter(
+            thesis_id=thesis.pk, used_at__isnull=True, revoked_at__isnull=True
+        ).order_by("-created_at")
+        context["invite_form"] = forms.get("invite_form") or InviteForm()
+    if context["can_change_role"]:
+        context["role_form"] = ChangeRoleForm()
+    if context["can_extend"]:
+        context["extend_form"] = ExtendForm()
+    return context
+
+
 class TeamView(ThesisPermissionRequiredMixin, TemplateView):
     required_action = Action.VIEW_TEAM
     template_name = "accounts/team.html"
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
         context = super().get_context_data(**kwargs)
-        context["thesis"] = self.thesis
-        context["memberships"] = active_team(self.thesis.pk)
-        # Open invitations (with their e-mail delivery state): inviters only.
-        if Action.INVITE_MEMBER in allowed_actions(self.request.user, self.thesis):
-            context["invitations"] = Invitation.objects.filter(
-                thesis_id=self.thesis.pk, used_at__isnull=True, revoked_at__isnull=True
-            ).order_by("-created_at")
+        context.update(team_context(self.request, self.thesis))
         return context
 
 

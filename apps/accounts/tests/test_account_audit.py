@@ -29,7 +29,7 @@ def test_successful_login_is_audited(client: Client) -> None:
 
 def test_failed_login_is_audited_without_clear_email(client: Client) -> None:
     wrong = secrets.token_urlsafe(8)
-    client.post(reverse("login"), {"username": "Nobody@Example.org", "password": wrong})
+    client.post(reverse("account_login"), {"login": "Nobody@Example.org", "password": wrong})
     event = AuditEvent.objects.get(action="LOGIN_FAILED")
     assert event.actor is None
     assert event.details_json == {
