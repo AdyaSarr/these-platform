@@ -5,7 +5,7 @@ critères d'acceptation de la fiche tous validés.
 
 | Statut | Module | Fiche | Dépend de | Cible |
 |---|---|---|---|---|
-| [ ] | M0 — Socle technique | `modules/M00-socle.md` | — | nov. 2026 |
+| [x] | M0 — Socle technique | `modules/M00-socle.md` | — | nov. 2026 |
 | [ ] | M1 — Comptes, rôles, invitations, MFA | `modules/M01-comptes.md` | M0 | déc. 2026 |
 | [ ] | M2 — Coffre : documents chiffrés et journal d'audit | `modules/M02-coffre.md` | M1 | déc. 2026 |
 | [ ] | M3 — Dossier administratif | `modules/M03-dossier-admin.md` | M2 | janv. 2027 |
