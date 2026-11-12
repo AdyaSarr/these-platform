@@ -14,7 +14,12 @@ if _ENV_FILE.exists():
 # A fresh random key per run: no test secret is ever written down.
 os.environ.setdefault("DJANGO_SECRET_KEY", secrets.token_urlsafe(50))
 
+from . import base  # noqa: E402
 from .base import *  # noqa: E402
+from .guards import require_local_hosts  # noqa: E402
+
+# Check the hosts coming from the environment, before overriding them below.
+require_local_hosts(base.ALLOWED_HOSTS, "config.settings.test")
 
 DEBUG = False
 ALLOWED_HOSTS = ["testserver", "localhost"]

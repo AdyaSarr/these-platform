@@ -11,6 +11,9 @@ if _ENV_FILE.exists():
     environ.Env.read_env(_ENV_FILE)
 
 from .base import *  # noqa: E402
+from .guards import require_local_hosts  # noqa: E402
+
+require_local_hosts(ALLOWED_HOSTS, "config.settings.dev")
 
 DEBUG = True
 
