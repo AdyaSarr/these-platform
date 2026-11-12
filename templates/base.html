@@ -1,0 +1,28 @@
+{% load static i18n %}<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {# htmx settings compatible with the strict CSP: no eval, no injected <style>, no script execution in swapped HTML. #}
+  <meta name="htmx-config" content='{"allowEval":false,"includeIndicatorStyles":false,"allowScriptTags":false,"selfRequestsOnly":true}'>
+  <title>{% block title %}{% translate "CIFRE thesis" %}{% endblock %} · {% translate "CIFRE thesis" %}</title>
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <script src="{% static 'vendor/htmx/htmx.min.js' %}" defer></script>
+</head>
+{# htmx sends the CSRF token as a header on every non-GET request. #}
+<body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+  <header class="site-header">
+    <a class="brand" href="{% url 'core:home' %}">{% translate "CIFRE thesis" %}</a>
+    {% if user.is_authenticated %}
+      <form class="logout" method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <span class="who">{{ user.email }}</span>
+        <button type="submit">{% translate "Log out" %}</button>
+      </form>
+    {% endif %}
+  </header>
+  <main class="content">
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>

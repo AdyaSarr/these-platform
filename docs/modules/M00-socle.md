@@ -20,12 +20,12 @@ Un projet Django qui démarre, sécurisé par défaut, testé, avec l'outillage 
 - `config/celery.py` minimal.
 
 ## Critères d'acceptation
-- [ ] `docker compose up -d db redis && uv run python manage.py migrate` fonctionne.
-- [ ] `uv run pytest` passe (au moins : santé, page d'accueil exige la connexion).
-- [ ] `PASSWORD_HASHERS` commence par Argon2.
-- [ ] `prod.py` applique tous les paramètres de `docs/SECURITY.md` ; un test vérifie
+- [x] `docker compose up -d db redis && uv run python manage.py migrate` fonctionne.
+- [x] `uv run pytest` passe (au moins : santé, page d'accueil exige la connexion).
+- [x] `PASSWORD_HASHERS` commence par Argon2.
+- [x] `prod.py` applique tous les paramètres de `docs/SECURITY.md` ; un test vérifie
       `DEBUG is False`, HSTS, cookies sécurisés quand on charge `prod`.
-- [ ] `manage.py check --deploy --settings=config.settings.prod` sans avertissement
+- [x] `manage.py check --deploy --settings=config.settings.prod` sans avertissement
       (hors certificats).
-- [ ] Aucun secret dans le dépôt ; `.env.example` documente chaque variable.
-- [ ] `ruff`, `bandit` propres.
+- [x] Aucun secret dans le dépôt ; `.env.example` documente chaque variable.
+- [x] `ruff`, `bandit` propres.
