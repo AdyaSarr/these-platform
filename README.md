@@ -82,7 +82,7 @@ ont besoin de la base (`vault.E001` : aller-retour réel de chiffrement MFA ;
 `vault.E002` : une KEK par domaine). Avec les réglages de prod, `.env` n'est pas
 lu (seul `dev.py` le lit) : il faut charger ses variables dans le shell, puis
 remplacer celles que `prod.py` refuse en local (hôtes, URL en `https://`,
-origines CSRF, serveur de courriel, chemin absolu du coffre) :
+origines CSRF, serveur et expéditeur des courriels, chemin absolu du coffre) :
 
 ```bash
 set -a; source .env; set +a
@@ -92,6 +92,7 @@ DJANGO_SETTINGS_MODULE=config.settings.prod \
 DJANGO_ALLOWED_HOSTS=these.example.org \
 DJANGO_CSRF_TRUSTED_ORIGINS=https://these.example.org \
 DJANGO_SITE_URL=https://these.example.org \
+DEFAULT_FROM_EMAIL=noreply@these.example.org \
 VAULT_STORAGE_DIR="$PWD/var/vault" \
 uv run python manage.py check --deploy --database default --fail-level WARNING
 ```
