@@ -14,6 +14,8 @@ data written under v1 must stay decodable.
     blob         = 0x01 | sealed            (sealed = nonce | ciphertext | tag, see crypto)
     sealed MFA   = "vault1:" + base64url(len(1) | kek_id | sealed)
 
+canonical_json() is the RFC 8785 subset hashed by the audit chain.
+
 kek_id is deliberately absent from the content AD: rotating a KEK re-wraps the
 DEKs only and leaves the blobs untouched (docs/SECURITY.md).
 """
@@ -22,6 +24,7 @@ from __future__ import annotations
 
 import base64
 import binascii
+import json
 import re
 import uuid
 from enum import IntEnum, StrEnum
@@ -208,3 +211,66 @@ def unpack_secret(text: str) -> tuple[str, bytes]:
     if len(kek_raw) != length or not _is_kek_id(kek_id) or not sealed:
         raise VaultIntegrityError(INTEGRITY_MESSAGE)
     return kek_id, sealed
+
+
+# --------------------------------------------------------------------------- canonical JSON
+
+MAX_SAFE_INTEGER = 2**53 - 1
+
+
+def _utf16_order(key: str) -> bytes:
+    return key.encode("utf-16-be")
+
+
+def _encode_json(value: object, out: list[str]) -> None:
+    if value is None:
+        out.append("null")
+    elif value is True:
+        out.append("true")
+    elif value is False:
+        out.append("false")
+    elif isinstance(value, int):
+        if abs(value) > MAX_SAFE_INTEGER:
+            raise ValueError("integer outside +-(2**53 - 1)")
+        out.append(int.__repr__(value))  # never an IntEnum's name
+    elif isinstance(value, str):
+        try:
+            value.encode("utf-8")
+        except UnicodeEncodeError:
+            raise ValueError("lone surrogate in a string") from None
+        # json escapes exactly as RFC 8785 asks: " \ and C0 controls (\b \t \n \f \r
+        # short, else \u00xx lower case); non-ASCII, "/" and DEL are left as they are.
+        out.append(json.dumps(value, ensure_ascii=False))
+    elif isinstance(value, list):
+        out.append("[")
+        for i, item in enumerate(value):
+            if i:
+                out.append(",")
+            _encode_json(item, out)
+        out.append("]")
+    elif isinstance(value, dict):
+        if not all(isinstance(key, str) for key in value):
+            raise ValueError("object keys must be strings")
+        out.append("{")
+        for i, key in enumerate(sorted(value, key=_utf16_order)):
+            if i:
+                out.append(",")
+            _encode_json(key, out)
+            out.append(":")
+            _encode_json(value[key], out)
+        out.append("}")
+    else:  # float, tuple, bytes...: outside the subset
+        raise ValueError(f"{type(value).__name__} is outside the canonical JSON subset")
+
+
+def canonical_json(value: object) -> bytes:
+    """RFC 8785 (JCS) for the subset the audit chain uses, as UTF-8 bytes.
+
+    Subset: null, booleans, integers within +-(2**53 - 1) (no floats), strings
+    without lone surrogates, lists, objects with string keys. Keys are sorted
+    by UTF-16 code units, as RFC 8785 requires (not by code points); no
+    whitespace. Anything else raises ValueError.
+    """
+    out: list[str] = []
+    _encode_json(value, out)
+    return "".join(out).encode("utf-8")

@@ -9,6 +9,10 @@ Every function here follows the same rules (docs/modules/M02-coffre.md):
 - functions holding a DEK or a plaintext carry @sensitive_variables().
 Re-authentication is a view concern (it needs the request).
 
+The audit log itself lives in vault.audit; ``audit``, ``AuditAction``,
+``canonical_ip`` and ``FORBIDDEN_KEY_FRAGMENTS`` are re-exported here for the
+modules that import them from vault.services.
+
 Call each service in its OWN transaction (the default without ATOMIC_REQUESTS):
 inside one enclosing transaction, the audit() of a first call would precede the
 KEK lock of the next one, which vault.keys refuses (LockOrderError).
@@ -16,11 +20,8 @@ KEK lock of the next one, which vault.keys refuses (LockOrderError).
 
 from __future__ import annotations
 
-import ipaddress
-import json
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from enum import StrEnum
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any
 
@@ -31,12 +32,12 @@ from django.utils.text import slugify
 from django.utils.translation import gettext as _
 from django.views.decorators.debug import sensitive_variables
 
-from apps.accounts.managers import UserManager
 from apps.accounts.models import Thesis, User
 from apps.accounts.permissions import Action, can, can_access_document, can_access_level, roles_of
 from apps.core.confidentiality import ConfidentialityLevel
 
-from . import crypto, formats, keys, locks, storage
+from . import crypto, formats, keys, storage
+from .audit import FORBIDDEN_KEY_FRAGMENTS, AuditAction, audit, canonical_ip
 from .errors import (
     AuditError,
     BlobNotFoundError,
@@ -46,14 +47,11 @@ from .errors import (
     VaultKeyError,
 )
 from .formats import LEVEL_TO_DOMAIN, KeyDomain
-from .models import AuditEvent, Document, DocumentAccessGrant, DocumentVersion
+from .models import Document, DocumentAccessGrant, DocumentVersion
 from .validation import FILE_TYPES, validate_upload
 
 if TYPE_CHECKING:
     from collections.abc import Mapping
-
-    from django.contrib.auth.models import AnonymousUser
-    from django.http import HttpRequest
 
     from .validation import Upload
 
@@ -64,6 +62,7 @@ __all__ = [
     "Opened",
     "add_version",
     "audit",
+    "canonical_ip",
     "change_level",
     "decrypt_secret",
     "download_name",
@@ -74,160 +73,6 @@ __all__ = [
     "rewrap_batch",
     "store",
 ]
-
-
-class AuditAction(StrEnum):
-    # Authentication.
-    LOGIN_SUCCEEDED = "LOGIN_SUCCEEDED"
-    LOGIN_FAILED = "LOGIN_FAILED"
-    LOGOUT = "LOGOUT"
-    # Second factor (allauth.mfa signals).
-    MFA_FACTOR_ADDED = "MFA_FACTOR_ADDED"
-    MFA_FACTOR_REMOVED = "MFA_FACTOR_REMOVED"
-    MFA_FACTOR_RESET = "MFA_FACTOR_RESET"  # e.g. recovery codes regenerated
-    MFA_FACTOR_USED = "MFA_FACTOR_USED"  # sign-in or re-auth; type=recovery_codes included
-    MFA_FAILED = "MFA_FAILED"
-    # Theses and team.
-    THESIS_CREATED = "THESIS_CREATED"
-    INVITATION_CREATED = "INVITATION_CREATED"
-    INVITATION_EMAIL_SENT = "INVITATION_EMAIL_SENT"
-    INVITATION_EMAIL_FAILED = "INVITATION_EMAIL_FAILED"
-    INVITATION_REVOKED = "INVITATION_REVOKED"
-    INVITATION_ACCEPTED = "INVITATION_ACCEPTED"
-    MEMBERSHIP_GRANTED = "MEMBERSHIP_GRANTED"
-    MEMBERSHIP_EXTENDED = "MEMBERSHIP_EXTENDED"
-    MEMBER_ROLE_CHANGED = "MEMBER_ROLE_CHANGED"
-    MEMBER_REMOVED = "MEMBER_REMOVED"
-    # Keys (M2).
-    KEK_CREATED = "KEK_CREATED"
-    KEK_RETIRED = "KEK_RETIRED"
-    KEK_REWRAPPED = "KEK_REWRAPPED"
-    # Documents (M2).
-    DOCUMENT_CREATED = "DOCUMENT_CREATED"
-    DOCUMENT_VERSION_ADDED = "DOCUMENT_VERSION_ADDED"
-    DOCUMENT_READ = "DOCUMENT_READ"
-    DOCUMENT_ACCESS_DENIED = "DOCUMENT_ACCESS_DENIED"
-    DOCUMENT_LEVEL_CHANGED = "DOCUMENT_LEVEL_CHANGED"
-    DOCUMENT_GRANT_ADDED = "DOCUMENT_GRANT_ADDED"
-    DOCUMENT_GRANT_REVOKED = "DOCUMENT_GRANT_REVOKED"
-    # Failures, kept apart so that an alert means what it says:
-    DOCUMENT_INTEGRITY_FAILED = "DOCUMENT_INTEGRITY_FAILED"  # tag, AD or missing blob
-    DOCUMENT_KEK_UNAVAILABLE = "DOCUMENT_KEK_UNAVAILABLE"  # retired/unknown KEK, provider off
-    DOCUMENT_STORAGE_ERROR = "DOCUMENT_STORAGE_ERROR"  # storage unusable (root, unsafe file)
-    # MFA secrets (M2): clear secrets sealed by `manage.py vault_encrypt_mfa_secrets`.
-    MFA_SECRETS_SEALED = "MFA_SECRETS_SEALED"  # pragma: allowlist secret (an action name)
-
-
-# A details key containing any of these fragments (case-insensitive) is refused,
-# at any depth: the log must never hold a secret or a clear e-mail address.
-# Deliberately broad ("code" also refuses "country_code"): rename the key.
-FORBIDDEN_KEY_FRAGMENTS: tuple[str, ...] = (
-    "password",
-    "passwd",
-    "pwd",
-    "token",
-    "secret",
-    "otp",  # also totp, hotp
-    "code",  # TOTP codes, recovery codes
-    "recovery",
-    "key",
-    "credential",
-    "session",
-    "cookie",
-    "email",  # use subject_email=, stored as a keyed hash
-    "hmac",  # reserved for values computed here
-)
-
-# Canonical JSON subset of the hash chain (RFC 8785): no floats; integers within
-# +-(2**53 - 1), exactly representable as IEEE 754 doubles. bool is an int: kept.
-_SCALARS = (str, int, type(None))
-MAX_SAFE_INTEGER = 2**53 - 1
-
-
-def _check_details(value: Any, path: str = "details") -> None:
-    if isinstance(value, dict):
-        for key, item in value.items():
-            if not isinstance(key, str):
-                raise AuditError(f"{path}: keys must be strings")
-            lowered = key.lower()
-            if any(fragment in lowered for fragment in FORBIDDEN_KEY_FRAGMENTS):
-                raise AuditError(f"{path}.{key}: forbidden key in audit details")
-            _check_details(item, f"{path}.{key}")
-    elif isinstance(value, list | tuple):
-        for i, item in enumerate(value):
-            _check_details(item, f"{path}[{i}]")
-    elif not isinstance(value, _SCALARS):
-        raise AuditError(f"{path}: {type(value).__name__} is not allowed in audit details")
-    elif isinstance(value, int) and abs(value) > MAX_SAFE_INTEGER:
-        raise AuditError(f"{path}: integer outside +-(2**53 - 1)")
-
-
-def canonical_ip(raw: str) -> str:
-    """Canonical text of an IP address, so that one address has one pseudonym.
-
-    "2001:DB8::1" and "2001:0db8:0:0:0:0:0:1" give "2001:db8::1"; an IPv4-mapped
-    IPv6 address ("::ffff:192.0.2.7") is brought back to IPv4 ("192.0.2.7").
-    A value that is not an IP address is kept as is (stripped): it cannot equal
-    a canonical address, so it never shares a pseudonym with one.
-    """
-    text = raw.strip()
-    try:
-        address = ipaddress.ip_address(text)
-    except ValueError:
-        return text
-    if isinstance(address, ipaddress.IPv6Address) and address.ipv4_mapped is not None:
-        address = address.ipv4_mapped
-    return str(address)
-
-
-def _thesis_of(obj: object) -> Thesis | None:
-    candidate = obj if isinstance(obj, Thesis) else getattr(obj, "thesis", None)
-    return candidate if isinstance(candidate, Thesis) else None
-
-
-def audit(
-    action: AuditAction,
-    *,
-    actor: User | AnonymousUser | None = None,
-    obj: object | None = None,
-    thesis: Thesis | None = None,
-    request: HttpRequest | None = None,
-    subject_email: str | None = None,
-    **details: Any,
-) -> AuditEvent:
-    """Append one event to the audit log and return it.
-
-    ``thesis`` defaults to the object's thesis; giving both with different values
-    is an error. ``actor`` may be None (failed sign-in, system task).
-    ``subject_email`` (e.g. the address typed in a failed sign-in) is stored only
-    as a keyed hash of its normalized form.
-    """
-    if not isinstance(action, AuditAction):
-        raise AuditError(f"unknown audit action {action!r}")
-    _check_details(details)
-    deduced = _thesis_of(obj)
-    if thesis is not None and deduced is not None and thesis.pk != deduced.pk:
-        raise AuditError("thesis contradicts the object's thesis")
-    thesis = thesis or deduced
-
-    if subject_email is not None:
-        normalized = UserManager.normalize_email(subject_email)
-        details["email_hmac"] = crypto.pseudonym(normalized, purpose="email")
-    json.dumps(details)  # last guard: must serialize as is
-
-    ip = canonical_ip(request.META.get("REMOTE_ADDR") or "") if request is not None else ""
-    # Last lock of the transaction: never wait for a KEK lock after this (vault.locks).
-    locks.acquire_audit_lock()
-    meta = getattr(obj, "_meta", None)
-    return AuditEvent.objects.create(
-        action=action.value,
-        actor=actor if isinstance(actor, User) else None,  # AnonymousUser -> None
-        thesis=thesis,
-        object_type=meta.label_lower if meta is not None else "",
-        object_id=str(getattr(obj, "pk", "") or ""),
-        ip_hash=crypto.pseudonym(ip, purpose="ip") if ip else "",
-        details_json=details,
-    )
 
 
 def vault_problems() -> list[str]:

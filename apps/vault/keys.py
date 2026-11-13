@@ -35,6 +35,7 @@ from django.utils import timezone
 from django.views.decorators.debug import sensitive_variables
 
 from . import crypto, locks
+from .audit import AuditAction, audit
 from .errors import (
     KekLockTimeoutError,
     KekRetirementError,
@@ -219,8 +220,6 @@ def _current_row(domain: KeyDomain) -> KeyEncryptionKey | None:
 
 
 def _create(domain: KeyDomain, version: int, actor: User | None) -> KeyEncryptionKey:
-    from .services import AuditAction, audit  # services will import keys: no cycle
-
     row = KeyEncryptionKey.objects.create(
         provider=settings.VAULT_KEY_PROVIDER, domain=domain, version=version, created_by=actor
     )
@@ -256,8 +255,6 @@ def init_domains(*, actor: User | None = None) -> list[str]:
     and two concurrent runs create each version once. Run outside business
     transactions: creations are never audited in the middle of a store().
     """
-    from .services import AuditAction, audit
-
     domains = sorted(KeyDomain, key=DOMAIN_CODES.__getitem__)
     with _lock_timeout_as_error(domains[0]), transaction.atomic():
         for domain in domains:
@@ -349,8 +346,6 @@ def retire(kek_id: str, *, actor: User | None = None) -> None:
 
 
 def _retire(ref: KekRef, kek_id: str, actor: User | None) -> None:
-    from .services import AuditAction, audit
-
     with transaction.atomic():
         _lock(ref.domain, exclusive=True)
         row = KeyEncryptionKey.objects.filter(kek_id=kek_id, retired_at__isnull=True).first()

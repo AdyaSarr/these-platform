@@ -95,6 +95,11 @@ la contourner.
 - Une app Django par module (voir `docs/ARCHITECTURE.md`). Modèles métier hérités de
   `core.TimeStampedModel` ; clés primaires UUID pour tout objet exposé dans une URL.
 - Logique métier dans `services.py`, vues fines, requêtes complexes dans des managers.
+- **`apps/vault/chain_v1.py` n'est jamais modifié** (ni `formats.canonical_json`) :
+  les lignes du journal ont été hachées avec ce code exact. Un nouveau format va
+  dans `chain_v2.py` ; chaque ligne garde son format (`AuditEvent.chain_format`,
+  haché comme `"v"`) et la vérification choisit le module d'après lui. Un test
+  fige leurs empreintes : ne jamais les mettre à jour pour le faire passer.
 - **Ordre des verrous** : verrou de KEK (`vault.keys`) **avant** verrou du journal.
   `audit()` est le dernier appel d'une transaction ; aucun `wrap` ni `new_version`
   après un `audit()` dans la même transaction (`LockOrderError`, garde dans

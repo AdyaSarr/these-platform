@@ -73,3 +73,29 @@ def _vault_keys(request: pytest.FixtureRequest) -> None:
 
     for domain in KeyDomain:
         KeyEncryptionKey.objects.get_or_create(provider="env", domain=domain, version=1)
+
+
+AUDIT_TABLES = ("vault_auditevent", "vault_auditcheckpoint")
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _flush_bypasses_only_the_audit_truncate_triggers() -> Generator[None]:
+    """transaction=True tests are cleaned up with TRUNCATE, which the append-only
+    audit triggers forbid. Around Django's flush ONLY, the TRUNCATE triggers of
+    the two audit tables are disabled, then enabled again (test database only)."""
+    from django.db.backends.postgresql.operations import DatabaseOperations
+
+    original = DatabaseOperations.sql_flush
+
+    def sql_flush(self: Any, style: Any, tables: Any, **kwargs: Any) -> list[str]:
+        statements = original(self, style, tables, **kwargs)
+        guarded = [t for t in AUDIT_TABLES if t in tables]
+        if not statements or not guarded:
+            return list(statements)
+        off = [f'ALTER TABLE "{t}" DISABLE TRIGGER "{t}_no_truncate";' for t in guarded]
+        on = [f'ALTER TABLE "{t}" ENABLE TRIGGER "{t}_no_truncate";' for t in guarded]
+        return [*off, *statements, *on]
+
+    DatabaseOperations.sql_flush = sql_flush  # type: ignore[method-assign]
+    yield
+    DatabaseOperations.sql_flush = original  # type: ignore[method-assign]

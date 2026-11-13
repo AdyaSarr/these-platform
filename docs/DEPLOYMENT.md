@@ -160,6 +160,39 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       `wrapped_dek`. La durée de conservation des sauvegardes est le délai
       d'effacement réel, à annoncer à ST et au LIRMM.
 
+- [ ] **Journal d'audit : rôles de base et points de contrôle (M2).**
+      *Rôles* : les migrations sont lancées par le rôle **propriétaire** des tables ;
+      le rôle de l'application n'a que `SELECT` et `INSERT` sur `vault_auditevent`
+      et `vault_auditcheckpoint` (pas `UPDATE`, `DELETE`, `TRUNCATE`).
+      **Le rôle applicatif n'est ni superutilisateur ni propriétaire des tables.**
+      Les triggers ne protègent que contre un rôle qui ne peut pas les contourner :
+      `SET session_replication_role = replica` (superutilisateur) désactive tous les
+      triggers ordinaires de la session, et `ALTER TABLE … DISABLE TRIGGER`
+      (propriétaire de la table) les désactive pour tous. Contre ces rôles, seuls
+      les points de contrôle copiés hors de la plateforme protègent.
+      *Vérifier* : `SELECT rolsuper FROM pg_roles WHERE rolname = current_user` →
+      `f`, et `SELECT tableowner FROM pg_tables WHERE tablename = 'vault_auditevent'`
+      ≠ le rôle de l'application.
+      *Timers systemd* (environnement de prod, utilisateur du serveur) :
+      ```
+      # chaque jour
+      manage.py audit_checkpoint --export /var/lib/these/export/checkpoints.jsonl
+      # chaque semaine
+      manage.py audit_checkpoint --email
+      # chaque semaine, sur la machine extérieure qui détient la clé épinglée
+      manage.py audit_verify --public-key <clé> --checkpoints <copie de l'export>
+      ```
+      **Le fichier d'export doit QUITTER le serveur** : il est récupéré par une
+      machine extérieure (modèle « pull », par exemple `scp` lancé depuis la
+      machine du doctorant, avec une clé SSH en lecture seule sur ce seul fichier).
+      Un export resté sur le serveur ne protège rien : qui réécrit la chaîne peut
+      aussi réécrire l'export.
+      *Clé publique* : `audit_checkpoint --export-public-key` une fois à
+      l'initialisation ; noter la clé et son empreinte hors de la plateforme
+      (`docs/SECURITY.md`).
+      *Vérifier* : `audit_verify` avec la clé épinglée et la copie de l'export
+      sort avec le code 0, sans avertissement de troncature.
+
 ## Rappels de configuration
 
 - `DJANGO_SETTINGS_MODULE=config.settings.prod` dans l'environnement du serveur

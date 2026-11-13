@@ -77,10 +77,51 @@ prime. Règle d'or : **aucune primitive maison**.
 ## Journal d'audit (M2)
 
 `AuditEvent(seq, timestamp, actor, thesis, action, object_type, object_id, ip_hash,
-details_json, prev_hash, hash)` avec
-`hash = SHA-256(prev_hash || canonical_json(champs))`. Ajout seul (pas d'UPDATE ni
-DELETE : contrôlé par le code et par un trigger PostgreSQL). Commande
-`manage.py audit_verify` qui recalcule la chaîne.
+details_json, prev_hash, hash)`, en ajout seul (`apps/vault/audit.py`).
+
+- **Chaîne** : `hash = SHA-256(prev_hash (32 octets bruts) ‖ JSON_canonique(charge))`,
+  `prev_hash` initial = 32 octets nuls ; charge = `{"v": 1, "seq", "timestamp",
+  "actor", "thesis", "action", "object_type", "object_id", "ip_hash", "details"}`.
+- **JSON canonique** (`formats.canonical_json`) : sous-ensemble de RFC 8785 (pas
+  de flottants, entiers dans ±(2⁵³ − 1), clés triées par unités UTF-16, aucun
+  espace). Horodatage `YYYY-MM-DDTHH:MM:SS.ffffffZ` (UTC, 6 chiffres), UUID en
+  minuscules avec tirets, `ip_hash` en hexadécimal minuscule. Clés de `details`
+  en `[a-z][a-z0-9_]*` ; tout champ texte haché refuse NUL et surrogates isolés.
+- **`seq`** contigu à partir de 1, attribué par `audit()` sous le verrou
+  consultatif du journal (`0x5641`, 1), dernier appel de la transaction.
+- **Triggers PostgreSQL** : UPDATE, DELETE et TRUNCATE refusés ; un INSERT doit
+  prolonger la chaîne (`seq = dernier + 1`, `prev_hash = dernier hash`) et prend
+  le même verrou que `audit()` (les insertions SQL directes sont mises en file).
+  Mêmes protections pour `AuditCheckpoint`, dont le haché doit être celui de son
+  événement.
+- **`manage.py audit_verify --public-key <clé épinglée> --checkpoints <export>`** :
+  recalcule la chaîne (comparaisons en temps constant) ; détecte une
+  modification (haché), une suppression (trou de `seq`), une insertion au milieu
+  (chaînage rompu) ; contre les points de contrôle externes, une réécriture
+  complète et une **troncature de la fin**, indétectable sans eux (avertissement
+  explicite). Un horodatage qui recule est une information, pas une altération.
+- **Points de contrôle** (`apps/vault/checkpoints.py`) : signature Ed25519 de
+  `b"these-audit-checkpoint-v1\0" ‖ seq (8 o) ‖ hash (32 o) ‖ horodatage (µs, 8 o)`
+  par la clé dérivée de `CHECKPOINT_INFO`. La clé de signature est sur le serveur
+  de la chaîne : un point de contrôle ne protège qu'une fois **copié hors de la
+  plateforme** (export quotidien récupéré par une machine extérieure, courriel
+  hebdomadaire au doctorant : seule exception à la règle 7).
+
+### Clé publique des points de contrôle
+
+- `manage.py audit_checkpoint --export-public-key` affiche la clé et son empreinte
+  SHA-256 ; chaque export est journalisé et peut être refait (c'est une clé
+  publique, recalculable par le serveur).
+- **La clé de référence est celle du premier export, conservée hors de la
+  plateforme.** `audit_verify` ne l'accepte qu'en paramètre, jamais lue en base
+  ni dans un courriel. Une clé différente lors d'un export ultérieur est une
+  **alerte** (serveur compromis ou `MASTER_KEY` changée), jamais un remplacement.
+- **Changement légitime** (rotation de `MASTER_KEY`, passage à OpenBao) : nouvelle
+  étiquette `CHECKPOINT_INFO = b"audit-checkpoint-ed25519-v2"` dans `crypto.py`,
+  dernier point de contrôle signé par l'ancienne clé, puis premier point de
+  contrôle signé par la nouvelle, la nouvelle clé exportée et conservée hors de
+  la plateforme à côté de l'ancienne, et la date du changement consignée dans
+  `docs/decisions.md`. `audit_verify` vérifie chaque période avec sa clé.
 
 ## Fichiers déposés
 

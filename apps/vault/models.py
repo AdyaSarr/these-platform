@@ -42,13 +42,22 @@ class AuditEventQuerySet(models.QuerySet["AuditEvent"]):
         raise AuditError("The audit log is append-only.")
 
 
-class AuditEvent(models.Model):
-    """One security-relevant event. Field names follow docs/SECURITY.md.
+HASH_REGEX = r"^[0-9a-f]{64}$"
 
-    Not a TimeStampedModel: an append-only row has no ``updated_at``.
+
+class AuditEvent(models.Model):
+    """One security-relevant event, a link of the hash chain (vault.audit).
+
+    ``seq`` is assigned by vault.audit.audit(), contiguous from 1; database
+    triggers (migration 0004) refuse UPDATE, DELETE, TRUNCATE and any INSERT
+    that does not extend the chain. Not a TimeStampedModel: an append-only row
+    has no ``updated_at``.
     """
 
-    seq = models.BigAutoField(primary_key=True)
+    seq = models.BigIntegerField(primary_key=True, editable=False)
+    # Hash chain format of this row ("v" in its hashed payload): selects the frozen
+    # module (chain_v1.py...) that recomputes its hash.
+    chain_format = models.PositiveSmallIntegerField(default=1, db_default=1, editable=False)
     timestamp = models.DateTimeField(_("timestamp"), default=timezone.now, editable=False)
     actor = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -65,6 +74,8 @@ class AuditEvent(models.Model):
     object_id = models.CharField(max_length=64, blank=True, editable=False)
     ip_hash = models.CharField(max_length=64, blank=True, editable=False)
     details_json = models.JSONField(default=dict, editable=False)
+    prev_hash = models.CharField(max_length=64, editable=False)
+    hash = models.CharField(max_length=64, editable=False)
 
     objects: ClassVar[AuditEventQuerySet] = AuditEventQuerySet.as_manager()  # type: ignore[assignment]
 
@@ -73,6 +84,17 @@ class AuditEvent(models.Model):
         verbose_name_plural = _("audit events")
         ordering: ClassVar[list[str]] = ["seq"]
         indexes: ClassVar[list[models.Index]] = [models.Index(fields=["thesis", "timestamp"])]
+        constraints: ClassVar[list[models.BaseConstraint]] = [
+            # seq is the primary key: unique and not null.
+            models.CheckConstraint(condition=models.Q(seq__gte=1), name="vault_audit_seq_from_1"),
+            models.CheckConstraint(
+                condition=models.Q(chain_format__in=[1]), name="vault_audit_known_chain_format"
+            ),
+            models.CheckConstraint(
+                condition=models.Q(prev_hash__regex=HASH_REGEX, hash__regex=HASH_REGEX),
+                name="vault_audit_hashes_hex",
+            ),
+        ]
 
     def __str__(self) -> str:
         return f"#{self.seq} {self.action}"
@@ -84,6 +106,45 @@ class AuditEvent(models.Model):
 
     def delete(self, *args: Any, **kwargs: Any) -> NoReturn:
         raise AuditError("The audit log is append-only.")
+
+
+class AuditCheckpoint(models.Model):
+    """A signed (Ed25519) statement "the chain ended at ``seq`` with ``hash``".
+
+    Only worth something once copied OUTSIDE the platform (export file, weekly
+    e-mail): the signing key is on the same server as the chain. Append-only,
+    and a trigger refuses a checkpoint whose hash is not that of its event.
+    """
+
+    seq = models.BigIntegerField(primary_key=True, editable=False)
+    hash = models.CharField(max_length=64, editable=False)
+    timestamp = models.DateTimeField(editable=False)
+    signature = models.CharField(max_length=128, editable=False)
+
+    class Meta:
+        verbose_name = _("audit checkpoint")
+        verbose_name_plural = _("audit checkpoints")
+        ordering: ClassVar[list[str]] = ["seq"]
+        constraints: ClassVar[list[models.BaseConstraint]] = [
+            models.CheckConstraint(
+                condition=models.Q(seq__gte=1), name="vault_checkpoint_seq_from_1"
+            ),
+            models.CheckConstraint(
+                condition=models.Q(hash__regex=HASH_REGEX, signature__regex=r"^[0-9a-f]{128}$"),
+                name="vault_checkpoint_hex",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"checkpoint #{self.seq}"
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        if not self._state.adding:
+            raise AuditError("Audit checkpoints are append-only.")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args: Any, **kwargs: Any) -> NoReturn:
+        raise AuditError("Audit checkpoints are append-only.")
 
 
 class KeyEncryptionKey(TimeStampedModel):
