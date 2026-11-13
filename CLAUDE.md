@@ -70,7 +70,10 @@ uv run python manage.py check --deploy --settings=config.settings.prod
 6. **Authentification** : identifiant = courriel, Argon2id, MFA obligatoire,
    ré-authentification (< 10 min) avant toute validation, changement de rôle,
    téléchargement `CONFIDENTIAL` ou export.
-7. **Courriels sans contenu** : un lien vers la plateforme seulement.
+7. **Courriels sans contenu** : un lien vers la plateforme seulement. **Seule
+   exception** : le point de contrôle hebdomadaire du journal d'audit, envoyé au
+   seul `PHD_STUDENT`, qui contient uniquement `(seq, hash, signature, horodatage)`
+   (ni titre de thèse, ni nom, ni clé publique). Voir `docs/decisions.md`.
 8. **Journal d'audit** chaîné, en ajout seul, via `vault.services.audit(...)` pour
    toute action sensible (connexion, lecture `CONFIDENTIAL`, validation, droits, export).
 9. **Secrets** uniquement par variables d'environnement. **Ne lis jamais `.env`** ni
@@ -92,9 +95,26 @@ la contourner.
 - Une app Django par module (voir `docs/ARCHITECTURE.md`). Modèles métier hérités de
   `core.TimeStampedModel` ; clés primaires UUID pour tout objet exposé dans une URL.
 - Logique métier dans `services.py`, vues fines, requêtes complexes dans des managers.
+- **`apps/vault/chain_v1.py` n'est jamais modifié** (ni `formats.canonical_json`) :
+  les lignes du journal ont été hachées avec ce code exact. Un nouveau format va
+  dans `chain_v2.py` ; chaque ligne garde son format (`AuditEvent.chain_format`,
+  haché comme `"v"`) et la vérification choisit le module d'après lui. Un test
+  fige leurs empreintes : ne jamais les mettre à jour pour le faire passer.
+- **Ordre des verrous** : verrou de KEK (`vault.keys`) **avant** verrou du journal.
+  `audit()` est le dernier appel d'une transaction ; aucun `wrap` ni `new_version`
+  après un `audit()` dans la même transaction (`LockOrderError`, garde dans
+  `vault.keys._lock` ; seule la reprise d'un verrou de KEK déjà tenu, qui
+  n'attend jamais, reste permise). Voir `apps/vault/locks.py`. Conséquence :
+  chaque service du coffre s'appelle dans **sa propre** transaction, jamais
+  plusieurs dans un même `transaction.atomic()` englobant.
 - Chaque objet métier appartient à une `Thesis` ; toute requête est filtrée par thèse.
 - Tests avec pytest et factory-boy ; pour chaque vue, au moins un test autorisé et un
   test refusé par rôle concerné.
+- Un test qui enchaîne une opération journalisée (connexion, invitation...) puis une
+  opération du coffre (`wrap`, chiffrement MFA, dépôt) doit être en
+  `django_db(transaction=True)` : sinon la transaction englobante du test garde le
+  verrou du journal et la garde lève `LockOrderError`, ce qui n'arrive pas en
+  production.
 - Migrations relues et commitées avec le code qui les utilise.
 - Commits : `<module>: <verbe à l'impératif> ...` (ex. `objectives: add weighted completion rate`).
 

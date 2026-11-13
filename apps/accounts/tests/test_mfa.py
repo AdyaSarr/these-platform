@@ -175,33 +175,67 @@ def test_mfa_secrets_go_through_the_adapter() -> None:
         assert stored.startswith("enc:"), a.type
 
 
-def test_prod_refuses_to_serve_while_encrypt_is_the_identity() -> None:
-    result = run_python("import config.wsgi", prod_env())
-    assert result.returncode != 0
-    assert "MFAAdapter.encrypt" in result.stderr
+@pytest.mark.parametrize("module", ["config.wsgi", "config.asgi"])
+def test_prod_serves_with_the_vault_adapter(module: str) -> None:
+    """The guard is structural: it needs no database (prod tests have none)."""
+    result = run_python(f"import {module}\nprint('ok')", prod_env())
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip().endswith("ok")
 
 
-def test_asgi_has_the_same_guard() -> None:
-    result = run_python("import config.asgi", prod_env())
-    assert result.returncode != 0
-    assert "MFAAdapter.encrypt" in result.stderr
-
-
-def test_prod_serves_once_encrypt_is_real() -> None:
-    """The guard tests behaviour: a reversible, non-identity encrypt() passes."""
+@pytest.mark.parametrize(
+    "adapter",
+    [
+        "tests.mfa_fake_adapter.IdentityMFAAdapter",
+        "tests.mfa_fake_adapter.ReversibleMFAAdapter",  # reversible: a behaviour check passes
+        "tests.mfa_fake_adapter.OverridingMFAAdapter",  # right class, vault bypassed
+        "allauth.mfa.adapter.DefaultMFAAdapter",
+    ],
+)
+def test_prod_refuses_any_adapter_but_the_vault_one(adapter: str) -> None:
     code = (
         "import django, os\n"
         "os.environ['DJANGO_SETTINGS_MODULE'] = 'config.settings.prod'\n"
         "django.setup()\n"
         "from django.conf import settings\n"
-        "settings.MFA_ADAPTER = 'tests.mfa_fake_adapter.ReversibleMFAAdapter'\n"
+        f"settings.MFA_ADAPTER = {adapter!r}\n"
         "from apps.accounts.guards import require_mfa_encryption\n"
         "require_mfa_encryption()\n"
-        "print('ok')\n"
     )
     result = run_python(code, prod_env())
-    assert result.returncode == 0, result.stderr
-    assert result.stdout.strip().endswith("ok")
+    assert result.returncode != 0
+    assert "MFAAdapter" in result.stderr
+
+
+def test_guard_refuses_an_adapter_that_stops_delegating_to_the_vault(
+    settings: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from django.core.exceptions import ImproperlyConfigured
+
+    from apps.accounts.adapters import MFAAdapter
+    from apps.accounts.guards import require_mfa_encryption
+
+    settings.MFA_ENCRYPTION_REQUIRED = True
+    require_mfa_encryption()  # the real one passes, without the database
+    monkeypatch.setattr(MFAAdapter, "encrypt", lambda self, text: text)
+    with pytest.raises(ImproperlyConfigured):
+        require_mfa_encryption()
+
+
+@pytest.mark.django_db
+def test_totp_secret_and_recovery_seed_are_not_readable_in_the_database() -> None:
+    from apps.vault import services
+
+    user = UserFactory.create()  # enrolls a TOTP through allauth
+    RecoveryCodes.activate(user)
+    rows = list(Authenticator.objects.filter(user=user).values("type", "data"))
+    dump = str(rows)
+    assert user.totp_secret not in dump  # type: ignore[attr-defined]
+    for row in rows:
+        stored = row["data"].get("secret") or row["data"].get("seed")
+        assert stored.startswith("vault1:"), row["type"]
+    totp = next(r for r in rows if r["type"] == Authenticator.Type.TOTP)
+    assert services.decrypt_secret(totp["data"]["secret"]) == user.totp_secret  # type: ignore[attr-defined]
 
 
 def test_guard_is_inactive_outside_production(settings: Any) -> None:

@@ -32,7 +32,8 @@ repos:
         name: detect-secrets
         entry: uv run detect-secrets-hook --baseline .secrets.baseline
         language: system
-        exclude: '^(uv\.lock|\.secrets\.baseline)$'
+        # Published test vectors (NIST, Wycheproof, RFCs) are public values, not secrets.
+        exclude: '^(uv\.lock|\.secrets\.baseline|apps/vault/tests/vectors/.*|apps/vault/tests/test_crypto_vectors\.py)$'
 
       - id: check-large-files
         name: forbid files larger than 1 MB

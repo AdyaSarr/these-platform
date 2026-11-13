@@ -147,8 +147,16 @@ def test_mfa_events_are_audited_without_secrets(django_capture_on_commit_callbac
     assert not any(code in dump for code in codes)
 
 
-def test_totp_enrollment_is_audited(django_capture_on_commit_callbacks: Any) -> None:
-    """Real enrollment page: a fresh account adds its TOTP and the event is logged."""
+@pytest.mark.django_db(transaction=True)
+def test_totp_enrollment_is_audited() -> None:
+    """Real enrollment page: a fresh account adds its TOTP and the event is logged.
+
+    transaction=True: the sign-in is audited before the TOTP secret is sealed by
+    the vault; in one enclosing test transaction the audit-log lock would still be
+    held and the lock-order guard would refuse the KEK lock (never in production,
+    where each request commits its own audit). allauth's on_commit signals then
+    run for real.
+    """
     from allauth.mfa.totp.internal.auth import SECRET_SESSION_KEY
 
     from apps.accounts.reauth import record_password_authentication  # noqa: F401  (flow under test)
@@ -163,8 +171,7 @@ def test_totp_enrollment_is_audited(django_capture_on_commit_callbacks: Any) -> 
         client.post(reverse("account_reauthenticate"), {"password": PASSWORD})
         client.get(reverse("mfa_activate_totp"))
         secret = client.session[SECRET_SESSION_KEY]
-    with django_capture_on_commit_callbacks(execute=True):  # signal sent on commit
-        response = client.post(reverse("mfa_activate_totp"), {"code": totp_code(secret)})
+    response = client.post(reverse("mfa_activate_totp"), {"code": totp_code(secret)})
     assert response.status_code == 302
     # Enrolling TOTP also creates the recovery codes: two additions, both logged.
     added = AuditEvent.objects.filter(action="MFA_FACTOR_ADDED", actor=user)

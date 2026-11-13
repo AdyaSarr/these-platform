@@ -1,0 +1,10 @@
+{% load i18n %}{% autoescape off %}{% translate "Checkpoint of the platform's audit log." %}
+
+seq : {{ seq }}
+hash : {{ hash }}
+signature : {{ signature }}
+{% translate "timestamp" %} : {{ timestamp }}
+
+{% translate "Keep this message outside the platform: it is used to check that the log" %}
+{% translate "has not been rewritten (manage.py audit_verify)." %}
+{% endautoescape %}

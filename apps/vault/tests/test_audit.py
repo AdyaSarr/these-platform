@@ -159,3 +159,54 @@ def test_events_are_numbered_in_order() -> None:
     first = audit(A.LOGIN_FAILED)
     second = audit(A.LOGIN_FAILED)
     assert second.seq > first.seq
+
+
+# --------------------------------------------------------------------------- IP canonical form
+
+
+def _ip_hash(addr: str) -> str:
+    request = RequestFactory().get("/", REMOTE_ADDR=addr)
+    return audit(A.LOGIN_FAILED, request=request).ip_hash
+
+
+def test_two_writings_of_one_ipv6_share_a_pseudonym() -> None:
+    a = _ip_hash("2001:DB8::1")
+    assert a == _ip_hash("2001:0db8:0000:0000:0000:0000:0000:0001")
+    assert a == crypto.pseudonym("2001:db8::1", purpose="ip")
+
+
+def test_ipv4_mapped_ipv6_shares_the_ipv4_pseudonym() -> None:
+    assert _ip_hash("::ffff:192.0.2.7") == _ip_hash("192.0.2.7")
+    assert _ip_hash("::FFFF:c000:0207") == _ip_hash("192.0.2.7")
+
+
+def test_distinct_addresses_keep_distinct_pseudonyms() -> None:
+    assert _ip_hash("192.0.2.7") != _ip_hash("192.0.2.8")
+    assert _ip_hash("2001:db8::1") != _ip_hash("2001:db8::2")
+
+
+def test_value_that_is_not_an_ip_is_still_pseudonymized() -> None:
+    event_hash = _ip_hash(" not-an-ip ")
+    assert event_hash == crypto.pseudonym("not-an-ip", purpose="ip")
+    assert "not-an-ip" not in str(AuditEvent.objects.values().last())
+
+
+# --------------------------------------------------------------------------- JCS subset
+
+
+@pytest.mark.parametrize(
+    "value",
+    [1.0, 0.1, float("nan"), float("inf"), 2**53, -(2**53), 2**64, {"n": [1.5]}],
+    ids=["float", "decimal", "nan", "inf", "2^53", "-2^53", "2^64", "nested-float"],
+)
+def test_values_outside_the_canonical_json_subset_are_refused(value: Any) -> None:
+    """The hash chain hashes canonical JSON (an RFC 8785 subset): no floats, and
+    integers exactly representable as IEEE 754 doubles only."""
+    with pytest.raises(AuditError):
+        audit(A.MEMBER_ROLE_CHANGED, count=value)
+    assert not AuditEvent.objects.exists()
+
+
+@pytest.mark.parametrize("value", [2**53 - 1, -(2**53 - 1), 0, True, False, None, "1.5"])
+def test_values_inside_the_subset_are_accepted(value: Any) -> None:
+    assert audit(A.MEMBER_ROLE_CHANGED, count=value).details_json == {"count": value}

@@ -29,6 +29,49 @@ prime. Règle d'or : **aucune primitive maison**.
 5. Rotation : nouvelle KEK => re-chiffrement des DEK seulement (pas des contenus).
 6. L'interface d'administration Django ne doit jamais afficher un contenu déchiffré.
 
+### Registre des KEK (`apps/vault/keys.py`)
+
+- `kek_id = "<fournisseur>:<DOMAINE>:<version>"` (ex. `env:CONFIDENTIAL:3`),
+  calculé par PostgreSQL (colonne générée) à partir des trois champs de
+  `KeyEncryptionKey`, qui ne contient **aucun matériel de clé**.
+- Chiffrement sous la version courante du domaine, avec `VAULT_KEY_PROVIDER` ;
+  déchiffrement avec le fournisseur désigné par le préfixe du `kek_id`, s'il
+  figure dans `VAULT_ENABLED_PROVIDERS`. Version retirée ou inconnue : refus.
+- Verrous consultatifs PostgreSQL par domaine (`pg_advisory_xact_lock`, espace
+  `0x564B`, clé = code figé du domaine) : **partagé** dans `wrap`, **exclusif**
+  dans `new_version` et `retire`. Une rotation attend donc la validation de
+  toute transaction qui chiffre sous l'ancienne version.
+- `retire` refuse la version courante, une version encore référencée, et tout
+  domaine sans fonction de comptage enregistrée (refus par défaut).
+
+### Fournisseur de production prévu : OpenBao transit (conception, non implémenté)
+
+- Une clé transit `aes256-gcm96` par domaine (`vault-kek-<domaine>`) ;
+  `seal` = `transit/encrypt` avec `associated_data`, `open` = `transit/decrypt` ;
+  la version de la clé transit est la `version` du `kek_id` (`bao:<DOMAINE>:<n>`).
+- `new_version` = `transit/keys/<nom>/rotate` ; `min_decryption_version` relevé
+  après `retire` pour que l'ancienne version ne puisse plus déchiffrer.
+- Points de contrôle : clé transit `ed25519` (`transit/sign`, `transit/keys`
+  pour la clé publique, exportée une seule fois).
+- Authentification de l'application auprès d'OpenBao par AppRole, politique
+  limitée à `encrypt`, `decrypt`, `sign` sur ces clés ; `rotate` réservé à un
+  rôle d'administration utilisé par la commande de rotation.
+
+### Ce qui est chiffré, ce qui ne l'est pas (M2)
+
+| En clair (base de données) | Chiffré |
+|---|---|
+| **Titre** du document (avertissement sur le formulaire de dépôt) | Contenu de chaque version (blob AES-256-GCM sur disque) |
+| Niveau de confidentialité | DEK de chaque version (`wrapped_dek`, sous la KEK du niveau) |
+| Taille, type MIME, numéro de version | Graine TOTP et graine des codes de récupération (KEK `MFA_SECRETS`) |
+| Dates de création et de modification, auteur, thèse | |
+| Chemin du blob (nom aléatoire), `kek_id` | |
+
+Le titre n'apparaît jamais dans le journal d'audit, l'admin, `str()` d'un
+document, les journaux ni les noms de fichiers stockés (tests). Le nom du
+fichier téléchargé est reconstruit depuis le titre nettoyé
+(`[a-z0-9-]`, 80 caractères au plus) et l'extension du type détecté.
+
 ## Authentification
 
 - Identifiant = courriel ; hasher Django `Argon2PasswordHasher` en premier.
@@ -49,16 +92,74 @@ prime. Règle d'or : **aucune primitive maison**.
 ## Journal d'audit (M2)
 
 `AuditEvent(seq, timestamp, actor, thesis, action, object_type, object_id, ip_hash,
-details_json, prev_hash, hash)` avec
-`hash = SHA-256(prev_hash || canonical_json(champs))`. Ajout seul (pas d'UPDATE ni
-DELETE : contrôlé par le code et par un trigger PostgreSQL). Commande
-`manage.py audit_verify` qui recalcule la chaîne.
+details_json, prev_hash, hash)`, en ajout seul (`apps/vault/audit.py`).
+
+- **Chaîne** : `hash = SHA-256(prev_hash (32 octets bruts) ‖ JSON_canonique(charge))`,
+  `prev_hash` initial = 32 octets nuls ; charge = `{"v": 1, "seq", "timestamp",
+  "actor", "thesis", "action", "object_type", "object_id", "ip_hash", "details"}`.
+- **JSON canonique** (`formats.canonical_json`) : sous-ensemble de RFC 8785 (pas
+  de flottants, entiers dans ±(2⁵³ − 1), clés triées par unités UTF-16, aucun
+  espace). Horodatage `YYYY-MM-DDTHH:MM:SS.ffffffZ` (UTC, 6 chiffres), UUID en
+  minuscules avec tirets, `ip_hash` en hexadécimal minuscule. Clés de `details`
+  en `[a-z][a-z0-9_]*` ; tout champ texte haché refuse NUL et surrogates isolés.
+- **`seq`** contigu à partir de 1, attribué par `audit()` sous le verrou
+  consultatif du journal (`0x5641`, 1), dernier appel de la transaction.
+- **Triggers PostgreSQL** : UPDATE, DELETE et TRUNCATE refusés ; un INSERT doit
+  prolonger la chaîne (`seq = dernier + 1`, `prev_hash = dernier hash`) et prend
+  le même verrou que `audit()` (les insertions SQL directes sont mises en file).
+  Mêmes protections pour `AuditCheckpoint`, dont le haché doit être celui de son
+  événement.
+- **`manage.py audit_verify --public-key <clé épinglée> --checkpoints <export>`** :
+  recalcule la chaîne (comparaisons en temps constant) ; détecte une
+  modification (haché), une suppression (trou de `seq`), une insertion au milieu
+  (chaînage rompu) ; contre les points de contrôle externes, une réécriture
+  complète et une **troncature de la fin**, indétectable sans eux (avertissement
+  explicite). Un horodatage qui recule est une information, pas une altération.
+- **Points de contrôle** (`apps/vault/checkpoints.py`) : signature Ed25519 de
+  `b"these-audit-checkpoint-v1\0" ‖ seq (8 o) ‖ hash (32 o) ‖ horodatage (µs, 8 o)`
+  par la clé dérivée de `CHECKPOINT_INFO`. La clé de signature est sur le serveur
+  de la chaîne : un point de contrôle ne protège qu'une fois **copié hors de la
+  plateforme** (export quotidien récupéré par une machine extérieure, courriel
+  hebdomadaire au doctorant : seule exception à la règle 7).
+
+### Clé publique des points de contrôle
+
+- `manage.py audit_checkpoint --export-public-key` affiche la clé et son empreinte
+  SHA-256 ; chaque export est journalisé et peut être refait (c'est une clé
+  publique, recalculable par le serveur).
+- **La clé de référence est celle du premier export, conservée hors de la
+  plateforme.** `audit_verify` ne l'accepte qu'en paramètre, jamais lue en base
+  ni dans un courriel. Une clé différente lors d'un export ultérieur est une
+  **alerte** (serveur compromis ou `MASTER_KEY` changée), jamais un remplacement.
+- **Changement légitime** (rotation de `MASTER_KEY`, passage à OpenBao) : nouvelle
+  étiquette `CHECKPOINT_INFO = b"audit-checkpoint-ed25519-v2"` dans `crypto.py`,
+  dernier point de contrôle signé par l'ancienne clé, puis premier point de
+  contrôle signé par la nouvelle, la nouvelle clé exportée et conservée hors de
+  la plateforme à côté de l'ancienne, et la date du changement consignée dans
+  `docs/decisions.md`. `audit_verify` vérifie chaque période avec sa clé.
 
 ## Fichiers déposés
 
 Taille max (25 Mo), liste blanche de types (PDF, PNG, JPEG, CSV, TXT, ZIP, TEX),
 vérification par contenu (pas seulement l'extension), antivirus ClamAV en prod,
 téléchargement via vue Django avec `Content-Disposition: attachment`.
+
+- **Aucun dépôt n'est jamais écrit en clair sur disque.** `FILE_UPLOAD_HANDLERS`
+  ne contient que `apps.vault.upload_handlers.LimitedMemoryUploadHandler` :
+  réception en mémoire, interrompue (`StopUpload`) dès que le total de la
+  requête dépasse 25 Mo ; `TemporaryFileUploadHandler` est exclu, car il écrirait
+  les dépôts de plus de 2,5 Mo dans le répertoire temporaire avant tout
+  chiffrement. Le proxy limite aussi la taille du corps de requête.
+- Validation (`apps/vault/validation.py`) : 25 Mo comptés sur les octets lus,
+  type reconnu par signature et égal à celui de l'extension, texte en UTF-8
+  strict sans caractère de contrôle ; `Content-Type` et nom fournis par le
+  client ignorés (le nom téléchargé est reconstruit depuis le titre).
+- Blobs (`apps/vault/storage.py`) : `<2 hex>/<32 hex>.blob`, nom tiré du CSPRNG ;
+  écriture `O_EXCL` en 0600 (dossiers 0700), `fsync` (`F_FULLFSYNC` sur macOS),
+  publication par `os.link` (jamais d'écrasement, refus si le système de
+  fichiers n'a pas de liens physiques), `fsync` du dossier ; lecture par
+  descripteurs de dossier avec `O_NOFOLLOW` à chaque niveau. `vault_gc` liste
+  orphelins, blobs manquants et anomalies, sans rien supprimer ni lire.
 
 ## Chaîne logicielle
 

@@ -84,23 +84,114 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       *Vérifier* : deux connexions depuis deux machines produisent deux `ip_hash`
       différents dans `vault_auditevent`.
 
-- [ ] **Secrets MFA chiffrés : `MFAAdapter.encrypt()` branché sur le coffre (M2).**
+- [ ] **Secrets MFA scellés par le coffre (M2).**
       La graine TOTP et la graine des codes de récupération passent par
-      `apps/accounts/adapters.py:MFAAdapter.encrypt()`, qui est l'identité en M1.
+      `MFAAdapter.encrypt()`, qui délègue à `vault.services.encrypt_secret`
+      (AES-256-GCM sous la KEK `MFA_SECRETS`).
       *Pourquoi* : sans chiffrement, une lecture de la base suffit pour générer
       les codes TOTP et de récupération de tout le monde, donc contourner le
-      second facteur. La prod **refuse de démarrer** tant que `encrypt()` est
-      l'identité (`apps/accounts/guards.py`, appelé par `config/wsgi.py` et
-      `config/asgi.py`, `MFA_ENCRYPTION_REQUIRED = True` dans `prod.py`).
+      second facteur. La prod **refuse de démarrer** si l'adaptateur configuré
+      n'est pas `MFAAdapter` (ou une sous-classe qui redéfinit `encrypt` ou
+      `decrypt`) : contrôle structurel sans base (`apps/accounts/guards.py`,
+      appelé par `config/wsgi.py` et `config/asgi.py`). L'aller-retour réel est
+      vérifié sur la base déployée par `vault.E001` (ci-dessous).
       *Vérifier* : `python -c "import config.wsgi"` avec l'environnement de prod
-      se termine sans erreur ; `test_prod_refuses_to_serve_while_encrypt_is_the_identity`
-      a été remplacé en M2 par un test du chiffrement réel.
+      se termine sans erreur ; aucune valeur `secret` ou `seed` de
+      `mfa_authenticator.data` ne commence autrement que par `vault1:`
+      (`manage.py vault_encrypt_mfa_secrets` scelle celles d'une base antérieure
+      à M2 et doit afficher `0 secret(s) sealed`).
+
+- [ ] **Ordre de mise en service du coffre (M2).**
+      ```bash
+      manage.py migrate
+      manage.py vault_init                                 # dossier des blobs 0700, KEK v1 de chaque domaine
+      manage.py check --deploy --database default          # dont vault.E001 et vault.E002
+      manage.py create_thesis ...                          # refuse tant que vault_init n'a pas été lancé
+      ```
+      *Pourquoi* : la première connexion d'un utilisateur active son second
+      facteur, dont la graine est scellée sous la KEK `MFA_SECRETS` : sans
+      `vault_init`, l'activation échoue. `vault.E001` fait un aller-retour réel
+      de chiffrement MFA ; `vault.E002` signale un domaine sans KEK. Ces
+      contrôles, étiquetés `database`, ne s'exécutent qu'avec `--database default`.
+      *Vérifier* : la commande `check` ci-dessus affiche « System check
+      identified no issues ».
 
 - [ ] **Téléchargements en `Content-Disposition: attachment` + `nosniff` (M2).**
       *Pourquoi* : la CSP autorise `script-src 'self'` ; un fichier déposé servi
       en ligne depuis notre domaine pourrait être exécuté comme script.
       *Vérifier* : un test de M2 contrôle ces deux en-têtes sur la vue de
       téléchargement ; aucun fichier déposé n'est servi par le proxy en statique.
+
+- [ ] **KEK hors du serveur applicatif : OpenBao (transit) au lieu de `env` (M2).**
+      *Pourquoi* : avec le fournisseur `env`, les KEK sont dérivées de `MASTER_KEY`,
+      présente dans l'environnement du serveur ; qui lit cet environnement lit
+      tout le coffre. Avec OpenBao, la KEK ne quitte jamais OpenBao.
+      *Procédure* : implémenter `OpenBaoTransitProvider` (conception dans
+      `docs/SECURITY.md`), ajouter `"bao"` à `VAULT_ENABLED_PROVIDERS` et fixer
+      `VAULT_KEY_PROVIDER = "bao"`, puis `rotate_kek <domaine>` pour chaque domaine
+      (documents et `MFA_SECRETS`) ; une fois **toutes** les anciennes versions
+      `env:…` retirées (`retire` refuse tant qu'une ligne les référence), **retirer
+      `"env"` de `VAULT_ENABLED_PROVIDERS`**.
+      *Vérifier* : `SELECT kek_id FROM vault_keyencryptionkey WHERE retired_at IS NULL`
+      ne renvoie que des `bao:…` ; le serveur démarre avec
+      `VAULT_ENABLED_PROVIDERS = frozenset({"bao"})`.
+
+- [ ] **Dossier des blobs privé et jamais servi par le proxy (M2).**
+      `VAULT_STORAGE_DIR` absolu, hors de toute racine de Caddy (aucun
+      `file_server` ni `root` dessus), propriété du compte du serveur, mode 0700 ;
+      la prod refuse de démarrer sinon (`VAULT_STORAGE_STRICT`). Système de
+      fichiers **avec liens physiques** (ext4, XFS ; pas de partage SMB/FAT) :
+      l'écriture s'y appuie et refuse de fonctionner sans.
+      *Vérifier* : `curl -I https://<domaine>/<chemin vers un blob>` renvoie 404 ;
+      `manage.py vault_gc` sort avec le code 0.
+
+- [ ] **Taille du corps de requête limitée par le proxy (M2).**
+      `request_body { max_size 26MB }` dans Caddy (25 Mo de fichier + en-têtes
+      multipart). Django n'écrit jamais un dépôt sur disque
+      (`LimitedMemoryUploadHandler`) et cesse de le conserver au-delà de 25 Mo ;
+      le proxy borne ce qu'il lit et jette au-delà.
+
+- [ ] **Sauvegardes cohérentes de la base et des blobs (M2).** Base d'abord
+      (`pg_dump`), puis le dossier des blobs (restic) : un blob présent sans sa
+      ligne est un orphelin inoffensif, l'inverse serait un document illisible.
+      **Effacement réel = durée de conservation des sauvegardes** : l'effacement
+      d'un ancien blob (après `change_level`, ou blob orphelin) n'est effectif
+      qu'à l'expiration de la dernière sauvegarde de la base contenant sa
+      `wrapped_dek`. La durée de conservation des sauvegardes est le délai
+      d'effacement réel, à annoncer à ST et au LIRMM.
+
+- [ ] **Journal d'audit : rôles de base et points de contrôle (M2).**
+      *Rôles* : les migrations sont lancées par le rôle **propriétaire** des tables ;
+      le rôle de l'application n'a que `SELECT` et `INSERT` sur `vault_auditevent`
+      et `vault_auditcheckpoint` (pas `UPDATE`, `DELETE`, `TRUNCATE`).
+      **Le rôle applicatif n'est ni superutilisateur ni propriétaire des tables.**
+      Les triggers ne protègent que contre un rôle qui ne peut pas les contourner :
+      `SET session_replication_role = replica` (superutilisateur) désactive tous les
+      triggers ordinaires de la session, et `ALTER TABLE … DISABLE TRIGGER`
+      (propriétaire de la table) les désactive pour tous. Contre ces rôles, seuls
+      les points de contrôle copiés hors de la plateforme protègent.
+      *Vérifier* : `SELECT rolsuper FROM pg_roles WHERE rolname = current_user` →
+      `f`, et `SELECT tableowner FROM pg_tables WHERE tablename = 'vault_auditevent'`
+      ≠ le rôle de l'application.
+      *Timers systemd* (environnement de prod, utilisateur du serveur) :
+      ```
+      # chaque jour
+      manage.py audit_checkpoint --export /var/lib/these/export/checkpoints.jsonl
+      # chaque semaine
+      manage.py audit_checkpoint --email
+      # chaque semaine, sur la machine extérieure qui détient la clé épinglée
+      manage.py audit_verify --public-key <clé> --checkpoints <copie de l'export>
+      ```
+      **Le fichier d'export doit QUITTER le serveur** : il est récupéré par une
+      machine extérieure (modèle « pull », par exemple `scp` lancé depuis la
+      machine du doctorant, avec une clé SSH en lecture seule sur ce seul fichier).
+      Un export resté sur le serveur ne protège rien : qui réécrit la chaîne peut
+      aussi réécrire l'export.
+      *Clé publique* : `audit_checkpoint --export-public-key` une fois à
+      l'initialisation ; noter la clé et son empreinte hors de la plateforme
+      (`docs/SECURITY.md`).
+      *Vérifier* : `audit_verify` avec la clé épinglée et la copie de l'export
+      sort avec le code 0, sans avertissement de troncature.
 
 ## Rappels de configuration
 

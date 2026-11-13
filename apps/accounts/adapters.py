@@ -10,6 +10,8 @@ from django.contrib.auth.base_user import AbstractBaseUser
 from django.db import transaction
 from django.http import HttpRequest
 
+from apps.vault import services as vault_services
+
 from . import tasks
 
 
@@ -32,13 +34,15 @@ class AccountAdapter(DefaultAccountAdapter):
 
 
 class MFAAdapter(DefaultMFAAdapter):
-    # The TOTP secret and the recovery-code seed go through encrypt()/decrypt().
-    # M1: identity, so production refuses to start (MFA_ENCRYPTION_REQUIRED,
-    # config/wsgi.py). M2 replaces both with AEAD under a vault KEK.
-    ENCRYPTS_SECRETS = False
+    """The TOTP key and the recovery-code seed are sealed by the vault (M2): AES-256-GCM
+    under the MFA_SECRETS KEK. A clear or malformed stored value is refused.
+
+    The production guard (apps/accounts/guards.py) accepts only this class, or a
+    subclass that redefines neither method.
+    """
 
     def encrypt(self, text: str) -> str:
-        return text
+        return vault_services.encrypt_secret(text)
 
     def decrypt(self, encrypted_text: str) -> str:
-        return encrypted_text
+        return vault_services.decrypt_secret(encrypted_text)

@@ -32,6 +32,11 @@ Claude Code dans VS Code.
    Utilise un dépôt **privé** (GitLab ou GitHub privé), ou mieux un dépôt interne
    ST ou LIRMM si l'un d'eux l'autorise.
 5. Copier `.env.example` en `.env` et remplir les valeurs (jamais commité).
+6. **Coffre** : créer le dossier des blobs chiffrés (`VAULT_STORAGE_DIR`, mode 700)
+   avant le premier dépôt ; sans lui, lecture et écriture refusent de fonctionner :
+   ```bash
+   uv run python manage.py vault_init
+   ```
 
 ## Méthode de travail
 

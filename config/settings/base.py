@@ -5,6 +5,7 @@ dev.py and test.py). Secure defaults: an environment loosens them, never the
 reverse.
 """
 
+from datetime import timedelta
 from pathlib import Path
 
 import environ
@@ -166,6 +167,11 @@ SECURE_REFERRER_POLICY = "same-origin"
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin"
 
+# Error reports (technical 500 page, e-mails to ADMINS, logs) hide the locals of
+# @sensitive_variables functions even with DEBUG=True (Django's filter only
+# acts when DEBUG is False). See apps/core/debug.py.
+DEFAULT_EXCEPTION_REPORTER_FILTER = "apps.core.debug.AlwaysSafeExceptionReporterFilter"
+
 # Strict CSP in every environment (docs/decisions.md): no inline script or style.
 CONTENT_SECURITY_POLICY = {
     "DIRECTIVES": {
@@ -201,6 +207,25 @@ DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL", default="noreply@localhost")
 # apps/vault/crypto.py only. Never displayed: Django masks settings named *KEY*.
 MASTER_KEY = env.str("MASTER_KEY", default="")
 
+# Key provider for NEW wraps, and providers allowed to UNwrap (chosen by the
+# kek_id prefix). Checked at start-up (apps/vault/apps.py). After a migration to
+# OpenBao and a complete rotation, remove "env" (docs/DEPLOYMENT.md).
+VAULT_KEY_PROVIDER = "env"
+VAULT_ENABLED_PROVIDERS = frozenset({"env"})
+# A KEK version can be retired only once the NEXT version has existed this long
+# (data sealed outside the shared lock: allauth's encrypt(), open()'s read window).
+VAULT_RETIRE_GRACE = timedelta(minutes=10)
+
+# Encrypted blobs (apps/vault/storage.py). Outside every directory a web server
+# serves; checked at start-up. STRICT (prod): absolute path required, and wide
+# permissions on the directory refuse to run instead of only warning.
+VAULT_STORAGE_DIR = env.str("VAULT_STORAGE_DIR", default=str(BASE_DIR / "var" / "vault"))
+VAULT_STORAGE_STRICT = False
+
+# Uploads stay in memory, capped at 25 MB per request: never spooled in clear to
+# a temporary file (apps/vault/upload_handlers.py, docs/SECURITY.md).
+FILE_UPLOAD_HANDLERS = ["apps.vault.upload_handlers.LimitedMemoryUploadHandler"]
+
 # Absolute base URL of the platform, for links in e-mails (sent without a request).
 SITE_URL = env.str("DJANGO_SITE_URL", default="http://localhost:8000").rstrip("/")
 
@@ -219,4 +244,7 @@ LOGGING = {
     "formatters": {"plain": {"format": "{asctime} {levelname} {name} {message}", "style": "{"}},
     "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "plain"}},
     "root": {"handlers": ["console"], "level": "INFO"},
+    # SQL queries carry wrapped DEKs and document titles: never logged with their
+    # parameters, whatever the root level or DEBUG (tests/test_security_audit_m2.py).
+    "loggers": {"django.db.backends": {"level": "INFO", "propagate": True}},
 }

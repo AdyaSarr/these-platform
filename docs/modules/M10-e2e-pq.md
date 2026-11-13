@@ -29,3 +29,15 @@ importantes portent une signature hybride classique + post-quantique.
 - [ ] Le serveur ne reçoit que des chiffrés pour `CONFIDENTIAL` (test d'intégration).
 - [ ] Une signature hybride dont une moitié est invalide est refusée (test).
 - [ ] Vecteurs de test officiels utilisés pour vérifier l'intégration ML-DSA.
+
+## Note issue de M2 : engagement de clé
+AES-GCM (utilisé côté serveur en M2) n'est pas « key-committing » : on peut
+fabriquer un chiffré qui se déchiffre correctement sous deux clés différentes, en
+deux clairs différents. Sans conséquence en M2 (aucune clé n'est choisie par un
+attaquant). En M10, avec une DEK encapsulée par destinataire, un expéditeur
+malveillant pourrait encapsuler des DEK différentes pour des destinataires
+différents et leur faire lire deux documents différents à partir du même chiffré.
+Il faudra donc un **engagement de clé** (haché de la DEK dans les données
+associées, ou schéma AEAD engageant) ou une **signature du clair** par l'auteur.
+Le choix de XChaCha20-Poly1305 ne règle pas ce point : Poly1305 n'est pas
+engageant non plus.

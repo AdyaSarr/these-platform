@@ -4,6 +4,8 @@
 {% block content %}
   <h1>{{ thesis.title }}</h1>
   <p class="muted">{{ thesis.get_status_display }}</p>
+  {# The document list filters by right itself (vault.views); a link is not an access check. #}
+  <p><a href="{% url 'vault:documents' thesis_id=thesis.pk %}">{% translate "Documents" %}</a></p>
   {# Each block was filtered by its own action in the view: never in this template. #}
   <div class="blocks">
     {% for block in blocks %}

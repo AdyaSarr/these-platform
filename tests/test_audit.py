@@ -158,12 +158,22 @@ def test_env_example_is_not_ignored() -> None:
 def test_detect_secrets_finds_nothing_new_in_tracked_files() -> None:
     """Same scan as the pre-commit hook, but in pytest: catches `git commit --no-verify`."""
     baseline = json.loads((BASE_DIR / ".secrets.baseline").read_text())
+    # Exclusions read from the baseline (single source of truth with the hook),
+    # plus the baseline file itself.
+    excluded = [
+        pattern
+        for f in baseline["filters_used"]
+        if f["path"] == "detect_secrets.filters.regex.should_exclude_file"
+        for pattern in f["pattern"]
+    ]
+    assert excluded, "the baseline must list its excluded files"
     scan = subprocess.run(
         [
             "detect-secrets",
             "scan",
+            *(arg for pattern in excluded for arg in ("--exclude-files", pattern)),
             "--exclude-files",
-            r"^(\.env|uv\.lock|\.secrets\.baseline|docs/specs/.*)$",
+            r"^\.secrets\.baseline$",
         ],
         cwd=BASE_DIR,
         capture_output=True,
