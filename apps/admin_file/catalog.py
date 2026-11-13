@@ -59,51 +59,63 @@ CATALOG: tuple[CatalogItem, ...] = (
     # can: attachment optional, an employment certificate is preferred.
     CatalogItem(
         "employment_contract", _("ST employment contract"), _CIFRE,
-        (_T,), _L.INTERNAL_ST, True, False, _START, 0,
-        _("The industrial tutor will be able to read this file: prefer an employment "
-          "certificate to the contract itself (salary)."),
+        (_T,), _L.INTERNAL_ST,
+        mandatory=True, attachment_required=False, due_from=_START, due_offset_days=0,
+        deposit_warning=_("The industrial tutor will be able to read this file: prefer an "
+                          "employment certificate to the contract itself (salary)."),
     ),
     CatalogItem(
         "cifre_agreement", _("CIFRE agreement (ANRT)"), _CIFRE,
-        (_T,), _L.INTERNAL_ST, True, True, _START, 30,
+        (_T,), _L.INTERNAL_ST,
+        mandatory=True, attachment_required=True, due_from=_START, due_offset_days=30,
     ),
     # Two parties, two validations: each supervisor vouches for their side's
     # signed copy. CONFIDENTIAL: both validators read it, co-supervisors do not.
     CatalogItem(
         "collaboration_contract", _("ST-LIRMM collaboration contract"), _CIFRE,
-        (_D, _T), _L.CONFIDENTIAL, True, True, _START, 90,
+        (_D, _T), _L.CONFIDENTIAL,
+        mandatory=True, attachment_required=True, due_from=_START, due_offset_days=90,
     ),
     # The doctoral school requires a minimum salary: the director reads it.
     CatalogItem(
         "funding_proof", _("Proof of funding"), _CIFRE,
-        (_D,), _L.CONFIDENTIAL, True, True, _ENROL, 0,
-        _("Certificate stating salary ≥ doctoral school threshold, without the amount."),
+        (_D,), _L.CONFIDENTIAL,
+        mandatory=True, attachment_required=True, due_from=_ENROL, due_offset_days=0,
+        deposit_warning=_("Certificate stating salary ≥ doctoral school threshold, "
+                          "without the amount."),
     ),
     # LIRMM procedure; the notice only, never the application file.
     CatalogItem(
         "fsd_zrr_clearance", _("FSD notice / ZRR access"), _ACAD,
-        (_D,), _L.INTERNAL_LIRMM, True, False, _START, 0,
-        _("Attach the notice only, never the application file (passport, nationality)."),
+        (_D,), _L.INTERNAL_LIRMM,
+        mandatory=True, attachment_required=False, due_from=_START, due_offset_days=0,
+        deposit_warning=_("Attach the notice only, never the application file "
+                          "(passport, nationality)."),
     ),
     CatalogItem(
         "adum_enrollment", _("ADUM enrolment"), _ACAD,
-        (_D,), _L.INTERNAL_LIRMM, True, True, _ENROL, 0,
+        (_D,), _L.INTERNAL_LIRMM,
+        mandatory=True, attachment_required=True, due_from=_ENROL, due_offset_days=0,
     ),
     CatalogItem(
         "doctoral_charter", _("Signed doctoral charter"), _ACAD,
-        (_D,), _L.INTERNAL_LIRMM, True, True, _ENROL, 30,
+        (_D,), _L.INTERNAL_LIRMM,
+        mandatory=True, attachment_required=True, due_from=_ENROL, due_offset_days=30,
     ),
     CatalogItem(
         "training_agreement", _("Individual training agreement"), _ACAD,
-        (_D,), _L.INTERNAL_LIRMM, True, True, _ENROL, 90,
+        (_D,), _L.INTERNAL_LIRMM,
+        mandatory=True, attachment_required=True, due_from=_ENROL, due_offset_days=90,
     ),
     CatalogItem(
         "training_plan", _("Individual training plan"), _ACAD,
-        (_D,), _L.INTERNAL_LIRMM, True, True, _ENROL, 180,
+        (_D,), _L.INTERNAL_LIRMM,
+        mandatory=True, attachment_required=True, due_from=_ENROL, due_offset_days=180,
     ),
     CatalogItem(
         "cvec_certificate", _("CVEC certificate"), _ACAD,
-        (_D,), _L.INTERNAL_LIRMM, True, True, _ENROL, 0,
+        (_D,), _L.INTERNAL_LIRMM,
+        mandatory=True, attachment_required=True, due_from=_ENROL, due_offset_days=0,
     ),
 )
 # fmt: on
