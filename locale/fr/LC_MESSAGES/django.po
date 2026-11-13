@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-12 23:25+0100\n"
+"POT-Creation-Date: 2026-11-13 01:11+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -160,7 +160,7 @@ msgstr "Soutenue"
 msgid "Closed"
 msgstr "Clôturée"
 
-#: apps/accounts/models.py:102
+#: apps/accounts/models.py:102 apps/vault/models.py:158
 msgid "title"
 msgstr "titre"
 
@@ -427,21 +427,88 @@ msgstr "modifié le"
 msgid "created by"
 msgstr "créé par"
 
-#: apps/vault/models.py:30
+#: apps/vault/models.py:53
 msgid "timestamp"
 msgstr "horodatage"
 
-#: apps/vault/models.py:41
+#: apps/vault/models.py:64
 msgid "action"
 msgstr "action"
 
-#: apps/vault/models.py:50
+#: apps/vault/models.py:73
 msgid "audit event"
 msgstr "événement d'audit"
 
-#: apps/vault/models.py:51
+#: apps/vault/models.py:74
 msgid "audit events"
 msgstr "événements d'audit"
+
+#: apps/vault/models.py:122
+msgid "key-encryption key"
+msgstr "clé de chiffrement de clés"
+
+#: apps/vault/models.py:123
+msgid "key-encryption keys"
+msgstr "clés de chiffrement de clés"
+
+#: apps/vault/models.py:160
+msgid "confidentiality"
+msgstr "confidentialité"
+
+#: apps/vault/models.py:177
+msgid "document"
+msgstr "document"
+
+#: apps/vault/models.py:178
+msgid "documents"
+msgstr "documents"
+
+#: apps/vault/models.py:209
+msgid "size"
+msgstr "taille"
+
+#: apps/vault/models.py:210
+msgid "type"
+msgstr "type"
+
+#: apps/vault/models.py:213
+msgid "document version"
+msgstr "version de document"
+
+#: apps/vault/models.py:214
+msgid "document versions"
+msgstr "versions de document"
+
+#: apps/vault/models.py:271
+msgid "document access grant"
+msgstr "autorisation d'accès à un document"
+
+#: apps/vault/models.py:272
+msgid "document access grants"
+msgstr "autorisations d'accès à un document"
+
+#: apps/vault/validation.py:83
+msgid "The file is empty."
+msgstr "Le fichier est vide."
+
+#: apps/vault/validation.py:87
+msgid "The content of the file is not of an accepted type."
+msgstr "Le contenu du fichier n'est pas d'un type accepté."
+
+#: apps/vault/validation.py:92
+#, python-format
+msgid "The content of the file does not match its extension (.%(extension)s)."
+msgstr "Le contenu du fichier ne correspond pas à son extension (.%(extension)s)."
+
+#: apps/vault/validation.py:106
+#, python-format
+msgid "This type of file is not accepted. Accepted types: %(types)s."
+msgstr "Ce type de fichier n'est pas accepté. Types acceptés : %(types)s."
+
+#: apps/vault/validation.py:115
+#, python-format
+msgid "The file is larger than %(limit)d MB."
+msgstr "Le fichier dépasse %(limit)d Mo."
 
 #: templates/account/login.html:3 templates/account/login.html:5
 #: templates/account/login.html:18 templates/accounts/invitation_signin.html:7
@@ -673,8 +740,3 @@ msgid ""
 "You do not have access to any thesis. Access is granted by invitation only."
 msgstr ""
 "Vous n'avez accès à aucune thèse. L'accès se fait uniquement sur invitation."
-
-#~ msgid "The platform modules will appear here as they are delivered."
-#~ msgstr ""
-#~ "Les modules de la plateforme apparaîtront ici au fur et à mesure de leur "
-#~ "livraison."

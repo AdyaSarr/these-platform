@@ -296,7 +296,9 @@ def register_reference_counter(domain: KeyDomain, counter: ReferenceCounter) -> 
     AppConfig.ready); a domain with no counter can never retire a version.
     """
     _check_domain(domain)
-    _REFERENCE_COUNTERS.setdefault(domain, []).append(counter)
+    registered = _REFERENCE_COUNTERS.setdefault(domain, [])
+    if counter not in registered:  # ready() may run more than once
+        registered.append(counter)
 
 
 def retire(kek_id: str, *, actor: User | None = None) -> None:
