@@ -26,7 +26,7 @@ from apps.accounts.models import Invitation, Membership, User
 from apps.accounts.roles import Role
 from apps.accounts.services import TeamError
 from apps.accounts.tests.factories import MembershipFactory, UserFactory, totp_code
-from apps.accounts.tests.helpers import mfa_login, password_login
+from apps.accounts.tests.helpers import mfa_login, password_login, submit_totp
 
 pytestmark = pytest.mark.django_db
 
@@ -234,7 +234,7 @@ def test_session_key_rotates_at_sign_in_and_after_second_factor(student: Members
     planted = _fixed_session(client)
     password_login(client, student.user, PASSWORD)
     after_password = client.session.session_key
-    client.post(reverse("mfa_authenticate"), {"code": totp_code(student.user.totp_secret)})  # type: ignore[attr-defined]
+    submit_totp(client, reverse("mfa_authenticate"), student.user.totp_secret)  # type: ignore[attr-defined]
     after_mfa = client.session.session_key
     assert client.session.get("_auth_user_id") == str(student.user.pk)
     assert after_mfa not in (planted, after_password)
@@ -281,10 +281,7 @@ def test_no_open_redirect_after_sign_in(student: Membership, target: str) -> Non
         reverse("account_login") + f"?next={target}",
         {"login": student.user.email, "password": PASSWORD, "next": target},
     )
-    response = client.post(
-        reverse("mfa_authenticate"),
-        {"code": totp_code(student.user.totp_secret)},  # type: ignore[attr-defined]
-    )
+    response = submit_totp(client, reverse("mfa_authenticate"), student.user.totp_secret)  # type: ignore[attr-defined]
     assert response.status_code == 302
     assert "evil.example" not in response["Location"]
 
@@ -294,9 +291,11 @@ def test_no_open_redirect_after_reauthentication(
     signed_in: Client, student: Membership, target: str
 ) -> None:
     with _now(30):
-        response = signed_in.post(
+        response = submit_totp(
+            signed_in,
             reverse("mfa_reauthenticate") + f"?next={target}",
-            {"code": totp_code(student.user.totp_secret), "next": target},  # type: ignore[attr-defined]
+            student.user.totp_secret,  # type: ignore[attr-defined]
+            next=target,
         )
     assert response.status_code == 302
     assert "evil.example" not in response["Location"]
