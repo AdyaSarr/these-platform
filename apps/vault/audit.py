@@ -86,6 +86,16 @@ class AuditAction(StrEnum):
     ADMIN_ITEM_REOPENED = "ADMIN_ITEM_REOPENED"
     ADMIN_ITEM_ACCESS_DENIED = "ADMIN_ITEM_ACCESS_DENIED"
     THESIS_ACTIVATED = "THESIS_ACTIVATED"  # SETUP -> ACTIVE, last mandatory item
+    # Objectives (M4): field names and counts only, never a text.
+    OBJECTIVE_CREATED = "OBJECTIVE_CREATED"
+    OBJECTIVE_UPDATED = "OBJECTIVE_UPDATED"  # draft (not yet approved)
+    OBJECTIVE_REVISED = "OBJECTIVE_REVISED"  # approved: reason + revisions
+    OBJECTIVE_APPROVED = "OBJECTIVE_APPROVED"
+    OBJECTIVE_CHANGES_ACKNOWLEDGED = "OBJECTIVE_CHANGES_ACKNOWLEDGED"
+    OBJECTIVE_DROPPED = "OBJECTIVE_DROPPED"
+    OBJECTIVE_PROGRESS_ADDED = "OBJECTIVE_PROGRESS_ADDED"
+    OBJECTIVE_COMMENT_ADDED = "OBJECTIVE_COMMENT_ADDED"
+    OBJECTIVE_ACCESS_DENIED = "OBJECTIVE_ACCESS_DENIED"
     # Keys (M2).
     KEK_CREATED = "KEK_CREATED"
     KEK_RETIRED = "KEK_RETIRED"
@@ -102,6 +112,11 @@ class AuditAction(StrEnum):
     DOCUMENT_INTEGRITY_FAILED = "DOCUMENT_INTEGRITY_FAILED"  # tag, AD or missing blob
     DOCUMENT_KEK_UNAVAILABLE = "DOCUMENT_KEK_UNAVAILABLE"  # retired/unknown KEK, provider off
     DOCUMENT_STORAGE_ERROR = "DOCUMENT_STORAGE_ERROR"  # storage unusable (root, unsafe file)
+    # Sealed texts (M4): never the text, only slots and object ids.
+    SEALED_TEXT_READ = "SEALED_TEXT_READ"  # CONFIDENTIAL only, one event per open_texts()
+    SEALED_TEXT_ACCESS_DENIED = "SEALED_TEXT_ACCESS_DENIED"
+    SEALED_TEXT_INTEGRITY_FAILED = "SEALED_TEXT_INTEGRITY_FAILED"  # tag, AD or padding
+    SEALED_TEXT_KEK_UNAVAILABLE = "SEALED_TEXT_KEK_UNAVAILABLE"
     # MFA secrets (M2): clear secrets sealed by `manage.py vault_encrypt_mfa_secrets`.
     MFA_SECRETS_SEALED = "MFA_SECRETS_SEALED"  # pragma: allowlist secret (an action name)
     # The log itself (M2).

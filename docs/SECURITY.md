@@ -72,6 +72,48 @@ document, les journaux ni les noms de fichiers stockés (tests). Le nom du
 fichier téléchargé est reconstruit depuis le titre nettoyé
 (`[a-z0-9-]`, 80 caractères au plus) et l'extension du type détecté.
 
+### Textes scellés (M4, `vault.SealedText`)
+
+Les textes libres de recherche (intitulé, description et critère d'un objectif,
+motifs et valeurs des révisions, notes d'avancement, commentaires) ne sont
+jamais stockés en clair. Une ligne `SealedText` par couple (emplacement, objet) :
+
+1. **Emplacement (slot)** : le couple modèle + champ (`objectives.Objective.title`)
+   codé sur 2 octets, **figé** dans `formats.TEXT_SLOTS` (plages réservées par
+   module dans `formats.py` ; un code retiré n'est jamais réattribué, un test le
+   vérifie).
+2. **Bourrage ISO/IEC 7816-4** du texte UTF-8 (`0x80` puis des zéros) jusqu'au
+   multiple de **64 octets** suivant, avant chiffrement ; 16 383 octets au plus.
+   Au déchiffrement, tout bourrage que `pad_text` ne peut pas produire est une
+   `VaultIntegrityError`. Le bourrage est vérifié **après** le tag AEAD : ce
+   n'est pas un oracle de bourrage.
+3. **AEAD** (AES-256-GCM) sous une **DEK neuve à chaque écriture** ; données
+   associées `0x01 | 0x04 | thesis_id | object_id | slot | niveau` (37 octets) ;
+   DEK encapsulée sous la KEK du niveau avec
+   `0x01 | 0x05 | thesis_id | object_id | slot | niveau | len | kek_id`.
+4. **Écriture** par `vault.services.sealing(...)` : droits (action métier ET
+   accès au niveau) vérifiés hors transaction et refus journalisé, puis
+   transaction et verrou partagé de la KEK **avant** les verrous de lignes de
+   l'appelant ; l'appelant appelle `audit()` en dernier dans le bloc ; un
+   `seal()` après `audit()` lève `LockOrderError`.
+5. **Lecture** par `open_texts(...)` : une requête par page ; un texte d'un
+   niveau que le lecteur ne voit pas revient `RESTRICTED` (« Contenu
+   restreint ») ; la lecture d'un texte `CONFIDENTIAL` est journalisée
+   (`SEALED_TEXT_READ`, un événement par appel, emplacements et identifiants
+   seulement) ; la session ouverte avec second facteur suffit pour l'afficher
+   (pas de second facteur récent, contrairement au téléchargement d'un
+   document `CONFIDENTIAL`).
+6. **Rotation** : `rewrap_batch` ré-encapsule aussi les DEK des textes ; un
+   compteur de références par domaine empêche de retirer une KEK encore utilisée.
+
+**Ce qui reste visible** pour qui lit la base : thèse, emplacement, objet,
+niveau, `kek_id`, dates, auteur, et la **longueur du texte à 64 octets près**
+(tranche `⌈(n+1)/64⌉`). Limite assumée : quelqu'un qui peut écrire dans la
+base peut remettre une **ancienne** valeur du même emplacement (comme pour les
+documents) ; l'historique des révisions et le journal d'audit le rendent visible.
+Les contraintes de base refusent un chiffré dont la longueur n'est pas celle
+d'un texte bourré, et une `kek_id` d'un autre domaine que le niveau.
+
 ## Dossier administratif (M3)
 
 | En clair (base de données) | Chiffré (coffre, M2) |
@@ -96,10 +138,40 @@ fichier téléchargé est reconstruit depuis le titre nettoyé
   seul dans le courtier et les journaux, `EMAIL_TIMEOUT = 10` (une ligne de rappel
   verrouillée ne reste jamais bloquée par un serveur SMTP muet).
 
+## Objectifs (M4)
+
+- **Niveaux** d'un objectif : `PUBLIC` (par défaut ; le formulaire avertit qu'il
+  est visible par le CSI, extérieur à l'encadrement), `INTERNAL_LIRMM`,
+  `CONFIDENTIAL`. `INTERNAL_ST` est refusé (le directeur, qui approuve, ne le lit
+  pas). Révisions, notes et commentaires suivent le niveau de leur objectif ; un
+  changement de niveau rescelle toutes ces dépendances.
+- **En clair** : thèse, année, catégorie, échéance, poids, statut, avancement,
+  niveau, approbation et prise de connaissance (qui, quand), marques « modifié »
+  et « résultat déclaré », valeurs non textuelles d'une révision (date, poids,
+  niveau, statut). **Scellé** : intitulé, description, critère, motif, anciennes
+  et nouvelles valeurs textuelles, notes, commentaires. Les statistiques
+  n'ouvrent aucun texte (test).
+- **Droits** : écrire = doctorant ; approuver et prendre connaissance = directeur,
+  second facteur de moins de 10 min (vue et service) ; commenter et lire les
+  commentaires = `OBJECTIVE_COMMENT` (jamais le CSI : ni la page, ni le fragment,
+  ni le courriel) ; un rôle sans accès au niveau lit « Contenu restreint ».
+- **Journal** : noms de champs et nombres seulement ; une seule lecture
+  `CONFIDENTIAL` journalisée par requête (`SEALED_TEXT_READ`).
+- **Résumé hebdomadaire** : un lien seulement, envoyé à un encadrant s'il y a de
+  l'activité, un retard ou (directeur) une prise de connaissance sur les
+  objectifs qu'il peut lire ; le courtier ne voit que l'identifiant.
+- **Titres** jamais dans une URL, un `<title>`, un journal, une page 403 ni un
+  courriel (tests).
+
 ## Authentification
 
 - Identifiant = courriel ; hasher Django `Argon2PasswordHasher` en premier.
 - MFA obligatoire pour tous ; WebAuthn recommandé.
+- TOTP : période de 30 s, **tolérance d'un pas** (`MFA_TOTP_TOLERANCE = 1`,
+  RFC 6238 § 5.2). La fenêtre d'allauth est symétrique : les codes des pas
+  k-1, k et k+1 sont acceptés (90 s). Chaque code est à usage unique sur toute
+  la fenêtre (marqueur dans le cache partagé) ; l'étape du second facteur est
+  limitée à 5 essais. Probabilité qu'un essai au hasard réussisse : 3 × 10⁻⁶.
 - Ré-authentification (< 10 min) pour : valider (dossier administratif :
   approuver, refuser, rouvrir), changer un rôle, télécharger un document
   `CONFIDENTIAL`, exporter un rapport. Le mot de passe seul ne suffit pas.

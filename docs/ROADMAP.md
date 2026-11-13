@@ -9,7 +9,7 @@ critères d'acceptation de la fiche tous validés.
 | [x] | M1 — Comptes, rôles, invitations, MFA | `modules/M01-comptes.md` | M0 | déc. 2026 |
 | [x] | M2 — Coffre : documents chiffrés et journal d'audit | `modules/M02-coffre.md` | M1 | déc. 2026 |
 | [x] | M3 — Dossier administratif | `modules/M03-dossier-admin.md` | M2 | janv. 2027 |
-| [ ] | M4 — Objectifs et indicateurs | `modules/M04-objectifs.md` | M1 | janv. 2027 |
+| [x] | M4 — Objectifs et indicateurs | `modules/M04-objectifs.md` | M1 | janv. 2027 |
 | [ ] | M5 — Réunions et présentations | `modules/M05-reunions.md` | M2, M4 | févr. 2027 |
 | [ ] | M6 — Conférences et deadlines | `modules/M06-conferences.md` | M1 | févr. 2027 |
 | | **MVP — mise en service avec les encadrants** | | M0–M6 | **mars 2027** |

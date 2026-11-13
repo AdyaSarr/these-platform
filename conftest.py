@@ -21,6 +21,17 @@ DB_UNREACHABLE_MESSAGE = (
 )
 
 
+def pytest_terminal_summary(terminalreporter: Any, exitstatus: int, config: pytest.Config) -> None:
+    """Print pytest-randomly's seed at the END, in every mode.
+
+    Its own header line is hidden by -q, and the end of the output is what a
+    `tail` keeps: without this, a run failing at random could not be replayed.
+    """
+    seed = getattr(config.option, "randomly_seed", None)
+    if isinstance(seed, int):
+        terminalreporter.write_line(f"pytest-randomly: replay with --randomly-seed={seed}")
+
+
 @pytest.fixture(scope="session", autouse=True)
 def _test_clock() -> Generator[None]:
     """Run the whole suite as if it started at ``TEST_CLOCK`` (ISO 8601 with offset).

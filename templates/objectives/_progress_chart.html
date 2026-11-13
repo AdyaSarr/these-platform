@@ -1,0 +1,32 @@
+{% load i18n %}{% if chart %}
+<figure class="chart">
+  <svg class="chart-svg" viewBox="0 0 {{ chart.width }} {{ chart.height }}" role="img" aria-labelledby="progress-chart-title progress-chart-desc">
+    <title id="progress-chart-title">{% translate "Monthly progress" %}</title>
+    <desc id="progress-chart-desc">{% translate "Weighted progress at the end of each month. The table below gives the same values." %}</desc>
+    {% for tick in chart.y_ticks %}
+    <line class="chart-grid" x1="{{ chart.left }}" x2="{{ chart.right }}" y1="{{ tick.y }}" y2="{{ tick.y }}"/>
+    <text class="chart-tick" x="{{ chart.left }}" y="{{ tick.y }}" dx="-6" dy="4" text-anchor="end">{{ tick.label }}</text>
+    {% endfor %}
+    {% for segment in chart.segments %}
+    <polyline class="chart-line" fill="none" points="{{ segment }}"/>
+    {% endfor %}
+    {% for point in chart.points %}
+    <circle class="chart-dot" cx="{{ point.x }}" cy="{{ point.y }}" r="3"><title>{{ point.label }} : {{ point.percent }} %</title></circle>
+    {% endfor %}
+    {% for label in chart.x_labels %}
+    <text class="chart-tick" x="{{ label.x }}" y="{{ chart.label_y }}" text-anchor="middle">{{ label.label }}</text>
+    {% endfor %}
+  </svg>
+  <table class="chart-data">
+    <caption>{% translate "Weighted progress by month" %}</caption>
+    <thead><tr><th scope="col">{% translate "Month" %}</th><th scope="col">{% translate "Weighted progress" %}</th></tr></thead>
+    <tbody>
+      {% for label, percent in chart.table %}
+      <tr><th scope="row">{{ label }}</th><td>{% if percent is None %}—{% else %}{{ percent }} %{% endif %}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</figure>
+{% else %}
+<p class="chart-empty">{% translate "No progress to show yet." %}</p>
+{% endif %}

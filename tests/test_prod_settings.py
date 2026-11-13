@@ -40,6 +40,8 @@ SETTING_NAMES = (
     "MFA_TRUST_ENABLED",
     "ACCOUNT_LOGIN_ON_PASSWORD_RESET",
     "MFA_WEBAUTHN_ALLOW_INSECURE_ORIGIN",
+    "MFA_TOTP_TOLERANCE",
+    "MFA_TOTP_PERIOD",
 )
 
 
@@ -140,6 +142,69 @@ def test_prod_refuses_unsafe_environment(
     assert expected_in_error in result.stderr
 
 
+# Every variable prod cannot run without: absent, empty, or a value that would
+# start a broken or leaky platform. The message names the variable and says what
+# to give; never django-environ's raw KeyError chain.
+REQUIRED_CASES = [
+    ({"DJANGO_SECRET_KEY": None}, "DJANGO_SECRET_KEY is required"),
+    ({"DJANGO_SECRET_KEY": ""}, "DJANGO_SECRET_KEY is required"),
+    ({"DATABASE_URL": None}, "DATABASE_URL is required"),
+    ({"DATABASE_URL": ""}, "DATABASE_URL is required"),
+    ({"DATABASE_URL": "nosuchdb://x"}, "DATABASE_URL must be a postgres:// URL"),
+    ({"DATABASE_URL": "sqlite:///db.sqlite3"}, "DATABASE_URL must be a postgres:// URL"),
+    ({"REDIS_URL": None}, "REDIS_URL is required"),
+    ({"REDIS_URL": "  "}, "REDIS_URL is required"),
+    ({"REDIS_URL": "http://127.0.0.1:6379"}, "REDIS_URL must be a redis:// or rediss:// URL"),
+    ({"EMAIL_URL": None}, "EMAIL_URL is required"),
+    ({"EMAIL_URL": ""}, "EMAIL_URL is required"),
+    ({"EMAIL_URL": "not a url"}, "EMAIL_URL must be an SMTP URL"),
+    ({"EMAIL_URL": "consolemail://"}, "EMAIL_URL must be an SMTP URL"),
+    ({"EMAIL_URL": "dummymail://"}, "EMAIL_URL must be an SMTP URL"),
+    ({"DEFAULT_FROM_EMAIL": None}, "DEFAULT_FROM_EMAIL is required"),
+    ({"DEFAULT_FROM_EMAIL": ""}, "DEFAULT_FROM_EMAIL is required"),
+    ({"DEFAULT_FROM_EMAIL": "noreply@localhost"}, "DEFAULT_FROM_EMAIL must be an address"),
+    ({"DEFAULT_FROM_EMAIL": "pas une adresse"}, "DEFAULT_FROM_EMAIL must be an address"),
+]
+
+
+@pytest.mark.parametrize(("overrides", "message"), REQUIRED_CASES)
+def test_a_missing_or_unusable_variable_has_a_clear_message(
+    overrides: dict[str, str | None], message: str
+) -> None:
+    result = run_python("import django; django.setup()", prod_env(**overrides))
+    assert result.returncode != 0
+    last = result.stderr.strip().splitlines()[-1]
+    assert last.startswith("django.core.exceptions.ImproperlyConfigured: "), last
+    assert message in last, last
+    # Not django-environ's raw error, nor the KeyError it chains.
+    assert "environ/environ.py" not in result.stderr
+    assert "KeyError" not in result.stderr
+    assert "Set the " not in last
+
+
+@pytest.mark.parametrize(
+    "email_url",
+    [
+        "smtp://smtp.example.org:25",
+        "smtp+tls://u:p@smtp.example.org:587",  # pragma: allowlist secret
+        "smtp+ssl://u:p@smtp.example.org:465",  # pragma: allowlist secret
+    ],
+)
+def test_every_smtp_url_is_accepted(email_url: str) -> None:
+    result = run_python("import django; django.setup()", prod_env(EMAIL_URL=email_url))
+    assert result.returncode == 0, result.stderr
+
+
+def test_the_message_never_echoes_a_secret() -> None:
+    """A malformed URL may hold a password: the message names the variable only."""
+    result = run_python(
+        "import django; django.setup()",
+        prod_env(EMAIL_URL="consolemail://u:SECRET-PW-123@x"),  # pragma: allowlist secret
+    )
+    assert result.returncode != 0
+    assert "SECRET-PW-123" not in result.stderr
+
+
 def test_check_deploy_has_no_warning() -> None:
     result = run_manage("check", "--deploy", "--fail-level", "WARNING", env=prod_env())
     assert result.returncode == 0, result.stdout + result.stderr
@@ -158,3 +223,6 @@ def test_mfa_hardening(prod: dict[str, Any]) -> None:
     assert prod["MFA_TRUST_ENABLED"] is False
     assert prod["ACCOUNT_LOGIN_ON_PASSWORD_RESET"] is False
     assert prod["MFA_WEBAUTHN_ALLOW_INSECURE_ORIGIN"] is None  # dev only
+    # One 30-second step on each side (allauth's window is symmetric), docs/decisions.md.
+    assert prod["MFA_TOTP_TOLERANCE"] == 1
+    assert prod["MFA_TOTP_PERIOD"] == 30

@@ -35,7 +35,11 @@ class DashboardBlock:
 DASHBOARD_BLOCKS: tuple[DashboardBlock, ...] = (
     DashboardBlock("team", Action.VIEW_TEAM, _("Team"), "accounts/blocks/team.html"),
     DashboardBlock(
-        "objectives", Action.OBJECTIVE_READ, _("Objectives"), "accounts/blocks/upcoming.html"
+        "objectives",
+        Action.OBJECTIVE_READ,
+        _("Objectives"),
+        "objectives/blocks/dashboard.html",
+        data="apps.objectives.services.dashboard_block",
     ),
     DashboardBlock("meetings", Action.MEETING_READ, _("Meetings"), "accounts/blocks/upcoming.html"),
     DashboardBlock(

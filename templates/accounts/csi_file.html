@@ -5,4 +5,5 @@
   <h1>{% translate "CSI file" %}</h1>
   <p>{{ thesis.title }}</p>
   <p class="muted">{% translate "The CSI file will be available in a later module." %}</p>
+  <p><a href="{% url 'objectives:dashboard' thesis_id=thesis.pk %}">{% translate "Objectives (read only)" %}</a></p>
 {% endblock %}

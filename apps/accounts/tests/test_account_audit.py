@@ -114,8 +114,7 @@ def test_mfa_events_are_audited_without_secrets(django_capture_on_commit_callbac
     import time_machine
     from allauth.mfa.recovery_codes.internal.auth import RecoveryCodes
 
-    from apps.accounts.tests.factories import totp_code
-    from apps.accounts.tests.helpers import mfa_login, password_login
+    from apps.accounts.tests.helpers import mfa_login, password_login, submit_totp
 
     user = UserFactory.create(password=PASSWORD)
     codes = RecoveryCodes.activate(user).get_unused_codes()
@@ -131,7 +130,7 @@ def test_mfa_events_are_audited_without_secrets(django_capture_on_commit_callbac
         third.post(reverse("mfa_authenticate"), {"code": codes[0]})  # recovery code used
     with time_machine.travel(t0 + dt.timedelta(minutes=1)):
         secret: str = user.totp_secret  # type: ignore[attr-defined]  # set by the factory
-        client.post(reverse("mfa_reauthenticate"), {"code": totp_code(secret)})
+        submit_totp(client, reverse("mfa_reauthenticate"), secret)
         # allauth sends the reset signal on commit
         with django_capture_on_commit_callbacks(execute=True):
             client.post(reverse("mfa_generate_recovery_codes"))  # reset
@@ -160,7 +159,7 @@ def test_totp_enrollment_is_audited() -> None:
     from allauth.mfa.totp.internal.auth import SECRET_SESSION_KEY
 
     from apps.accounts.reauth import record_password_authentication  # noqa: F401  (flow under test)
-    from apps.accounts.tests.factories import totp_code
+    from apps.accounts.tests.helpers import submit_totp
 
     user = UserFactory.create(password=PASSWORD, mfa=False)
     client = Client()
@@ -171,7 +170,7 @@ def test_totp_enrollment_is_audited() -> None:
         client.post(reverse("account_reauthenticate"), {"password": PASSWORD})
         client.get(reverse("mfa_activate_totp"))
         secret = client.session[SECRET_SESSION_KEY]
-    response = client.post(reverse("mfa_activate_totp"), {"code": totp_code(secret)})
+    response = submit_totp(client, reverse("mfa_activate_totp"), secret)
     assert response.status_code == 302
     # Enrolling TOTP also creates the recovery codes: two additions, both logged.
     added = AuditEvent.objects.filter(action="MFA_FACTOR_ADDED", actor=user)

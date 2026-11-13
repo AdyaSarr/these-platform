@@ -116,6 +116,19 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       *Vérifier* : la commande `check` ci-dessus affiche « System check
       identified no issues ».
 
+- [ ] **Années de thèse après la migration de M4.**
+      ```bash
+      manage.py migrate                                    # dont objectives.0001
+      manage.py objectives_sync_years --all                # idempotent
+      ```
+      *Pourquoi* : les thèses créées après M4 reçoivent leurs années (CIFRE et
+      universitaires) par le `post_save` de `Thesis` ; celles créées avant
+      n'en ont aucune, et leurs objectifs ne pourraient être rattachés à rien.
+      La migration n'importe pas `sync_years` (code métier hors migration).
+      *Vérifier* : une seconde exécution affiche « 0 created, 0 updated,
+      0 deleted » ; toute ligne « kept » (année en trop gardée parce que des
+      objectifs la référencent) est examinée avant de modifier la date de fin.
+
 - [ ] **Téléchargements en `Content-Disposition: attachment` + `nosniff` (M2).**
       *Pourquoi* : la CSP autorise `script-src 'self'` ; un fichier déposé servi
       en ligne depuis notre domaine pourrait être exécuté comme script.
@@ -207,6 +220,24 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       Un envoi en échec est retenté par les exécutions suivantes, 3 fois au plus.
       *Vérifier* : `systemctl list-timers` montre le timer ; la sortie de la
       commande ne contient que des nombres (ni libellé, ni adresse).
+
+- [ ] **Résumé hebdomadaire des objectifs (M4) : un timer le lundi.**
+      *Timer systemd* (utilisateur du serveur), chaque lundi à 08 h 00 Europe/Paris
+      (`OnCalendar=Mon *-*-* 08:00:00 Europe/Paris`, `Persistent=true` pour
+      rattraper un lundi manqué) :
+      ```
+      manage.py objectives_weekly_summary
+      ```
+      La commande met les courriels en file (worker Celery démarré) ; la semaine
+      résumée va du lundi précédent 00 h 00 au lundi 00 h 00, **heure de Paris**.
+      Destinataires : directeur, co-encadrants, tuteur actifs, seulement s'il y a
+      quelque chose sur les objectifs qu'ils peuvent lire (activité, retard, ou à
+      prendre en connaissance pour le directeur). La relancer dans la semaine
+      n'envoie rien deux fois (`WeeklySummaryLog`, contrainte d'unicité) ; un
+      envoi en échec est retenté par les exécutions suivantes de la semaine, 3
+      fois au plus. Courriel : un lien seulement.
+      *Vérifier* : `systemctl list-timers` montre le timer ; la sortie de la
+      commande ne contient que des nombres.
 
 ## Rappels de configuration
 

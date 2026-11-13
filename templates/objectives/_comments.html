@@ -1,0 +1,21 @@
+{% load i18n %}{# Comment thread: OBJECTIVE_COMMENT only (never sent to a CSI member). Returned alone to htmx. #}
+<div id="comments-{{ objective.pk }}">
+  {% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
+  {% if comments %}
+  <ul class="comment-list">
+    {% for comment, body in comments %}
+      <li><strong>{{ comment.author.get_full_name|default:comment.author.email }}</strong>, {{ comment.created_at|date:"SHORT_DATETIME_FORMAT" }}<br>{% include "objectives/_text.html" with value=body %}</li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">{% translate "No comment yet." %}</p>
+  {% endif %}
+  <form class="stack" method="post"
+        action="{% url 'objectives:comments' thesis_id=thesis.pk objective_id=objective.pk %}"
+        hx-post="{% url 'objectives:comments' thesis_id=thesis.pk objective_id=objective.pk %}"
+        hx-target="#comments-{{ objective.pk }}" hx-swap="outerHTML">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">{% translate "Comment" %}</button>
+  </form>
+</div>

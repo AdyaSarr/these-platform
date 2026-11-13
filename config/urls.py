@@ -53,6 +53,7 @@ urlpatterns: list[URLPattern | URLResolver] = [
     path("t/<uuid:thesis_id>/", include("apps.accounts.urls")),
     path("t/<uuid:thesis_id>/documents/", include("apps.vault.urls")),
     path("t/<uuid:thesis_id>/admin-file/", include("apps.admin_file.urls")),
+    path("t/<uuid:thesis_id>/objectives/", include("apps.objectives.urls")),
     # Invitation acceptance (apps/accounts/invitation_views.py). "accept/" first:
     # the <str:token> route would match it otherwise.
     path("invitation/", invitation_views.invitation_continue, name="invitation_continue"),

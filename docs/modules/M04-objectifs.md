@@ -6,6 +6,9 @@ avec des statistiques de suivi visibles par les encadrants.
 
 ## Modèles
 - `ThesisYear(thesis, number, cifre_start, cifre_end, academic_start, academic_end)`
+- `Objective.year` désigne l'**année CIFRE** (horloge des 36 mois, depuis la date
+  d'effet). Les rapports CSI (M8) sélectionnent par dates dans l'année
+  universitaire (`docs/decisions.md`).
 - `Objective(thesis, year, title, description, success_criterion, category:
   RESEARCH|PUBLICATION|TRAINING|ADMIN|OTHER, due_date, weight (1–3), status:
   PLANNED|IN_PROGRESS|ACHIEVED|PARTIAL|NOT_ACHIEVED|DROPPED, progress (0–100),
@@ -19,7 +22,13 @@ avec des statistiques de suivi visibles par les encadrants.
 1. Le doctorant propose les objectifs d'une année ; le directeur les approuve
    (ré-authentification) ; ensuite toute modification de titre, critère ou
    échéance exige une raison et crée une révision.
-2. Mises à jour d'avancement datées, avec preuve facultative.
+2. Mises à jour d'avancement datées, avec preuve facultative. Un changement de
+   **résultat** (`ACHIEVED`, `PARTIAL`, `NOT_ACHIEVED`, déclaré ou retiré) d'un
+   objectif approuvé compte aussitôt dans les statistiques, mais l'objectif est
+   marqué « résultat déclaré, à prendre en connaissance » jusqu'à la prise de
+   connaissance du directeur (même mécanisme que « modifié depuis
+   l'approbation » : second facteur récent, journalisée) ; il figure dans son
+   résumé hebdomadaire (`services.pending_acknowledgements`).
 3. Encadrants : commentaires sur un objectif (fil simple).
 4. Tableau de bord : taux d'atteinte pondéré par année, objectifs en retard,
    évolution mensuelle (graphique simple, données agrégées côté serveur),
@@ -27,13 +36,28 @@ avec des statistiques de suivi visibles par les encadrants.
 5. Résumé hebdomadaire envoyé aux encadrants (lien seulement).
 
 ## Critères d'acceptation
-- [ ] Toute modification d'un objectif approuvé sans raison est refusée (test).
-- [ ] Le taux d'atteinte pondéré est calculé correctement (tests unitaires sur
-      `services.compute_stats`).
-- [ ] Un objectif `DROPPED` apparaît dans les statistiques comme abandonné, pas
+- [x] Toute modification d'un objectif approuvé sans raison est refusée (test).
+- [x] Le taux d'atteinte pondéré est calculé correctement (tests unitaires sur
+      `stats.compute_stats`).
+- [x] Un objectif `DROPPED` apparaît dans les statistiques comme abandonné, pas
       supprimé.
-- [ ] Un membre du CSI voit les objectifs en lecture seule, sans les commentaires
+- [x] Un membre du CSI voit les objectifs en lecture seule, sans les commentaires
       internes.
+
+Ajoutés au plan validé de M4 :
+- [x] Aucun texte d'objectif en clair : intitulé, description, critère, motifs,
+      valeurs de révision, notes et commentaires scellés (`vault.SealedText`),
+      bourrés à 64 octets, liés à (thèse, objet, champ, niveau).
+- [x] Approuver (un objectif ou l'année), prendre connaissance et changer de
+      niveau exigent un second facteur de moins de 10 minutes, après le contrôle
+      des droits ; la lecture d'un texte `CONFIDENTIAL` est journalisée, une fois
+      par requête.
+- [x] Un changement de résultat d'un objectif approuvé compte aussitôt et reste
+      marqué jusqu'à la prise de connaissance du directeur.
+- [x] Résumé hebdomadaire : un lien seulement, aux seuls encadrants qui ont
+      quelque chose à voir sur les objectifs qu'ils peuvent lire.
+- [x] Années de thèse : double bornage (CIFRE, universitaire), dates à Paris ;
+      `Objective.year` est l'année CIFRE.
 
 ## Notes issues de M1
 - Droits (`apps/accounts/permissions.py`) : `OBJECTIVE_READ` donne accès aux

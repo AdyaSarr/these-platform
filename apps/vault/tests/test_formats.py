@@ -39,7 +39,8 @@ def test_domain_codes_are_frozen() -> None:
         "MFA_SECRETS": 0x80,
     }
     assert f.FORMAT_V1 == 0x01
-    assert [c.value for c in f.Context] == [0x01, 0x02, 0x03]
+    # Append only: 0x04 and 0x05 added by sealed texts (M4).
+    assert [c.value for c in f.Context] == [0x01, 0x02, 0x03, 0x04, 0x05]
 
 
 def test_codes_are_unique_and_every_domain_has_one() -> None:

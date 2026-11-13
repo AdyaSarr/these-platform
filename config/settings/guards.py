@@ -1,6 +1,32 @@
-"""Start-up guards shared by the settings modules."""
+"""Start-up guards shared by the settings modules.
+
+Every refusal is an ImproperlyConfigured that names the variable and says what
+to give, and never echoes its value (a URL may hold a password).
+"""
+
+import os
+from collections.abc import Iterable
 
 from django.core.exceptions import ImproperlyConfigured
+
+_SEE = "see .env.example and docs/DEPLOYMENT.md"
+
+
+def required(name: str, what: str) -> str:
+    """The non-blank value of the environment variable ``name``, or a clear refusal."""
+    value = os.environ.get(name, "").strip()
+    if not value:
+        raise ImproperlyConfigured(f"{name} is required and is missing or empty: {what} ({_SEE}).")
+    return value
+
+
+def require_scheme(name: str, value: str, schemes: Iterable[str], what: str) -> str:
+    """``value`` must start with one of ``schemes`` ("postgres", ...) followed by "://"."""
+    scheme, sep, _rest = value.partition("://")
+    if not sep or scheme.lower() not in set(schemes):
+        raise ImproperlyConfigured(f"{name} must be {what} ({_SEE}).")
+    return value
+
 
 LOCAL_HOSTS = frozenset({"localhost", "127.0.0.1", "[::1]", "testserver"})
 

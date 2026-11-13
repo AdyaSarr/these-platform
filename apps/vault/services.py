@@ -1,4 +1,5 @@
-"""Vault services: the only door to encrypted documents, MFA secrets and the audit log.
+"""Vault services: the only door to encrypted documents, sealed texts, MFA secrets
+and the audit log.
 
 Every function here follows the same rules (docs/modules/M02-coffre.md):
 - rights are checked HERE (accounts.permissions), even if a view did it too; a
@@ -20,7 +21,9 @@ KEK lock of the next one, which vault.keys refuses (LockOrderError).
 
 from __future__ import annotations
 
-from collections.abc import Callable
+import uuid
+from collections.abc import Callable, Iterable, Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any
@@ -36,11 +39,13 @@ from apps.accounts.models import Thesis, User
 from apps.accounts.permissions import Action, can, can_access_document, can_access_level, roles_of
 from apps.core.confidentiality import ConfidentialityLevel
 
-from . import crypto, formats, keys, storage
+from . import crypto, formats, keys, locks, storage
 from .audit import FORBIDDEN_KEY_FRAGMENTS, AuditAction, audit, canonical_ip
 from .errors import (
+    INTEGRITY_MESSAGE,
     AuditError,
     BlobNotFoundError,
+    LockOrderError,
     ReauthenticationRequiredError,
     StorageError,
     UnknownKekError,
@@ -48,7 +53,7 @@ from .errors import (
     VaultKeyError,
 )
 from .formats import LEVEL_TO_DOMAIN, KeyDomain
-from .models import Document, DocumentAccessGrant, DocumentVersion
+from .models import Document, DocumentAccessGrant, DocumentVersion, SealedText
 from .validation import FILE_TYPES, validate_upload
 
 if TYPE_CHECKING:
@@ -58,9 +63,11 @@ if TYPE_CHECKING:
 
 __all__ = [
     "FORBIDDEN_KEY_FRAGMENTS",
+    "RESTRICTED",
     "AuditAction",
     "AuditError",
     "Opened",
+    "TextSealer",
     "add_version",
     "audit",
     "canonical_ip",
@@ -70,9 +77,12 @@ __all__ = [
     "download_name",
     "encrypt_secret",
     "grant_access",
+    "open_text",
+    "open_texts",
     "open_version",
     "revoke_access",
     "rewrap_batch",
+    "sealing",
     "store",
 ]
 
@@ -439,6 +449,312 @@ def revoke_access(*, grant: DocumentAccessGrant, user: User) -> None:
         )
 
 
+# =========================================================================== sealed texts
+#
+# Short texts of business objects (titles, notes, comments), one SealedText row
+# per (slot, object): the slot names the model and the field. Each value is
+# padded (ISO/IEC 7816-4, 64-byte blocks), sealed under a DEK of its own, the
+# DEK wrapped under the KEK of the level. AD = (thesis, object, slot, level).
+#
+# Writing goes through sealing(), a context manager that checks the rights,
+# opens THE transaction and takes the KEK lock; the business service then locks
+# its rows, seals, and calls audit() last, inside the block:
+#
+#     with services.sealing(user=u, thesis=t, level=lvl, action=Action.OBJECTIVE_WRITE) as s:
+#         objective = Objective.objects.select_for_update().get(pk=...)
+#         s.seal(objective, "title", title)
+#         audit(AuditAction.OBJECTIVE_REVISED, ...)
+
+
+class _Restricted:
+    """What open_texts() gives for a text whose level the reader may not see."""
+
+    _instance: _Restricted | None = None
+
+    def __new__(cls) -> _Restricted:
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def __repr__(self) -> str:
+        return "RESTRICTED"
+
+    def __bool__(self) -> bool:
+        return False
+
+
+RESTRICTED = _Restricted()
+
+TextKey = tuple[uuid.UUID, str]  # (object pk, field name)
+
+
+def _slot_of(obj: Any, name: str) -> tuple[int, uuid.UUID]:
+    """(slot code, object id) of ``obj.<name>``; the slot is named by the model's label."""
+    meta = getattr(obj, "_meta", None)
+    label = getattr(meta, "label", None)
+    code = formats.slot_code(f"{label}.{name}")
+    if not isinstance(obj.pk, uuid.UUID):
+        raise TypeError("a sealed text belongs to an object with a UUID primary key")
+    return code, obj.pk
+
+
+def _text_ad(row: SealedText, level: ConfidentialityLevel) -> bytes:
+    return formats.text_ad(
+        thesis_id=row.thesis_id, object_id=row.object_id, slot=row.slot, level=level
+    )
+
+
+def _text_wrap_ad(row: SealedText, level: ConfidentialityLevel) -> Callable[[str], bytes]:
+    def ad_for(kek_id: str) -> bytes:
+        return formats.text_dek_wrap_ad(
+            thesis_id=row.thesis_id,
+            object_id=row.object_id,
+            slot=row.slot,
+            level=level,
+            kek_id=kek_id,
+        )
+
+    return ad_for
+
+
+def _text_bytes(text: str) -> bytes:
+    """UTF-8 of ``text``: no NUL (PostgreSQL text refuses it), no lone surrogate."""
+    if not isinstance(text, str):
+        raise TypeError("a sealed text must be a str")
+    if "\x00" in text:
+        raise ValueError("NUL character in a text")
+    data = text.encode("utf-8")  # UnicodeEncodeError (a ValueError) on a lone surrogate
+    if len(data) > formats.MAX_TEXT_BYTES:
+        raise ValueError(f"text too long: at most {formats.MAX_TEXT_BYTES} bytes in UTF-8")
+    return data
+
+
+@sensitive_variables()
+def _seal_text_row(row: SealedText, level: ConfidentialityLevel, data: bytes) -> None:
+    """Seal ``data`` into ``row`` (not saved) under a fresh DEK; KEK lock already held."""
+    dek = crypto.new_dek()
+    row.level = level.value
+    sealed = crypto.aead_encrypt(dek, formats.pad_text(data), _text_ad(row, level))
+    row.ciphertext = formats.pack_blob(sealed)
+    row.kek_id, row.wrapped_dek = keys.wrap(LEVEL_TO_DOMAIN[level], dek, _text_wrap_ad(row, level))
+
+
+@sensitive_variables()
+def _open_text_row(row: SealedText, level: ConfidentialityLevel) -> bytes:
+    """Unwrap, decrypt and unpad one row, the level being the row's (it is in the AD)."""
+    ad_for = _text_wrap_ad(row, level)
+    dek = keys.unwrap(row.kek_id, bytes(row.wrapped_dek), ad_for(row.kek_id))
+    sealed = formats.unpack_blob(bytes(row.ciphertext))
+    padded = crypto.aead_decrypt(dek, sealed, _text_ad(row, level))
+    return formats.unpad_text(padded)
+
+
+def _decode(data: bytes) -> str:
+    try:
+        return data.decode("utf-8")
+    except UnicodeDecodeError:  # authentic but not what _text_bytes wrote
+        raise VaultIntegrityError(INTEGRITY_MESSAGE) from None
+
+
+def _audit_text_failure(exc: Exception, *, user: Any, row: SealedText) -> None:
+    if isinstance(exc, VaultIntegrityError):
+        action = AuditAction.SEALED_TEXT_INTEGRITY_FAILED
+    else:
+        action = AuditAction.SEALED_TEXT_KEK_UNAVAILABLE
+    _audit_now(
+        action,
+        actor=user,
+        thesis=Thesis.objects.get(pk=row.thesis_id),
+        slot=formats.SLOT_NAMES[row.slot],
+        object_ids=[str(row.object_id)],
+        error=type(exc).__name__,
+    )
+
+
+def _deny_text(user: Any, operation: str, **kwargs: Any) -> PermissionDenied:
+    _audit_now(AuditAction.SEALED_TEXT_ACCESS_DENIED, actor=user, operation=operation, **kwargs)
+    return PermissionDenied()
+
+
+class TextSealer:
+    """Seals texts of one thesis at one level; valid only inside its sealing() block."""
+
+    def __init__(self, *, user: User, thesis: Thesis, level: ConfidentialityLevel) -> None:
+        self._user = user
+        self._thesis = thesis
+        self._level = level
+        self._closed = False
+        self._failed_row: SealedText | None = None
+
+    @property
+    def level(self) -> ConfidentialityLevel:
+        return self._level
+
+    def _usable(self, obj: Any, name: str) -> tuple[int, uuid.UUID]:
+        if self._closed:
+            raise RuntimeError("this sealer is closed: seal inside its sealing() block")
+        if locks.held(locks.AUDIT_NAMESPACE, locks.AUDIT_CHAIN_KEY):
+            # keys.wrap would accept it (the KEK lock is already held), but the
+            # convention is audit() LAST: nothing is sealed after it.
+            raise LockOrderError("seal requested after audit() in the same transaction")
+        code, object_id = _slot_of(obj, name)
+        if getattr(obj, "thesis_id", None) != self._thesis.pk:
+            raise ValueError("the object belongs to another thesis than the sealer's")
+        return code, object_id
+
+    def _locked_row(self, code: int, object_id: uuid.UUID) -> SealedText | None:
+        row = SealedText.objects.select_for_update().filter(slot=code, object_id=object_id).first()
+        if row is not None and row.thesis_id != self._thesis.pk:
+            raise VaultIntegrityError(INTEGRITY_MESSAGE)
+        return row
+
+    @sensitive_variables()
+    def seal(self, obj: Any, name: str, text: str) -> None:
+        """Store ``text`` as ``obj.<name>``, replacing the previous value (fresh DEK)."""
+        code, object_id = self._usable(obj, name)
+        data = _text_bytes(text)
+        row = self._locked_row(code, object_id) or SealedText(
+            thesis=self._thesis, slot=code, object_id=object_id, created_by=self._user
+        )
+        _seal_text_row(row, self._level, data)
+        row.save()
+
+    def erase(self, obj: Any, name: str) -> bool:
+        """Delete ``obj.<name>``; returns whether there was one."""
+        code, object_id = self._usable(obj, name)
+        row = self._locked_row(code, object_id)
+        if row is None:
+            return False
+        row.delete()
+        return True
+
+    @sensitive_variables()
+    def reseal(self, obj: Any, name: str) -> bool:
+        """Move ``obj.<name>`` to the sealer's level (new DEK); returns whether it moved.
+
+        The caller checked that the user may read the old level: refused otherwise.
+        """
+        code, object_id = self._usable(obj, name)
+        row = self._locked_row(code, object_id)
+        if row is None or row.level == self._level:
+            return False
+        old = ConfidentialityLevel(row.level)
+        if not can_access_level(self._user, self._thesis, old):
+            raise PermissionDenied()
+        try:
+            data = _open_text_row(row, old)
+        except (VaultIntegrityError, UnknownKekError):
+            self._failed_row = row  # audited by sealing(), once this transaction is rolled back
+            raise
+        _seal_text_row(row, self._level, data)
+        row.save()
+        return True
+
+
+@contextmanager
+def sealing(
+    *, user: User, thesis: Thesis, level: ConfidentialityLevel, action: Action
+) -> Iterator[TextSealer]:
+    """Open the transaction in which ``user`` seals texts of ``thesis`` at ``level``.
+
+    Rights first, outside any transaction (a refusal is audited and kept):
+    ``action`` on the thesis AND read access to ``level``. Then
+    transaction.atomic() and the KEK lock (shared) of the level, before any row
+    lock of the caller. The caller's audit() is the last call of the block.
+    """
+    if not isinstance(level, ConfidentialityLevel):
+        raise ValueError("level must be a ConfidentialityLevel member")
+    if not isinstance(action, Action):
+        raise ValueError("action must be an Action member")
+    if not (can(user, action, thesis) and can_access_level(user, thesis, level)):
+        raise _deny_text(user, "seal", thesis=thesis if thesis.pk else None, level=level.value)
+    sealer = TextSealer(user=user, thesis=thesis, level=level)
+    try:
+        with transaction.atomic():
+            keys.current_kek(LEVEL_TO_DOMAIN[level])  # shared KEK lock first
+            yield sealer
+    except (VaultIntegrityError, UnknownKekError) as exc:
+        if sealer._failed_row is not None:  # reseal() could not open the old value
+            _audit_text_failure(exc, user=user, row=sealer._failed_row)
+        raise
+    finally:
+        sealer._closed = True
+
+
+@sensitive_variables()
+def open_texts(
+    user: User, thesis: Thesis, items: Iterable[tuple[Any, str]], *, action: Action
+) -> dict[TextKey, str | _Restricted]:
+    """Decrypt the texts ``(obj, field)`` of ``thesis`` for ``user``, in one query.
+
+    Result keyed by (obj.pk, field): the text, RESTRICTED when the user may not
+    read its level, absent when there is no text. Refused (audited) without
+    ``action`` on the thesis, or for an object of another thesis (IDOR).
+    Reads of CONFIDENTIAL texts are audited, one event per call, after
+    decryption; an integrity or KEK failure is audited and raised.
+    """
+    if not isinstance(action, Action):
+        raise ValueError("action must be an Action member")
+    if not can(user, action, thesis):
+        raise _deny_text(user, "read", thesis=thesis if thesis.pk else None)
+    wanted: dict[tuple[int, uuid.UUID], TextKey] = {}
+    for obj, name in items:
+        code, object_id = _slot_of(obj, name)
+        if getattr(obj, "thesis_id", None) != thesis.pk:
+            raise _deny_text(user, "read", thesis=thesis, reason="other_thesis")
+        wanted[(code, object_id)] = (object_id, name)
+    if not wanted:
+        return {}
+    rows = SealedText.objects.filter(
+        thesis=thesis,
+        slot__in={code for code, _ in wanted},
+        object_id__in={object_id for _, object_id in wanted},
+    ).order_by("pk")
+    readable: dict[ConfidentialityLevel, bool] = {}
+    result: dict[TextKey, str | _Restricted] = {}
+    confidential: list[SealedText] = []
+    for row in rows:
+        key = wanted.get((row.slot, row.object_id))
+        if key is None:  # another (slot, object) pair of the same sets
+            continue
+        level = ConfidentialityLevel(row.level)
+        if level not in readable:
+            readable[level] = can_access_level(user, thesis, level)
+        if not readable[level]:
+            result[key] = RESTRICTED
+            continue
+        try:
+            result[key] = _decode(_open_text_row(row, level))
+        except (VaultIntegrityError, UnknownKekError) as exc:
+            _audit_text_failure(exc, user=user, row=row)
+            raise
+        if level is ConfidentialityLevel.CONFIDENTIAL:
+            confidential.append(row)
+    if confidential:
+        _audit_now(
+            AuditAction.SEALED_TEXT_READ,
+            actor=user,
+            thesis=thesis,
+            level=ConfidentialityLevel.CONFIDENTIAL.value,
+            count=len(confidential),
+            slots=sorted({formats.SLOT_NAMES[row.slot] for row in confidential}),
+            object_ids=sorted({str(row.object_id) for row in confidential}),
+        )
+    return result
+
+
+@sensitive_variables()
+def open_text(user: User, obj: Any, name: str, *, action: Action) -> str | _Restricted:
+    """One text of ``obj`` (its thesis is the object's): "" when there is none."""
+    thesis = Thesis.objects.get(pk=obj.thesis_id)
+    return open_texts(user, thesis, [(obj, name)], action=action).get((obj.pk, name), "")
+
+
+def sealed_texts_using(kek_id: str) -> int:
+    """Reference counter of the four level domains (registered in VaultConfig.ready)."""
+    return SealedText.objects.filter(kek_id=kek_id).count()
+
+
 # =========================================================================== MFA secrets
 
 
@@ -499,8 +815,8 @@ def rewrap_batch(domain: KeyDomain, *, limit: int = 100) -> int:
     """Move up to ``limit`` rows of ``domain`` to its current KEK; returns how many.
 
     One short transaction: shared KEK lock, row locks, re-wrap, audit last.
-    Documents keep their DEK and blob (only the wrapped DEK changes); MFA
-    secrets are re-sealed (they have no DEK).
+    Documents and sealed texts keep their DEK and ciphertext (only the wrapped
+    DEK changes); MFA secrets are re-sealed (they have no DEK).
     """
     with transaction.atomic():
         current = keys.current_kek(domain)
@@ -508,6 +824,8 @@ def rewrap_batch(domain: KeyDomain, *, limit: int = 100) -> int:
             count = _rewrap_mfa(current, limit)
         else:
             count = _rewrap_documents(domain, current, limit)
+            if count < limit:
+                count += _rewrap_texts(domain, current, limit - count)
         if count:
             audit(AuditAction.KEK_REWRAPPED, domain=domain.value, kek_id=current, rows=count)
     return count
@@ -536,6 +854,28 @@ def _rewrap_documents(domain: KeyDomain, current: str, limit: int) -> int:
         dek = keys.unwrap(row.kek_id, bytes(row.wrapped_dek), ad_for(row.kek_id))
         kek_id, wrapped = keys.wrap(domain, dek, ad_for)
         row.kek_id, row.wrapped_dek = kek_id, wrapped
+        row.save(update_fields=["kek_id", "wrapped_dek", "updated_at"])
+        count += 1
+    return count
+
+
+@sensitive_variables()
+def _rewrap_texts(domain: KeyDomain, current: str, limit: int) -> int:
+    level = DOMAIN_TO_LEVEL[domain]
+    rows = list(
+        SealedText.objects.select_for_update()
+        .filter(level=level.value)
+        .exclude(kek_id=current)
+        .order_by("pk")[:limit]
+    )
+    count = 0
+    for row in rows:
+        # Re-read after waiting behind a reseal(): trust the row's own level and KEK.
+        if row.level != level.value or keys.parse_kek_id(row.kek_id).domain is not domain:
+            continue
+        ad_for = _text_wrap_ad(row, level)
+        dek = keys.unwrap(row.kek_id, bytes(row.wrapped_dek), ad_for(row.kek_id))
+        row.kek_id, row.wrapped_dek = keys.wrap(domain, dek, ad_for)
         row.save(update_fields=["kek_id", "wrapped_dek", "updated_at"])
         count += 1
     return count
