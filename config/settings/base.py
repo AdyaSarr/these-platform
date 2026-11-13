@@ -212,6 +212,16 @@ MASTER_KEY = env.str("MASTER_KEY", default="")
 VAULT_KEY_PROVIDER = "env"
 VAULT_ENABLED_PROVIDERS = frozenset({"env"})
 
+# Encrypted blobs (apps/vault/storage.py). Outside every directory a web server
+# serves; checked at start-up. STRICT (prod): absolute path required, and wide
+# permissions on the directory refuse to run instead of only warning.
+VAULT_STORAGE_DIR = env.str("VAULT_STORAGE_DIR", default=str(BASE_DIR / "var" / "vault"))
+VAULT_STORAGE_STRICT = False
+
+# Uploads stay in memory, capped at 25 MB per request: never spooled in clear to
+# a temporary file (apps/vault/upload_handlers.py, docs/SECURITY.md).
+FILE_UPLOAD_HANDLERS = ["apps.vault.upload_handlers.LimitedMemoryUploadHandler"]
+
 # Absolute base URL of the platform, for links in e-mails (sent without a request).
 SITE_URL = env.str("DJANGO_SITE_URL", default="http://localhost:8000").rstrip("/")
 

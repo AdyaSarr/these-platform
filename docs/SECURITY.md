@@ -88,6 +88,23 @@ Taille max (25 Mo), liste blanche de types (PDF, PNG, JPEG, CSV, TXT, ZIP, TEX),
 vérification par contenu (pas seulement l'extension), antivirus ClamAV en prod,
 téléchargement via vue Django avec `Content-Disposition: attachment`.
 
+- **Aucun dépôt n'est jamais écrit en clair sur disque.** `FILE_UPLOAD_HANDLERS`
+  ne contient que `apps.vault.upload_handlers.LimitedMemoryUploadHandler` :
+  réception en mémoire, interrompue (`StopUpload`) dès que le total de la
+  requête dépasse 25 Mo ; `TemporaryFileUploadHandler` est exclu, car il écrirait
+  les dépôts de plus de 2,5 Mo dans le répertoire temporaire avant tout
+  chiffrement. Le proxy limite aussi la taille du corps de requête.
+- Validation (`apps/vault/validation.py`) : 25 Mo comptés sur les octets lus,
+  type reconnu par signature et égal à celui de l'extension, texte en UTF-8
+  strict sans caractère de contrôle ; `Content-Type` et nom fournis par le
+  client ignorés (le nom téléchargé est reconstruit depuis le titre).
+- Blobs (`apps/vault/storage.py`) : `<2 hex>/<32 hex>.blob`, nom tiré du CSPRNG ;
+  écriture `O_EXCL` en 0600 (dossiers 0700), `fsync` (`F_FULLFSYNC` sur macOS),
+  publication par `os.link` (jamais d'écrasement, refus si le système de
+  fichiers n'a pas de liens physiques), `fsync` du dossier ; lecture par
+  descripteurs de dossier avec `O_NOFOLLOW` à chaque niveau. `vault_gc` liste
+  orphelins, blobs manquants et anomalies, sans rien supprimer ni lire.
+
 ## Chaîne logicielle
 
 `pre-commit` : ruff, bandit, detect-secrets. CI : tests, `pip-audit`, Semgrep.

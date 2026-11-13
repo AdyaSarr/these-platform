@@ -31,6 +31,7 @@ CACHES = {
 }
 
 MFA_ENCRYPTION_REQUIRED = True
+VAULT_STORAGE_STRICT = True
 
 # Links in e-mails must point to the HTTPS site, never to the localhost default.
 if not SITE_URL.startswith("https://"):

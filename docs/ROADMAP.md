@@ -27,6 +27,13 @@ Avant toute mise en production : checklist de `docs/DEPLOYMENT.md` entièrement 
 
 Idées validées, sans module ni date pour l'instant.
 
+- **Purge explicite d'un document** (après M2) : en M2, un document n'est jamais
+  supprimé (seuls ses anciens blobs deviennent orphelins, listés par
+  `vault_gc`). Une exigence de ST ou du RGPD peut imposer de détruire un
+  document : commande ou action avec ré-authentification et journal, qui
+  efface les lignes, les `wrapped_dek` et les blobs, et rappelle que les
+  sauvegardes fixent le délai d'effacement réel (`docs/DEPLOYMENT.md`).
+
 - **Alerte de blocage de l'étape TOTP** (après M1) : quand la limitation des
   tentatives bloque l'étape du second facteur d'un compte, lui envoyer un courriel
   sans contenu (lien vers la plateforme seulement, CLAUDE.md règle 7). Le blocage

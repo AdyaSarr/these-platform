@@ -5,6 +5,8 @@ reachable (tests run on PostgreSQL only, see docs/decisions.md).
 """
 
 from collections.abc import Generator
+from pathlib import Path
+from typing import Any
 
 import pytest
 from django.db import OperationalError, connections
@@ -42,3 +44,12 @@ def _isolated_cache() -> Generator[None]:
     cache.clear()
     yield
     cache.clear()
+
+
+@pytest.fixture(autouse=True)
+def _vault_storage_in_tmp(settings: Any, tmp_path: Path) -> None:
+    """Blobs written by any test go to a per-test directory, never to var/ of the repo."""
+    settings.VAULT_STORAGE_DIR = str(tmp_path / "vault")
+    from apps.vault import storage
+
+    storage.init_root()  # what `manage.py vault_init` does

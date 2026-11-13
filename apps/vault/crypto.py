@@ -59,6 +59,11 @@ def new_token() -> str:
     return secrets.token_urlsafe(TOKEN_BYTES)
 
 
+def random_hex(nbytes: int) -> str:
+    """``nbytes`` from the OS CSPRNG, hex: random names (blobs, temporary files)."""
+    return secrets.token_hex(nbytes)
+
+
 def hash_token(token: str) -> str:
     """SHA-256 of the token, hex. Enough for 256-bit random tokens (no salt or KDF needed)."""
     return hashlib.sha256(token.encode("utf-8")).hexdigest()

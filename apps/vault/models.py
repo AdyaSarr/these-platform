@@ -25,12 +25,11 @@ from apps.core.models import TimeStampedModel
 
 from .errors import AuditError
 from .formats import LEVEL_TO_DOMAIN, MAX_VERSION, KeyDomain
+from .storage import BLOB_PATH_REGEX  # layout: <2 hex>/<same 2 hex + 30 hex>.blob
 from .validation import FILE_TYPES, MAX_UPLOAD_BYTES
 
 ALLOWED_MIME_TYPES = sorted({t.mime_type for t in FILE_TYPES.values()})
 WRAPPED_DEK_BYTES = 60  # nonce 12 + DEK 32 + tag 16
-# Layout of vault.storage: <first 2 hex digits>/<32 hex digits>.blob
-BLOB_PATH_REGEX = r"^([0-9a-f]{2})/\1[0-9a-f]{30}\.blob$"
 _DOCUMENT_DOMAINS = "|".join(d.value for d in LEVEL_TO_DOMAIN.values())
 DOCUMENT_KEK_ID_REGEX = rf"^[a-z][a-z0-9]{{0,15}}:({_DOCUMENT_DOMAINS}):[1-9][0-9]{{0,9}}$"
 

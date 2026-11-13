@@ -13,11 +13,13 @@ class VaultConfig(AppConfig):
     verbose_name = "Vault"
 
     def ready(self) -> None:
-        from . import keys
+        from . import keys, storage
         from .formats import LEVEL_TO_DOMAIN
 
-        # Refuse to start with an unknown or inconsistent key provider.
+        # Refuse to start with an unknown or inconsistent key provider, or with
+        # blobs inside a directory a web server serves.
         keys.check_settings()
+        storage.check_settings()
         # Document versions reference the KEKs of the four level domains.
         for domain in LEVEL_TO_DOMAIN.values():
             keys.register_reference_counter(domain, _document_versions_using)

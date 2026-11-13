@@ -116,6 +116,30 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       ne renvoie que des `bao:…` ; le serveur démarre avec
       `VAULT_ENABLED_PROVIDERS = frozenset({"bao"})`.
 
+- [ ] **Dossier des blobs privé et jamais servi par le proxy (M2).**
+      `VAULT_STORAGE_DIR` absolu, hors de toute racine de Caddy (aucun
+      `file_server` ni `root` dessus), propriété du compte du serveur, mode 0700 ;
+      la prod refuse de démarrer sinon (`VAULT_STORAGE_STRICT`). Système de
+      fichiers **avec liens physiques** (ext4, XFS ; pas de partage SMB/FAT) :
+      l'écriture s'y appuie et refuse de fonctionner sans.
+      *Vérifier* : `curl -I https://<domaine>/<chemin vers un blob>` renvoie 404 ;
+      `manage.py vault_gc` sort avec le code 0.
+
+- [ ] **Taille du corps de requête limitée par le proxy (M2).**
+      `request_body { max_size 26MB }` dans Caddy (25 Mo de fichier + en-têtes
+      multipart). Django n'écrit jamais un dépôt sur disque
+      (`LimitedMemoryUploadHandler`) et cesse de le conserver au-delà de 25 Mo ;
+      le proxy borne ce qu'il lit et jette au-delà.
+
+- [ ] **Sauvegardes cohérentes de la base et des blobs (M2).** Base d'abord
+      (`pg_dump`), puis le dossier des blobs (restic) : un blob présent sans sa
+      ligne est un orphelin inoffensif, l'inverse serait un document illisible.
+      **Effacement réel = durée de conservation des sauvegardes** : l'effacement
+      d'un ancien blob (après `change_level`, ou blob orphelin) n'est effectif
+      qu'à l'expiration de la dernière sauvegarde de la base contenant sa
+      `wrapped_dek`. La durée de conservation des sauvegardes est le délai
+      d'effacement réel, à annoncer à ST et au LIRMM.
+
 ## Rappels de configuration
 
 - `DJANGO_SETTINGS_MODULE=config.settings.prod` dans l'environnement du serveur

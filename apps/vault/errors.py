@@ -31,3 +31,11 @@ class KekLockTimeoutError(VaultKeyError):
 
 class LockOrderError(RuntimeError):
     """Programming error: a KEK lock requested after the audit-log lock (see vault.locks)."""
+
+
+class StorageError(Exception):
+    """A blob could not be written or read safely. Messages hold no content."""
+
+
+class BlobNotFoundError(StorageError):
+    """The blob a document version points to does not exist."""
