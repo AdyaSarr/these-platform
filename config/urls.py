@@ -5,9 +5,9 @@ from django.conf import settings
 from django.contrib.auth import views as auth_views
 from django.http import Http404, HttpRequest, HttpResponse
 from django.urls import URLPattern, URLResolver, include, path, re_path
-from django.views.decorators.cache import never_cache
 
 from apps.accounts import invitation_views
+from apps.accounts.http import no_store
 from apps.accounts.reauth import recent_auth_required
 
 
@@ -30,21 +30,22 @@ _CLOSED_ACCOUNT_ROUTES = [
 ]
 
 # Recovery codes: allauth only requires a signed-in user to show or download
-# them. We require a second factor less than 10 minutes old (decisions.md).
+# them. We require a second factor less than 10 minutes old (decisions.md). The
+# pages show (or download) the codes: never cached (no-store), redirects included.
 _RECOVERY_CODE_ROUTES = [
     path(
         "accounts/2fa/recovery-codes/",
-        recent_auth_required(recovery_views.view_recovery_codes),
+        no_store(recent_auth_required(recovery_views.view_recovery_codes)),
         name="mfa_view_recovery_codes",
     ),
     path(
         "accounts/2fa/recovery-codes/generate/",
-        recent_auth_required(recovery_views.generate_recovery_codes),
+        no_store(recent_auth_required(recovery_views.generate_recovery_codes)),
         name="mfa_generate_recovery_codes",
     ),
     path(
         "accounts/2fa/recovery-codes/download/",
-        recent_auth_required(recovery_views.download_recovery_codes),
+        no_store(recent_auth_required(recovery_views.download_recovery_codes)),
         name="mfa_download_recovery_codes",
     ),
 ]
@@ -54,7 +55,7 @@ _RECOVERY_CODE_ROUTES = [
 _TOTP_ROUTES = [
     path(
         "accounts/2fa/totp/activate/",
-        never_cache(totp_views.activate_totp),
+        no_store(totp_views.activate_totp),
         name="mfa_activate_totp",
     ),
 ]
