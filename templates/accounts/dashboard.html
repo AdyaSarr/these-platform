@@ -3,7 +3,19 @@
 {% block title %}{{ thesis.title }}{% endblock %}
 {% block content %}
   <h1>{{ thesis.title }}</h1>
-  <p class="muted">{{ thesis.get_status_display }}</p>
+  <p class="muted">
+    {{ thesis.get_status_display }} ·
+    {% translate "CIFRE effective date" %} : {{ thesis.cifre_start_date|date:"j F Y" }} ·
+    {% translate "First enrolment" %} : {{ thesis.first_enrollment_date|date:"j F Y" }}
+  </p>
+  {# data = admin_file.services.setup_explanation: only for a SETUP thesis. #}
+  {% if setup %}
+    <p class="status-help">
+      {% blocktranslate asvar becomes with status=thesis.Status.ACTIVE.label %}The thesis will become “{{ status }}” when the mandatory items of the administrative file are validated{% endblocktranslate %}
+      {% if setup.progress is None %}{{ becomes }}.{% else %}<a href="{% url 'admin_file:file' thesis_id=thesis.pk %}">{{ becomes }}</a>
+        ({{ setup.progress.validated }} / {{ setup.progress.total }}{% if setup.partial %} {% translate "that you see" %}{% endif %}).{% endif %}
+    </p>
+  {% endif %}
   {# Each block was filtered by its own action in the view: never in this template. #}
   <div class="blocks">
     {% for block, data in blocks %}

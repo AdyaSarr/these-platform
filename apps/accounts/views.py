@@ -61,6 +61,10 @@ DASHBOARD_BLOCKS: tuple[DashboardBlock, ...] = (
 )
 
 
+# Why a SETUP thesis is not ACTIVE yet (admin_file decides the activation, M3).
+SETUP_EXPLANATION = "apps.admin_file.services.setup_explanation"
+
+
 class ThesisDashboardView(ThesisPermissionRequiredMixin, TemplateView):
     required_action = Action.VIEW_THESIS
     template_name = "accounts/dashboard.html"
@@ -75,6 +79,8 @@ class ThesisDashboardView(ThesisPermissionRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         allowed = allowed_actions(self.request.user, self.thesis)
         context["thesis"] = self.thesis
+        # Resolved at render time, like the blocks: accounts never imports a later module.
+        context["setup"] = import_string(SETUP_EXPLANATION)(self.request, self.thesis)
         context["blocks"] = [
             (b, import_string(b.data)(self.request, self.thesis) if b.data else {})
             for b in DASHBOARD_BLOCKS

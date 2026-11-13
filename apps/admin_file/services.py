@@ -597,6 +597,29 @@ def progress(user: Any, thesis: Thesis) -> Progress:
     )
 
 
+@dataclass(frozen=True)
+class SetupExplanation:
+    """Why a SETUP thesis is not ACTIVE yet, from what the user sees of the file."""
+
+    progress: Progress | None  # None: no right on the administrative file
+    partial: bool  # the user sees a part of the mandatory items only
+
+
+def setup_explanation(request: Any, thesis: Thesis) -> SetupExplanation | None:
+    """For the thesis dashboard: None unless the thesis is SETUP.
+
+    The count is progress(), the function of the administrative-file card: the
+    line and the card always agree, and the hidden part is never counted (M3).
+    """
+    if thesis.status != Thesis.Status.SETUP:
+        return None
+    seen = progress(request.user, thesis)
+    if seen.total == 0:
+        return SetupExplanation(progress=None, partial=False)
+    every = RequiredItem.objects.filter(thesis=thesis, mandatory=True).count()
+    return SetupExplanation(progress=seen, partial=seen.total < every)
+
+
 def dashboard_context(request: Any, thesis: Thesis) -> dict[str, Any]:
     """Data of the dashboard block (accounts.views.DASHBOARD_BLOCKS)."""
     return {"progress": progress(request.user, thesis)}

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-13 21:08+0100\n"
+"POT-Creation-Date: 2026-11-13 21:21+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -566,7 +566,7 @@ msgid "Attachment required"
 msgstr "Pièce jointe obligatoire"
 
 #: apps/admin_file/forms.py:118 apps/admin_file/forms.py:120
-#: apps/admin_file/services.py:627
+#: apps/admin_file/services.py:650
 msgid "These validators are not allowed."
 msgstr "Ces validateurs ne sont pas permis."
 
@@ -684,7 +684,7 @@ msgid "reminders"
 msgstr "rappels"
 
 #: apps/admin_file/services.py:194 apps/admin_file/services.py:288
-#: apps/admin_file/services.py:660 apps/admin_file/views.py:51
+#: apps/admin_file/services.py:683 apps/admin_file/views.py:51
 msgid "The thesis is finished: its administrative file is frozen."
 msgstr "La thèse est terminée : son dossier administratif est gelé."
 
@@ -708,7 +708,7 @@ msgstr "Un validateur ne pourrait pas lire ce document."
 msgid "This document belongs to another item."
 msgstr "Ce document appartient déjà à une autre pièce."
 
-#: apps/admin_file/services.py:306 apps/admin_file/services.py:633
+#: apps/admin_file/services.py:306 apps/admin_file/services.py:656
 msgid "A validator could not read the file at this level."
 msgstr "Un validateur ne pourrait pas lire le fichier à ce niveau."
 
@@ -720,19 +720,19 @@ msgstr "Cette pièce demande une pièce jointe."
 msgid "The attachment changed since it was submitted."
 msgstr "La pièce jointe a changé depuis le dépôt."
 
-#: apps/admin_file/services.py:614
+#: apps/admin_file/services.py:637
 msgid "A label is required."
 msgstr "Un libellé est obligatoire."
 
-#: apps/admin_file/services.py:616
+#: apps/admin_file/services.py:639
 msgid "The label is too long."
 msgstr "Le libellé est trop long."
 
-#: apps/admin_file/services.py:618
+#: apps/admin_file/services.py:641
 msgid "The label contains a control character."
 msgstr "Le libellé contient un caractère de contrôle."
 
-#: apps/admin_file/services.py:630
+#: apps/admin_file/services.py:653
 msgid "A validator would not see this section."
 msgstr "Un validateur ne verrait pas cette partie du dossier."
 
@@ -1277,32 +1277,32 @@ msgstr ""
 msgid "This type of file is not accepted. Accepted types: %(types)s."
 msgstr "Ce type de fichier n'est pas accepté. Types acceptés : %(types)s."
 
-#: apps/vault/validation.py:120 apps/vault/views.py:49
+#: apps/vault/validation.py:120 apps/vault/views.py:48
 #, python-format
 msgid "The file is larger than %(limit)d MB."
 msgstr "Le fichier dépasse %(limit)d Mo."
 
-#: apps/vault/views.py:138
+#: apps/vault/views.py:137
 msgid "Document stored."
 msgstr "Document enregistré."
 
-#: apps/vault/views.py:161
+#: apps/vault/views.py:160
 msgid "New version stored."
 msgstr "Nouvelle version enregistrée."
 
-#: apps/vault/views.py:211
+#: apps/vault/views.py:210
 msgid "Confidentiality level changed."
 msgstr "Niveau de confidentialité modifié."
 
-#: apps/vault/views.py:213
+#: apps/vault/views.py:212
 msgid "The document already has this level."
 msgstr "Le document a déjà ce niveau."
 
-#: apps/vault/views.py:235
+#: apps/vault/views.py:234
 msgid "Access given."
 msgstr "Accès donné."
 
-#: apps/vault/views.py:254
+#: apps/vault/views.py:253
 msgid "Access revoked."
 msgstr "Accès retiré."
 
@@ -1342,6 +1342,27 @@ msgstr "Le dossier CSI sera disponible dans un prochain module."
 #: templates/accounts/csi_file.html:8
 msgid "Objectives (read only)"
 msgstr "Objectifs (lecture seule)"
+
+#: templates/accounts/dashboard.html:8
+#
+msgid "CIFRE effective date"
+msgstr "Date d'effet CIFRE"
+
+#: templates/accounts/dashboard.html:9
+#
+msgid "First enrolment"
+msgstr "Première inscription"
+
+#: templates/accounts/dashboard.html:14
+#, python-format
+msgid ""
+"The thesis will become “%(status)s” when the mandatory items of the "
+"administrative file are validated"
+msgstr "La thèse passera « %(status)s » quand les pièces obligatoires du dossier administratif seront validées"
+
+#: templates/accounts/dashboard.html:16
+msgid "that you see"
+msgstr "que vous voyez"
 
 #: templates/accounts/email/invitation_body.txt:1
 #: templates/accounts/email/password_reset_body.txt:1
@@ -1922,8 +1943,8 @@ msgstr[0] "%(counter)s document que vous pouvez lire"
 msgstr[1] "%(counter)s documents que vous pouvez lire"
 
 #
-#: templates/vault/blocks/dashboard.html:4
 #
+#: templates/vault/blocks/dashboard.html:4
 msgid "Open the documents"
 msgstr "Ouvrir les documents"
 

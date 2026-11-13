@@ -46,3 +46,21 @@ Idées validées, sans module ni date pour l'instant.
   suppose que le mot de passe a été saisi correctement : c'est le signe probable
   d'une compromission du mot de passe. Envoi par Celery avec l'identifiant de
   l'utilisateur seulement, au plus un courriel par période de blocage.
+
+- **Passages en `DEFENDED` et `CLOSED`** (aucun code ne les fait aujourd'hui :
+  seul `SETUP → ACTIVE` existe, à la validation de la dernière pièce obligatoire
+  du dossier administratif, M3).
+  - *Qui* : le directeur, avec ré-authentification par second facteur et
+    journalisation (`THESIS_STATUS_CHANGED`) ; jamais automatiquement.
+  - *Quand* : `DEFENDED` après la soutenance (date saisie, procès-verbal déposé
+    dans le coffre en `CONFIDENTIAL`) ; `CLOSED` à la fin des obligations (rapport
+    ANRT final, fin du contrat CIFRE), au plus tôt après `DEFENDED`.
+  - *Accès* : `DEFENDED` fige les objectifs et le dossier administratif (déjà le
+    cas : `OPEN_THESIS`), arrête rappels et résumés hebdomadaires, garde la
+    lecture pour l'encadrement ; `CLOSED` met fin aux appartenances actives
+    (sauf le doctorant, en lecture seule), refuse tout dépôt et toute
+    modification.
+  - *Conservation* : durée à fixer avec ST, le LIRMM et l'ED (archivage de la
+    thèse, RGPD) ; à l'échéance, purge explicite (voir plus haut) des documents
+    et des textes scellés, le journal d'audit et ses points de contrôle restant
+    conservés et vérifiables.
