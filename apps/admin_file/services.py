@@ -20,7 +20,9 @@ Re-authentication is a view concern (it needs the request).
 
 from __future__ import annotations
 
+import datetime as dt
 import unicodedata
+from dataclasses import dataclass
 from typing import Any
 
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -32,6 +34,7 @@ from django.utils.translation import gettext as _
 from apps.accounts.models import Thesis, User
 from apps.accounts.permissions import (
     LEVEL_ROLES,
+    ROLE_ACTIONS,
     Action,
     allowed_actions,
     can,
@@ -45,7 +48,15 @@ from apps.vault.models import Document
 from apps.vault.services import AuditAction, audit
 
 from . import catalog
-from .models import SECTION_READ_ACTION, ItemApproval, ItemStatus, Reason, RequiredItem, Section
+from .models import (
+    SECTION_READ_ACTION,
+    VALIDATOR_ROLES,
+    ItemApproval,
+    ItemStatus,
+    Reason,
+    RequiredItem,
+    Section,
+)
 from .transitions import (
     Event,
     FrozenFileError,
@@ -57,12 +68,17 @@ from .transitions import (
 __all__ = [
     "allowed_levels",
     "approve",
+    "attachable_documents",
+    "create_custom_item",
     "item_for",
+    "item_rights",
     "label_of",
+    "progress",
     "reject",
     "reopen",
     "seed_items",
     "submit",
+    "update_due_date",
     "visible_items",
     "withdraw",
 ]
@@ -493,3 +509,192 @@ def reopen(*, item: RequiredItem, user: User, reason: Any, comment: str = "") ->
         return locked
 
     return _run(item, user, "reopen", work)
+
+
+# --------------------------------------------------------------------------- pages
+#
+# What follows SHOWS or HIDES controls; it never authorizes. Every action above
+# checks the rights again (and audits a refusal) whatever a page offered.
+
+
+@dataclass(frozen=True)
+class ItemRights:
+    submit: bool
+    withdraw: bool
+    decide: bool  # approve or reject
+    reopen: bool
+    edit: bool  # due date
+    already_approved: bool
+
+
+def item_rights(user: Any, item: RequiredItem) -> ItemRights:
+    writer = can(user, Action.ADMIN_FILE_WRITE, item)
+    deciders = _validator_roles_of(user, item)
+    mine = (
+        item.cycle >= 1
+        and ItemApproval.objects.filter(item=item, cycle=item.cycle, user_id=user.pk).exists()
+    )
+    is_submitter = item.submitted_by_id is not None and item.submitted_by_id == user.pk
+    open_file = item.thesis.status in OPEN_THESIS
+    status = ItemStatus(item.status)
+    return ItemRights(
+        submit=open_file and writer and status in (ItemStatus.TODO, ItemStatus.REJECTED),
+        withdraw=open_file and writer and status == ItemStatus.SUBMITTED,
+        decide=open_file
+        and bool(deciders)
+        and not is_submitter
+        and not mine
+        and status == ItemStatus.SUBMITTED,
+        reopen=open_file and (writer or bool(deciders)) and status == ItemStatus.VALIDATED,
+        edit=open_file and writer,
+        already_approved=mine,
+    )
+
+
+def attachable_documents(user: Any, item: RequiredItem) -> list[Document]:
+    """Documents of the item's thesis the user could attach to it (not authoritative)."""
+    allowed = set(allowed_levels(item))
+    candidates = Document.objects.filter(
+        thesis_id=item.thesis_id, required_item__isnull=True
+    ).order_by("title")
+    return [
+        d
+        for d in candidates
+        if ConfidentialityLevel(d.confidentiality) in allowed and can_access_document(user, d)
+    ]
+
+
+def is_stale(item: RequiredItem) -> bool:
+    """SUBMITTED, with an attachment changed since the submission."""
+    return (
+        item.status == ItemStatus.SUBMITTED
+        and item.document is not None
+        and item.document.current_version != item.submitted_version
+    )
+
+
+@dataclass(frozen=True)
+class Progress:
+    validated: int
+    total: int
+
+    @property
+    def percent(self) -> int:
+        return round(100 * self.validated / self.total) if self.total else 100
+
+    @property
+    def complete(self) -> bool:
+        return self.validated == self.total
+
+
+def progress(user: Any, thesis: Thesis) -> Progress:
+    """Mandatory items the user SEES: validated / all (never the hidden part)."""
+    statuses = list(
+        visible_items(user, thesis).filter(mandatory=True).values_list("status", flat=True)
+    )
+    return Progress(
+        validated=sum(1 for s in statuses if s == ItemStatus.VALIDATED), total=len(statuses)
+    )
+
+
+def dashboard_context(request: Any, thesis: Thesis) -> dict[str, Any]:
+    """Data of the dashboard block (accounts.views.DASHBOARD_BLOCKS)."""
+    return {"progress": progress(request.user, thesis)}
+
+
+# --------------------------------------------------------------------------- edits
+
+
+LABEL_MAX = 120
+
+
+def _clean_label(label: str) -> str:
+    label = (label or "").strip()
+    if not label:
+        raise ValidationError(_("A label is required."), code="label")
+    if len(label) > LABEL_MAX:
+        raise ValidationError(_("The label is too long."), code="label")
+    if any(unicodedata.category(c) == "Cc" for c in label):
+        raise ValidationError(_("The label contains a control character."), code="label")
+    return label
+
+
+def check_validators(
+    section: Section, validator_roles: list[Role], level: ConfidentialityLevel
+) -> None:
+    """A validator must SEE the item (section) and READ its attachment (level)."""
+    if tuple(validator_roles) not in VALIDATOR_ROLES:
+        raise ValidationError(_("These validators are not allowed."), code="validators")
+    for role in validator_roles:
+        if SECTION_READ_ACTION[section] not in ROLE_ACTIONS[role]:
+            raise ValidationError(_("A validator would not see this section."), code="validators")
+        if role not in LEVEL_ROLES[level]:
+            raise ValidationError(
+                _("A validator could not read the file at this level."), code="level"
+            )
+
+
+def create_custom_item(
+    *,
+    thesis: Thesis,
+    user: User,
+    label: str,
+    section: Section,
+    validator_roles: list[Role],
+    default_level: ConfidentialityLevel,
+    mandatory: bool,
+    attachment_required: bool,
+    due_date: dt.date | None,
+) -> RequiredItem:
+    """A custom item (student only). The label is CLEAR TEXT: never in the audit log.
+
+    Its code derives from its own UUID primary key: no new source of randomness.
+    """
+    if not (
+        can(user, Action.ADMIN_FILE_WRITE, thesis)
+        and can(user, SECTION_READ_ACTION[section], thesis)
+    ):
+        _audit_denial(user, "create", "not_writer", thesis=thesis)
+        raise PermissionDenied
+    if thesis.status not in OPEN_THESIS:
+        raise FrozenFileError(_("The thesis is finished: its administrative file is frozen."))
+    label = _clean_label(label)
+    section, default_level = Section(section), ConfidentialityLevel(default_level)
+    roles = [Role(r) for r in validator_roles]
+    check_validators(section, roles, default_level)
+    item = RequiredItem(
+        thesis=thesis,
+        label=label,
+        section=section,
+        validator_roles=roles,
+        default_level=default_level,
+        mandatory=mandatory,
+        attachment_required=attachment_required,
+        due_date=due_date,
+        created_by=user,
+    )
+    item.code = f"custom-{item.pk.hex[:12]}"
+    with transaction.atomic():
+        item.save(force_insert=True)
+        audit(
+            AuditAction.ADMIN_ITEM_CREATED,
+            actor=user,
+            obj=item,
+            item=item.code,
+            section=section.value,
+            mandatory=mandatory,
+        )
+    return item
+
+
+def update_due_date(*, item: RequiredItem, user: User, due_date: dt.date | None) -> RequiredItem:
+    """The student moves an item's due date (reminders follow the new date)."""
+
+    def work(locked: RequiredItem) -> RequiredItem:
+        _require_writer(user, locked)
+        locked.due_date = due_date
+        locked.save(update_fields=["due_date", "updated_at"])
+        audit(AuditAction.ADMIN_ITEM_UPDATED, actor=user, obj=locked, field="due_date")
+        return locked
+
+    return _run(item, user, "update", work)

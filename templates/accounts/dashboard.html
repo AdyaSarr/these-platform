@@ -8,10 +8,10 @@
   <p><a href="{% url 'vault:documents' thesis_id=thesis.pk %}">{% translate "Documents" %}</a></p>
   {# Each block was filtered by its own action in the view: never in this template. #}
   <div class="blocks">
-    {% for block in blocks %}
+    {% for block, data in blocks %}
       <section class="block" data-block="{{ block.key }}">
         <h2>{{ block.title }}</h2>
-        {% include block.template %}
+        {% include block.template with data=data %}
       </section>
     {% endfor %}
   </div>

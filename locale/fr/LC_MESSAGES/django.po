@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-13 07:45+0100\n"
+"POT-Creation-Date: 2026-11-13 12:26+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -378,25 +378,27 @@ msgstr "Invitation renvoyée."
 msgid "Invitation revoked."
 msgstr "Invitation révoquée."
 
-#: apps/accounts/views.py:32 templates/accounts/team.html:3
+#: apps/accounts/views.py:36 templates/accounts/team.html:3
 #: templates/accounts/team.html:6
 msgid "Team"
 msgstr "Équipe"
 
-#: apps/accounts/views.py:34
+#: apps/accounts/views.py:38
 msgid "Objectives"
 msgstr "Objectifs"
 
-#: apps/accounts/views.py:36
+#: apps/accounts/views.py:40
 msgid "Meetings"
 msgstr "Réunions"
 
-#: apps/accounts/views.py:38 templates/accounts/dashboard.html:8
+#: apps/accounts/views.py:42 templates/accounts/dashboard.html:8
 #: templates/vault/document_list.html:2 templates/vault/document_list.html:4
 msgid "Documents"
 msgstr "Documents"
 
-#: apps/accounts/views.py:43
+#: apps/accounts/views.py:49 apps/admin_file/services.py:258
+#: templates/admin_file/file.html:2 templates/admin_file/file.html:4
+#: templates/admin_file/item_page.html:4 templates/admin_file/new_item.html:5
 msgid "Administrative file"
 msgstr "Dossier administratif"
 
@@ -404,57 +406,148 @@ msgstr "Dossier administratif"
 msgid "ST employment contract"
 msgstr "Contrat de travail ST"
 
-#: apps/admin_file/catalog.py:63
+#: apps/admin_file/catalog.py:64
 msgid ""
 "The industrial tutor will be able to read this file: prefer an employment "
 "certificate to the contract itself (salary)."
-msgstr "Le tuteur industriel pourra lire ce fichier : préférez une attestation d'emploi au contrat lui-même (salaire)."
+msgstr ""
+"Le tuteur industriel pourra lire ce fichier : préférez une attestation "
+"d'emploi au contrat lui-même (salaire)."
 
-#: apps/admin_file/catalog.py:67
+#: apps/admin_file/catalog.py:68
 msgid "CIFRE agreement (ANRT)"
 msgstr "Convention CIFRE (ANRT)"
 
-#: apps/admin_file/catalog.py:73
+#: apps/admin_file/catalog.py:75
 msgid "ST-LIRMM collaboration contract"
 msgstr "Contrat de collaboration ST-LIRMM"
 
-#: apps/admin_file/catalog.py:78
+#: apps/admin_file/catalog.py:81
 msgid "Proof of funding"
 msgstr "Justificatif de financement"
 
-#: apps/admin_file/catalog.py:80
+#: apps/admin_file/catalog.py:84
 msgid ""
 "Certificate stating salary ≥ doctoral school threshold, without the amount."
-msgstr "Attestation mentionnant salaire ≥ seuil de l'école doctorale, sans le montant."
+msgstr ""
+"Attestation mentionnant salaire ≥ seuil de l'école doctorale, sans le "
+"montant."
 
-#: apps/admin_file/catalog.py:84
+#: apps/admin_file/catalog.py:89
 msgid "FSD notice / ZRR access"
 msgstr "Avis FSD / accès ZRR"
 
-#: apps/admin_file/catalog.py:86
+#: apps/admin_file/catalog.py:92
 msgid ""
 "Attach the notice only, never the application file (passport, nationality)."
-msgstr "Joignez l'avis seulement, jamais le dossier de demande (passeport, nationalité)."
+msgstr ""
+"Joignez l'avis seulement, jamais le dossier de demande (passeport, "
+"nationalité)."
 
-#: apps/admin_file/catalog.py:89
+#: apps/admin_file/catalog.py:96
 msgid "ADUM enrolment"
 msgstr "Inscription ADUM"
 
-#: apps/admin_file/catalog.py:93
+#: apps/admin_file/catalog.py:101
 msgid "Signed doctoral charter"
 msgstr "Charte du doctorat signée"
 
-#: apps/admin_file/catalog.py:97
+#: apps/admin_file/catalog.py:106
 msgid "Individual training agreement"
 msgstr "Convention individuelle de formation"
 
-#: apps/admin_file/catalog.py:101
+#: apps/admin_file/catalog.py:111
 msgid "Individual training plan"
 msgstr "Plan individuel de formation"
 
-#: apps/admin_file/catalog.py:105
+#: apps/admin_file/catalog.py:116
 msgid "CVEC certificate"
 msgstr "Attestation CVEC"
+
+#: apps/admin_file/forms.py:18
+msgid ""
+"This comment is not encrypted and is shown to the supervisors of the "
+"section: no personal information (nationality, health, amounts)."
+msgstr "Ce commentaire n'est pas chiffré et il est visible des encadrants de la partie concernée : aucune information personnelle (nationalité, santé, montants)."
+
+#: apps/admin_file/forms.py:22
+msgid ""
+"The label is not encrypted and is shown to the supervisors of the section: "
+"no personal information (nationality, health, amounts). Example: “Residence "
+"permit renewal”, never the nationality."
+msgstr "Le libellé n'est pas chiffré et il est visible des encadrants de la partie concernée : aucune information personnelle (nationalité, santé, montants). Exemple : « Renouvellement du titre de séjour », jamais la nationalité."
+
+#: apps/admin_file/forms.py:28
+msgid ""
+"Once attached, co-supervisors and the industrial tutor will no longer be "
+"able to read it from the Documents page: only those who see this part of the "
+"file can."
+msgstr "Une fois rattaché, les co-encadrants et le tuteur industriel ne pourront plus le lire depuis la page Documents : seuls ceux qui voient cette partie du dossier le peuvent."
+
+#: apps/admin_file/forms.py:32
+msgid ""
+"Once attached, co-supervisors will no longer be able to read it from the "
+"Documents page: only those who see this part of the file can."
+msgstr "Une fois rattaché, les co-encadrants ne pourront plus le lire depuis la page Documents : seuls ceux qui voient cette partie du dossier le peuvent."
+
+#: apps/admin_file/forms.py:39
+msgid "New file"
+msgstr "Nouveau fichier"
+
+#: apps/admin_file/forms.py:40
+msgid "Or an existing document"
+msgstr "Ou un document existant"
+
+#: apps/admin_file/forms.py:41 apps/vault/forms.py:34 apps/vault/forms.py:47
+#: templates/vault/document_detail.html:6 templates/vault/document_list.html:9
+msgid "Confidentiality"
+msgstr "Confidentialité"
+
+#: apps/admin_file/forms.py:64
+msgid "Give a new file or an existing document, not both."
+msgstr "Donnez un nouveau fichier ou un document existant, pas les deux."
+
+#: apps/admin_file/forms.py:71 templates/admin_file/item_row.html:20
+msgid "Reason"
+msgstr "Motif"
+
+#: apps/admin_file/forms.py:73
+msgid "Comment"
+msgstr "Commentaire"
+
+#: apps/admin_file/forms.py:83 apps/admin_file/forms.py:105
+#: templates/admin_file/item_row.html:11
+msgid "Due date"
+msgstr "Échéance"
+
+#: apps/admin_file/forms.py:93
+msgid "Label"
+msgstr "Libellé"
+
+#: apps/admin_file/forms.py:95
+msgid "Part of the file"
+msgstr "Partie du dossier"
+
+#: apps/admin_file/forms.py:96 templates/admin_file/item_row.html:10
+msgid "Validated by"
+msgstr "Validée par"
+
+#: apps/admin_file/forms.py:98
+msgid "Default confidentiality"
+msgstr "Confidentialité par défaut"
+
+#: apps/admin_file/forms.py:102
+msgid "Mandatory"
+msgstr "Obligatoire"
+
+#: apps/admin_file/forms.py:103
+msgid "Attachment required"
+msgstr "Pièce jointe obligatoire"
+
+#: apps/admin_file/forms.py:117 apps/admin_file/forms.py:119
+#: apps/admin_file/services.py:627
+msgid "These validators are not allowed."
+msgstr "Ces validateurs ne sont pas permis."
 
 #: apps/admin_file/models.py:29
 msgid "CIFRE"
@@ -544,6 +637,101 @@ msgstr "approbation"
 msgid "approvals"
 msgstr "approbations"
 
+#: apps/admin_file/services.py:194 apps/admin_file/services.py:288
+#: apps/admin_file/services.py:662 apps/admin_file/views.py:50
+msgid "The thesis is finished: its administrative file is frozen."
+msgstr "La thèse est terminée : son dossier administratif est gelé."
+
+#: apps/admin_file/services.py:241
+msgid "Choose a reason."
+msgstr "Choisissez un motif."
+
+#: apps/admin_file/services.py:244
+msgid "The comment is too long."
+msgstr "Le commentaire est trop long."
+
+#: apps/admin_file/services.py:246
+msgid "The comment contains a control character."
+msgstr "Le commentaire contient un caractère de contrôle."
+
+#: apps/admin_file/services.py:293
+msgid "A validator could not read this document."
+msgstr "Un validateur ne pourrait pas lire ce document."
+
+#: apps/admin_file/services.py:295 apps/admin_file/services.py:339
+msgid "This document belongs to another item."
+msgstr "Ce document appartient déjà à une autre pièce."
+
+#: apps/admin_file/services.py:306 apps/admin_file/services.py:635
+msgid "A validator could not read the file at this level."
+msgstr "Un validateur ne pourrait pas lire le fichier à ce niveau."
+
+#: apps/admin_file/services.py:329
+msgid "This item needs an attachment."
+msgstr "Cette pièce demande une pièce jointe."
+
+#: apps/admin_file/services.py:398
+msgid "The attachment changed since it was submitted."
+msgstr "La pièce jointe a changé depuis le dépôt."
+
+#: apps/admin_file/services.py:614
+msgid "A label is required."
+msgstr "Un libellé est obligatoire."
+
+#: apps/admin_file/services.py:616
+msgid "The label is too long."
+msgstr "Le libellé est trop long."
+
+#: apps/admin_file/services.py:618
+msgid "The label contains a control character."
+msgstr "Le libellé contient un caractère de contrôle."
+
+#: apps/admin_file/services.py:631
+msgid "A validator would not see this section."
+msgstr "Un validateur ne verrait pas cette partie du dossier."
+
+#: apps/admin_file/views.py:46 templates/admin_file/item_row.html:18
+msgid ""
+"The document has changed since it was submitted: withdraw it and submit it "
+"again, or reject it."
+msgstr "Le document a changé depuis le dépôt : retirez le dépôt et déposez à nouveau, ou refusez la pièce."
+
+#: apps/admin_file/views.py:49
+msgid "The item has changed, reload the page."
+msgstr "La pièce a changé, rechargez la page."
+
+#: apps/admin_file/views.py:173
+msgid "Saved."
+msgstr "Enregistré."
+
+#: apps/admin_file/views.py:215
+msgid "Item submitted."
+msgstr "Pièce déposée."
+
+#: apps/admin_file/views.py:233
+msgid "Submission withdrawn."
+msgstr "Dépôt retiré."
+
+#: apps/admin_file/views.py:242
+msgid "Due date saved."
+msgstr "Échéance enregistrée."
+
+#: apps/admin_file/views.py:251
+msgid "Approval recorded."
+msgstr "Approbation enregistrée."
+
+#: apps/admin_file/views.py:259
+msgid "Item rejected."
+msgstr "Pièce refusée."
+
+#: apps/admin_file/views.py:268
+msgid "Item reopened."
+msgstr "Pièce rouverte."
+
+#: apps/admin_file/views.py:304
+msgid "Item added."
+msgstr "Pièce ajoutée."
+
 #: apps/core/confidentiality.py:12
 msgid "Public"
 msgstr "Public"
@@ -581,11 +769,6 @@ msgstr ""
 #: apps/vault/forms.py:33 templates/vault/document_list.html:9
 msgid "Title"
 msgstr "Titre"
-
-#: apps/vault/forms.py:34 apps/vault/forms.py:47
-#: templates/vault/document_detail.html:6 templates/vault/document_list.html:9
-msgid "Confidentiality"
-msgstr "Confidentialité"
 
 #: apps/vault/forms.py:35 apps/vault/forms.py:43
 msgid "File"
@@ -927,11 +1110,83 @@ msgstr "Retirer"
 msgid "No pending invitation."
 msgstr "Aucune invitation en attente."
 
-#: templates/base.html:8 templates/base.html:15
+#: templates/admin_file/blocks/dashboard.html:4
+#: templates/admin_file/file.html:10
+#, python-format
+msgid "%(validated)s / %(total)s mandatory items validated"
+msgstr "%(validated)s / %(total)s pièces obligatoires validées"
+
+#: templates/admin_file/blocks/dashboard.html:6
+msgid "Open the administrative file"
+msgstr "Ouvrir le dossier administratif"
+
+#: templates/admin_file/file.html:6
+msgid "Incomplete file: a mandatory item is no longer validated."
+msgstr "Dossier incomplet : une pièce obligatoire n'est plus validée."
+
+#: templates/admin_file/file.html:12 templates/admin_file/new_item.html:2
+#: templates/admin_file/new_item.html:4
+msgid "Add a custom item"
+msgstr "Ajouter une pièce personnalisée"
+
+#: templates/admin_file/item_row.html:6
+msgid "optional"
+msgstr "facultative"
+
+#: templates/admin_file/item_row.html:11
+msgid "overdue"
+msgstr "en retard"
+
+#: templates/admin_file/item_row.html:14
+msgid "Attachment"
+msgstr "Pièce jointe"
+
+#: templates/admin_file/item_row.html:14
+#, python-format
+msgid "version %(version)s submitted"
+msgstr "version %(version)s déposée"
+
+#: templates/admin_file/item_row.html:16
+msgid "An attachment exists, but you cannot read it."
+msgstr "Une pièce jointe existe, mais vous ne pouvez pas la lire."
+
+#: templates/admin_file/item_row.html:27
+msgid "You have approved this submission."
+msgstr "Vous avez approuvé ce dépôt."
+
+#: templates/admin_file/item_row.html:37
+msgid "Submit"
+msgstr "Déposer"
+
+#: templates/admin_file/item_row.html:46
+msgid "Withdraw the submission"
+msgstr "Retirer le dépôt"
+
+#: templates/admin_file/item_row.html:53
+msgid "Approve"
+msgstr "Approuver"
+
+#: templates/admin_file/item_row.html:63
+msgid "Reject"
+msgstr "Refuser"
+
+#: templates/admin_file/item_row.html:70
+msgid "Reopen"
+msgstr "Rouvrir"
+
+#: templates/admin_file/item_row.html:79
+msgid "Save the due date"
+msgstr "Enregistrer l'échéance"
+
+#: templates/admin_file/new_item.html:8
+msgid "Add the item"
+msgstr "Ajouter la pièce"
+
+#: templates/base.html:9 templates/base.html:16
 msgid "CIFRE thesis"
 msgstr "Thèse CIFRE"
 
-#: templates/base.html:20
+#: templates/base.html:21
 msgid "Log out"
 msgstr "Se déconnecter"
 

@@ -76,6 +76,8 @@ class AuditAction(StrEnum):
     MEMBER_REMOVED = "MEMBER_REMOVED"
     # Administrative file (M3).
     ADMIN_FILE_SEEDED = "ADMIN_FILE_SEEDED"
+    ADMIN_ITEM_CREATED = "ADMIN_ITEM_CREATED"  # custom item (code only, never the label)
+    ADMIN_ITEM_UPDATED = "ADMIN_ITEM_UPDATED"  # due date
     ADMIN_ITEM_SUBMITTED = "ADMIN_ITEM_SUBMITTED"
     ADMIN_ITEM_WITHDRAWN = "ADMIN_ITEM_WITHDRAWN"
     ADMIN_ITEM_APPROVED = "ADMIN_ITEM_APPROVED"  # one role's approval of a cycle

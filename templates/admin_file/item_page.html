@@ -1,0 +1,6 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{{ row.label }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'admin_file:file' thesis_id=thesis.pk %}">{% translate "Administrative file" %}</a></p>
+{% include "admin_file/item_row.html" %}
+{% endblock %}

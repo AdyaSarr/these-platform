@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% translate "Add a custom item" %}{% endblock %}
+{% block content %}
+<h1>{% translate "Add a custom item" %}</h1>
+<p><a href="{% url 'admin_file:file' thesis_id=thesis.pk %}">{% translate "Administrative file" %}</a></p>
+<form class="stack" method="post" action="{% url 'admin_file:new_item' thesis_id=thesis.pk %}">
+  {% csrf_token %}{{ form.as_p }}
+  <button type="submit">{% translate "Add the item" %}</button>
+</form>
+{% endblock %}

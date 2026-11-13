@@ -94,3 +94,13 @@ button {
 .actions form { display: flex; gap: 0.25rem; align-items: center; }
 button.danger { border-color: var(--error); color: var(--error); }
 .delivery-not_sent, .delivery-failed { color: var(--error); font-weight: 600; }
+
+/* Administrative file (M3). Status by class only: no inline style (CSP). */
+.item { border: 1px solid var(--border); border-radius: 0.5rem; padding: 0.75rem 1rem; margin-bottom: 0.75rem; }
+.item-head { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: baseline; }
+.item-head h3 { margin: 0; font-size: 1rem; }
+.status { font-weight: 600; }
+.status-validated .status { color: var(--accent); }
+.status-rejected .status, .overdue { color: var(--error); }
+.warning { border-left: 3px solid var(--error); padding-left: 0.5rem; }
+.approvals { margin: 0.25rem 0; padding-left: 1.25rem; }

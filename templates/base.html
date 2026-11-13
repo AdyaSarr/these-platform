@@ -4,7 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {# htmx settings compatible with the strict CSP: no eval, no injected <style>, no script execution in swapped HTML. #}
-  <meta name="htmx-config" content='{"allowEval":false,"includeIndicatorStyles":false,"allowScriptTags":false,"selfRequestsOnly":true}'>
+  {# responseHandling: 400 and 409 carry a fragment with the message (form errors, item changed): swap them too. #}
+  <meta name="htmx-config" content='{"allowEval":false,"includeIndicatorStyles":false,"allowScriptTags":false,"selfRequestsOnly":true,"responseHandling":[{"code":"204","swap":false},{"code":"[23]..","swap":true},{"code":"40[09]","swap":true,"error":false},{"code":"[45]..","swap":false,"error":true},{"code":"...","swap":false}]}'>
   <title>{% block title %}{% translate "CIFRE thesis" %}{% endblock %} · {% translate "CIFRE thesis" %}</title>
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
   <script src="{% static 'vendor/htmx/htmx.min.js' %}" defer></script>
