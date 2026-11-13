@@ -116,6 +116,19 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       *Vérifier* : la commande `check` ci-dessus affiche « System check
       identified no issues ».
 
+- [ ] **Années de thèse après la migration de M4.**
+      ```bash
+      manage.py migrate                                    # dont objectives.0001
+      manage.py objectives_sync_years --all                # idempotent
+      ```
+      *Pourquoi* : les thèses créées après M4 reçoivent leurs années (CIFRE et
+      universitaires) par le `post_save` de `Thesis` ; celles créées avant
+      n'en ont aucune, et leurs objectifs ne pourraient être rattachés à rien.
+      La migration n'importe pas `sync_years` (code métier hors migration).
+      *Vérifier* : une seconde exécution affiche « 0 created, 0 updated,
+      0 deleted » ; toute ligne « kept » (année en trop gardée parce que des
+      objectifs la référencent) est examinée avant de modifier la date de fin.
+
 - [ ] **Téléchargements en `Content-Disposition: attachment` + `nosniff` (M2).**
       *Pourquoi* : la CSP autorise `script-src 'self'` ; un fichier déposé servi
       en ligne depuis notre domaine pourrait être exécuté comme script.
