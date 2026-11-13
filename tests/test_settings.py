@@ -71,3 +71,10 @@ def test_admin_enabled_outside_prod() -> None:
 
 def test_base_disables_admin() -> None:
     assert base.ADMIN_ENABLED is False
+
+
+def test_email_timeout_is_bounded() -> None:
+    """Django waits for ever by default (None): a stuck SMTP server would hold a
+    reminder's row lock and a Celery worker indefinitely."""
+    assert base.EMAIL_TIMEOUT == 10
+    assert settings.EMAIL_TIMEOUT == 10

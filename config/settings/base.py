@@ -203,6 +203,10 @@ STATIC_ROOT = BASE_DIR / "var" / "static"
 
 # --------------------------------------------------------------------------- e-mail
 DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL", default="noreply@localhost")
+# Seconds before an SMTP connection or reply gives up (Django's default: None,
+# wait forever). A stuck server would otherwise keep a reminder's row locked
+# (admin_file.tasks) and a worker busy for ever. prod.py sets the same value.
+EMAIL_TIMEOUT = 10
 
 # Root key of the vault (base64, 32 bytes). Sub-keys are derived from it by HKDF in
 # apps/vault/crypto.py only. Never displayed: Django masks settings named *KEY*.
