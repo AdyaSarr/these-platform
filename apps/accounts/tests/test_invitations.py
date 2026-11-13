@@ -581,10 +581,76 @@ def test_invitation_email_is_in_french(invite: Invite) -> None:
 # --------------------------------------------------------------------------- no secret in logs
 
 
-def test_link_page_sends_no_referrer(client: Client, invite: Invite) -> None:
+# Policies under which a Referer header can carry the PATH of the page (here the
+# token), for a same-origin or a cross-origin request (W3C Referrer Policy).
+PATH_LEAKING_POLICIES = {
+    "",  # absent: the browser default, strict-origin-when-cross-origin
+    "unsafe-url",
+    "no-referrer-when-downgrade",
+    "same-origin",
+    "origin-when-cross-origin",
+    "strict-origin-when-cross-origin",
+}
+SITE_ORIGIN = "http://testserver"
+
+
+def _browser_origin(referrer_policy: str) -> str:
+    """The Origin header a browser puts on a form POST sent from a page served with
+    ``referrer_policy`` (Fetch, "serializing a request origin"): "null" under
+    no-referrer, the page's origin otherwise (same-origin form)."""
+    return "null" if referrer_policy.strip().lower() == "no-referrer" else SITE_ORIGIN
+
+
+def _csrf_token(response: Any) -> str:
+    match = re.search(r'name="csrfmiddlewaretoken" value="([^"]+)"', response.content.decode())
+    assert match, "no CSRF token in the page"
+    return match.group(1)
+
+
+def test_link_page_referrer_policy_never_leaks_the_path(client: Client, invite: Invite) -> None:
+    """The Continuer POST must not carry the token in its Referer, and must not be
+    sent as Origin: null either (Django refuses it): strict-origin, not no-referrer."""
     _, token = invite()
-    response = client.get(f"/invitation/{token}/")
-    assert response["Referrer-Policy"] == "no-referrer"
+    policy = client.get(f"/invitation/{token}/")["Referrer-Policy"]
+    assert policy == "strict-origin"
+    assert policy not in PATH_LEAKING_POLICIES
+    assert policy != "no-referrer"
+
+
+def test_continue_posted_like_a_browser_passes_the_csrf_origin_check(invite: Invite) -> None:
+    """Chrome's bug report: the Origin a browser sends from the link page is accepted."""
+    _, token = invite()
+    browser = Client(enforce_csrf_checks=True)
+    page = browser.get(f"/invitation/{token}/")
+    origin = _browser_origin(page["Referrer-Policy"])
+    response = browser.post(
+        "/invitation/",
+        {"token": token, "csrfmiddlewaretoken": _csrf_token(page)},
+        HTTP_ORIGIN=origin,
+    )
+    assert origin == SITE_ORIGIN
+    assert response.status_code == 303, response.content[:300]
+    assert response["Location"] == "/invitation/accept/"
+
+
+def test_an_origin_null_post_is_refused(invite: Invite, caplog: pytest.LogCaptureFixture) -> None:
+    """Documents the cause of the bug: Django refuses Origin: null, and "null" must
+    never be added to CSRF_TRUSTED_ORIGINS."""
+    from django.conf import settings
+
+    _, token = invite()
+    browser = Client(enforce_csrf_checks=True)
+    page = browser.get(f"/invitation/{token}/")
+    response = browser.post(
+        "/invitation/",
+        {"token": token, "csrfmiddlewaretoken": _csrf_token(page)},
+        HTTP_ORIGIN="null",
+    )
+    assert response.status_code == 403
+    # The reason is in the security log (the 403 page shows no detail without DEBUG).
+    reasons = [r.getMessage() for r in caplog.records if r.name == "django.security.csrf"]
+    assert any("Origin checking failed - null" in reason for reason in reasons), reasons
+    assert "null" not in [o.lower() for o in settings.CSRF_TRUSTED_ORIGINS]
 
 
 def test_task_takes_the_id_only_and_never_retries() -> None:

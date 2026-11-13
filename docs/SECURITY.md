@@ -177,6 +177,13 @@ d'un texte bourré, et une `kek_id` d'un autre domaine que le niveau.
   `CONFIDENTIAL`, exporter un rapport. Le mot de passe seul ne suffit pas.
 - Limitation des tentatives de connexion (`django-axes` ou équivalent).
 - Invitations : jeton aléatoire 32 octets, stocké haché, usage unique, 72 h.
+  La page du lien répond `Referrer-Policy: strict-origin` : le POST « Continuer »
+  porte un Referer réduit à l'origine (jamais le chemin, donc jamais le jeton)
+  et une vraie origine. `no-referrer` est exclu sur toute page qui contient un
+  formulaire POST : le navigateur y enverrait `Origin: null`, que le contrôle
+  CSRF de Django refuse (« null » n'est jamais une origine de confiance).
+  `no-referrer` reste sur le téléchargement d'un document (réponse en pièce
+  jointe, sans formulaire).
 
 ## Paramètres Django (prod)
 

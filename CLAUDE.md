@@ -115,6 +115,13 @@ la contourner.
   `django_db(transaction=True)` : sinon la transaction englobante du test garde le
   verrou du journal et la garde lève `LockOrderError`, ce qui n'arrive pas en
   production.
+- Un test de formulaire POST envoie `HTTP_ORIGIN` comme le ferait un navigateur
+  (`Client(enforce_csrf_checks=True)`, origine du site, jeton CSRF de la page) :
+  le client de test n'envoie aucun en-tête Origin, et un refus du contrôle
+  d'origine de Django n'apparaîtrait qu'en vrai navigateur. Une page qui contient
+  un formulaire POST ne répond jamais `Referrer-Policy: no-referrer` (le
+  navigateur enverrait `Origin: null`) ; « null » n'est jamais ajouté à
+  `CSRF_TRUSTED_ORIGINS`.
 - Migrations relues et commitées avec le code qui les utilise.
 - Commits : `<module>: <verbe à l'impératif> ...` (ex. `objectives: add weighted completion rate`).
 

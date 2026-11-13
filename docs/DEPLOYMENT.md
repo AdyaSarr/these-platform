@@ -66,8 +66,8 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
 
       *Pourquoi* : le jeton est dans l'URL du lien envoyé par courriel ; tant qu'il
       n'est pas utilisé (72 h), quiconque lit les journaux peut accepter
-      l'invitation. La page du lien répond déjà `Referrer-Policy: no-referrer`
-      (le POST « Continuer » ne porte donc pas l'URL), mais un navigateur ancien
+      l'invitation. La page du lien répond déjà `Referrer-Policy: strict-origin`
+      (le POST « Continuer » ne porte donc que l'origine, pas l'URL), mais un navigateur ancien
       ou une extension peut l'ignorer. Django ne journalise que des jetons déjà
       invalides (« Bad Request: /invitation/… »).
       *Vérifier* : `caddy validate --config /etc/caddy/Caddyfile` sur la version

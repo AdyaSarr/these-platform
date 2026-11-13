@@ -50,7 +50,10 @@ def invitation_link(request: HttpRequest, token: str) -> HttpResponse:
     response = render(request, "accounts/invitation_link.html", {"token": token})
     # The « Continuer » POST would otherwise carry this URL, token included, in
     # its Referer header (same-origin policy), where proxies log it.
-    response["Referrer-Policy"] = "no-referrer"
+    # strict-origin: the Referer holds the origin only, never the path. NOT
+    # no-referrer: under it the browser sends "Origin: null" with the POST (Fetch
+    # standard), which Django's CSRF check refuses; "null" is never trusted.
+    response["Referrer-Policy"] = "strict-origin"
     return response
 
 
