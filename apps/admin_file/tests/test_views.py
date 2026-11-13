@@ -426,3 +426,9 @@ def test_incomplete_banner_on_an_active_thesis(team: SimpleNamespace) -> None:
     Thesis.objects.filter(pk=team.thesis.pk).update(status=Thesis.Status.ACTIVE)
     html = _signed_in(team.director).get(_url("file", team)).content.decode()
     assert "Dossier incomplet" in html
+
+
+def test_a_custom_item_defaults_to_confidential(team: SimpleNamespace) -> None:
+    """Acceptance: a custom item's attachments default to CONFIDENTIAL."""
+    response = _signed_in(team.student).get(_url("new_item", team))
+    assert response.context["form"]["default_level"].value() == L.CONFIDENTIAL

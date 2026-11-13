@@ -210,6 +210,10 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
 
 ## Rappels de configuration
 
+- `EMAIL_TIMEOUT = 10` (base et prod) : un serveur SMTP qui ne répond pas fait
+  échouer l'envoi au bout de 10 s (rappel compté `FAILED`, retenté le lendemain)
+  au lieu de bloquer un worker Celery et la ligne de rappel verrouillée.
+
 - `DJANGO_SETTINGS_MODULE=config.settings.prod` dans l'environnement du serveur
   web **et** du worker Celery. `dev` et `test` refusent de démarrer si
   `DJANGO_ALLOWED_HOSTS` contient le domaine public (`config/settings/guards.py`).

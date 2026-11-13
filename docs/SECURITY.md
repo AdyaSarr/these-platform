@@ -72,12 +72,37 @@ document, les journaux ni les noms de fichiers stockés (tests). Le nom du
 fichier téléchargé est reconstruit depuis le titre nettoyé
 (`[a-z0-9-]`, 80 caractères au plus) et l'extension du type détecté.
 
+## Dossier administratif (M3)
+
+| En clair (base de données) | Chiffré (coffre, M2) |
+|---|---|
+| Code et libellé des pièces du catalogue (affiché depuis `catalog.py`) | Pièces jointes, au niveau par défaut de la pièce |
+| **Libellé** des pièces personnalisées (avertissement sur le formulaire) | |
+| Statut, échéance, validateurs, approbations, motif (liste fermée) | |
+| **Commentaire** de refus ou de réouverture (avertissement, 280 caractères) | |
+
+- Libellés personnalisés et commentaires n'apparaissent jamais dans le journal
+  d'audit (le code de la pièce et le code du motif seulement), `str()`, les
+  courriels, les journaux applicatifs et Celery ; aucun modèle du dossier n'est
+  inscrit dans l'admin Django (tests de `tests/test_security_audit_m3.py`).
+- **Restriction de section** (`permissions.register_document_restriction`) : une
+  pièce jointe n'est lisible qu'avec le droit de lecture de la section de sa pièce
+  (`CIFRE_FILE_READ` ou `ADMIN_FILE_READ`), en plus du rôle et du niveau ; ni une
+  autorisation explicite ni un niveau abaissé ne la contournent.
+- **Séparation des fonctions** : une approbation par rôle **et** par personne et
+  par cycle, jamais par le déposant du cycle (contraintes en base) ; seule la
+  version déposée est approuvée.
+- **Rappels** : courriel sans contenu (un lien), identifiant de `ReminderLog`
+  seul dans le courtier et les journaux, `EMAIL_TIMEOUT = 10` (une ligne de rappel
+  verrouillée ne reste jamais bloquée par un serveur SMTP muet).
+
 ## Authentification
 
 - Identifiant = courriel ; hasher Django `Argon2PasswordHasher` en premier.
 - MFA obligatoire pour tous ; WebAuthn recommandé.
-- Ré-authentification (< 10 min) pour : valider, changer un rôle, télécharger un
-  document `CONFIDENTIAL`, exporter un rapport.
+- Ré-authentification (< 10 min) pour : valider (dossier administratif :
+  approuver, refuser, rouvrir), changer un rôle, télécharger un document
+  `CONFIDENTIAL`, exporter un rapport. Le mot de passe seul ne suffit pas.
 - Limitation des tentatives de connexion (`django-axes` ou équivalent).
 - Invitations : jeton aléatoire 32 octets, stocké haché, usage unique, 72 h.
 

@@ -4,35 +4,99 @@
 Savoir d'un coup d'œil si toute la paperasse est faite, par qui, et ce qui manque.
 La thèse passe à `ACTIVE` quand toutes les pièces obligatoires sont validées.
 
-## Modèles
-- `RequiredItem(thesis, code, label, responsible_role, mandatory, due_date, status:
-  TODO|SUBMITTED|VALIDATED|REJECTED, document (FK vault, facultatif), validated_by,
-  validated_at, comment)`
-- Liste initiale chargée par une migration de données :
-  contrat de travail ST ; convention CIFRE (ANRT) ; contrat de collaboration
-  ST–LIRMM ; avis FSD / accès ZRR ; inscription ADUM ; charte du doctorat signée ;
-  convention individuelle de formation ; plan individuel de formation ;
-  attestation CVEC ; justificatif de financement.
+## Modèles (`apps/admin_file/models.py`)
+- `RequiredItem(thesis, code, label, section, validator_roles, default_level,
+  mandatory, attachment_required, due_date, status: TODO|SUBMITTED|VALIDATED|REJECTED,
+  cycle, document (vault, unique), submitted_version, submitted_by, validated_at,
+  reason_code, reason_comment)`.
+  - `section` : `CIFRE` (lue avec `CIFRE_FILE_READ` : doctorant, directeur, tuteur)
+    ou `ACADEMIC` (`ADMIN_FILE_READ` : doctorant, directeur).
+  - `validator_roles` : `[DIRECTOR]`, `[INDUSTRIAL_TUTOR]` ou les deux (seules
+    valeurs permises en base). Le déposant est toujours le doctorant.
+  - `label` vide pour une pièce du catalogue (affichée depuis le catalogue),
+    libellé en clair pour une pièce personnalisée (`custom-<12 hex>`).
+- `ItemApproval(item, cycle, role, user, submitted_by, version)` : unique par
+  (pièce, cycle, rôle) **et** par (pièce, cycle, utilisateur), jamais par le
+  déposant du cycle.
+- `ReminderLog(item, kind: J14|J3|OVERDUE, due_date, recipient, status, attempts)` :
+  unique par (pièce, type, échéance, destinataire).
+- Pas de migration de données : le catalogue (`catalog.py`, dix pièces) est créé
+  par `create_thesis`, et pour une thèse existante par
+  `manage.py admin_file_seed (--thesis | --all)`, idempotente.
+
+| Code | Pièce | Section | Valide | Niveau de la PJ | PJ |
+|---|---|---|---|---|---|
+| `employment_contract` | Contrat de travail ST | CIFRE | tuteur | INTERNAL_ST | facultative |
+| `cifre_agreement` | Convention CIFRE (ANRT) | CIFRE | tuteur | INTERNAL_ST | obligatoire |
+| `collaboration_contract` | Contrat de collaboration ST-LIRMM | CIFRE | directeur ET tuteur | CONFIDENTIAL | obligatoire |
+| `funding_proof` | Justificatif de financement | CIFRE | directeur | CONFIDENTIAL | obligatoire |
+| `fsd_zrr_clearance` | Avis FSD / accès ZRR | ACADEMIC | directeur | INTERNAL_LIRMM | facultative |
+| `adum_enrollment` | Inscription ADUM | ACADEMIC | directeur | INTERNAL_LIRMM | obligatoire |
+| `doctoral_charter` | Charte du doctorat signée | ACADEMIC | directeur | INTERNAL_LIRMM | obligatoire |
+| `training_agreement` | Convention individuelle de formation | ACADEMIC | directeur | INTERNAL_LIRMM | obligatoire |
+| `training_plan` | Plan individuel de formation | ACADEMIC | directeur | INTERNAL_LIRMM | obligatoire |
+| `cvec_certificate` | Attestation CVEC | ACADEMIC | directeur | INTERNAL_LIRMM | obligatoire |
 
 ## Fonctionnalités
-1. Liste de contrôle avec responsable, statut, date, pièce jointe (via M2).
-2. Seul le rôle responsable (ou le doctorant pour dépôt) change le statut ; la
-   validation demande une ré-authentification et est journalisée.
-3. Barre de progression ; passage automatique de la thèse à `ACTIVE`.
-4. Rappels Celery à J-14 et J-3 pour les pièces en retard (courriel sans contenu).
-5. Ajout de pièces personnalisées (ex. renouvellement de titre de séjour, sans
-   stocker de détail sensible dans le libellé).
+1. Liste de contrôle par section visible, avec validateurs, statut, échéance,
+   pièce jointe (via M2 : `vault.services.store` / `add_version`, ou un document
+   existant de la même thèse).
+2. Automate (`transitions.py`) : TODO → SUBMITTED ; SUBMITTED → TODO (retrait),
+   VALIDATED (tous les rôles validateurs ont approuvé) ou REJECTED (motif) ;
+   REJECTED → SUBMITTED ; VALIDATED → TODO (réouverture, motif, par le doctorant
+   ou un validateur). Toute autre paire est refusée. Dossier gelé pour une thèse
+   `DEFENDED` ou `CLOSED`.
+3. Validation par pièce (`validator_roles`, pas le droit de lecture de la
+   section), ré-authentification avec second facteur pour approuver, refuser et
+   rouvrir, refus journalisés ; seule la version déposée est approuvée (409 si le
+   document a changé).
+4. Barre de progression sur les pièces obligatoires visibles ; passage
+   automatique et atomique de la thèse à `ACTIVE` ; une thèse `ACTIVE` dont une
+   pièce est rouverte reste `ACTIVE`, avec le bandeau « Dossier incomplet ».
+5. Pièce jointe lisible seulement avec le droit de lecture de la section de la
+   pièce (`permissions.register_document_restriction`), en plus du niveau.
+6. Rappels J-14, J-3 et J+1 (en retard), en dates à Paris, une fois chacun
+   (timer systemd quotidien, tâches Celery, courriel sans contenu).
+7. Pièces personnalisées : libellé en clair avec avertissement, niveau
+   `CONFIDENTIAL` par défaut, validateurs qui voient la section et lisent le niveau.
 
 ## Critères d'acceptation
-- [ ] La thèse ne passe `ACTIVE` que si toutes les pièces obligatoires sont `VALIDATED`.
-- [ ] Un co-encadrant ne peut pas valider une pièce dont il n'est pas responsable.
-- [ ] Chaque changement de statut crée un `AuditEvent`.
-- [ ] Les pièces jointes héritent par défaut du niveau `CONFIDENTIAL`.
+Tous validés à la revue de fin de M3 (2026-11-13).
+
+- [x] La thèse ne passe `ACTIVE` que si toutes les pièces obligatoires sont
+  `VALIDATED`, atomiquement avec la dernière validation, une seule fois.
+  *Tests* : `test_activation.py` (tous).
+- [x] Seul un rôle de `validator_roles` valide une pièce : un co-encadrant ne
+  valide rien, le directeur ne valide pas une pièce du tuteur, le déposant ne
+  valide ni ne refuse, une personne qui cumule les deux rôles ne valide pas seule
+  le contrat de collaboration. *Tests* : `test_validation.py`
+  (`test_co_supervisor_cannot_validate`, `test_only_the_item_validator_roles_approve`,
+  `test_director_cannot_validate_the_tutors_item_although_they_read_it`,
+  `test_the_submitter_never_validates_their_cycle`,
+  `test_one_person_with_both_roles_cannot_validate_the_collaboration_contract_alone`).
+- [x] Chaque changement de statut crée un `AuditEvent` (`from`, `to`).
+  *Test* : `test_transitions.py::test_every_status_change_is_audited_with_from_and_to`.
+- [x] Toute transition non prévue est refusée sans rien changer.
+  *Test* : `test_transitions.py::test_every_pair` (20 paires).
+- [x] Les pièces jointes héritent par défaut du niveau de leur pièce
+  (`CONFIDENTIAL` pour une pièce personnalisée), et seulement d'un niveau que tous
+  ses validateurs lisent. *Tests* : `test_submit.py::test_upload_is_stored_by_the_vault_at_the_default_level`,
+  `::test_a_chosen_level_must_be_readable_by_every_validator`,
+  `test_views.py::test_a_custom_item_defaults_to_confidential`.
+- [x] Une pièce jointe n'est lisible qu'avec le droit de lecture de la section de
+  sa pièce ; ni une autorisation explicite ni un niveau abaissé ne la contournent.
+  *Tests* : `test_attachment_restriction.py`, `tests/test_security_audit_m3.py
+  ::test_neither_a_grant_nor_a_lower_level_opens_an_attachment`.
+- [x] Approuver, refuser et rouvrir demandent un second facteur de moins de
+  10 minutes. *Tests* : `test_views.py::test_without_a_recent_second_factor_nothing_happens`,
+  `tests/test_security_audit_m3.py::test_a_password_alone_does_not_allow_a_decision`.
+- [x] Rappels J-14, J-3 et J+1 en dates à Paris, une fois chacun, un lien
+  seulement. *Tests* : `test_reminders.py` (tous), `test_reminder_timeout.py`.
 
 ## Notes issues de M1
 - Validation par pièce : le tuteur industriel et le directeur peuvent valider les
-  pièces dont ils sont responsables. C'est une **autorisation par pièce**, fondée
-  sur `RequiredItem.responsible_role`, en plus de la matrice
+  pièces dont ils sont validateurs. C'est une **autorisation par pièce**, fondée
+  sur `RequiredItem.validator_roles`, en plus de la matrice
   (`ADMIN_FILE_READ` / `CIFRE_FILE_READ`) : elle n'ajoute pas d'action globale de
   validation du dossier. Validation = ré-auth avec second facteur
-  (`@recent_auth_required`).
+  (`RecentAuthRequiredMixin`).
