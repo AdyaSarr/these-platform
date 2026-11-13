@@ -10,7 +10,7 @@ from django.db import transaction
 
 from apps.accounts import services, tasks
 from apps.accounts.models import Organization, Thesis
-from apps.vault.services import AuditAction, audit
+from apps.vault.services import AuditAction, audit, vault_problems
 
 
 def _date(value: str) -> dt.date:
@@ -37,6 +37,14 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args: Any, **opts: Any) -> None:
+        # The student's first sign-in seals a TOTP secret with the vault: it must
+        # be initialized before any invitation goes out.
+        problems = vault_problems()
+        if problems:
+            raise CommandError(
+                "The vault is not initialized (" + "; ".join(problems) + "): "
+                "run `manage.py vault_init` first."
+            )
         if opts["planned_end"] <= opts["cifre_start"]:
             raise CommandError("--planned-end must be after --cifre-start.")
         with transaction.atomic():

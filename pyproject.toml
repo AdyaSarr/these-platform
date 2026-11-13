@@ -91,6 +91,9 @@ django_settings_module = "config.settings.test"
 DJANGO_SETTINGS_MODULE = "config.settings.test"
 addopts = "--strict-markers --strict-config -ra"
 testpaths = ["tests", "apps"]
+markers = [
+    "without_vault_keys: do not create version 1 of the KEK domains (conftest.py)",
+]
 python_files = ["test_*.py"]
 
 # --------------------------------------------------------------------------- bandit

@@ -342,6 +342,7 @@ def test_init_root_refuses_a_symlink_or_a_file(settings: Any, tmp_path: Path) ->
             storage.init_root()
 
 
+@pytest.mark.django_db
 def test_vault_init_command(settings: Any, tmp_path: Path) -> None:
     from io import StringIO
 

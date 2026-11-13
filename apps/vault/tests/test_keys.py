@@ -3,6 +3,7 @@
 import threading
 import time
 from collections.abc import Callable, Generator
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import pytest
@@ -25,6 +26,9 @@ from apps.vault.formats import KeyDomain
 from apps.vault.models import AuditEvent, KeyEncryptionKey
 from apps.vault.services import AuditAction, audit
 
+# This module manages KEK rows itself (no automatic version 1, see conftest.py).
+pytestmark = pytest.mark.without_vault_keys
+
 C = KeyDomain.CONFIDENTIAL
 DEK = b"\x42" * 32
 
@@ -41,6 +45,17 @@ def counters() -> Generator[None]:
     yield
     keys._REFERENCE_COUNTERS.clear()
     keys._REFERENCE_COUNTERS.update(saved)
+
+
+@pytest.fixture(autouse=True)
+def _no_retire_grace(settings: Any) -> None:
+    """Retire right after new_version(); the grace period has its own tests."""
+    settings.VAULT_RETIRE_GRACE = timedelta(0)
+
+
+def _create_v1(domain: KeyDomain = C) -> str:
+    """Version 1 as ``vault_init`` creates it, without its audit event."""
+    return str(KeyEncryptionKey.objects.create(provider="env", domain=domain, version=1).kek_id)
 
 
 @pytest.fixture
@@ -185,18 +200,50 @@ def test_one_row_per_domain_and_version() -> None:
 
 
 @pytest.mark.django_db
-def test_wrap_bootstraps_version_1_once_and_round_trips() -> None:
+def test_wrap_round_trips(v1: str) -> None:
     kek_id, sealed = _wrap()
-    assert kek_id == "env:CONFIDENTIAL:1"
+    assert kek_id == v1 == "env:CONFIDENTIAL:1"
     assert DEK not in sealed
     assert _unwrap(kek_id, sealed) == DEK
-    _wrap()
-    assert KeyEncryptionKey.objects.filter(domain=C).count() == 1
-    assert AuditEvent.objects.filter(action="KEK_CREATED").count() == 1
 
 
 @pytest.mark.django_db
-def test_ad_builder_receives_the_kek_id_actually_used() -> None:
+def test_current_kek_never_creates_a_version() -> None:
+    with pytest.raises(VaultKeyError, match="vault_init"), transaction.atomic():
+        keys.current_kek(C)
+    assert not KeyEncryptionKey.objects.exists()
+
+
+@pytest.mark.django_db
+def test_init_domains_creates_version_1_of_every_domain_once() -> None:
+    assert sorted(keys.init_domains()) == sorted(f"env:{d.value}:1" for d in KeyDomain)
+    assert keys.init_domains() == []  # idempotent
+    assert KeyEncryptionKey.objects.count() == len(KeyDomain)
+    assert AuditEvent.objects.filter(action="KEK_CREATED").count() == len(KeyDomain)
+
+
+@pytest.mark.django_db
+def test_init_domains_leaves_rotated_domains_alone(v1: str) -> None:
+    KeyEncryptionKey.objects.create(provider="env", domain=C, version=2)
+    created = keys.init_domains()
+    assert f"env:{C.value}:1" not in created
+    assert KeyEncryptionKey.objects.filter(domain=C).count() == 2
+
+
+@pytest.mark.django_db
+def test_vault_init_creates_the_keys() -> None:
+    from io import StringIO
+
+    from django.core.management import call_command
+
+    out = StringIO()
+    call_command("vault_init", stdout=out)
+    assert KeyEncryptionKey.objects.count() == len(KeyDomain)
+    assert "env:CONFIDENTIAL:1" in out.getvalue()
+
+
+@pytest.mark.django_db
+def test_ad_builder_receives_the_kek_id_actually_used(v1: str) -> None:
     seen: list[str] = []
 
     def ad_for(kek_id: str) -> bytes:
@@ -211,7 +258,7 @@ def test_ad_builder_receives_the_kek_id_actually_used() -> None:
 
 
 @pytest.mark.django_db
-def test_ad_with_another_kek_id_fails_integrity() -> None:
+def test_ad_with_another_kek_id_fails_integrity(v1: str) -> None:
     kek_id, sealed = _wrap()
     with pytest.raises(VaultIntegrityError):
         keys.unwrap(kek_id, sealed, _ad("env:CONFIDENTIAL:2"))
@@ -219,6 +266,7 @@ def test_ad_with_another_kek_id_fails_integrity() -> None:
 
 @pytest.mark.django_db
 def test_domains_have_independent_keks() -> None:
+    _create_v1(KeyDomain.PUBLIC)
     kek_id, sealed = _wrap(KeyDomain.PUBLIC)
     assert kek_id == "env:PUBLIC:1"
     with pytest.raises(VaultIntegrityError):
@@ -249,14 +297,14 @@ def test_new_version_is_used_for_new_wraps_and_old_one_stays_readable(v1: str) -
 
 
 @pytest.mark.django_db
-def test_unknown_but_well_formed_kek_id_is_refused() -> None:
+def test_unknown_but_well_formed_kek_id_is_refused(v1: str) -> None:
     _wrap()
     with pytest.raises(UnknownKekError):
         _unwrap("env:CONFIDENTIAL:5", b"\x00" * 60)
 
 
 @pytest.mark.django_db
-def test_disabled_provider_is_refused(settings: Any) -> None:
+def test_disabled_provider_is_refused(settings: Any, v1: str) -> None:
     kek_id, sealed = _wrap()
     settings.VAULT_ENABLED_PROVIDERS = frozenset({"bao"})
     with pytest.raises(UnknownKekError):
@@ -398,6 +446,51 @@ def test_key_handling_functions_are_marked_sensitive(func: Any) -> None:
     assert func.__code__.co_name == "sensitive_variables_wrapper"
 
 
+# --------------------------------------------------------------------------- retire grace
+
+T0 = datetime(2026, 11, 13, 9, 0, tzinfo=UTC)
+
+
+@pytest.mark.django_db
+def test_retire_waits_for_the_grace_period_of_the_next_version(
+    counters: None, v1: str, settings: Any, time_machine: Any
+) -> None:
+    """Covers encrypt() calls made outside a transaction (allauth) and the
+    window of open() between reading a row and unwrapping its DEK."""
+    settings.VAULT_RETIRE_GRACE = timedelta(minutes=10)
+    keys.register_reference_counter(C, _referenced_by(set()))
+    time_machine.move_to(T0, tick=False)
+    keys.new_version(C)
+    time_machine.move_to(T0 + timedelta(minutes=9, seconds=59), tick=False)
+    with pytest.raises(KekRetirementError, match="grace"):
+        keys.retire(v1)
+    assert KeyEncryptionKey.objects.get(kek_id=v1).retired_at is None
+    time_machine.move_to(T0 + timedelta(minutes=10, seconds=1), tick=False)
+    keys.retire(v1)
+    assert KeyEncryptionKey.objects.get(kek_id=v1).retired_at is not None
+
+
+@pytest.mark.django_db
+def test_grace_is_measured_on_the_next_version_not_the_latest(
+    counters: None, v1: str, settings: Any, time_machine: Any
+) -> None:
+    settings.VAULT_RETIRE_GRACE = timedelta(minutes=10)
+    keys.register_reference_counter(C, _referenced_by(set()))
+    time_machine.move_to(T0, tick=False)
+    keys.new_version(C)  # v2, the version following v1
+    time_machine.move_to(T0 + timedelta(hours=1), tick=False)
+    keys.new_version(C)  # v3, brand new
+    keys.retire(v1)  # v2 is old enough: allowed although v3 is not
+    with pytest.raises(KekRetirementError, match="grace"):
+        keys.retire("env:CONFIDENTIAL:2")  # v3 is too recent
+
+
+def test_default_retire_grace_is_10_minutes() -> None:
+    from config.settings import base  # this module's fixture sets it to 0
+
+    assert timedelta(minutes=10) == base.VAULT_RETIRE_GRACE
+
+
 # --------------------------------------------------------------------------- lock order
 
 
@@ -430,14 +523,14 @@ def test_wrap_after_audit_in_another_domain_is_refused(v1: str) -> None:
 
 
 @pytest.mark.django_db
-def test_re_taking_a_held_kek_lock_after_audit_is_allowed() -> None:
-    """Re-taking a lock already held never waits: several wraps of one domain in a
-    transaction stay possible even when the first one bootstrapped (and audited) v1."""
+def test_re_taking_a_held_kek_lock_after_audit_is_allowed(v1: str) -> None:
+    """Re-taking a lock already held never waits: a transaction that wrapped, then
+    audited, may wrap again in the same domain."""
     with transaction.atomic():
-        first, _ = keys.wrap(C, DEK, _ad)  # bootstrap: audit(KEK_CREATED)
-        assert locks.held(locks.AUDIT_NAMESPACE, locks.AUDIT_CHAIN_KEY)
+        first, _ = keys.wrap(C, DEK, _ad)
+        audit(AuditAction.LOGIN_FAILED)
         second, _ = keys.wrap(C, DEK, _ad)
-    assert first == second == "env:CONFIDENTIAL:1"
+    assert first == second == v1
 
 
 @pytest.mark.django_db
@@ -542,7 +635,7 @@ def test_rotation_waits_for_an_uncommitted_wrap_then_refuses_to_retire(counters:
     """An uncommitted wrap under v1 is invisible to other connections: without the
     shared lock, rotation would create v2 and retire v1 while a row under v1 is
     about to be committed, leaving it unreadable."""
-    v1 = _wrap()[0]
+    v1 = _create_v1()
     keys.register_reference_counter(C, _org_counter)
     wrapped, release = threading.Event(), threading.Event()
     pids = Pids()
@@ -579,7 +672,7 @@ def test_rotation_waits_for_an_uncommitted_wrap_then_refuses_to_retire(counters:
 
 @pytest.mark.django_db(transaction=True)
 def test_retire_waits_for_transactions_holding_the_shared_lock(counters: None) -> None:
-    v1 = _wrap()[0]
+    v1 = _create_v1()
     keys.new_version(C)
     keys.register_reference_counter(C, _referenced_by(set()))
     wrapped, release = threading.Event(), threading.Event()
@@ -617,7 +710,7 @@ def test_waiting_rotation_gives_up_and_does_not_freeze_wraps(
     EXCLUSIVE_LOCK_TIMEOUT_MS behind a long transaction, then fails; a wrap that
     queued behind it then goes through while the long transaction is still open."""
     monkeypatch.setattr(keys, "EXCLUSIVE_LOCK_TIMEOUT_MS", 1_500)
-    _wrap()
+    _create_v1()
     long_held, start_wrap, release = threading.Event(), threading.Event(), threading.Event()
     wrap_done = threading.Event()
     pids = Pids()
@@ -662,7 +755,7 @@ def test_waiting_rotation_gives_up_and_does_not_freeze_wraps(
 
 @pytest.mark.django_db(transaction=True)
 def test_concurrent_rotations_are_serialized() -> None:
-    _wrap()
+    _create_v1()
     results: list[str] = []
     start = threading.Barrier(2)
 
@@ -675,35 +768,13 @@ def test_concurrent_rotations_are_serialized() -> None:
 
 
 @pytest.mark.django_db(transaction=True)
-def test_concurrent_bootstrap_inside_enclosing_transactions() -> None:
-    """The losing insert hits the unique constraint; its savepoint is rolled back
-    and the enclosing transaction stays usable."""
-    created, release = threading.Event(), threading.Event()
-    pids = Pids()
-    seen: dict[str, str] = {}
+def test_concurrent_vault_init_creates_each_version_once() -> None:
+    start = threading.Barrier(2)
 
-    def first() -> None:
-        with transaction.atomic():
-            seen["first"] = keys.current_kek(C)
-            created.set()
-            assert release.wait(20)
+    def init() -> None:
+        start.wait(10)
+        keys.init_domains()
 
-    def second() -> None:
-        assert created.wait(10)
-        pids.publish("second")
-        with transaction.atomic():
-            seen["second"] = keys.current_kek(C)  # blocks on the unique index, then loses
-            Organization.objects.create(name="still-usable", kind="EXTERNAL")
-
-    def control() -> None:
-        try:
-            # Waits on the first transaction's row (not an advisory lock).
-            _wait_until_blocked(pids.get("second"), advisory=False)
-        finally:
-            release.set()
-
-    _run(first, second, control=control)
-    assert seen == {"first": "env:CONFIDENTIAL:1", "second": "env:CONFIDENTIAL:1"}
-    assert KeyEncryptionKey.objects.filter(domain=C).count() == 1
-    assert Organization.objects.filter(name="still-usable").exists()
-    assert AuditEvent.objects.filter(action="KEK_CREATED").count() == 1
+    _run(init, init, control=lambda: None)
+    assert KeyEncryptionKey.objects.count() == len(KeyDomain)
+    assert set(KeyEncryptionKey.objects.values_list("version", flat=True)) == {1}

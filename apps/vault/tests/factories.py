@@ -24,7 +24,7 @@ class DocumentFactory(factory.django.DjangoModelFactory[Document]):
     thesis = factory.SubFactory(ThesisFactory)
     title = factory.Sequence(lambda n: f"Document fictif {n}")
     confidentiality = ConfidentialityLevel.INTERNAL_LIRMM
-    owner = factory.SubFactory(UserFactory)
+    owner = factory.SubFactory(UserFactory, mfa=False)  # no TOTP: no KEK needed
     current_version = 1
 
 
@@ -48,5 +48,5 @@ class DocumentAccessGrantFactory(factory.django.DjangoModelFactory[DocumentAcces
     document = factory.SubFactory(
         DocumentFactory, confidentiality=ConfidentialityLevel.CONFIDENTIAL
     )
-    user = factory.SubFactory(UserFactory)
-    granted_by = factory.SubFactory(UserFactory)
+    user = factory.SubFactory(UserFactory, mfa=False)
+    granted_by = factory.SubFactory(UserFactory, mfa=False)

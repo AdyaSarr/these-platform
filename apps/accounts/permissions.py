@@ -19,6 +19,7 @@ from functools import wraps
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Any, Concatenate, ParamSpec, Protocol
 
+from django.apps import apps as django_apps
 from django.contrib.auth.views import redirect_to_login
 from django.core.exceptions import ImproperlyConfigured, PermissionDenied, ValidationError
 from django.http import HttpRequest, HttpResponseBase
@@ -31,6 +32,8 @@ from .roles import Role
 if TYPE_CHECKING:
     from django.contrib.auth.base_user import AbstractBaseUser
     from django.contrib.auth.models import AnonymousUser
+
+    from apps.vault.models import Document
 
     AnyUser = AbstractBaseUser | AnonymousUser
 
@@ -57,6 +60,7 @@ class Action(StrEnum):
     DOCUMENT_READ = "DOCUMENT_READ"
     DOCUMENT_WRITE = "DOCUMENT_WRITE"
     DOCUMENT_COMMENT = "DOCUMENT_COMMENT"
+    DOCUMENT_GRANT = "DOCUMENT_GRANT"  # explicit access to one CONFIDENTIAL document
     # Administrative file (M3).
     ADMIN_FILE_READ = "ADMIN_FILE_READ"
     ADMIN_FILE_WRITE = "ADMIN_FILE_WRITE"
@@ -85,6 +89,7 @@ ROLE_ACTIONS: Mapping[Role, frozenset[Action]] = MappingProxyType(
                 _A.OBJECTIVE_READ, _A.OBJECTIVE_WRITE, _A.OBJECTIVE_COMMENT,  # écrire
                 _A.MEETING_READ, _A.MEETING_WRITE,                      # écrire
                 _A.DOCUMENT_READ, _A.DOCUMENT_WRITE, _A.DOCUMENT_COMMENT,  # écrire
+                _A.DOCUMENT_GRANT,                                      # + liste explicite
                 _A.ADMIN_FILE_READ, _A.ADMIN_FILE_WRITE, _A.CIFRE_FILE_READ,  # écrire
             }
         ),
@@ -196,6 +201,38 @@ def can_access_level(user: AnyUser, thesis: Thesis, level: ConfidentialityLevel)
     if thesis_or_none is None:
         return False
     return bool(roles_of(user, thesis_or_none) & LEVEL_ROLES[level])
+
+
+def can_access_document(user: AnyUser, document: Document) -> bool:
+    """Read access to one document (docs/ARCHITECTURE.md, "Accès à un document").
+
+    Granted to an active member of the document's thesis who either holds a
+    role with DOCUMENT_READ that the level allows (LEVEL_ROLES), or, for a
+    CONFIDENTIAL document only, an active explicit grant ("+ liste explicite").
+    A grant is worth nothing without an active membership: an expired CSI
+    member loses it.
+    """
+    try:
+        level = ConfidentialityLevel(document.confidentiality)
+    except ValueError:
+        return False
+    if document._state.adding:
+        return False
+    thesis = _thesis_of(document)
+    if thesis is None:
+        return False
+    roles = roles_of(user, thesis)
+    if not roles:
+        return False
+    if any(Action.DOCUMENT_READ in ROLE_ACTIONS[r] and r in LEVEL_ROLES[level] for r in roles):
+        return True
+    if level is not ConfidentialityLevel.CONFIDENTIAL or user.pk is None:
+        return False
+    # Through the app registry: accounts does not import vault at module level.
+    grants = django_apps.get_model("vault", "DocumentAccessGrant").objects
+    return bool(
+        grants.filter(document_id=document.pk, user_id=user.pk, revoked_at__isnull=True).exists()
+    )
 
 
 # --------------------------------------------------------------------------- view guards

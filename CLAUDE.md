@@ -99,10 +99,17 @@ la contourner.
   `audit()` est le dernier appel d'une transaction ; aucun `wrap` ni `new_version`
   après un `audit()` dans la même transaction (`LockOrderError`, garde dans
   `vault.keys._lock` ; seule la reprise d'un verrou de KEK déjà tenu, qui
-  n'attend jamais, reste permise). Voir `apps/vault/locks.py`.
+  n'attend jamais, reste permise). Voir `apps/vault/locks.py`. Conséquence :
+  chaque service du coffre s'appelle dans **sa propre** transaction, jamais
+  plusieurs dans un même `transaction.atomic()` englobant.
 - Chaque objet métier appartient à une `Thesis` ; toute requête est filtrée par thèse.
 - Tests avec pytest et factory-boy ; pour chaque vue, au moins un test autorisé et un
   test refusé par rôle concerné.
+- Un test qui enchaîne une opération journalisée (connexion, invitation...) puis une
+  opération du coffre (`wrap`, chiffrement MFA, dépôt) doit être en
+  `django_db(transaction=True)` : sinon la transaction englobante du test garde le
+  verrou du journal et la garde lève `LockOrderError`, ce qui n'arrive pas en
+  production.
 - Migrations relues et commitées avec le code qui les utilise.
 - Commits : `<module>: <verbe à l'impératif> ...` (ex. `objectives: add weighted completion rate`).
 

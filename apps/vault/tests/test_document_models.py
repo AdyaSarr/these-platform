@@ -18,7 +18,15 @@ from apps.vault.tests.factories import (
     DocumentVersionFactory,
 )
 
-pytestmark = pytest.mark.django_db
+# KEK rows are created by the tests themselves (no automatic version 1).
+pytestmark = [pytest.mark.django_db, pytest.mark.without_vault_keys]
+
+
+@pytest.fixture(autouse=True)
+def _no_retire_grace(settings: Any) -> None:
+    from datetime import timedelta
+
+    settings.VAULT_RETIRE_GRACE = timedelta(0)
 
 
 def _refused(**fields: Any) -> None:
@@ -157,7 +165,7 @@ def test_a_revoked_grant_can_be_granted_again() -> None:
 
 
 def test_grant_cannot_be_given_to_oneself_by_the_database() -> None:
-    user = UserFactory.create()
+    user = UserFactory.create(mfa=False)
     with pytest.raises(DatabaseError), transaction.atomic():
         DocumentAccessGrantFactory.create(user=user, granted_by=user)
 

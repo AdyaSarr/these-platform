@@ -63,6 +63,8 @@ EXPECTED: dict[Action, set[Role]] = {
     A.DOCUMENT_READ: _SUPERVISION,
     A.DOCUMENT_WRITE: {R.PHD_STUDENT},
     A.DOCUMENT_COMMENT: _SUPERVISION,
+    # M2: explicit access to one CONFIDENTIAL document ("+ liste explicite").
+    A.DOCUMENT_GRANT: {R.PHD_STUDENT},
     # Admin./RH: écrire / lire / — / partie CIFRE / — / —
     A.ADMIN_FILE_READ: {R.PHD_STUDENT, R.DIRECTOR},
     A.ADMIN_FILE_WRITE: {R.PHD_STUDENT},

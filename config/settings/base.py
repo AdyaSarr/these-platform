@@ -5,6 +5,7 @@ dev.py and test.py). Secure defaults: an environment loosens them, never the
 reverse.
 """
 
+from datetime import timedelta
 from pathlib import Path
 
 import environ
@@ -211,6 +212,9 @@ MASTER_KEY = env.str("MASTER_KEY", default="")
 # OpenBao and a complete rotation, remove "env" (docs/DEPLOYMENT.md).
 VAULT_KEY_PROVIDER = "env"
 VAULT_ENABLED_PROVIDERS = frozenset({"env"})
+# A KEK version can be retired only once the NEXT version has existed this long
+# (data sealed outside the shared lock: allauth's encrypt(), open()'s read window).
+VAULT_RETIRE_GRACE = timedelta(minutes=10)
 
 # Encrypted blobs (apps/vault/storage.py). Outside every directory a web server
 # serves; checked at start-up. STRICT (prod): absolute path required, and wide

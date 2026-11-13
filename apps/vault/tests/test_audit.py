@@ -189,3 +189,24 @@ def test_value_that_is_not_an_ip_is_still_pseudonymized() -> None:
     event_hash = _ip_hash(" not-an-ip ")
     assert event_hash == crypto.pseudonym("not-an-ip", purpose="ip")
     assert "not-an-ip" not in str(AuditEvent.objects.values().last())
+
+
+# --------------------------------------------------------------------------- JCS subset
+
+
+@pytest.mark.parametrize(
+    "value",
+    [1.0, 0.1, float("nan"), float("inf"), 2**53, -(2**53), 2**64, {"n": [1.5]}],
+    ids=["float", "decimal", "nan", "inf", "2^53", "-2^53", "2^64", "nested-float"],
+)
+def test_values_outside_the_canonical_json_subset_are_refused(value: Any) -> None:
+    """The hash chain hashes canonical JSON (an RFC 8785 subset): no floats, and
+    integers exactly representable as IEEE 754 doubles only."""
+    with pytest.raises(AuditError):
+        audit(A.MEMBER_ROLE_CHANGED, count=value)
+    assert not AuditEvent.objects.exists()
+
+
+@pytest.mark.parametrize("value", [2**53 - 1, -(2**53 - 1), 0, True, False, None, "1.5"])
+def test_values_inside_the_subset_are_accepted(value: Any) -> None:
+    assert audit(A.MEMBER_ROLE_CHANGED, count=value).details_json == {"count": value}

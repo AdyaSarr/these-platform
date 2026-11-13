@@ -21,14 +21,15 @@ wrap of the domain; rotate_kek retries with a growing delay.
 from __future__ import annotations
 
 import re
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Iterator, Mapping
+from contextlib import contextmanager
 from dataclasses import dataclass
 from types import MappingProxyType
 from typing import TYPE_CHECKING, Protocol
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
-from django.db import IntegrityError, OperationalError, connection, transaction
+from django.db import OperationalError, connection, transaction
 from django.db.transaction import TransactionManagementError
 from django.utils import timezone
 from django.views.decorators.debug import sensitive_variables
@@ -189,6 +190,17 @@ def _is_lock_timeout(exc: OperationalError) -> bool:
     return getattr(exc.__cause__, "sqlstate", None) == _LOCK_NOT_AVAILABLE
 
 
+@contextmanager
+def _lock_timeout_as_error(domain: KeyDomain) -> Iterator[None]:
+    """lock_timeout expiry (SQLSTATE 55P03) -> KekLockTimeoutError, for rotate_kek to retry."""
+    try:
+        yield
+    except OperationalError as exc:
+        if _is_lock_timeout(exc):
+            raise KekLockTimeoutError(f"{domain.value}: KEK lock busy, retry later") from exc
+        raise
+
+
 def _check_domain(domain: KeyDomain) -> None:
     if not isinstance(domain, KeyDomain):
         raise ValueError("domain must be a KeyDomain member")
@@ -218,7 +230,7 @@ def _create(domain: KeyDomain, version: int, actor: User | None) -> KeyEncryptio
 
 
 def current_kek(domain: KeyDomain) -> str:
-    """kek_id of the domain's current version; creates version 1 on first use.
+    """kek_id of the domain's current version. Never creates one (see init_domains).
 
     Must run inside transaction.atomic(); takes the domain's lock SHARED.
     """
@@ -226,16 +238,41 @@ def current_kek(domain: KeyDomain) -> str:
     _lock(domain, exclusive=False)
     row = _current_row(domain)
     if row is None:
-        try:
-            # Savepoint: if a concurrent transaction created version 1 first, the
-            # IntegrityError rolls back only this block, not the caller's transaction.
-            with transaction.atomic():
-                row = _create(domain, 1, actor=None)
-        except IntegrityError:
-            row = _current_row(domain)  # committed by the winner (READ COMMITTED)
-            if row is None:
-                raise
+        raise VaultKeyError(f"{domain.value}: no KEK version: run `manage.py vault_init`")
     return str(row.kek_id)
+
+
+def missing_domains() -> list[KeyDomain]:
+    """Key domains without any KEK version (`manage.py vault_init` not run)."""
+    present = set(KeyEncryptionKey.objects.values_list("domain", flat=True).distinct())
+    return [domain for domain in KeyDomain if domain.value not in present]
+
+
+def init_domains(*, actor: User | None = None) -> list[str]:
+    """Create version 1 of every domain that has none (manage.py vault_init).
+
+    Idempotent. One transaction: every domain's exclusive lock first (in code
+    order), then the rows, then the audit events last, so the lock order holds
+    and two concurrent runs create each version once. Run outside business
+    transactions: creations are never audited in the middle of a store().
+    """
+    from .services import AuditAction, audit
+
+    domains = sorted(KeyDomain, key=DOMAIN_CODES.__getitem__)
+    with _lock_timeout_as_error(domains[0]), transaction.atomic():
+        for domain in domains:
+            _lock(domain, exclusive=True)
+        rows = [
+            KeyEncryptionKey.objects.create(
+                provider=settings.VAULT_KEY_PROVIDER, domain=domain, version=1, created_by=actor
+            )
+            for domain in domains
+            if not KeyEncryptionKey.objects.filter(domain=domain).exists()
+        ]
+        for row in rows:
+            row.refresh_from_db(fields=["kek_id"])
+            audit(AuditAction.KEK_CREATED, actor=actor, obj=row, kek_id=row.kek_id)
+    return [str(row.kek_id) for row in rows]
 
 
 @sensitive_variables()
@@ -270,18 +307,13 @@ def new_version(domain: KeyDomain, *, actor: User | None = None) -> str:
     sealing under the previous version, and for any other rotation.
     """
     _check_domain(domain)
-    try:
-        with transaction.atomic():
-            _lock(domain, exclusive=True)
-            last = KeyEncryptionKey.objects.filter(domain=domain).order_by("-version").first()
-            version = 1 if last is None else last.version + 1
-            if version > MAX_VERSION:
-                raise VaultKeyError(f"{domain.value}: no KEK version left")
-            return str(_create(domain, version, actor).kek_id)
-    except OperationalError as exc:
-        if _is_lock_timeout(exc):
-            raise KekLockTimeoutError(f"{domain.value}: KEK lock busy, retry later") from exc
-        raise
+    with _lock_timeout_as_error(domain), transaction.atomic():
+        _lock(domain, exclusive=True)
+        last = KeyEncryptionKey.objects.filter(domain=domain).order_by("-version").first()
+        version = 1 if last is None else last.version + 1
+        if version > MAX_VERSION:
+            raise VaultKeyError(f"{domain.value}: no KEK version left")
+        return str(_create(domain, version, actor).kek_id)
 
 
 # --------------------------------------------------------------------------- retirement
@@ -302,18 +334,18 @@ def register_reference_counter(domain: KeyDomain, counter: ReferenceCounter) -> 
 
 
 def retire(kek_id: str, *, actor: User | None = None) -> None:
-    """Retire a KEK version. Refused while it is current, referenced, or uncountable.
+    """Retire a KEK version. Refused while it is current, while the NEXT version is
+    younger than VAULT_RETIRE_GRACE, while it is referenced, or if uncountable.
 
+    The grace period covers data sealed under this version but stored outside
+    the shared lock: encrypt() called outside a transaction (allauth), and the
+    window of open() between reading a row and unwrapping its DEK.
     The provider need not be enabled (an old provider's versions are retired
     before it is removed from VAULT_ENABLED_PROVIDERS).
     """
     ref = parse_kek_id(kek_id)
-    try:
+    with _lock_timeout_as_error(ref.domain):
         _retire(ref, kek_id, actor)
-    except OperationalError as exc:
-        if _is_lock_timeout(exc):
-            raise KekLockTimeoutError(f"{ref.domain.value}: KEK lock busy, retry later") from exc
-        raise
 
 
 def _retire(ref: KekRef, kek_id: str, actor: User | None) -> None:
@@ -327,6 +359,16 @@ def _retire(ref: KekRef, kek_id: str, actor: User | None) -> None:
         current = _current_row(ref.domain)
         if current is not None and current.pk == row.pk:
             raise KekRetirementError(f"{kek_id} is the current version of its domain")
+        following = (
+            KeyEncryptionKey.objects.filter(domain=ref.domain, version__gt=row.version)
+            .order_by("version")
+            .first()
+        )
+        grace = settings.VAULT_RETIRE_GRACE
+        if following is None or following.created_at > timezone.now() - grace:
+            raise KekRetirementError(
+                f"{kek_id}: grace period not elapsed: the next version must exist for {grace}"
+            )
         counters = _REFERENCE_COUNTERS.get(ref.domain)
         if not counters:
             raise KekRetirementError(f"no reference counter registered for {ref.domain.value}")

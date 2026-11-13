@@ -2,6 +2,7 @@
 
 import io
 import re
+from typing import Any
 
 import pytest
 from django.core import mail
@@ -47,4 +48,18 @@ def test_rejects_end_before_start() -> None:
     args = [a if not a.startswith("--planned-end") else "--planned-end=2025-01-01" for a in ARGS]
     with pytest.raises(CommandError):
         call_command("create_thesis", *args, stdout=io.StringIO())
+    assert not Thesis.objects.exists()
+
+
+@pytest.mark.without_vault_keys
+def test_refuses_to_run_before_vault_init() -> None:
+    with pytest.raises(CommandError, match="vault_init"):
+        call_command("create_thesis", *ARGS, stdout=io.StringIO())
+    assert not Thesis.objects.exists()
+
+
+def test_refuses_to_run_without_the_storage_directory(settings: Any, tmp_path: Any) -> None:
+    settings.VAULT_STORAGE_DIR = str(tmp_path / "absent")
+    with pytest.raises(CommandError, match="vault_init"):
+        call_command("create_thesis", *ARGS, stdout=io.StringIO())
     assert not Thesis.objects.exists()

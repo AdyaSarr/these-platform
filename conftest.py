@@ -53,3 +53,23 @@ def _vault_storage_in_tmp(settings: Any, tmp_path: Path) -> None:
     from apps.vault import storage
 
     storage.init_root()  # what `manage.py vault_init` does
+
+
+@pytest.fixture(autouse=True)
+def _vault_keys(request: pytest.FixtureRequest) -> None:
+    """Version 1 of every KEK domain, as `manage.py vault_init` creates it, for every
+    test that uses the database (rows only: no audit event, so tests counting
+    events are unaffected). Opt out with @pytest.mark.without_vault_keys."""
+    marker = request.node.get_closest_marker("django_db")
+    if request.node.get_closest_marker("without_vault_keys"):
+        return
+    names = set(request.fixturenames)
+    if marker is None and not names & {"db", "transactional_db"}:
+        return
+    transactional = "transactional_db" in names or bool(marker and marker.kwargs.get("transaction"))
+    request.getfixturevalue("transactional_db" if transactional else "db")
+    from apps.vault.formats import KeyDomain
+    from apps.vault.models import KeyEncryptionKey
+
+    for domain in KeyDomain:
+        KeyEncryptionKey.objects.get_or_create(provider="env", domain=domain, version=1)

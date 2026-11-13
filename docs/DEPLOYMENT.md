@@ -84,17 +84,37 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       *Vérifier* : deux connexions depuis deux machines produisent deux `ip_hash`
       différents dans `vault_auditevent`.
 
-- [ ] **Secrets MFA chiffrés : `MFAAdapter.encrypt()` branché sur le coffre (M2).**
+- [ ] **Secrets MFA scellés par le coffre (M2).**
       La graine TOTP et la graine des codes de récupération passent par
-      `apps/accounts/adapters.py:MFAAdapter.encrypt()`, qui est l'identité en M1.
+      `MFAAdapter.encrypt()`, qui délègue à `vault.services.encrypt_secret`
+      (AES-256-GCM sous la KEK `MFA_SECRETS`).
       *Pourquoi* : sans chiffrement, une lecture de la base suffit pour générer
       les codes TOTP et de récupération de tout le monde, donc contourner le
-      second facteur. La prod **refuse de démarrer** tant que `encrypt()` est
-      l'identité (`apps/accounts/guards.py`, appelé par `config/wsgi.py` et
-      `config/asgi.py`, `MFA_ENCRYPTION_REQUIRED = True` dans `prod.py`).
+      second facteur. La prod **refuse de démarrer** si l'adaptateur configuré
+      n'est pas `MFAAdapter` (ou une sous-classe qui redéfinit `encrypt` ou
+      `decrypt`) : contrôle structurel sans base (`apps/accounts/guards.py`,
+      appelé par `config/wsgi.py` et `config/asgi.py`). L'aller-retour réel est
+      vérifié sur la base déployée par `vault.E001` (ci-dessous).
       *Vérifier* : `python -c "import config.wsgi"` avec l'environnement de prod
-      se termine sans erreur ; `test_prod_refuses_to_serve_while_encrypt_is_the_identity`
-      a été remplacé en M2 par un test du chiffrement réel.
+      se termine sans erreur ; aucune valeur `secret` ou `seed` de
+      `mfa_authenticator.data` ne commence autrement que par `vault1:`
+      (`manage.py vault_encrypt_mfa_secrets` scelle celles d'une base antérieure
+      à M2 et doit afficher `0 secret(s) sealed`).
+
+- [ ] **Ordre de mise en service du coffre (M2).**
+      ```bash
+      manage.py migrate
+      manage.py vault_init                                 # dossier des blobs 0700, KEK v1 de chaque domaine
+      manage.py check --deploy --database default          # dont vault.E001 et vault.E002
+      manage.py create_thesis ...                          # refuse tant que vault_init n'a pas été lancé
+      ```
+      *Pourquoi* : la première connexion d'un utilisateur active son second
+      facteur, dont la graine est scellée sous la KEK `MFA_SECRETS` : sans
+      `vault_init`, l'activation échoue. `vault.E001` fait un aller-retour réel
+      de chiffrement MFA ; `vault.E002` signale un domaine sans KEK. Ces
+      contrôles, étiquetés `database`, ne s'exécutent qu'avec `--database default`.
+      *Vérifier* : la commande `check` ci-dessus affiche « System check
+      identified no issues ».
 
 - [ ] **Téléchargements en `Content-Disposition: attachment` + `nosniff` (M2).**
       *Pourquoi* : la CSP autorise `script-src 'self'` ; un fichier déposé servi
