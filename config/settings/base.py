@@ -206,6 +206,12 @@ DEFAULT_FROM_EMAIL = env.str("DEFAULT_FROM_EMAIL", default="noreply@localhost")
 # apps/vault/crypto.py only. Never displayed: Django masks settings named *KEY*.
 MASTER_KEY = env.str("MASTER_KEY", default="")
 
+# Key provider for NEW wraps, and providers allowed to UNwrap (chosen by the
+# kek_id prefix). Checked at start-up (apps/vault/apps.py). After a migration to
+# OpenBao and a complete rotation, remove "env" (docs/DEPLOYMENT.md).
+VAULT_KEY_PROVIDER = "env"
+VAULT_ENABLED_PROVIDERS = frozenset({"env"})
+
 # Absolute base URL of the platform, for links in e-mails (sent without a request).
 SITE_URL = env.str("DJANGO_SITE_URL", default="http://localhost:8000").rstrip("/")
 

@@ -95,6 +95,11 @@ la contourner.
 - Une app Django par module (voir `docs/ARCHITECTURE.md`). Modèles métier hérités de
   `core.TimeStampedModel` ; clés primaires UUID pour tout objet exposé dans une URL.
 - Logique métier dans `services.py`, vues fines, requêtes complexes dans des managers.
+- **Ordre des verrous** : verrou de KEK (`vault.keys`) **avant** verrou du journal.
+  `audit()` est le dernier appel d'une transaction ; aucun `wrap` ni `new_version`
+  après un `audit()` dans la même transaction (`LockOrderError`, garde dans
+  `vault.keys._lock` ; seule la reprise d'un verrou de KEK déjà tenu, qui
+  n'attend jamais, reste permise). Voir `apps/vault/locks.py`.
 - Chaque objet métier appartient à une `Thesis` ; toute requête est filtrée par thèse.
 - Tests avec pytest et factory-boy ; pour chaque vue, au moins un test autorisé et un
   test refusé par rôle concerné.

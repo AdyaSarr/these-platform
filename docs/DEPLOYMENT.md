@@ -102,6 +102,20 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       *Vérifier* : un test de M2 contrôle ces deux en-têtes sur la vue de
       téléchargement ; aucun fichier déposé n'est servi par le proxy en statique.
 
+- [ ] **KEK hors du serveur applicatif : OpenBao (transit) au lieu de `env` (M2).**
+      *Pourquoi* : avec le fournisseur `env`, les KEK sont dérivées de `MASTER_KEY`,
+      présente dans l'environnement du serveur ; qui lit cet environnement lit
+      tout le coffre. Avec OpenBao, la KEK ne quitte jamais OpenBao.
+      *Procédure* : implémenter `OpenBaoTransitProvider` (conception dans
+      `docs/SECURITY.md`), ajouter `"bao"` à `VAULT_ENABLED_PROVIDERS` et fixer
+      `VAULT_KEY_PROVIDER = "bao"`, puis `rotate_kek <domaine>` pour chaque domaine
+      (documents et `MFA_SECRETS`) ; une fois **toutes** les anciennes versions
+      `env:…` retirées (`retire` refuse tant qu'une ligne les référence), **retirer
+      `"env"` de `VAULT_ENABLED_PROVIDERS`**.
+      *Vérifier* : `SELECT kek_id FROM vault_keyencryptionkey WHERE retired_at IS NULL`
+      ne renvoie que des `bao:…` ; le serveur démarre avec
+      `VAULT_ENABLED_PROVIDERS = frozenset({"bao"})`.
+
 ## Rappels de configuration
 
 - `DJANGO_SETTINGS_MODULE=config.settings.prod` dans l'environnement du serveur

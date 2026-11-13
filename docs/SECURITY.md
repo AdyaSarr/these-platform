@@ -29,6 +29,34 @@ prime. Règle d'or : **aucune primitive maison**.
 5. Rotation : nouvelle KEK => re-chiffrement des DEK seulement (pas des contenus).
 6. L'interface d'administration Django ne doit jamais afficher un contenu déchiffré.
 
+### Registre des KEK (`apps/vault/keys.py`)
+
+- `kek_id = "<fournisseur>:<DOMAINE>:<version>"` (ex. `env:CONFIDENTIAL:3`),
+  calculé par PostgreSQL (colonne générée) à partir des trois champs de
+  `KeyEncryptionKey`, qui ne contient **aucun matériel de clé**.
+- Chiffrement sous la version courante du domaine, avec `VAULT_KEY_PROVIDER` ;
+  déchiffrement avec le fournisseur désigné par le préfixe du `kek_id`, s'il
+  figure dans `VAULT_ENABLED_PROVIDERS`. Version retirée ou inconnue : refus.
+- Verrous consultatifs PostgreSQL par domaine (`pg_advisory_xact_lock`, espace
+  `0x564B`, clé = code figé du domaine) : **partagé** dans `wrap`, **exclusif**
+  dans `new_version` et `retire`. Une rotation attend donc la validation de
+  toute transaction qui chiffre sous l'ancienne version.
+- `retire` refuse la version courante, une version encore référencée, et tout
+  domaine sans fonction de comptage enregistrée (refus par défaut).
+
+### Fournisseur de production prévu : OpenBao transit (conception, non implémenté)
+
+- Une clé transit `aes256-gcm96` par domaine (`vault-kek-<domaine>`) ;
+  `seal` = `transit/encrypt` avec `associated_data`, `open` = `transit/decrypt` ;
+  la version de la clé transit est la `version` du `kek_id` (`bao:<DOMAINE>:<n>`).
+- `new_version` = `transit/keys/<nom>/rotate` ; `min_decryption_version` relevé
+  après `retire` pour que l'ancienne version ne puisse plus déchiffrer.
+- Points de contrôle : clé transit `ed25519` (`transit/sign`, `transit/keys`
+  pour la clé publique, exportée une seule fois).
+- Authentification de l'application auprès d'OpenBao par AppRole, politique
+  limitée à `encrypt`, `decrypt`, `sign` sur ces clés ; `rotate` réservé à un
+  rôle d'administration utilisé par la commande de rotation.
+
 ## Authentification
 
 - Identifiant = courriel ; hasher Django `Argon2PasswordHasher` en premier.

@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING, Any
 from apps.accounts.managers import UserManager
 from apps.accounts.models import Thesis, User
 
-from . import crypto
+from . import crypto, locks
 from .errors import AuditError
 from .models import AuditEvent
 
@@ -43,6 +43,9 @@ class AuditAction(StrEnum):
     MEMBERSHIP_EXTENDED = "MEMBERSHIP_EXTENDED"
     MEMBER_ROLE_CHANGED = "MEMBER_ROLE_CHANGED"
     MEMBER_REMOVED = "MEMBER_REMOVED"
+    # Keys (M2).
+    KEK_CREATED = "KEK_CREATED"
+    KEK_RETIRED = "KEK_RETIRED"
 
 
 # A details key containing any of these fragments (case-insensitive) is refused,
@@ -138,6 +141,8 @@ def audit(
     json.dumps(details)  # last guard: must serialize as is
 
     ip = canonical_ip(request.META.get("REMOTE_ADDR") or "") if request is not None else ""
+    # Last lock of the transaction: never wait for a KEK lock after this (vault.locks).
+    locks.acquire_audit_lock()
     meta = getattr(obj, "_meta", None)
     return AuditEvent.objects.create(
         action=action.value,
