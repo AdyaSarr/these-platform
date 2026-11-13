@@ -23,6 +23,20 @@ de l'hébergement par ST et le LIRMM.
 
 Avant toute mise en production : checklist de `docs/DEPLOYMENT.md` entièrement cochée.
 
+## Prochaine étape : à faire en premier
+
+- **Journaliser les refus de la garde de thèse (`THESIS_ACCESS_DENIED`)**, pour les
+  utilisateurs **connectés seulement** : un anonyme est renvoyé vers la connexion
+  sans événement, pour ne pas remplir le journal en ajout seul. Aujourd'hui,
+  `permissions._authorize` refuse un non-membre (ou un `GUEST` sur une action de
+  thèse) par un 403 non journalisé ; seuls les refus de niveau du coffre le sont
+  (`DOCUMENT_ACCESS_DENIED`, revue de fin de M2). Événement avec la thèse demandée
+  si elle existe, sans révéler à l'utilisateur si elle existe (même 403).
+  *Test* : IDOR, un utilisateur connecté d'une autre thèse demande une page de
+  cette thèse (et une thèse inexistante) → 403 et un événement
+  `THESIS_ACCESS_DENIED` avec son identité ; un anonyme → redirection vers la
+  connexion et aucun événement.
+
 ## Plus tard
 
 Idées validées, sans module ni date pour l'instant.
