@@ -1,9 +1,10 @@
 """Vault models: audit log, KEK registry, encrypted documents.
 
 Stored in clear: metadata only (title, level, owner, sizes, mime type, paths).
-Contents are AES-256-GCM blobs on disk (vault.storage); DEKs are stored only
-wrapped under a KEK (vault.keys). No plaintext digest is stored (it would be a
-confirmation oracle for whoever reads the database).
+Contents are AES-256-GCM blobs on disk (vault.storage), short texts AES-256-GCM
+in SealedText; DEKs are stored only wrapped under a KEK (vault.keys). No
+plaintext digest is stored (it would be a confirmation oracle for whoever reads
+the database).
 """
 
 from __future__ import annotations
@@ -15,8 +16,8 @@ from django.conf import settings
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
-from django.db.models.functions import Cast, Concat, Length
-from django.db.models.lookups import Exact
+from django.db.models.functions import Cast, Concat, Length, Mod
+from django.db.models.lookups import Exact, GreaterThanOrEqual, LessThanOrEqual
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
@@ -24,7 +25,7 @@ from apps.core.confidentiality import ConfidentialityLevel
 from apps.core.models import TimeStampedModel
 
 from .errors import AuditError
-from .formats import LEVEL_TO_DOMAIN, MAX_VERSION, KeyDomain
+from .formats import LEVEL_TO_DOMAIN, MAX_PADDED_TEXT_BYTES, MAX_VERSION, PAD_BLOCK, KeyDomain
 from .storage import BLOB_PATH_REGEX  # layout: <2 hex>/<same 2 hex + 30 hex>.blob
 from .validation import FILE_TYPES, MAX_UPLOAD_BYTES
 
@@ -345,3 +346,86 @@ class DocumentAccessGrant(TimeStampedModel):
 
     def __str__(self) -> str:
         return f"{self.document_id} -> {self.user_id}"
+
+
+SEALED_TEXT_OVERHEAD = 1 + 12 + 16  # format byte, nonce, tag (formats.pack_blob, crypto)
+
+
+def _kek_of_level(level: ConfidentialityLevel) -> models.Q:
+    domain = LEVEL_TO_DOMAIN[level].value
+    pattern = rf"^[a-z][a-z0-9]{{0,15}}:{domain}:[1-9][0-9]{{0,9}}$"
+    return models.Q(level=level.value, kek_id__regex=pattern)
+
+
+class SealedText(TimeStampedModel):
+    """One short text of a business object, sealed by vault.services.sealing().
+
+    Identified by (slot, object_id): the slot (formats.TEXT_SLOTS) names the
+    model and the field. ``ciphertext`` = formats.pack_blob(AES-256-GCM of the
+    padded UTF-8 text) under a DEK of its own, stored wrapped under the KEK of
+    ``level``. The constraints check the padded length and that the KEK is that
+    of the level. Never in the Django admin; str() shows no content.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    thesis = models.ForeignKey(
+        "accounts.Thesis", on_delete=models.PROTECT, related_name="+", editable=False
+    )
+    slot = models.PositiveIntegerField(editable=False)
+    object_id = models.UUIDField(editable=False)
+    level = models.CharField(max_length=20, choices=ConfidentialityLevel.choices, editable=False)
+    kek_id = models.CharField(max_length=64, editable=False)
+    wrapped_dek = models.BinaryField(editable=False)
+    ciphertext = models.BinaryField(editable=False)
+
+    class Meta:
+        verbose_name = _("sealed text")
+        verbose_name_plural = _("sealed texts")
+        constraints: ClassVar[list[models.BaseConstraint]] = [
+            models.UniqueConstraint(
+                fields=["slot", "object_id"], name="vault_sealedtext_slot_object"
+            ),
+            models.CheckConstraint(
+                condition=models.Q(slot__gte=0x0101, slot__lte=0xFFFF),
+                name="vault_sealedtext_slot_range",
+            ),
+            models.CheckConstraint(
+                condition=Exact(Length("wrapped_dek"), WRAPPED_DEK_BYTES),
+                name="vault_sealedtext_wrapped_dek_length",
+            ),
+            models.CheckConstraint(
+                condition=models.Q(
+                    Exact(
+                        Mod(
+                            Length("ciphertext") - SEALED_TEXT_OVERHEAD,
+                            PAD_BLOCK,
+                            output_field=models.IntegerField(),
+                        ),
+                        0,
+                    )
+                )
+                & models.Q(
+                    GreaterThanOrEqual(Length("ciphertext"), SEALED_TEXT_OVERHEAD + PAD_BLOCK)
+                )
+                & models.Q(
+                    LessThanOrEqual(
+                        Length("ciphertext"), SEALED_TEXT_OVERHEAD + MAX_PADDED_TEXT_BYTES
+                    )
+                ),
+                name="vault_sealedtext_padded_length",
+            ),
+            models.CheckConstraint(
+                condition=_kek_of_level(ConfidentialityLevel.PUBLIC)
+                | _kek_of_level(ConfidentialityLevel.INTERNAL_LIRMM)
+                | _kek_of_level(ConfidentialityLevel.INTERNAL_ST)
+                | _kek_of_level(ConfidentialityLevel.CONFIDENTIAL),
+                name="vault_sealedtext_kek_of_its_level",
+            ),
+        ]
+        indexes: ClassVar[list[models.Index]] = [
+            models.Index(fields=["kek_id"]),
+            models.Index(fields=["thesis", "slot"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"sealed text {self.pk}"

@@ -72,6 +72,48 @@ document, les journaux ni les noms de fichiers stockés (tests). Le nom du
 fichier téléchargé est reconstruit depuis le titre nettoyé
 (`[a-z0-9-]`, 80 caractères au plus) et l'extension du type détecté.
 
+### Textes scellés (M4, `vault.SealedText`)
+
+Les textes libres de recherche (intitulé, description et critère d'un objectif,
+motifs et valeurs des révisions, notes d'avancement, commentaires) ne sont
+jamais stockés en clair. Une ligne `SealedText` par couple (emplacement, objet) :
+
+1. **Emplacement (slot)** : le couple modèle + champ (`objectives.Objective.title`)
+   codé sur 2 octets, **figé** dans `formats.TEXT_SLOTS` (plages réservées par
+   module dans `formats.py` ; un code retiré n'est jamais réattribué, un test le
+   vérifie).
+2. **Bourrage ISO/IEC 7816-4** du texte UTF-8 (`0x80` puis des zéros) jusqu'au
+   multiple de **64 octets** suivant, avant chiffrement ; 16 383 octets au plus.
+   Au déchiffrement, tout bourrage que `pad_text` ne peut pas produire est une
+   `VaultIntegrityError`. Le bourrage est vérifié **après** le tag AEAD : ce
+   n'est pas un oracle de bourrage.
+3. **AEAD** (AES-256-GCM) sous une **DEK neuve à chaque écriture** ; données
+   associées `0x01 | 0x04 | thesis_id | object_id | slot | niveau` (37 octets) ;
+   DEK encapsulée sous la KEK du niveau avec
+   `0x01 | 0x05 | thesis_id | object_id | slot | niveau | len | kek_id`.
+4. **Écriture** par `vault.services.sealing(...)` : droits (action métier ET
+   accès au niveau) vérifiés hors transaction et refus journalisé, puis
+   transaction et verrou partagé de la KEK **avant** les verrous de lignes de
+   l'appelant ; l'appelant appelle `audit()` en dernier dans le bloc ; un
+   `seal()` après `audit()` lève `LockOrderError`.
+5. **Lecture** par `open_texts(...)` : une requête par page ; un texte d'un
+   niveau que le lecteur ne voit pas revient `RESTRICTED` (« Contenu
+   restreint ») ; la lecture d'un texte `CONFIDENTIAL` est journalisée
+   (`SEALED_TEXT_READ`, un événement par appel, emplacements et identifiants
+   seulement) ; la session ouverte avec second facteur suffit pour l'afficher
+   (pas de second facteur récent, contrairement au téléchargement d'un
+   document `CONFIDENTIAL`).
+6. **Rotation** : `rewrap_batch` ré-encapsule aussi les DEK des textes ; un
+   compteur de références par domaine empêche de retirer une KEK encore utilisée.
+
+**Ce qui reste visible** pour qui lit la base : thèse, emplacement, objet,
+niveau, `kek_id`, dates, auteur, et la **longueur du texte à 64 octets près**
+(tranche `⌈(n+1)/64⌉`). Limite assumée : quelqu'un qui peut écrire dans la
+base peut remettre une **ancienne** valeur du même emplacement (comme pour les
+documents) ; l'historique des révisions et le journal d'audit le rendent visible.
+Les contraintes de base refusent un chiffré dont la longueur n'est pas celle
+d'un texte bourré, et une `kek_id` d'un autre domaine que le niveau.
+
 ## Dossier administratif (M3)
 
 | En clair (base de données) | Chiffré (coffre, M2) |

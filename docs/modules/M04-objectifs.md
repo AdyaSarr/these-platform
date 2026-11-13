@@ -6,6 +6,9 @@ avec des statistiques de suivi visibles par les encadrants.
 
 ## Modèles
 - `ThesisYear(thesis, number, cifre_start, cifre_end, academic_start, academic_end)`
+- `Objective.year` désigne l'**année CIFRE** (horloge des 36 mois, depuis la date
+  d'effet). Les rapports CSI (M8) sélectionnent par dates dans l'année
+  universitaire (`docs/decisions.md`).
 - `Objective(thesis, year, title, description, success_criterion, category:
   RESEARCH|PUBLICATION|TRAINING|ADMIN|OTHER, due_date, weight (1–3), status:
   PLANNED|IN_PROGRESS|ACHIEVED|PARTIAL|NOT_ACHIEVED|DROPPED, progress (0–100),

@@ -6,6 +6,10 @@ de la plateforme, à relire et compléter, jamais envoyés automatiquement.
 
 ## Fonctionnalités
 1. Sélection de la période (année universitaire pour le CSI, année CIFRE pour l'ANRT).
+   `Objective.year` (M4) est l'**année CIFRE** : le rapport ANRT prend les
+   objectifs de l'année n ; le rapport CSI sélectionne les objectifs **par dates**
+   (échéance, avancements) dans les bornes `academic_start` / `academic_end` de
+   `ThesisYear`, pas par `Objective.year`.
 2. Agrégation : objectifs et taux d'atteinte, réunions clés, décisions,
    publications et soumissions, formations et heures, séjours ST/LIRMM.
 3. Génération via gabarits Jinja → LaTeX → PDF (`latexmk` dans un conteneur, sans
