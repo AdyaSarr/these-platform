@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-13 17:34+0100\n"
+"POT-Creation-Date: 2026-11-13 17:38+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -537,7 +537,7 @@ msgstr "Commentaire"
 
 #: apps/admin_file/forms.py:81 apps/admin_file/forms.py:106
 #: apps/objectives/forms.py:55 templates/admin_file/item_row.html:11
-#: templates/objectives/dashboard.html:60 templates/objectives/detail.html:11
+#: templates/objectives/dashboard.html:72 templates/objectives/detail.html:11
 msgid "Due date"
 msgstr "Échéance"
 
@@ -748,7 +748,7 @@ msgstr ""
 msgid "The item has changed, reload the page."
 msgstr "La pièce a changé, rechargez la page."
 
-#: apps/admin_file/views.py:174 apps/objectives/views.py:309
+#: apps/admin_file/views.py:174 apps/objectives/views.py:321
 msgid "Saved."
 msgstr "Enregistré."
 
@@ -830,7 +830,7 @@ msgid "CIFRE year"
 msgstr "Année CIFRE"
 
 #: apps/objectives/forms.py:41 apps/vault/forms.py:33
-#: templates/objectives/dashboard.html:60 templates/vault/document_list.html:9
+#: templates/objectives/dashboard.html:72 templates/vault/document_list.html:9
 msgid "Title"
 msgstr "Titre"
 
@@ -844,11 +844,12 @@ msgstr "Description"
 msgid "Success criterion"
 msgstr "Critère de réussite"
 
-#: apps/objectives/forms.py:54 templates/objectives/dashboard.html:60
+#: apps/objectives/forms.py:54 templates/objectives/dashboard.html:59
+#: templates/objectives/dashboard.html:72
 msgid "Category"
 msgstr "Catégorie"
 
-#: apps/objectives/forms.py:57 templates/objectives/dashboard.html:60
+#: apps/objectives/forms.py:57 templates/objectives/dashboard.html:72
 #: templates/objectives/detail.html:12
 msgid "Weight"
 msgstr "Poids"
@@ -870,7 +871,7 @@ msgid "Progress (%)"
 msgstr "Avancement (%)"
 
 #
-#: apps/objectives/forms.py:120 templates/objectives/dashboard.html:60
+#: apps/objectives/forms.py:120 templates/objectives/dashboard.html:72
 msgid "Status"
 msgstr "Statut"
 
@@ -1116,46 +1117,46 @@ msgid "This document cannot be attached."
 msgstr "Ce document ne peut pas être joint."
 
 #
-#: apps/objectives/views.py:246
+#: apps/objectives/views.py:258
 msgid "Objective created."
 msgstr "Objectif créé."
 
 #
-#: apps/objectives/views.py:293
+#: apps/objectives/views.py:305
 msgid "Objective saved."
 msgstr "Objectif enregistré."
 
 #
-#: apps/objectives/views.py:341
+#: apps/objectives/views.py:353
 msgid "Objective dropped."
 msgstr "Objectif abandonné."
 
 #
-#: apps/objectives/views.py:356
+#: apps/objectives/views.py:368
 msgid "Objective approved."
 msgstr "Objectif approuvé."
 
 #
-#: apps/objectives/views.py:367
+#: apps/objectives/views.py:379
 msgid "Changes acknowledged."
 msgstr "Prise de connaissance enregistrée."
 
 #
-#: apps/objectives/views.py:378
+#: apps/objectives/views.py:390
 msgid "Confidentiality changed."
 msgstr "Confidentialité modifiée."
 
-#: apps/objectives/views.py:408
+#: apps/objectives/views.py:420
 msgid "Unknown year."
 msgstr "Année inconnue."
 
-#: apps/objectives/views.py:417
+#: apps/objectives/views.py:429
 #, python-format
 msgid "%(count)d objective(s) approved."
 msgstr "%(count)d objectif(s) approuvé(s)."
 
 #
-#: apps/objectives/views.py:458
+#: apps/objectives/views.py:470
 msgid "Progress recorded."
 msgstr "Avancement enregistré."
 
@@ -1552,7 +1553,7 @@ msgid "optional"
 msgstr "facultative"
 
 #: templates/admin_file/item_row.html:11 templates/objectives/dashboard.html:44
-#: templates/objectives/dashboard.html:66
+#: templates/objectives/dashboard.html:78
 msgid "overdue"
 msgstr "en retard"
 
@@ -1745,33 +1746,42 @@ msgstr "résultat déclaré, à prendre en connaissance"
 msgid "Overdue objectives"
 msgstr "Objectifs en retard"
 
+#: templates/objectives/dashboard.html:57
 #
-#: templates/objectives/dashboard.html:56
+msgid "By category"
+msgstr "Par catégorie"
+
+#: templates/objectives/dashboard.html:59
+msgid "Approved objectives by status"
+msgstr "Objectifs approuvés par statut"
+
+#
+#: templates/objectives/dashboard.html:68
 msgid "Objectives of the year"
 msgstr "Objectifs de l'année"
 
 #
-#: templates/objectives/dashboard.html:57 templates/objectives/form.html:2
+#: templates/objectives/dashboard.html:69 templates/objectives/form.html:2
 #: templates/objectives/form.html:4
 msgid "New objective"
 msgstr "Nouvel objectif"
 
-#: templates/objectives/dashboard.html:68
+#: templates/objectives/dashboard.html:80
 msgid "draft"
 msgstr "brouillon"
 
-#: templates/objectives/dashboard.html:74
+#: templates/objectives/dashboard.html:86
 msgid "No objective for this year yet."
 msgstr "Aucun objectif pour cette année."
 
-#: templates/objectives/dashboard.html:79
+#: templates/objectives/dashboard.html:91
 #, python-format
 msgid "Approve the draft of the year"
 msgid_plural "Approve the %(counter)s drafts of the year"
 msgstr[0] "Approuver le brouillon de l'année"
 msgstr[1] "Approuver les %(counter)s brouillons de l'année"
 
-#: templates/objectives/dashboard.html:80 templates/objectives/detail.html:39
+#: templates/objectives/dashboard.html:92 templates/objectives/detail.html:39
 #: templates/objectives/detail.html:76
 msgid "Asks for your second factor."
 msgstr "Demande votre second facteur."
@@ -1832,8 +1842,8 @@ msgstr "Un objectif abandonné reste visible, avec son motif."
 msgid "Drop"
 msgstr "Abandonner"
 
-#: templates/objectives/email/summary_body.txt:1
 #
+#: templates/objectives/email/summary_body.txt:1
 msgid ""
 "The weekly summary of the objectives is waiting for you on the platform:"
 msgstr "Le point hebdomadaire des objectifs vous attend sur la plateforme :"

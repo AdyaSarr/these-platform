@@ -52,6 +52,18 @@
   {% include "objectives/_progress_chart.html" %}
 </section>
 
+{% if by_category %}
+<section aria-labelledby="category-title">
+  <h2 id="category-title">{% translate "By category" %}</h2>
+  <table class="table by-category">
+    <thead><tr><th scope="col">{% translate "Category" %}</th><th scope="col">{% translate "Approved objectives by status" %}</th></tr></thead>
+    <tbody>
+      {% for label, statuses in by_category %}<tr><th scope="row">{{ label }}</th><td>{{ statuses }}</td></tr>{% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+
 <section aria-labelledby="list-title">
   <h2 id="list-title">{% translate "Objectives of the year" %}</h2>
   {% if can_write %}<p><a href="{% url 'objectives:new' thesis_id=thesis.pk %}">{% translate "New objective" %}</a></p>{% endif %}

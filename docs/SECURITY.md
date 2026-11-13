@@ -138,6 +138,31 @@ d'un texte bourré, et une `kek_id` d'un autre domaine que le niveau.
   seul dans le courtier et les journaux, `EMAIL_TIMEOUT = 10` (une ligne de rappel
   verrouillée ne reste jamais bloquée par un serveur SMTP muet).
 
+## Objectifs (M4)
+
+- **Niveaux** d'un objectif : `PUBLIC` (par défaut ; le formulaire avertit qu'il
+  est visible par le CSI, extérieur à l'encadrement), `INTERNAL_LIRMM`,
+  `CONFIDENTIAL`. `INTERNAL_ST` est refusé (le directeur, qui approuve, ne le lit
+  pas). Révisions, notes et commentaires suivent le niveau de leur objectif ; un
+  changement de niveau rescelle toutes ces dépendances.
+- **En clair** : thèse, année, catégorie, échéance, poids, statut, avancement,
+  niveau, approbation et prise de connaissance (qui, quand), marques « modifié »
+  et « résultat déclaré », valeurs non textuelles d'une révision (date, poids,
+  niveau, statut). **Scellé** : intitulé, description, critère, motif, anciennes
+  et nouvelles valeurs textuelles, notes, commentaires. Les statistiques
+  n'ouvrent aucun texte (test).
+- **Droits** : écrire = doctorant ; approuver et prendre connaissance = directeur,
+  second facteur de moins de 10 min (vue et service) ; commenter et lire les
+  commentaires = `OBJECTIVE_COMMENT` (jamais le CSI : ni la page, ni le fragment,
+  ni le courriel) ; un rôle sans accès au niveau lit « Contenu restreint ».
+- **Journal** : noms de champs et nombres seulement ; une seule lecture
+  `CONFIDENTIAL` journalisée par requête (`SEALED_TEXT_READ`).
+- **Résumé hebdomadaire** : un lien seulement, envoyé à un encadrant s'il y a de
+  l'activité, un retard ou (directeur) une prise de connaissance sur les
+  objectifs qu'il peut lire ; le courtier ne voit que l'identifiant.
+- **Titres** jamais dans une URL, un `<title>`, un journal, une page 403 ni un
+  courriel (tests).
+
 ## Authentification
 
 - Identifiant = courriel ; hasher Django `Argon2PasswordHasher` en premier.

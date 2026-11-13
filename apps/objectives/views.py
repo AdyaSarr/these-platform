@@ -44,7 +44,7 @@ from apps.vault.models import Document
 
 from . import charts, services
 from .forms import CommentForm, DropForm, LevelForm, ObjectiveForm, ProgressForm
-from .models import Objective, Status, ThesisYear
+from .models import Category, Objective, Status, ThesisYear
 from .stats import as_percent
 
 CONFLICTS = frozenset({"stale", "frozen", "already_approved", "nothing_to_acknowledge", "dropped"})
@@ -87,6 +87,17 @@ def _documents(user: User, thesis: Any) -> dict[str, Document]:
     """Documents of the thesis the user may read: the choices of evidence."""
     candidates = Document.objects.filter(thesis=thesis).order_by("title")
     return {str(d.pk): d for d in candidates if can_access_document(user, d)}
+
+
+def _by_category(counts: dict[str, dict[str, int]]) -> list[tuple[str, str]]:
+    """[(category label, "1 Planned, 1 Dropped")], in the order of the choices."""
+    rows = []
+    for category in Category:
+        statuses = counts.get(category.value, {})
+        if statuses:
+            parts = [f"{statuses[s.value]} {s.label}" for s in Status if statuses.get(s.value)]
+            rows.append((str(category.label), ", ".join(parts)))
+    return rows
 
 
 class _Mixin(ThesisPermissionRequiredMixin):
@@ -197,6 +208,7 @@ class DashboardView(_Mixin, View):
             "attainment": as_percent(data.stats.stats.attainment),
             "progress_rate": as_percent(data.stats.stats.progress),
             "chart": charts.line_chart(series),
+            "by_category": _by_category(data.stats.stats.by_category),
             "rows": [(r, _shown_texts(r.texts)) for r in data.objectives],
             "overdue": [(r, _shown_texts(r.texts)) for r in data.overdue],
             "pending": [(r, _shown_texts(r.texts)) for r in data.pending],

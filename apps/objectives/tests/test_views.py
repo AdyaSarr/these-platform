@@ -600,3 +600,16 @@ def test_no_title_in_urls_logs_error_pages_or_page_titles(
     assert title not in created["Location"]
     assert all(title not in record.getMessage() for record in caplog.records)
     assert all(title not in str(record.args) for record in caplog.records)
+
+
+def test_dashboard_shows_the_breakdown_by_category(team: SimpleNamespace) -> None:
+    _approved(team, category="PUBLICATION")
+    dropped = _approved(team, category="PUBLICATION")
+    services.drop_objective(objective=dropped, user=team.student, reason="Motif fictif suffisant")
+    _approved(team, category="TRAINING")
+    _objective(team, category="ADMIN")  # a draft: not in the breakdown
+    html = _client(team, "director").get(_url(team, "dashboard")).content.decode()
+    table = re.search(r'<table class="table by-category">(.*?)</table>', html, re.S)
+    assert table is not None
+    rows = dict(re.findall(r'<th scope="row">([^<]+)</th>\s*<td>([^<]+)</td>', table.group(1)))
+    assert rows == {"Publication": "1 Prévu, 1 Abandonné", "Formation": "1 Prévu"}
