@@ -65,6 +65,7 @@ def test_report(root: Path, tmp_path: Path) -> None:
     old_orphan = storage.write(_sealed(b"old orphan"))
     _age(root / old_orphan, 2 * DAY)
     recent_orphan = storage.write(_sealed(b"recent orphan"))
+    _age(root / recent_orphan, 0)  # every file dated by THIS clock, not the filesystem's
     missing = DocumentVersionFactory.create().ciphertext_path  # row without blob
 
     shard = root / referenced.split("/")[0]
@@ -75,6 +76,7 @@ def test_report(root: Path, tmp_path: Path) -> None:
     fresh_tmp = shard / (".tmp-" + "b" * 32)
     fresh_tmp.write_bytes(b"partial")
     fresh_tmp.chmod(0o600)
+    _age(fresh_tmp, 0)
     stray = shard / "notes.txt"
     stray.write_bytes(b"?")
     stray.chmod(0o600)

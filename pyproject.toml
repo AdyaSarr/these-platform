@@ -30,6 +30,7 @@ dev = [
     "pre-commit>=4.0",
     "detect-secrets>=1.5",
     "time-machine>=2.16",
+    "pytest-randomly>=5.1.0",
 ]
 
 [tool.uv]

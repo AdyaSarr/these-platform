@@ -27,11 +27,7 @@ T0 = datetime(2026, 11, 13, 9, 0, tzinfo=UTC)
 
 @pytest.fixture
 def student() -> Any:
-    # Active before T0: the tests travel to T0, which must not precede the membership
-    # (with active_from = now, they failed once the real clock passed T0).
-    return MembershipFactory.create(
-        thesis=ThesisFactory.create(), role=Role.PHD_STUDENT, active_from=T0 - timedelta(days=1)
-    ).user
+    return MembershipFactory.create(thesis=ThesisFactory.create(), role=Role.PHD_STUDENT).user
 
 
 def _store(student: Any, n: int, level: L = L.CONFIDENTIAL) -> list[Any]:
