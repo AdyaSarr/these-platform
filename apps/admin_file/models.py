@@ -223,3 +223,58 @@ class ItemApproval(TimeStampedModel):
 
     def __str__(self) -> str:
         return f"approval {self.pk}"
+
+
+class ReminderLog(TimeStampedModel):
+    """One reminder e-mail: (item, kind, due date, recipient) is claimed ONCE.
+
+    The unique constraint is what makes concurrent runs of the reminder command
+    (timer and manual run) send each reminder once: the run that inserts the
+    row queues the e-mail, the other one finds it. A new due date gives new rows.
+    """
+
+    class Kind(models.TextChoices):
+        J14 = "J14", _("14 days before")
+        J3 = "J3", _("3 days before")
+        OVERDUE = "OVERDUE", _("Overdue")
+
+    class Status(models.TextChoices):
+        PENDING = "PENDING", _("Pending")
+        SENT = "SENT", _("Sent")
+        FAILED = "FAILED", _("Failed")
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    item = models.ForeignKey(
+        RequiredItem, on_delete=models.PROTECT, related_name="reminders", editable=False
+    )
+    kind = models.CharField(max_length=10, choices=Kind.choices, editable=False)
+    due_date = models.DateField(editable=False)
+    recipient = models.ForeignKey(
+        "accounts.User", on_delete=models.PROTECT, related_name="+", editable=False
+    )
+    status = models.CharField(
+        max_length=10, choices=Status.choices, default=Status.PENDING, editable=False
+    )
+    attempts = models.PositiveSmallIntegerField(default=0, editable=False)
+    sent_at = models.DateTimeField(null=True, editable=False)
+
+    class Meta:
+        verbose_name = _("reminder")
+        verbose_name_plural = _("reminders")
+        constraints: ClassVar[list[models.BaseConstraint]] = [
+            models.UniqueConstraint(
+                fields=["item", "kind", "due_date", "recipient"],
+                name="admin_file_reminder_once",
+            ),
+            models.CheckConstraint(
+                condition=Q(kind__in=["J14", "J3", "OVERDUE"]), name="admin_file_reminder_kind"
+            ),
+            models.CheckConstraint(
+                condition=(Q(status="SENT") & Q(sent_at__isnull=False))
+                | (~Q(status="SENT") & Q(sent_at__isnull=True)),
+                name="admin_file_reminder_sent_at",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"reminder {self.pk}"

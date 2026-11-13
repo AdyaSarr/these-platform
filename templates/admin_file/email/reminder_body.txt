@@ -1,0 +1,5 @@
+{% load i18n %}{% translate "An item of the administrative file is waiting for you on the platform:" %}
+
+{{ url }}
+
+{% translate "This message contains no detail: sign in to see it." %}

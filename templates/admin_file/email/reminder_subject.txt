@@ -1,0 +1,1 @@
+{% load i18n %}{% translate "CIFRE thesis: an item of the administrative file is waiting" %}
