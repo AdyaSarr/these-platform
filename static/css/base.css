@@ -155,3 +155,8 @@ textarea {
 .chart-data { border-collapse: collapse; margin-top: 0.5rem; }
 .chart-data th, .chart-data td { border-bottom: 1px solid var(--border); padding: 0.2rem 0.6rem; text-align: left; }
 .revisions, .progress-list, .comment-list { padding-left: 1.25rem; }
+
+/* TOTP QR code (inline SVG): dark modules on a fixed white background in both
+   themes, or an authenticator app could not read it in dark mode. */
+.qr { display: inline-block; background: #ffffff; padding: 0.75rem; border-radius: 6px; }
+.qr svg { display: block; width: 12rem; height: auto; }

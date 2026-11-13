@@ -1,9 +1,11 @@
 from allauth.account import views as allauth_views
 from allauth.mfa.recovery_codes import views as recovery_views
+from allauth.mfa.totp import views as totp_views
 from django.conf import settings
 from django.contrib.auth import views as auth_views
 from django.http import Http404, HttpRequest, HttpResponse
 from django.urls import URLPattern, URLResolver, include, path, re_path
+from django.views.decorators.cache import never_cache
 
 from apps.accounts import invitation_views
 from apps.accounts.reauth import recent_auth_required
@@ -47,6 +49,16 @@ _RECOVERY_CODE_ROUTES = [
     ),
 ]
 
+# TOTP activation: the page shows the secret (QR code and field): never cached
+# (no-store), declared before allauth's own route, same name.
+_TOTP_ROUTES = [
+    path(
+        "accounts/2fa/totp/activate/",
+        never_cache(totp_views.activate_totp),
+        name="mfa_activate_totp",
+    ),
+]
+
 urlpatterns: list[URLPattern | URLResolver] = [
     path("", include("apps.core.urls")),
     # Every page of a thesis lives under /t/<id>/ and is guarded by permissions.py.
@@ -69,6 +81,7 @@ urlpatterns: list[URLPattern | URLResolver] = [
     path("accounts/logout/", auth_views.LogoutView.as_view(), name="logout"),
     *_CLOSED_ACCOUNT_ROUTES,
     *_RECOVERY_CODE_ROUTES,
+    *_TOTP_ROUTES,
     path("accounts/", include("allauth.urls")),  # also mounts allauth.mfa under 2fa/
 ]
 

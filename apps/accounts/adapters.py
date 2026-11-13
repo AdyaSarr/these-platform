@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from typing import Any
 
 from allauth.account.adapter import DefaultAccountAdapter
@@ -12,7 +13,9 @@ from django.http import HttpRequest
 
 from apps.vault import services as vault_services
 
-from . import tasks
+from . import qr, tasks
+
+logger = logging.getLogger(__name__)
 
 
 class AccountAdapter(DefaultAccountAdapter):
@@ -46,3 +49,13 @@ class MFAAdapter(DefaultMFAAdapter):
 
     def decrypt(self, encrypted_text: str) -> str:
         return vault_services.decrypt_secret(encrypted_text)
+
+    def build_totp_svg(self, url: str) -> str:
+        """The QR code as inline SVG (CSP: no data: image), or "" if it fails the
+        allow-list (apps/accounts/qr.py): the page then offers the secret field only.
+        Never logs the SVG or the URL, which hold the secret."""
+        try:
+            return qr.inline_svg(super().build_totp_svg(url))
+        except ValueError:
+            logger.warning("TOTP QR code refused by the SVG allow-list; secret field only")
+            return ""

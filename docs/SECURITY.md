@@ -167,6 +167,12 @@ d'un texte bourré, et une `kek_id` d'un autre domaine que le niveau.
 
 - Identifiant = courriel ; hasher Django `Argon2PasswordHasher` en premier.
 - MFA obligatoire pour tous ; WebAuthn recommandé.
+- Activation du TOTP : le code QR est un **SVG en ligne** (CSP inchangée,
+  `img-src 'self'`, jamais `data:`), vérifié par une liste blanche stricte
+  (`apps/accounts/qr.py` : `<svg>` et `<path>`, attributs de présentation
+  connus ; rien d'autre, sinon pas de QR et le seul champ du secret). Le secret
+  n'est que dans son champ, jamais dans un attribut `alt` ni un journal ; la page
+  répond `Cache-Control: no-store`.
 - TOTP : période de 30 s, **tolérance d'un pas** (`MFA_TOTP_TOLERANCE = 1`,
   RFC 6238 § 5.2). La fenêtre d'allauth est symétrique : les codes des pas
   k-1, k et k+1 sont acceptés (90 s). Chaque code est à usage unique sur toute
