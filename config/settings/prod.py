@@ -4,7 +4,7 @@ only (no .env file) and refuses to start with an unsafe configuration."""
 from django.core.exceptions import ImproperlyConfigured
 
 from .base import *
-from .guards import require_master_key
+from .guards import require_master_key, require_scheme, required
 
 DEBUG = False
 
@@ -61,7 +61,15 @@ STORAGES = {
 }
 
 # --------------------------------------------------------------------------- e-mail
-_email = env.email_url("EMAIL_URL")
+# SMTP only: a console or dummy backend in production would print the e-mails
+# to the logs or drop them silently.
+_email_url = require_scheme(
+    "EMAIL_URL",
+    required("EMAIL_URL", "an smtp+tls:// URL with user, password, host and port"),
+    ("smtp", "smtp+tls", "smtp+ssl"),
+    "an SMTP URL: smtp://, smtp+tls:// or smtp+ssl://, with user, password, host and port",
+)
+_email = env.email_url_config(_email_url)
 EMAIL_BACKEND = _email["EMAIL_BACKEND"]
 EMAIL_HOST = _email.get("EMAIL_HOST", "")
 EMAIL_PORT = _email.get("EMAIL_PORT", 587)
@@ -70,3 +78,18 @@ EMAIL_HOST_PASSWORD = _email.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = _email.get("EMAIL_USE_TLS", False)
 EMAIL_USE_SSL = _email.get("EMAIL_USE_SSL", False)
 EMAIL_TIMEOUT = 10
+
+# The sender of every e-mail (invitations, reminders, summaries): an address of
+# the platform's domain, never base.py's local default.
+DEFAULT_FROM_EMAIL = required("DEFAULT_FROM_EMAIL", "e.g. noreply@these.example.org")
+_sender_domain = DEFAULT_FROM_EMAIL.rpartition("@")[2].lower()
+if (
+    DEFAULT_FROM_EMAIL.count("@") != 1
+    or any(c.isspace() for c in DEFAULT_FROM_EMAIL)
+    or "." not in _sender_domain
+    or _sender_domain in {"localhost", "localhost.localdomain"}
+):
+    raise ImproperlyConfigured(
+        "DEFAULT_FROM_EMAIL must be an address of the platform's domain, "
+        "e.g. noreply@these.example.org (see .env.example and docs/DEPLOYMENT.md)."
+    )

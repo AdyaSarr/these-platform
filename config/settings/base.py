@@ -11,12 +11,16 @@ from pathlib import Path
 import environ
 from csp.constants import NONE, SELF
 
+from .guards import require_scheme, required
+
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 env = environ.Env()
 
 # --------------------------------------------------------------------------- core
-SECRET_KEY = env.str("DJANGO_SECRET_KEY")
+SECRET_KEY = required(
+    "DJANGO_SECRET_KEY", "a random value of at least 50 characters (secrets.token_urlsafe(50))"
+)
 DEBUG = False
 ALLOWED_HOSTS: list[str] = [h for h in env.list("DJANGO_ALLOWED_HOSTS", default=[]) if h]
 
@@ -81,7 +85,14 @@ TEMPLATES = [
 ]
 
 # --------------------------------------------------------------------------- database
-DATABASES = {"default": env.db_url("DATABASE_URL")}
+# PostgreSQL only (docs/decisions.md): triggers, exclusion constraints, advisory locks.
+_database_url = require_scheme(
+    "DATABASE_URL",
+    required("DATABASE_URL", "a postgres:// URL with user, password, host, port and name"),
+    ("postgres", "postgresql", "pgsql"),
+    "a postgres:// URL with user, password, host, port and database name",
+)
+DATABASES = {"default": env.db_url_config(_database_url)}
 DATABASES["default"]["CONN_MAX_AGE"] = 60
 DATABASES["default"]["CONN_HEALTH_CHECKS"] = True
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
@@ -242,7 +253,12 @@ FILE_UPLOAD_HANDLERS = ["apps.vault.upload_handlers.LimitedMemoryUploadHandler"]
 SITE_URL = env.str("DJANGO_SITE_URL", default="http://localhost:8000").rstrip("/")
 
 # --------------------------------------------------------------------------- celery
-CELERY_BROKER_URL = env.str("REDIS_URL")
+CELERY_BROKER_URL = require_scheme(
+    "REDIS_URL",
+    required("REDIS_URL", "a redis:// URL with password, host, port and database number"),
+    ("redis", "rediss"),
+    "a redis:// or rediss:// URL with password, host, port and database number",
+)
 # JSON only: Celery must never deserialise pickle (CLAUDE.md rule 11).
 CELERY_ACCEPT_CONTENT = ["json"]
 CELERY_TASK_SERIALIZER = "json"
