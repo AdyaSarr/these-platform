@@ -25,7 +25,6 @@ from apps.accounts.permissions import (
     Action,
     ThesisPermissionRequiredMixin,
     can,
-    can_access_document,
 )
 from apps.accounts.reauth import RecentAuthRequiredMixin, authenticated_recently, reauth_response
 from apps.core.confidentiality import ConfidentialityLevel
@@ -68,11 +67,7 @@ class _DocumentMixin(ThesisPermissionRequiredMixin):
 class DocumentListView(_DocumentMixin, View):
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         user = _user(request)
-        documents = [
-            d
-            for d in Document.objects.filter(thesis=self.thesis).order_by("title")
-            if can_access_document(user, d)
-        ]
+        documents = services.readable_documents(user, self.thesis)  # also the card's count
         return render(
             request,
             "vault/document_list.html",

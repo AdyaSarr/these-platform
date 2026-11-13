@@ -43,7 +43,11 @@ DASHBOARD_BLOCKS: tuple[DashboardBlock, ...] = (
     ),
     DashboardBlock("meetings", Action.MEETING_READ, _("Meetings"), "accounts/blocks/upcoming.html"),
     DashboardBlock(
-        "documents", Action.DOCUMENT_READ, _("Documents"), "accounts/blocks/upcoming.html"
+        "documents",
+        Action.DOCUMENT_READ,
+        _("Documents"),
+        "vault/blocks/dashboard.html",
+        data="apps.vault.services.dashboard_block",
     ),
     # CIFRE_FILE_READ: the tutor sees the CIFRE part; progress counts what the
     # user sees (admin_file.services.progress).

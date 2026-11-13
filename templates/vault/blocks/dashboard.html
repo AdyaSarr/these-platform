@@ -1,0 +1,4 @@
+{% load i18n %}{# data = vault.services.dashboard_block: the number of documents THIS user may read, nothing else. #}
+<p data-documents="{{ data.count }}">{% blocktranslate count counter=data.count %}{{ counter }} document you can read{% plural %}{{ counter }} documents you can read{% endblocktranslate %}</p>
+{# The list filters by right itself (vault.services.readable_documents): a link is not an access check. #}
+<p><a href="{% url 'vault:documents' thesis_id=thesis.pk %}">{% translate "Open the documents" %}</a></p>

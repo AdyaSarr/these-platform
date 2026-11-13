@@ -80,6 +80,7 @@ __all__ = [
     "open_text",
     "open_texts",
     "open_version",
+    "readable_documents",
     "revoke_access",
     "rewrap_batch",
     "sealing",
@@ -284,6 +285,21 @@ def add_version(*, document: Document, upload: Upload, user: User) -> DocumentVe
             audit(AuditAction.DOCUMENT_VERSION_ADDED, actor=user, obj=locked, version=number)
             return version
     raise RuntimeError("the document's level changed twice during add_version(); retry")
+
+
+def readable_documents(user: Any, thesis: Thesis) -> list[Document]:
+    """The documents of ``thesis`` that ``user`` may read (can_access_document: role,
+    level, explicit grant, module restrictions), by title. Nothing is decrypted."""
+    return [
+        d
+        for d in Document.objects.filter(thesis=thesis).order_by("title")
+        if can_access_document(user, d)
+    ]
+
+
+def dashboard_block(request: Any, thesis: Thesis) -> dict[str, Any]:
+    """Data of the thesis dashboard card (accounts.views.DASHBOARD_BLOCKS): a count only."""
+    return {"count": len(readable_documents(request.user, thesis))}
 
 
 def document_for(user: User, thesis: Thesis, document_id: Any, *, operation: str) -> Document:
