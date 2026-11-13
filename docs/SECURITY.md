@@ -142,6 +142,11 @@ d'un texte bourré, et une `kek_id` d'un autre domaine que le niveau.
 
 - Identifiant = courriel ; hasher Django `Argon2PasswordHasher` en premier.
 - MFA obligatoire pour tous ; WebAuthn recommandé.
+- TOTP : période de 30 s, **tolérance d'un pas** (`MFA_TOTP_TOLERANCE = 1`,
+  RFC 6238 § 5.2). La fenêtre d'allauth est symétrique : les codes des pas
+  k-1, k et k+1 sont acceptés (90 s). Chaque code est à usage unique sur toute
+  la fenêtre (marqueur dans le cache partagé) ; l'étape du second facteur est
+  limitée à 5 essais. Probabilité qu'un essai au hasard réussisse : 3 × 10⁻⁶.
 - Ré-authentification (< 10 min) pour : valider (dossier administratif :
   approuver, refuser, rouvrir), changer un rôle, télécharger un document
   `CONFIDENTIAL`, exporter un rapport. Le mot de passe seul ne suffit pas.

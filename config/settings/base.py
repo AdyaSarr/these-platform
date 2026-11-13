@@ -145,6 +145,12 @@ MFA_PASSKEY_LOGIN_ENABLED = False  # WebAuthn as a second factor only
 MFA_PASSKEY_SIGNUP_ENABLED = False
 MFA_TRUST_ENABLED = False  # no "trust this browser": the factor is asked every time
 MFA_TOTP_ISSUER = "Plateforme de thèse"
+# One 30-second step of tolerance (RFC 6238, 5.2): a code typed just before a
+# boundary is no longer refused. allauth's window is symmetric (k-1, k, k+1);
+# the used-code marker covers the whole window and the TOTP step stays
+# rate-limited (docs/decisions.md). Repeated in prod.py.
+MFA_TOTP_PERIOD = 30
+MFA_TOTP_TOLERANCE = 1
 MFA_RECOVERY_CODE_COUNT = 10
 # Codes are shown once, right after generation; afterwards only regenerating
 # (second factor < 10 min, config/urls.py) gives new ones.

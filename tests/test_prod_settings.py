@@ -40,6 +40,8 @@ SETTING_NAMES = (
     "MFA_TRUST_ENABLED",
     "ACCOUNT_LOGIN_ON_PASSWORD_RESET",
     "MFA_WEBAUTHN_ALLOW_INSECURE_ORIGIN",
+    "MFA_TOTP_TOLERANCE",
+    "MFA_TOTP_PERIOD",
 )
 
 
@@ -158,3 +160,6 @@ def test_mfa_hardening(prod: dict[str, Any]) -> None:
     assert prod["MFA_TRUST_ENABLED"] is False
     assert prod["ACCOUNT_LOGIN_ON_PASSWORD_RESET"] is False
     assert prod["MFA_WEBAUTHN_ALLOW_INSECURE_ORIGIN"] is None  # dev only
+    # One 30-second step on each side (allauth's window is symmetric), docs/decisions.md.
+    assert prod["MFA_TOTP_TOLERANCE"] == 1
+    assert prod["MFA_TOTP_PERIOD"] == 30

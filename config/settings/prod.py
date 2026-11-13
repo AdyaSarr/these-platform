@@ -31,6 +31,8 @@ CACHES = {
 }
 
 MFA_ENCRYPTION_REQUIRED = True
+MFA_TOTP_PERIOD = 30
+MFA_TOTP_TOLERANCE = 1  # explicit here too: tested by tests/test_prod_settings.py
 VAULT_STORAGE_STRICT = True
 
 # Links in e-mails must point to the HTTPS site, never to the localhost default.
