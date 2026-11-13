@@ -58,7 +58,9 @@ mkdir -p var
 uv run pytest -p randomly 2>&1 | tee var/last-pytest.log   # var/ est ignoré par Git
 ```
 
-La graine figure en tête du journal (`Using --randomly-seed=…`) ; rejouer le même
+La graine figure en tête du journal (`Using --randomly-seed=…`, masqué par `-q`) et
+en dernière ligne avant le bilan (`pytest-randomly: replay with --randomly-seed=…`,
+toujours affichée) ; rejouer le même
 ordre avec `uv run pytest -p randomly --randomly-seed=<graine>`, et le seul test
 fautif avec `uv run pytest <chemin>::<test> --randomly-seed=<graine>`.
 
@@ -72,6 +74,38 @@ TEST_CLOCK=2026-11-13T23:30:00+00:00 uv run pytest   # 00 h 30 le lendemain à P
 TEST_CLOCK=2027-07-01T00:30:00+02:00 uv run pytest   # 00 h 30 à Paris (été), 22 h 30 UTC
 TEST_CLOCK=2027-06-15T12:00:00+00:00 uv run pytest   # après tous les instants figés des tests
 ```
+
+## Vérifier la configuration de prod en local
+
+`check --deploy --database default` exécute aussi les contrôles du coffre qui
+ont besoin de la base (`vault.E001` : aller-retour réel de chiffrement MFA ;
+`vault.E002` : une KEK par domaine). Avec les réglages de prod, `.env` n'est pas
+lu (seul `dev.py` le lit) : il faut charger ses variables dans le shell, puis
+remplacer celles que `prod.py` refuse en local (hôtes, URL en `https://`,
+origines CSRF, serveur de courriel, chemin absolu du coffre) :
+
+```bash
+set -a; source .env; set +a
+# pragma: allowlist nextline secret (fictitious SMTP credentials, never used)
+EMAIL_URL='smtp+tls://fictif:fictif@smtp.example.org:587' \
+DJANGO_SETTINGS_MODULE=config.settings.prod \
+DJANGO_ALLOWED_HOSTS=these.example.org \
+DJANGO_CSRF_TRUSTED_ORIGINS=https://these.example.org \
+DJANGO_SITE_URL=https://these.example.org \
+VAULT_STORAGE_DIR="$PWD/var/vault" \
+uv run python manage.py check --deploy --database default --fail-level WARNING
+```
+
+Attendu : « System check identified no issues ». Les variables préfixées ne
+valent que pour cette commande ; `DATABASE_URL`, `MASTER_KEY`, `REDIS_URL` et
+`DJANGO_SECRET_KEY` viennent de `.env`. `prod.py` refuse une clé secrète de moins
+de 50 caractères ou commençant par `change-me` : remplace celle de
+`.env.example` avant. `source` exécute `.env` comme un script shell : une valeur
+contenant des espaces ou des caractères spéciaux doit y être entre guillemets.
+
+**Ferme ensuite ce terminal** : `set -a` a exporté tous les secrets de `.env`
+(`MASTER_KEY`, mots de passe) dans le shell : tout programme lancé ensuite depuis
+ce terminal en hériterait.
 
 ## Données
 
