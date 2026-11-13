@@ -13,6 +13,7 @@ holds an independent second transcription and compares them cell by cell.
 
 from __future__ import annotations
 
+import uuid
 from collections.abc import Callable, Mapping
 from enum import StrEnum
 from functools import wraps
@@ -22,6 +23,7 @@ from typing import TYPE_CHECKING, Any, Concatenate, ParamSpec, Protocol
 from django.apps import apps as django_apps
 from django.contrib.auth.views import redirect_to_login
 from django.core.exceptions import ImproperlyConfigured, PermissionDenied, ValidationError
+from django.db import transaction
 from django.http import HttpRequest, HttpResponseBase
 
 from apps.core.confidentiality import ConfidentialityLevel
@@ -240,13 +242,57 @@ def can_access_document(user: AnyUser, document: Document) -> bool:
 THESIS_URL_KWARG = "thesis_id"
 
 
+def _canonical_uuid(value: Any) -> str | None:
+    """The id as a canonical UUID string, or None: free text never reaches the log."""
+    try:
+        return str(value if isinstance(value, uuid.UUID) else uuid.UUID(str(value)))
+    except ValueError:
+        return None
+
+
+def _audit_denial(
+    request: HttpRequest, action: Action, thesis: Thesis | None, thesis_id: Any
+) -> None:
+    """THESIS_ACCESS_DENIED, in its own transaction (kept although 403 follows).
+
+    Called for signed-in users only: the guards send anonymous visitors to the
+    login page before, so unauthenticated traffic never fills the append-only log.
+    """
+    # Imported here: vault.services imports this module (no cycle at load time).
+    from apps.vault.audit import AuditAction, audit
+
+    details: dict[str, str] = {"operation": action.value}
+    if thesis is None:
+        details["reason"] = "unknown_thesis"
+        requested = _canonical_uuid(thesis_id) if thesis_id else None
+        if requested is not None:
+            details["requested_thesis_id"] = requested
+    elif roles_of(request.user, thesis):
+        details["reason"] = "missing_right"
+    else:
+        details["reason"] = "not_member"
+    with transaction.atomic():
+        audit(
+            AuditAction.THESIS_ACCESS_DENIED,
+            actor=request.user,
+            thesis=thesis,
+            request=request,
+            **details,
+        )
+
+
 def _authorize(request: HttpRequest, action: Action, thesis_id: Any) -> Thesis:
-    """Return the thesis or raise PermissionDenied; unknown and forbidden look alike."""
+    """Return the thesis or raise PermissionDenied; unknown and forbidden look alike.
+
+    Every refusal is audited (THESIS_ACCESS_DENIED) with the same response, so the
+    user cannot tell an unknown thesis from a forbidden one.
+    """
     try:
         thesis = Thesis.objects.filter(pk=thesis_id).first() if thesis_id else None
     except (ValueError, ValidationError):  # malformed id: same answer as forbidden
         thesis = None
     if thesis is None or not can(request.user, action, thesis):
+        _audit_denial(request, action, thesis, thesis_id)
         raise PermissionDenied
     return thesis
 

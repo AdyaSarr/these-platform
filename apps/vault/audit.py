@@ -63,6 +63,8 @@ class AuditAction(StrEnum):
     MFA_FAILED = "MFA_FAILED"
     # Theses and team.
     THESIS_CREATED = "THESIS_CREATED"
+    # Refusal by the thesis guard (accounts.permissions), signed-in users only.
+    THESIS_ACCESS_DENIED = "THESIS_ACCESS_DENIED"
     INVITATION_CREATED = "INVITATION_CREATED"
     INVITATION_EMAIL_SENT = "INVITATION_EMAIL_SENT"
     INVITATION_EMAIL_FAILED = "INVITATION_EMAIL_FAILED"
