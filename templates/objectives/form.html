@@ -1,0 +1,20 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% if objective %}{% translate "Edit an objective" %}{% else %}{% translate "New objective" %}{% endif %}{% endblock %}
+{% block content %}
+<h1>{% if objective %}{% translate "Edit an objective" %}{% else %}{% translate "New objective" %}{% endif %}</h1>
+<p><a href="{% if objective %}{% url 'objectives:detail' thesis_id=thesis.pk objective_id=objective.pk %}{% else %}{% url 'objectives:dashboard' thesis_id=thesis.pk %}{% endif %}">{% translate "Back" %}</a></p>
+{% if objective.is_approved %}<p class="mark">{% translate "This objective is approved: every change needs a reason, is kept in its history and is flagged to the director." %}</p>{% endif %}
+<form class="stack" method="post">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  {% for field in form %}
+    <p>
+      {{ field.label_tag }}
+      {{ field }}
+      {% if field.help_text %}<span class="helptext" id="{{ field.auto_id }}_help">{{ field.help_text }}</span>{% endif %}
+      {{ field.errors }}
+    </p>
+  {% endfor %}
+  <button type="submit">{% if objective %}{% translate "Save" %}{% else %}{% translate "Create the objective" %}{% endif %}</button>
+</form>
+{% endblock %}

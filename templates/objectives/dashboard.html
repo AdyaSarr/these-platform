@@ -1,0 +1,84 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% translate "Objectives" %}{% endblock %}
+{% block content %}
+<h1>{% translate "Objectives" %}</h1>
+<p><a href="{% url 'accounts:dashboard' thesis_id=thesis.pk %}">{% translate "Back to the thesis" %}</a></p>
+{% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
+
+<nav aria-label="{% translate 'CIFRE years' %}">
+  <ul class="years">
+    {% for year in data.years %}
+      <li>{% if year.pk == data.year.pk %}<strong aria-current="page">{% blocktranslate with number=year.number %}Year {{ number }}{% endblocktranslate %}</strong>{% else %}<a href="?year={{ year.number }}">{% blocktranslate with number=year.number %}Year {{ number }}{% endblocktranslate %}</a>{% endif %}</li>
+    {% endfor %}
+  </ul>
+</nav>
+<p class="muted">{% blocktranslate with start=data.year.cifre_start|date:"SHORT_DATE_FORMAT" end=data.year.cifre_end|date:"SHORT_DATE_FORMAT" %}CIFRE year from {{ start }} to {{ end }}{% endblocktranslate %}</p>
+
+<dl class="stats" data-drafts="{{ stats.drafts }}" data-overdue="{{ stats.overdue }}">
+  <div><dt>{% translate "Weighted attainment" %}</dt><dd>{% if attainment is None %}—{% else %}{{ attainment }} %{% endif %}</dd></div>
+  <div><dt>{% translate "Weighted progress" %}</dt><dd>{% if progress_rate is None %}—{% else %}{{ progress_rate }} %{% endif %}</dd></div>
+  <div><dt>{% translate "Overdue" %}</dt><dd>{{ stats.overdue }}</dd></div>
+  <div><dt>{% translate "Drafts awaiting approval" %}</dt><dd>{{ stats.drafts }}</dd></div>
+  <div><dt>{% translate "Dropped" %}</dt><dd>{{ stats.dropped }}</dd></div>
+</dl>
+
+{% if can_validate and pending %}
+<section class="pending" aria-labelledby="pending-title">
+  <h2 id="pending-title">{% translate "To acknowledge" %}</h2>
+  <ul>
+    {% for row, texts in pending %}
+      <li><a href="{% url 'objectives:detail' thesis_id=thesis.pk objective_id=row.objective.pk %}">{% include "objectives/_text.html" with value=texts.title %}</a>
+        {% if row.objective.changed_since_approval %}<span class="mark">{% translate "changed since approval" %}</span>{% endif %}
+        {% if row.objective.result_declared %}<span class="mark">{% translate "result declared, to acknowledge" %}</span>{% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+{% if overdue %}
+<section class="overdue-list" aria-labelledby="overdue-title">
+  <h2 id="overdue-title">{% translate "Overdue objectives" %}</h2>
+  <ul>
+    {% for row, texts in overdue %}
+      <li><a href="{% url 'objectives:detail' thesis_id=thesis.pk objective_id=row.objective.pk %}">{% include "objectives/_text.html" with value=texts.title %}</a> — {{ row.objective.due_date|date:"SHORT_DATE_FORMAT" }} <strong class="overdue">{% translate "overdue" %}</strong></li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<section aria-labelledby="chart-title">
+  <h2 id="chart-title">{% translate "Monthly progress" %}</h2>
+  {% include "objectives/_progress_chart.html" %}
+</section>
+
+<section aria-labelledby="list-title">
+  <h2 id="list-title">{% translate "Objectives of the year" %}</h2>
+  {% if can_write %}<p><a href="{% url 'objectives:new' thesis_id=thesis.pk %}">{% translate "New objective" %}</a></p>{% endif %}
+  {% if rows %}
+  <table class="table">
+    <thead><tr><th scope="col">{% translate "Title" %}</th><th scope="col">{% translate "Category" %}</th><th scope="col">{% translate "Due date" %}</th><th scope="col">{% translate "Weight" %}</th><th scope="col">{% translate "Status" %}</th></tr></thead>
+    <tbody>
+      {% for row, texts in rows %}
+      <tr>
+        <th scope="row"><a href="{% url 'objectives:detail' thesis_id=thesis.pk objective_id=row.objective.pk %}">{% include "objectives/_text.html" with value=texts.title %}</a></th>
+        <td>{{ row.objective.get_category_display }}</td>
+        <td>{{ row.objective.due_date|date:"SHORT_DATE_FORMAT" }}{% if row.overdue %} <strong class="overdue">{% translate "overdue" %}</strong>{% endif %}</td>
+        <td>{{ row.objective.weight }}</td>
+        <td>{{ row.objective.get_status_display }} ({{ row.objective.progress }} %){% if not row.objective.is_approved %} — <span class="muted">{% translate "draft" %}</span>{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="muted">{% translate "No objective for this year yet." %}</p>
+  {% endif %}
+  {% if can_validate and stats.drafts %}
+  <form method="post" action="{% url 'objectives:approve_year' thesis_id=thesis.pk %}">
+    {% csrf_token %}<input type="hidden" name="year" value="{{ data.year.number }}">
+    <button type="submit">{% blocktranslate count counter=stats.drafts %}Approve the draft of the year{% plural %}Approve the {{ counter }} drafts of the year{% endblocktranslate %}</button>
+    <span class="muted">{% translate "Asks for your second factor." %}</span>
+  </form>
+  {% endif %}
+</section>
+{% endblock %}

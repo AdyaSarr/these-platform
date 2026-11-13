@@ -1,0 +1,92 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% translate "Objective" %}{% endblock %}
+{% block content %}
+<p><a href="{% url 'objectives:dashboard' thesis_id=thesis.pk %}?year={{ objective.year.number }}">{% translate "Objectives" %}</a></p>
+<h1>{% include "objectives/_text.html" with value=texts.title %}</h1>
+{% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
+
+<p class="muted">
+  {% blocktranslate with number=objective.year.number %}Year {{ number }}{% endblocktranslate %} ·
+  {{ objective.get_category_display }} ·
+  {% translate "Due date" %} : {{ objective.due_date|date:"SHORT_DATE_FORMAT" }} ·
+  {% translate "Weight" %} : {{ objective.weight }} ·
+  {% translate "Confidentiality" %} : {{ objective.get_level_display }}
+</p>
+<p>
+  <strong>{{ objective.get_status_display }}</strong> ({{ objective.progress }} %)
+  {% if objective.is_approved %}— {% blocktranslate with date=objective.approved_at|date:"SHORT_DATE_FORMAT" %}approved on {{ date }}{% endblocktranslate %}{% else %}— <span class="muted">{% translate "draft, awaiting approval" %}</span>{% endif %}
+  {% if objective.changed_since_approval %}<span class="mark">{% translate "changed since approval" %}</span>{% endif %}
+  {% if objective.result_declared %}<span class="mark">{% translate "result declared, to acknowledge" %}</span>{% endif %}
+</p>
+
+<h2>{% translate "Description" %}</h2>
+<p>{% include "objectives/_text.html" with value=texts.description %}</p>
+<h2>{% translate "Success criterion" %}</h2>
+<p>{% include "objectives/_text.html" with value=texts.success_criterion %}</p>
+
+<div class="actions">
+  {% if can_write %}<a href="{% url 'objectives:edit' thesis_id=thesis.pk objective_id=objective.pk %}">{% translate "Edit" %}</a>{% endif %}
+  {% if can_approve %}
+    <form method="post" action="{% url 'objectives:approve' thesis_id=thesis.pk objective_id=objective.pk %}">
+      {% csrf_token %}<button type="submit">{% translate "Approve" %}</button>
+    </form>
+  {% endif %}
+  {% if can_acknowledge %}
+    <form method="post" action="{% url 'objectives:acknowledge' thesis_id=thesis.pk objective_id=objective.pk %}">
+      {% csrf_token %}<button type="submit">{% translate "Acknowledge" %}</button>
+    </form>
+  {% endif %}
+  {% if can_approve or can_acknowledge %}<span class="muted">{% translate "Asks for your second factor." %}</span>{% endif %}
+</div>
+
+{% include "objectives/_progress.html" %}
+
+<section aria-labelledby="history-title">
+  <h2 id="history-title">{% translate "History" %}</h2>
+  {% if revisions %}
+  <ul class="revisions">
+    {% for entry in revisions %}
+      <li>{{ entry.revision.created_at|date:"SHORT_DATETIME_FORMAT" }} — {{ entry.revision.get_field_display }} :
+        {% include "objectives/_text.html" with value=entry.old %} → {% include "objectives/_text.html" with value=entry.new %}
+        <br>{% translate "Reason" %} : {% include "objectives/_text.html" with value=entry.reason %}
+      </li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="muted">{% translate "No change since approval." %}</p>
+  {% endif %}
+</section>
+
+{% if can_comment %}
+<section aria-labelledby="comments-title">
+  <h2 id="comments-title">{% translate "Comments of the supervision" %}</h2>
+  <div hx-get="{% url 'objectives:comments' thesis_id=thesis.pk objective_id=objective.pk %}" hx-trigger="load" hx-swap="innerHTML">
+    <p><a href="{% url 'objectives:comments' thesis_id=thesis.pk objective_id=objective.pk %}">{% translate "Show the comments" %}</a></p>
+  </div>
+</section>
+{% endif %}
+
+{% if level_form %}
+<section aria-labelledby="level-title">
+  <h2 id="level-title">{% translate "Confidentiality" %}</h2>
+  <form class="stack" method="post" action="{% url 'objectives:level' thesis_id=thesis.pk objective_id=objective.pk %}">
+    {% csrf_token %}
+    {% for field in level_form %}<p>{{ field.label_tag }} {{ field }}{% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}{{ field.errors }}</p>{% endfor %}
+    <button type="submit">{% translate "Change the confidentiality" %}</button>
+    <span class="muted">{% translate "Asks for your second factor." %}</span>
+  </form>
+</section>
+{% endif %}
+
+{% if drop_form %}
+<section aria-labelledby="drop-title">
+  <h2 id="drop-title">{% translate "Drop this objective" %}</h2>
+  <form class="stack" method="post" action="{% url 'objectives:drop' thesis_id=thesis.pk objective_id=objective.pk %}">
+    {% csrf_token %}
+    {{ drop_form.as_p }}
+    <p class="muted">{% translate "A dropped objective stays visible, with its reason." %}</p>
+    <button type="submit" class="danger">{% translate "Drop" %}</button>
+  </form>
+</section>
+{% endif %}
+{% endblock %}

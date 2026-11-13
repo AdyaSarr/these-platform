@@ -300,23 +300,7 @@ class RevisionView:
 
 
 def revisions_for(user: User, objective: Objective) -> list[RevisionView]:
-    thesis = _thesis(objective)
-    _require(user, Action.OBJECTIVE_READ, thesis, "revisions")
-    revisions = list(ObjectiveRevision.objects.filter(objective=objective).order_by("created_at"))
-    items = [(r, name) for r in revisions for name in ("reason", "old_value", "new_value")]
-    opened = vault.open_texts(user, thesis, items, action=Action.OBJECTIVE_READ)
-    views = []
-    for r in revisions:
-        sealed = r.field in {f.value for f in TEXT_FIELDS}
-        views.append(
-            RevisionView(
-                revision=r,
-                reason=opened.get((r.pk, "reason"), ""),
-                old_value=opened.get((r.pk, "old_value"), "") if sealed else r.old_clear,
-                new_value=opened.get((r.pk, "new_value"), "") if sealed else r.new_clear,
-            )
-        )
-    return views
+    return objective_detail(user, objective).revisions
 
 
 @dataclass(frozen=True)
@@ -345,20 +329,52 @@ class ProgressView:
 
 
 def progress_for(user: User, objective: Objective) -> list[ProgressView]:
+    return objective_detail(user, objective).progress
+
+
+@dataclass(frozen=True)
+class ObjectiveDetail:
+    objective: Objective
+    texts: dict[str, Any]  # title, description, success_criterion: str or RESTRICTED
+    revisions: list[RevisionView]
+    progress: list[ProgressView]
+
+
+_REVISION_TEXTS = ("reason", "old_value", "new_value")
+
+
+def objective_detail(user: User, objective: Objective) -> ObjectiveDetail:
+    """Everything the detail page shows, its texts opened in ONE vault call (one
+    SEALED_TEXT_READ per request for a CONFIDENTIAL objective). Comments are not
+    here: they need OBJECTIVE_COMMENT (comments_for, a fragment of their own)."""
     thesis = _thesis(objective)
-    _require(user, Action.OBJECTIVE_READ, thesis, "progress")
+    _require(user, Action.OBJECTIVE_READ, thesis, "detail")
+    revisions = list(ObjectiveRevision.objects.filter(objective=objective).order_by("created_at"))
     updates = list(
         ProgressUpdate.objects.filter(objective=objective)
         .select_related("evidence")
         .order_by("date", "created_at")
     )
-    opened = vault.open_texts(
-        user, thesis, [(u, "note") for u in updates], action=Action.OBJECTIVE_READ
-    )
-    views = []
+    items: list[tuple[Any, str]] = [(objective, f.value) for f in TEXT_FIELDS]
+    items += [(r, name) for r in revisions for name in _REVISION_TEXTS]
+    items += [(u, "note") for u in updates]
+    opened = vault.open_texts(user, thesis, items, action=Action.OBJECTIVE_READ)
+    text_fields = {f.value for f in TEXT_FIELDS}
+    revision_views = []
+    for r in revisions:
+        sealed = r.field in text_fields
+        revision_views.append(
+            RevisionView(
+                revision=r,
+                reason=opened.get((r.pk, "reason"), ""),
+                old_value=opened.get((r.pk, "old_value"), "") if sealed else r.old_clear,
+                new_value=opened.get((r.pk, "new_value"), "") if sealed else r.new_clear,
+            )
+        )
+    progress_views = []
     for u in updates:
         visible = u.evidence if u.evidence and can_access_document(user, u.evidence) else None
-        views.append(
+        progress_views.append(
             ProgressView(
                 update=u,
                 note=opened.get((u.pk, "note"), ""),
@@ -366,7 +382,12 @@ def progress_for(user: User, objective: Objective) -> list[ProgressView]:
                 has_hidden_evidence=u.evidence_id is not None and visible is None,
             )
         )
-    return views
+    return ObjectiveDetail(
+        objective=objective,
+        texts={f.value: opened.get((objective.pk, f.value), "") for f in TEXT_FIELDS},
+        revisions=revision_views,
+        progress=progress_views,
+    )
 
 
 # =========================================================================== writing
@@ -788,3 +809,74 @@ def stats_for(user: User, thesis: Thesis, year: ThesisYear) -> YearStats:
             rows, first_day=year.cifre_start, last_day=year.cifre_end, today=today
         ),
     )
+
+
+# =========================================================================== dashboard
+
+
+@dataclass(frozen=True)
+class Listed:
+    objective: Objective
+    texts: dict[str, Any]
+    overdue: bool
+
+
+@dataclass(frozen=True)
+class Dashboard:
+    year: ThesisYear
+    years: list[ThesisYear]
+    stats: YearStats
+    objectives: list[Listed]  # of the year
+    overdue: list[Listed]  # of the year, approved, still open, due before today
+    pending: list[Listed]  # every year: to acknowledge (the director's list only)
+
+
+def _is_overdue(objective: Objective, today: dt.date) -> bool:
+    return (
+        objective.is_approved
+        and objective.status in (Status.PLANNED, Status.IN_PROGRESS)
+        and objective.due_date < today
+    )
+
+
+def dashboard(user: User, thesis: Thesis, year: ThesisYear) -> Dashboard:
+    """The objectives page of one year; every title opened in ONE vault call."""
+    year_stats = stats_for(user, thesis, year)  # rights and year checked there
+    today = timezone.localdate()
+    of_year = list(
+        Objective.objects.filter(thesis=thesis, year=year).order_by("due_date", "created_at")
+    )
+    pending = (
+        pending_acknowledgements(thesis) if can(user, Action.VALIDATE_OBJECTIVES, thesis) else []
+    )
+    unique = {o.pk: o for o in [*of_year, *pending]}
+    texts = objective_texts(user, thesis, unique.values())
+
+    def listed(o: Objective) -> Listed:
+        return Listed(objective=o, texts=texts[o.pk], overdue=_is_overdue(o, today))
+
+    rows = [listed(o) for o in of_year]
+    return Dashboard(
+        year=year,
+        years=list(ThesisYear.objects.filter(thesis=thesis).order_by("number")),
+        stats=year_stats,
+        objectives=rows,
+        overdue=[r for r in rows if r.overdue],
+        pending=[listed(o) for o in pending],
+    )
+
+
+def dashboard_block(request: Any, thesis: Thesis) -> dict[str, Any]:
+    """Data of the thesis dashboard block (accounts.views.DASHBOARD_BLOCKS): counts only."""
+    year = (
+        current_year(thesis) or ThesisYear.objects.filter(thesis=thesis).order_by("number").first()
+    )
+    if year is None:
+        return {}
+    result = stats_for(request.user, thesis, year)
+    return {
+        "year": year,
+        "attainment": stats_module.as_percent(result.stats.attainment),
+        "drafts": result.stats.drafts,
+        "overdue": result.stats.overdue,
+    }

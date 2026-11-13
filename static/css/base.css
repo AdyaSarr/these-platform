@@ -8,6 +8,15 @@
   --accent: #1f5fae;
   --accent-fg: #ffffff;
   --error: #b42318;
+  /* Objectives (M4): chart and states; contrasts checked by test_chart_contrast.py. */
+  --chart-line: #1f5fae;
+  --chart-dot: #1f5fae;
+  --chart-grid: #c3c8d0;
+  --overdue: #b42318;
+  --warning-fg: #7a2e0e;
+  --warning-bg: #fffaeb;
+  --restricted-fg: #3d434d;
+  --restricted-bg: #eef0f3;
   color-scheme: light dark;
 }
 
@@ -20,6 +29,14 @@
     --accent: #6ea8f0;
     --accent-fg: #0d1014;
     --error: #f97066;
+    --chart-line: #6ea8f0;
+    --chart-dot: #6ea8f0;
+    --chart-grid: #464b53;
+    --overdue: #f97066;
+    --warning-fg: #fedf89;
+    --warning-bg: #2b2114;
+    --restricted-fg: #c9ced6;
+    --restricted-bg: #262a30;
   }
 }
 
@@ -104,3 +121,37 @@ button.danger { border-color: var(--error); color: var(--error); }
 .status-rejected .status, .overdue { color: var(--error); }
 .warning { border-left: 3px solid var(--error); padding-left: 0.5rem; }
 .approvals { margin: 0.25rem 0; padding-left: 1.25rem; }
+
+/* Objectives (M4). Colour never carries a state alone: a word, a marker or a dash too. */
+textarea {
+  width: 100%;
+  padding: 0.5rem 0.625rem;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+.helptext { display: block; color: var(--muted); font-size: 0.9rem; }
+.overdue { color: var(--overdue); font-weight: 600; }
+.restricted {
+  color: var(--restricted-fg);
+  background: var(--restricted-bg);
+  border-radius: 4px;
+  padding: 0 0.375rem;
+  font-style: italic;
+}
+.mark { color: var(--warning-fg); background: var(--warning-bg); border-radius: 4px; padding: 0 0.375rem; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 0.5rem; }
+.stats div { border: 1px solid var(--border); border-radius: 0.5rem; padding: 0.5rem 0.75rem; }
+.stats dt { color: var(--muted); font-size: 0.9rem; }
+.stats dd { margin: 0; font-size: 1.4rem; font-weight: 600; }
+.years { display: flex; flex-wrap: wrap; gap: 0.5rem; list-style: none; padding: 0; }
+.chart-svg { width: 100%; height: auto; max-width: 40rem; }
+.chart-grid { stroke: var(--chart-grid); stroke-width: 1; stroke-dasharray: 4 4; }
+.chart-line { stroke: var(--chart-line); stroke-width: 2.5; }
+.chart-dot { fill: var(--chart-dot); stroke: var(--bg); stroke-width: 1.5; }
+.chart-tick { fill: var(--muted); font-size: 12px; }
+.chart-data { border-collapse: collapse; margin-top: 0.5rem; }
+.chart-data th, .chart-data td { border-bottom: 1px solid var(--border); padding: 0.2rem 0.6rem; text-align: left; }
+.revisions, .progress-list, .comment-list { padding-left: 1.25rem; }
