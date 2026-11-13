@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% translate "Document unavailable" %}{% endblock %}
+{% block content %}
+<h1>{% translate "Document unavailable" %}</h1>
+<p>{% translate "This document cannot be opened at the moment. The incident has been logged." %}</p>
+<p><a href="{% url 'vault:documents' thesis_id=thesis.pk %}">{% translate "All documents" %}</a></p>
+{% endblock %}

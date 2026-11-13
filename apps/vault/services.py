@@ -41,6 +41,7 @@ from .audit import FORBIDDEN_KEY_FRAGMENTS, AuditAction, audit, canonical_ip
 from .errors import (
     AuditError,
     BlobNotFoundError,
+    ReauthenticationRequiredError,
     StorageError,
     UnknownKekError,
     VaultIntegrityError,
@@ -65,6 +66,7 @@ __all__ = [
     "canonical_ip",
     "change_level",
     "decrypt_secret",
+    "document_for",
     "download_name",
     "encrypt_secret",
     "grant_access",
@@ -274,9 +276,32 @@ def add_version(*, document: Document, upload: Upload, user: User) -> DocumentVe
     raise RuntimeError("the document's level changed twice during add_version(); retry")
 
 
+def document_for(user: User, thesis: Thesis, document_id: Any, *, operation: str) -> Document:
+    """The document ``document_id`` of ``thesis`` if ``user`` may read it.
+
+    Unknown, of another thesis than the URL's, or not readable: the same
+    PermissionDenied, audited (IDOR: the id in the URL never crosses theses).
+    """
+    try:
+        document = Document.objects.filter(pk=document_id, thesis=thesis).first()
+    except (ValueError, ValidationError):
+        document = None
+    if document is None or not can_access_document(user, document):
+        details: dict[str, Any] = {"obj": document} if document is not None else {}
+        raise _deny(user, operation, thesis=thesis, **details)
+    return document
+
+
 @sensitive_variables()
-def open_version(version_id: Any, user: User) -> Opened:
+def open_version(
+    version_id: Any, user: User, *, thesis: Thesis | None = None, recent_mfa: bool = False
+) -> Opened:
     """Decrypt one version for ``user``; every read is audited.
+
+    ``thesis``: the thesis of the URL; a version of another thesis is refused
+    (IDOR). ``recent_mfa``: whether the caller verified a second factor less
+    than 10 minutes old; a CONFIDENTIAL version is never opened without it
+    (ReauthenticationRequiredError, raised before anything is read).
 
     The version and its document are read in ONE query: the level used in the
     AD and the wrapped DEK come from the same state of the database (a
@@ -286,12 +311,19 @@ def open_version(version_id: Any, user: User) -> Opened:
         version = DocumentVersion.objects.select_related("document").filter(pk=version_id).first()
     except (ValueError, ValidationError):  # malformed id: same answer as forbidden
         version = None
+    if version is not None and thesis is not None and version.document.thesis_id != thesis.pk:
+        raise _deny(user, "read", thesis=thesis)  # another thesis than the URL's
     if version is None or not can_access_document(user, version.document):
         details: dict[str, Any] = {"obj": version.document} if version is not None else {}
+        if thesis is not None and version is None:
+            details["thesis"] = thesis
         raise _deny(user, "read", **details)
     document = version.document
+    level = _level(document)
+    if level is ConfidentialityLevel.CONFIDENTIAL and not recent_mfa:
+        raise ReauthenticationRequiredError()
     try:
-        data = _decrypt(version, document, _level(document))
+        data = _decrypt(version, document, level)
     except (VaultIntegrityError, UnknownKekError, StorageError) as exc:
         _audit_failure(exc, user=user, document=document, version=version.version)
         raise

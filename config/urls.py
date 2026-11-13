@@ -51,6 +51,7 @@ urlpatterns: list[URLPattern | URLResolver] = [
     path("", include("apps.core.urls")),
     # Every page of a thesis lives under /t/<id>/ and is guarded by permissions.py.
     path("t/<uuid:thesis_id>/", include("apps.accounts.urls")),
+    path("t/<uuid:thesis_id>/documents/", include("apps.vault.urls")),
     # Invitation acceptance (apps/accounts/invitation_views.py). "accept/" first:
     # the <str:token> route would match it otherwise.
     path("invitation/", invitation_views.invitation_continue, name="invitation_continue"),

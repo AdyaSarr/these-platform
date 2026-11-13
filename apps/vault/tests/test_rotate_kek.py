@@ -60,7 +60,9 @@ def test_rotation_rewraps_every_document_in_batches(student: Any, time_machine: 
     assert [e.details_json["rows"] for e in batches.order_by("seq")] == [2, 2, 1]
     for document in documents:
         version = document.versions.get()
-        assert services.open_version(version.pk, student).data.startswith(b"%PDF-1.7")
+        assert services.open_version(version.pk, student, recent_mfa=True).data.startswith(
+            b"%PDF-1.7"
+        )
 
 
 def test_rotation_keeps_the_blobs_and_the_deks(student: Any) -> None:
@@ -90,7 +92,9 @@ def test_retire_waits_for_the_grace_period(student: Any, time_machine: Any) -> N
     out = _rotate("CONFIDENTIAL", "--retire")
     assert "retired env:CONFIDENTIAL:1" in out
     assert KeyEncryptionKey.objects.get(kek_id="env:CONFIDENTIAL:1").retired_at is not None
-    assert services.open_version(document.versions.get().pk, student).data.startswith(b"%PDF")
+    assert services.open_version(
+        document.versions.get().pk, student, recent_mfa=True
+    ).data.startswith(b"%PDF")
 
 
 def test_retire_rewraps_rows_sealed_late_under_the_old_version(time_machine: Any) -> None:

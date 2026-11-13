@@ -92,7 +92,7 @@ def _blob_file(version: DocumentVersion) -> Path:
 @pytest.mark.parametrize("level", list(L))
 def test_store_then_open_round_trip(team: SimpleNamespace, level: L) -> None:
     document = _store(team, level)
-    opened = services.open_version(_v(document).pk, team.student)
+    opened = services.open_version(_v(document).pk, team.student, recent_mfa=True)
     assert opened.data == PDF
     assert opened.mime_type == "application/pdf"
     assert opened.download_name == "compte-rendu-fictif.pdf"
@@ -181,8 +181,8 @@ def test_add_version(team: SimpleNamespace) -> None:
     services.add_version(document=document, upload=_pdf(PDF2), user=team.student)
     document.refresh_from_db()
     assert document.current_version == 2
-    assert services.open_version(_v(document, 1).pk, team.student).data == PDF
-    assert services.open_version(_v(document, 2).pk, team.student).data == PDF2
+    assert services.open_version(_v(document, 1).pk, team.student, recent_mfa=True).data == PDF
+    assert services.open_version(_v(document, 2).pk, team.student, recent_mfa=True).data == PDF2
     assert _events("DOCUMENT_VERSION_ADDED")[-1].details_json["version"] == 2
 
 
@@ -198,7 +198,7 @@ def test_blob_of_another_version_does_not_decrypt(team: SimpleNamespace) -> None
     services.add_version(document=document, upload=_pdf(PDF2), user=team.student)
     _blob_file(_v(document, 1)).write_bytes(_blob_file(_v(document, 2)).read_bytes())
     with pytest.raises(VaultIntegrityError):
-        services.open_version(_v(document, 1).pk, team.student)
+        services.open_version(_v(document, 1).pk, team.student, recent_mfa=True)
 
 
 # --------------------------------------------------------------------------- open: rights
@@ -215,11 +215,11 @@ def test_open_follows_can_access_document(team: SimpleNamespace, role: str, leve
     document = _store(team, level)
     user = getattr(team, role)
     if can_access_document(user, document):
-        assert services.open_version(_v(document).pk, user).data == PDF
+        assert services.open_version(_v(document).pk, user, recent_mfa=True).data == PDF
         assert _events("DOCUMENT_READ")[-1].actor == user
     else:
         with pytest.raises(PermissionDenied):
-            services.open_version(_v(document).pk, user)
+            services.open_version(_v(document).pk, user, recent_mfa=True)
         denied = _events("DOCUMENT_ACCESS_DENIED")[-1]
         assert denied.details_json["operation"] == "read"
         assert not _events("DOCUMENT_READ")
@@ -238,7 +238,7 @@ def test_expected_readers_of_each_level(team: SimpleNamespace) -> None:
         allowed = set()
         for role in ROLES:
             try:
-                services.open_version(version_id, getattr(team, role))
+                services.open_version(version_id, getattr(team, role), recent_mfa=True)
                 allowed.add(role)
             except PermissionDenied:
                 pass
@@ -249,7 +249,7 @@ def test_unknown_version_looks_like_a_refusal(team: SimpleNamespace) -> None:
     import uuid
 
     with pytest.raises(PermissionDenied):
-        services.open_version(uuid.uuid4(), team.student)
+        services.open_version(uuid.uuid4(), team.student, recent_mfa=True)
     assert _events("DOCUMENT_ACCESS_DENIED")
 
 
@@ -263,7 +263,7 @@ def test_tampered_blob_is_an_integrity_failure(team: SimpleNamespace) -> None:
     raw[-1] ^= 1
     path.write_bytes(bytes(raw))
     with pytest.raises(VaultIntegrityError):
-        services.open_version(version.pk, team.student)
+        services.open_version(version.pk, team.student, recent_mfa=True)
     assert len(_events("DOCUMENT_INTEGRITY_FAILED")) == 1
     assert not _events("DOCUMENT_KEK_UNAVAILABLE")
     assert not _events("DOCUMENT_READ")
@@ -273,7 +273,7 @@ def test_missing_blob_is_an_integrity_failure(team: SimpleNamespace) -> None:
     version = _v(_store(team))
     _blob_file(version).unlink()
     with pytest.raises(BlobNotFoundError):
-        services.open_version(version.pk, team.student)
+        services.open_version(version.pk, team.student, recent_mfa=True)
     assert len(_events("DOCUMENT_INTEGRITY_FAILED")) == 1
 
 
@@ -282,14 +282,14 @@ def test_level_changed_in_the_database_does_not_decrypt(team: SimpleNamespace) -
     document = _store(team, L.CONFIDENTIAL)
     Document.objects.filter(pk=document.pk).update(confidentiality=L.INTERNAL_ST)
     with pytest.raises(VaultIntegrityError):
-        services.open_version(_v(document).pk, team.student)
+        services.open_version(_v(document).pk, team.student, recent_mfa=True)
 
 
 def test_retired_kek_is_unavailable_not_an_integrity_failure(team: SimpleNamespace) -> None:
     version = _v(_store(team))
     KeyEncryptionKey.objects.filter(kek_id=version.kek_id).update(retired_at=timezone.now())
     with pytest.raises(UnknownKekError):
-        services.open_version(version.pk, team.student)
+        services.open_version(version.pk, team.student, recent_mfa=True)
     assert len(_events("DOCUMENT_KEK_UNAVAILABLE")) == 1
     assert not _events("DOCUMENT_INTEGRITY_FAILED")
 
@@ -300,7 +300,7 @@ def test_disabled_provider_is_unavailable_not_an_integrity_failure(
     version = _v(_store(team))
     settings.VAULT_ENABLED_PROVIDERS = frozenset({"bao"})
     with pytest.raises(UnknownKekError):
-        services.open_version(version.pk, team.student)
+        services.open_version(version.pk, team.student, recent_mfa=True)
     assert _events("DOCUMENT_KEK_UNAVAILABLE")
     assert not _events("DOCUMENT_INTEGRITY_FAILED")
 
@@ -311,7 +311,7 @@ def test_missing_storage_root_is_not_an_integrity_failure(
     version = _v(_store(team))
     settings.VAULT_STORAGE_DIR = str(tmp_path / "elsewhere")
     with pytest.raises(StorageError):
-        services.open_version(version.pk, team.student)
+        services.open_version(version.pk, team.student, recent_mfa=True)
     assert not _events("DOCUMENT_INTEGRITY_FAILED")
     assert _events("DOCUMENT_STORAGE_ERROR")
 
@@ -356,7 +356,7 @@ def test_concurrent_level_change_never_causes_a_false_integrity_failure() -> Non
     def reader() -> None:
         try:
             with connection.execute_wrapper(pause_after_first_version_query):
-                outcome["data"] = services.open_version(version_id, student).data
+                outcome["data"] = services.open_version(version_id, student, recent_mfa=True).data
         except BaseException as exc:  # reported below
             outcome["error"] = exc
         finally:
@@ -397,8 +397,8 @@ def test_change_level_re_encrypts_every_version(team: SimpleNamespace) -> None:
         assert v.kek_id == "env:INTERNAL_ST:1"
         assert v.ciphertext_path != before[v.version][0]  # new blob
         assert bytes(v.wrapped_dek) != before[v.version][1]  # new DEK
-    assert services.open_version(_v(document, 1).pk, team.student).data == PDF
-    assert services.open_version(_v(document, 2).pk, team.student).data == PDF2
+    assert services.open_version(_v(document, 1).pk, team.student, recent_mfa=True).data == PDF
+    assert services.open_version(_v(document, 2).pk, team.student, recent_mfa=True).data == PDF2
     event = _events("DOCUMENT_LEVEL_CHANGED")[-1]
     assert event.details_json["old_level"] == "CONFIDENTIAL"
     assert event.details_json["new_level"] == "INTERNAL_ST"
@@ -407,11 +407,11 @@ def test_change_level_re_encrypts_every_version(team: SimpleNamespace) -> None:
 
 def test_change_level_changes_who_can_read(team: SimpleNamespace) -> None:
     document = _store(team, L.INTERNAL_LIRMM)
-    services.open_version(_v(document).pk, team.director)
+    services.open_version(_v(document).pk, team.director, recent_mfa=True)
     services.change_level(document=document, level=L.INTERNAL_ST, user=team.student)
     with pytest.raises(PermissionDenied):
-        services.open_version(_v(document).pk, team.director)
-    assert services.open_version(_v(document).pk, team.tutor).data == PDF
+        services.open_version(_v(document).pk, team.director, recent_mfa=True)
+    assert services.open_version(_v(document).pk, team.tutor, recent_mfa=True).data == PDF
 
 
 def test_change_level_revokes_explicit_grants_when_leaving_confidential(
@@ -441,12 +441,12 @@ def test_grant_opens_a_confidential_document_to_a_csi_member(team: SimpleNamespa
     version_id = _v(_store(team, L.CONFIDENTIAL)).pk
     document = Document.objects.get()
     with pytest.raises(PermissionDenied):
-        services.open_version(version_id, team.csi)
+        services.open_version(version_id, team.csi, recent_mfa=True)
     grant = services.grant_access(document=document, grantee=team.csi, user=team.student)
-    assert services.open_version(version_id, team.csi).data == PDF
+    assert services.open_version(version_id, team.csi, recent_mfa=True).data == PDF
     services.revoke_access(grant=grant, user=team.student)
     with pytest.raises(PermissionDenied):
-        services.open_version(version_id, team.csi)
+        services.open_version(version_id, team.csi, recent_mfa=True)
     assert len(_events("DOCUMENT_GRANT_ADDED")) == 1
     assert len(_events("DOCUMENT_GRANT_REVOKED")) == 1
 
@@ -528,3 +528,28 @@ def test_mfa_counter_blocks_retirement_while_a_secret_uses_the_version(settings:
     keys.new_version(KeyDomain.MFA_SECRETS)
     with pytest.raises(KekRetirementError, match="referenced by 1"):
         keys.retire("env:MFA_SECRETS:1")
+
+
+def test_confidential_is_never_opened_without_a_recent_second_factor(
+    team: SimpleNamespace, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from apps.vault.errors import ReauthenticationRequiredError
+
+    version = _v(_store(team, L.CONFIDENTIAL))
+    unwrapped: list[str] = []
+    monkeypatch.setattr(keys, "unwrap", lambda *a, **k: unwrapped.append("called"))
+    with pytest.raises(ReauthenticationRequiredError):
+        services.open_version(version.pk, team.student)  # recent_mfa defaults to False
+    assert unwrapped == []  # nothing read nor decrypted
+    assert not _events("DOCUMENT_READ")
+
+
+def test_version_of_another_thesis_is_refused_when_the_url_thesis_is_given(
+    team: SimpleNamespace,
+) -> None:
+    version = _v(_store(team, L.PUBLIC))
+    other = ThesisFactory.create()
+    MembershipFactory.create(thesis=other, role=Role.PHD_STUDENT, user=team.student)
+    with pytest.raises(PermissionDenied):
+        services.open_version(version.pk, team.student, thesis=other)
+    assert _events("DOCUMENT_ACCESS_DENIED")[-1].thesis == other

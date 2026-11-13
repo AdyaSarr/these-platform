@@ -244,4 +244,7 @@ LOGGING = {
     "formatters": {"plain": {"format": "{asctime} {levelname} {name} {message}", "style": "{"}},
     "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "plain"}},
     "root": {"handlers": ["console"], "level": "INFO"},
+    # SQL queries carry wrapped DEKs and document titles: never logged with their
+    # parameters, whatever the root level or DEBUG (tests/test_security_audit_m2.py).
+    "loggers": {"django.db.backends": {"level": "INFO", "propagate": True}},
 }

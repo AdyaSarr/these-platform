@@ -57,6 +57,21 @@ prime. Règle d'or : **aucune primitive maison**.
   limitée à `encrypt`, `decrypt`, `sign` sur ces clés ; `rotate` réservé à un
   rôle d'administration utilisé par la commande de rotation.
 
+### Ce qui est chiffré, ce qui ne l'est pas (M2)
+
+| En clair (base de données) | Chiffré |
+|---|---|
+| **Titre** du document (avertissement sur le formulaire de dépôt) | Contenu de chaque version (blob AES-256-GCM sur disque) |
+| Niveau de confidentialité | DEK de chaque version (`wrapped_dek`, sous la KEK du niveau) |
+| Taille, type MIME, numéro de version | Graine TOTP et graine des codes de récupération (KEK `MFA_SECRETS`) |
+| Dates de création et de modification, auteur, thèse | |
+| Chemin du blob (nom aléatoire), `kek_id` | |
+
+Le titre n'apparaît jamais dans le journal d'audit, l'admin, `str()` d'un
+document, les journaux ni les noms de fichiers stockés (tests). Le nom du
+fichier téléchargé est reconstruit depuis le titre nettoyé
+(`[a-z0-9-]`, 80 caractères au plus) et l'extension du type détecté.
+
 ## Authentification
 
 - Identifiant = courriel ; hasher Django `Argon2PasswordHasher` en premier.

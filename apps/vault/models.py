@@ -252,7 +252,8 @@ class Document(TimeStampedModel):
         ]
 
     def __str__(self) -> str:
-        return self.title
+        # Never the title: str() ends up in admin pages, logs and error reports.
+        return f"document {self.pk}"
 
 
 class DocumentVersion(TimeStampedModel):

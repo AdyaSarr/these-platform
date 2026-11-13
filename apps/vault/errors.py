@@ -39,3 +39,11 @@ class StorageError(Exception):
 
 class BlobNotFoundError(StorageError):
     """The blob a document version points to does not exist."""
+
+
+class ReauthenticationRequiredError(Exception):
+    """Opening this version needs a second factor less than 10 minutes old (CONFIDENTIAL).
+
+    Raised before anything is read or decrypted; the view answers with the
+    re-authentication redirect (accounts.reauth).
+    """

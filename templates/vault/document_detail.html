@@ -1,0 +1,64 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{{ document.title }}{% endblock %}
+{% block content %}
+<h1>{{ document.title }}</h1>
+<p><a href="{% url 'vault:documents' thesis_id=thesis.pk %}">{% translate "All documents" %}</a></p>
+<p>{% translate "Confidentiality" %} : {{ document.get_confidentiality_display }}</p>
+
+<h2>{% translate "Versions" %}</h2>
+<table>
+  <thead><tr><th>{% translate "Version" %}</th><th>{% translate "Size" %}</th><th>{% translate "Type" %}</th><th>{% translate "Stored" %}</th><th></th></tr></thead>
+  <tbody>
+  {% for version in versions %}
+    <tr>
+      <td>{{ version.version }}</td>
+      <td>{{ version.size|filesizeformat }}</td>
+      <td>{{ version.mime_type }}</td>
+      <td>{{ version.created_at|date:"SHORT_DATETIME_FORMAT" }}</td>
+      <td><a href="{% url 'vault:download' thesis_id=thesis.pk version_id=version.pk %}">{% translate "Download" %}</a></td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+{% if version_form %}
+<h2>{% translate "New version" %}</h2>
+<form method="post" enctype="multipart/form-data" action="{% url 'vault:new_version' thesis_id=thesis.pk document_id=document.pk %}">
+  {% csrf_token %}{{ version_form.as_p }}
+  <button type="submit">{% translate "Store the new version" %}</button>
+</form>
+{% endif %}
+
+{% if level_form %}
+<h2>{% translate "Confidentiality level" %}</h2>
+<p>{% translate "Changing the level re-encrypts every version; a recent second factor is asked." %}</p>
+<form method="post" action="{% url 'vault:change_level' thesis_id=thesis.pk document_id=document.pk %}">
+  {% csrf_token %}{{ level_form.as_p }}
+  <button type="submit">{% translate "Change the level" %}</button>
+</form>
+{% endif %}
+
+{% if can_grant %}
+<h2>{% translate "Explicit access" %}</h2>
+<ul>
+  {% for grant in grants %}
+  <li>{{ grant.user.get_full_name|default:grant.user.email }}
+    <form method="post" action="{% url 'vault:revoke_grant' thesis_id=thesis.pk document_id=document.pk grant_id=grant.pk %}">
+      {% csrf_token %}<button type="submit">{% translate "Revoke" %}</button>
+    </form>
+  </li>
+  {% empty %}<li>{% translate "No explicit access." %}</li>
+  {% endfor %}
+</ul>
+<ul>
+  {% for membership in members %}
+  <li>{{ membership.user.get_full_name|default:membership.user.email }} ({{ membership.get_role_display }})
+    <form method="post" action="{% url 'vault:grant' thesis_id=thesis.pk document_id=document.pk %}">
+      {% csrf_token %}<input type="hidden" name="grantee" value="{{ membership.user.pk }}">
+      <button type="submit">{% translate "Give access" %}</button>
+    </form>
+  </li>
+  {% endfor %}
+</ul>
+{% endif %}
+{% endblock %}
