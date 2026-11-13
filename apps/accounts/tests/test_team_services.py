@@ -69,10 +69,12 @@ def test_two_supervision_roles_can_be_combined() -> None:
 
 def test_former_director_can_become_csi_after_leaving() -> None:
     with time_machine.travel(NOW, tick=False):
-        m = MembershipFactory.create(role=Role.DIRECTOR)
+        m = MembershipFactory.create(role=Role.DIRECTOR, active_from=timezone.now())
     with time_machine.travel(NOW + dt.timedelta(days=1), tick=False):
         Membership.objects.filter(pk=m.pk).update(active_until=timezone.now())
-        MembershipFactory.create(user=m.user, thesis=m.thesis, role=Role.CSI_MEMBER)
+        MembershipFactory.create(
+            user=m.user, thesis=m.thesis, role=Role.CSI_MEMBER, active_from=timezone.now()
+        )
 
 
 def test_add_membership_reports_incompatibility_as_team_error(student: Membership) -> None:

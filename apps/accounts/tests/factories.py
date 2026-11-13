@@ -74,6 +74,9 @@ class ThesisFactory(factory.django.DjangoModelFactory[Thesis]):
     status = Thesis.Status.ACTIVE
 
 
+MEMBERSHIP_START = dt.datetime(2026, 1, 1, tzinfo=dt.UTC)
+
+
 class MembershipFactory(factory.django.DjangoModelFactory[Membership]):
     class Meta:
         model = Membership
@@ -82,3 +85,7 @@ class MembershipFactory(factory.django.DjangoModelFactory[Membership]):
     thesis = factory.SubFactory(ThesisFactory)
     organization = factory.SubFactory(OrganizationFactory)
     role = Role.DIRECTOR
+    # A fixed start BEFORE every frozen instant of the suite (2026-11-13, 2026-12-01...),
+    # never the wall clock: with active_from = now, a test travelling back to its
+    # fixed T0 found the membership not yet started, once the real date passed T0.
+    active_from = MEMBERSHIP_START

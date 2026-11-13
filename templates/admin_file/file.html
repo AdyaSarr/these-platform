@@ -1,0 +1,19 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% translate "Administrative file" %}{% endblock %}
+{% block content %}
+<h1>{% translate "Administrative file" %}</h1>
+<p><a href="{% url 'accounts:dashboard' thesis_id=thesis.pk %}">{{ thesis.title }}</a></p>
+{% if incomplete %}<p class="message message-error" role="status">{% translate "Incomplete file: a mandatory item is no longer validated." %}</p>{% endif %}
+{# Counted on the items YOU see (the hidden part of the file is never counted). #}
+<p>
+  <progress value="{{ progress.validated }}" max="{{ progress.total }}">{{ progress.percent }} %</progress>
+  {% blocktranslate with validated=progress.validated total=progress.total %}{{ validated }} / {{ total }} mandatory items validated{% endblocktranslate %}
+</p>
+{% if can_create %}<p><a href="{% url 'admin_file:new_item' thesis_id=thesis.pk %}">{% translate "Add a custom item" %}</a></p>{% endif %}
+{% for label, rows in sections %}
+  <section class="file-section">
+    <h2>{{ label }}</h2>
+    {% for row in rows %}{% include "admin_file/item_row.html" %}{% endfor %}
+  </section>
+{% endfor %}
+{% endblock %}

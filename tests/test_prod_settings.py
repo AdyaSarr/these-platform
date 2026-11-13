@@ -32,6 +32,7 @@ SETTING_NAMES = (
     "PASSWORD_HASHERS",
     "INSTALLED_APPS",
     "EMAIL_BACKEND",
+    "EMAIL_TIMEOUT",
     "CACHES",
     "MFA_ENCRYPTION_REQUIRED",
     "MFA_TOTP_INSECURE_BYPASS_CODE",
@@ -45,6 +46,10 @@ SETTING_NAMES = (
 @pytest.fixture(scope="module")
 def prod() -> dict[str, Any]:
     return load_prod_settings(*SETTING_NAMES)
+
+
+def test_email_timeout_is_bounded(prod: dict[str, Any]) -> None:
+    assert prod["EMAIL_TIMEOUT"] == 10
 
 
 def test_debug_is_false(prod: dict[str, Any]) -> None:

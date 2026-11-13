@@ -1,0 +1,6 @@
+{% load i18n %}{# data = admin_file.services.dashboard_context: progress over the items the user sees. #}
+<p>
+  <progress value="{{ data.progress.validated }}" max="{{ data.progress.total }}">{{ data.progress.percent }} %</progress>
+  {% blocktranslate with validated=data.progress.validated total=data.progress.total %}{{ validated }} / {{ total }} mandatory items validated{% endblocktranslate %}
+</p>
+<p><a href="{% url 'admin_file:file' thesis_id=thesis.pk %}">{% translate "Open the administrative file" %}</a></p>

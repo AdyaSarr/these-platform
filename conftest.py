@@ -4,11 +4,14 @@ Fails the whole run early, with an actionable message, when PostgreSQL is not
 reachable (tests run on PostgreSQL only, see docs/decisions.md).
 """
 
+import datetime as dt
+import os
 from collections.abc import Generator
 from pathlib import Path
 from typing import Any
 
 import pytest
+import time_machine
 from django.db import OperationalError, connections
 from pytest_django import DjangoDbBlocker
 
@@ -16,6 +19,27 @@ DB_UNREACHABLE_MESSAGE = (
     "PostgreSQL est injoignable (DATABASE_URL). "
     "Lancez `docker compose up -d db` puis relancez pytest."
 )
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _test_clock() -> Generator[None]:
+    """Run the whole suite as if it started at ``TEST_CLOCK`` (ISO 8601 with offset).
+
+    The clock keeps ticking from there (tick=True) and the tests' own
+    time_machine travels still nest inside. Used to find tests that depend on the
+    wall-clock time of the run: a date boundary (23:30 UTC, 00:30 Paris) or a run
+    after the fixed instants of the tests. Unset: the real clock.
+        TEST_CLOCK=2026-11-13T23:30:00+00:00 uv run pytest
+    """
+    value = os.environ.get("TEST_CLOCK", "").strip()
+    if not value:
+        yield
+        return
+    instant = dt.datetime.fromisoformat(value)
+    if instant.tzinfo is None:
+        raise pytest.UsageError("TEST_CLOCK needs an explicit offset, e.g. +00:00")
+    with time_machine.travel(instant, tick=True):
+        yield
 
 
 @pytest.fixture(scope="session")

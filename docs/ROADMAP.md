@@ -8,7 +8,7 @@ critères d'acceptation de la fiche tous validés.
 | [x] | M0 — Socle technique | `modules/M00-socle.md` | — | nov. 2026 |
 | [x] | M1 — Comptes, rôles, invitations, MFA | `modules/M01-comptes.md` | M0 | déc. 2026 |
 | [x] | M2 — Coffre : documents chiffrés et journal d'audit | `modules/M02-coffre.md` | M1 | déc. 2026 |
-| [ ] | M3 — Dossier administratif | `modules/M03-dossier-admin.md` | M2 | janv. 2027 |
+| [x] | M3 — Dossier administratif | `modules/M03-dossier-admin.md` | M2 | janv. 2027 |
 | [ ] | M4 — Objectifs et indicateurs | `modules/M04-objectifs.md` | M1 | janv. 2027 |
 | [ ] | M5 — Réunions et présentations | `modules/M05-reunions.md` | M2, M4 | févr. 2027 |
 | [ ] | M6 — Conférences et deadlines | `modules/M06-conferences.md` | M1 | févr. 2027 |
@@ -22,20 +22,6 @@ Le déploiement (Caddy, TLS hybride, sauvegardes) se fait seulement après valid
 de l'hébergement par ST et le LIRMM.
 
 Avant toute mise en production : checklist de `docs/DEPLOYMENT.md` entièrement cochée.
-
-## Prochaine étape : à faire en premier
-
-- **Journaliser les refus de la garde de thèse (`THESIS_ACCESS_DENIED`)**, pour les
-  utilisateurs **connectés seulement** : un anonyme est renvoyé vers la connexion
-  sans événement, pour ne pas remplir le journal en ajout seul. Aujourd'hui,
-  `permissions._authorize` refuse un non-membre (ou un `GUEST` sur une action de
-  thèse) par un 403 non journalisé ; seuls les refus de niveau du coffre le sont
-  (`DOCUMENT_ACCESS_DENIED`, revue de fin de M2). Événement avec la thèse demandée
-  si elle existe, sans révéler à l'utilisateur si elle existe (même 403).
-  *Test* : IDOR, un utilisateur connecté d'une autre thèse demande une page de
-  cette thèse (et une thèse inexistante) → 403 et un événement
-  `THESIS_ACCESS_DENIED` avec son identité ; un anonyme → redirection vers la
-  connexion et aucun événement.
 
 ## Plus tard
 

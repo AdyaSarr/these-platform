@@ -9,6 +9,7 @@ from django.db.models import QuerySet
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect
 from django.utils.functional import Promise
+from django.utils.module_loading import import_string
 from django.utils.translation import gettext_lazy as _
 from django.views.generic import TemplateView
 
@@ -25,6 +26,9 @@ class DashboardBlock:
     action: Action
     title: str | Promise
     template: str
+    # Dotted path of ``f(request, thesis) -> dict`` giving the block its data,
+    # resolved at render time: accounts never imports a later module at load.
+    data: str = ""
 
 
 # Later modules replace the "upcoming" placeholder by their own block template.
@@ -37,11 +41,14 @@ DASHBOARD_BLOCKS: tuple[DashboardBlock, ...] = (
     DashboardBlock(
         "documents", Action.DOCUMENT_READ, _("Documents"), "accounts/blocks/upcoming.html"
     ),
+    # CIFRE_FILE_READ: the tutor sees the CIFRE part; progress counts what the
+    # user sees (admin_file.services.progress).
     DashboardBlock(
         "admin_file",
-        Action.ADMIN_FILE_READ,
+        Action.CIFRE_FILE_READ,
         _("Administrative file"),
-        "accounts/blocks/upcoming.html",
+        "admin_file/blocks/dashboard.html",
+        data="apps.admin_file.services.dashboard_context",
     ),
 )
 
@@ -60,7 +67,11 @@ class ThesisDashboardView(ThesisPermissionRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         allowed = allowed_actions(self.request.user, self.thesis)
         context["thesis"] = self.thesis
-        context["blocks"] = [b for b in DASHBOARD_BLOCKS if b.action in allowed]
+        context["blocks"] = [
+            (b, import_string(b.data)(self.request, self.thesis) if b.data else {})
+            for b in DASHBOARD_BLOCKS
+            if b.action in allowed
+        ]
         return context
 
 

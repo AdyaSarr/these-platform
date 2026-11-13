@@ -55,11 +55,13 @@ def test_same_active_role_twice_is_rejected() -> None:
 
 def test_member_can_be_readmitted_after_removal() -> None:
     with time_machine.travel(NOW, tick=False):
-        m = MembershipFactory.create(role=Role.DIRECTOR)
+        m = MembershipFactory.create(role=Role.DIRECTOR, active_from=timezone.now())
     with time_machine.travel(NOW + dt.timedelta(days=1), tick=False):
         m.active_until = timezone.now()
         m.save()
-        again = MembershipFactory.create(user=m.user, thesis=m.thesis, role=Role.DIRECTOR)
+        again = MembershipFactory.create(
+            user=m.user, thesis=m.thesis, role=Role.DIRECTOR, active_from=timezone.now()
+        )
     assert again.pk != m.pk
 
 
@@ -86,11 +88,11 @@ def test_only_one_active_phd_student_per_thesis() -> None:
 
 def test_new_phd_student_allowed_once_previous_has_ended() -> None:
     with time_machine.travel(NOW, tick=False):
-        m = MembershipFactory.create(role=Role.PHD_STUDENT)
+        m = MembershipFactory.create(role=Role.PHD_STUDENT, active_from=timezone.now())
     with time_machine.travel(NOW + dt.timedelta(days=1), tick=False):
         m.active_until = timezone.now()
         m.save()
-        MembershipFactory.create(thesis=m.thesis, role=Role.PHD_STUDENT)
+        MembershipFactory.create(thesis=m.thesis, role=Role.PHD_STUDENT, active_from=timezone.now())
 
 
 def test_phd_students_of_different_theses_do_not_conflict() -> None:

@@ -193,7 +193,26 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       *Vérifier* : `audit_verify` avec la clé épinglée et la copie de l'export
       sort avec le code 0, sans avertissement de troncature.
 
+- [ ] **Rappels du dossier administratif (M3) : un timer quotidien.**
+      *Timer systemd* (utilisateur du serveur), chaque jour à 08 h 00 Europe/Paris
+      (`OnCalendar=*-*-* 08:00:00 Europe/Paris`, `Persistent=true` pour rattraper
+      un jour manqué) :
+      ```
+      manage.py admin_file_reminders
+      ```
+      La commande met les courriels en file (worker Celery démarré, même
+      `DJANGO_SETTINGS_MODULE`) ; les fenêtres J-14, J-3 et J+1 sont des **dates à
+      Paris** (`TIME_ZONE`). La relancer à la main le même jour, ou en même temps
+      que le timer, n'envoie rien deux fois (`ReminderLog`, contrainte d'unicité).
+      Un envoi en échec est retenté par les exécutions suivantes, 3 fois au plus.
+      *Vérifier* : `systemctl list-timers` montre le timer ; la sortie de la
+      commande ne contient que des nombres (ni libellé, ni adresse).
+
 ## Rappels de configuration
+
+- `EMAIL_TIMEOUT = 10` (base et prod) : un serveur SMTP qui ne répond pas fait
+  échouer l'envoi au bout de 10 s (rappel compté `FAILED`, retenté le lendemain)
+  au lieu de bloquer un worker Celery et la ligne de rappel verrouillée.
 
 - `DJANGO_SETTINGS_MODULE=config.settings.prod` dans l'environnement du serveur
   web **et** du worker Celery. `dev` et `test` refusent de démarrer si
