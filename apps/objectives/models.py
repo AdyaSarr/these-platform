@@ -337,3 +337,51 @@ class ObjectiveComment(TimeStampedModel):
 
     def __str__(self) -> str:
         return f"comment {self.pk}"
+
+
+class WeeklySummaryLog(TimeStampedModel):
+    """One weekly summary e-mail: (thesis, recipient, week_start) is claimed ONCE.
+
+    As ReminderLog (M3): the run that inserts the row queues the e-mail, a
+    concurrent or repeated run finds it. ``week_start`` is the Monday of the
+    run's date in Paris.
+    """
+
+    class Status(models.TextChoices):
+        PENDING = "PENDING", _("Pending")
+        SENT = "SENT", _("Sent")
+        FAILED = "FAILED", _("Failed")
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    thesis = models.ForeignKey(
+        "accounts.Thesis", on_delete=models.PROTECT, related_name="+", editable=False
+    )
+    recipient = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+", editable=False
+    )
+    week_start = models.DateField(editable=False)
+    status = models.CharField(
+        max_length=10, choices=Status.choices, default=Status.PENDING, editable=False
+    )
+    attempts = models.PositiveSmallIntegerField(default=0, editable=False)
+    sent_at = models.DateTimeField(null=True, editable=False)
+
+    class Meta:
+        verbose_name = _("weekly summary")
+        verbose_name_plural = _("weekly summaries")
+        constraints: ClassVar[list[models.BaseConstraint]] = [
+            models.UniqueConstraint(
+                fields=["thesis", "recipient", "week_start"], name="objectives_summary_once"
+            ),
+            models.CheckConstraint(
+                condition=Q(week_start__iso_week_day=1), name="objectives_summary_monday"
+            ),
+            models.CheckConstraint(
+                condition=(Q(status="SENT") & Q(sent_at__isnull=False))
+                | (~Q(status="SENT") & Q(sent_at__isnull=True)),
+                name="objectives_summary_sent_at",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"weekly summary {self.pk}"

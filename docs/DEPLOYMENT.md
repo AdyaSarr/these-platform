@@ -221,6 +221,24 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       *Vérifier* : `systemctl list-timers` montre le timer ; la sortie de la
       commande ne contient que des nombres (ni libellé, ni adresse).
 
+- [ ] **Résumé hebdomadaire des objectifs (M4) : un timer le lundi.**
+      *Timer systemd* (utilisateur du serveur), chaque lundi à 08 h 00 Europe/Paris
+      (`OnCalendar=Mon *-*-* 08:00:00 Europe/Paris`, `Persistent=true` pour
+      rattraper un lundi manqué) :
+      ```
+      manage.py objectives_weekly_summary
+      ```
+      La commande met les courriels en file (worker Celery démarré) ; la semaine
+      résumée va du lundi précédent 00 h 00 au lundi 00 h 00, **heure de Paris**.
+      Destinataires : directeur, co-encadrants, tuteur actifs, seulement s'il y a
+      quelque chose sur les objectifs qu'ils peuvent lire (activité, retard, ou à
+      prendre en connaissance pour le directeur). La relancer dans la semaine
+      n'envoie rien deux fois (`WeeklySummaryLog`, contrainte d'unicité) ; un
+      envoi en échec est retenté par les exécutions suivantes de la semaine, 3
+      fois au plus. Courriel : un lien seulement.
+      *Vérifier* : `systemctl list-timers` montre le timer ; la sortie de la
+      commande ne contient que des nombres.
+
 ## Rappels de configuration
 
 - `EMAIL_TIMEOUT = 10` (base et prod) : un serveur SMTP qui ne répond pas fait
