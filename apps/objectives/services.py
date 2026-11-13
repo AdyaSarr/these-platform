@@ -41,6 +41,7 @@ from apps.vault.audit import AuditAction, audit
 from apps.vault.errors import ReauthenticationRequiredError
 from apps.vault.models import Document
 
+from . import stats as stats_module
 from . import years
 from .models import (
     OBJECTIVE_LEVELS,
@@ -743,3 +744,47 @@ def add_comment(*, objective: Objective, user: User, body: str) -> ObjectiveComm
         sealer.seal(comment, "body", text)
         audit(AuditAction.OBJECTIVE_COMMENT_ADDED, actor=user, obj=locked)
     return comment
+
+
+# =========================================================================== statistics
+
+
+@dataclass(frozen=True)
+class YearStats:
+    year: ThesisYear
+    stats: stats_module.Stats
+    monthly: list[stats_module.MonthPoint]
+
+
+def stats_for(user: User, thesis: Thesis, year: ThesisYear) -> YearStats:
+    """Statistics of one CIFRE year (no text is opened: none is needed to count)."""
+    _require(user, Action.OBJECTIVE_READ, thesis, "stats")
+    if year.thesis_id != thesis.pk:
+        raise _deny(user, "stats", "other_thesis", thesis=thesis)
+    objectives = list(
+        Objective.objects.filter(thesis=thesis, year=year).prefetch_related("progress_updates")
+    )
+    rows = [
+        stats_module.Row(
+            category=o.category,
+            weight=o.weight,
+            status=o.status,
+            progress=o.progress,
+            due_date=o.due_date,
+            approved=o.is_approved,
+            created_on=timezone.localdate(o.created_at),
+            updates=tuple(
+                stats_module.Update(u.date, u.progress, u.status)
+                for u in sorted(o.progress_updates.all(), key=lambda u: (u.created_at, u.pk))
+            ),
+        )
+        for o in objectives
+    ]
+    today = timezone.localdate()  # the date in Paris
+    return YearStats(
+        year=year,
+        stats=stats_module.compute_stats(rows, today),
+        monthly=stats_module.monthly_progress(
+            rows, first_day=year.cifre_start, last_day=year.cifre_end, today=today
+        ),
+    )
