@@ -205,8 +205,8 @@ def can_access_level(user: AnyUser, thesis: Thesis, level: ConfidentialityLevel)
     return bool(roles_of(user, thesis_or_none) & LEVEL_ROLES[level])
 
 
-def can_access_document(user: AnyUser, document: Document) -> bool:
-    """Read access to one document (docs/ARCHITECTURE.md, "Accès à un document").
+def _m2_document_rule(user: AnyUser, document: Document) -> bool:
+    """The M2 rule (docs/ARCHITECTURE.md, "Accès à un document").
 
     Granted to an active member of the document's thesis who either holds a
     role with DOCUMENT_READ that the level allows (LEVEL_ROLES), or, for a
@@ -235,6 +235,40 @@ def can_access_document(user: AnyUser, document: Document) -> bool:
     return bool(
         grants.filter(document_id=document.pk, user_id=user.pk, revoked_at__isnull=True).exists()
     )
+
+
+DocumentRestriction = Callable[["AnyUser", "Document"], bool]
+
+# Predicates registered by business modules (AppConfig.ready). Each one may only
+# REFUSE: a document is readable when the M2 rule grants it AND every restriction
+# accepts. None registered = M2 behaviour.
+_DOCUMENT_RESTRICTIONS: list[DocumentRestriction] = []
+
+
+def register_document_restriction(predicate: DocumentRestriction) -> None:
+    """Declare an extra condition on reading documents, ``predicate(user, document)``.
+
+    For a module whose documents need more than role and level: the
+    administrative file (M3) closes its attachments to roles without the read
+    right of the item's section. A predicate must answer True for documents it
+    does not concern. Idempotent: ready() may run more than once.
+    """
+    if not callable(predicate):
+        raise ImproperlyConfigured("register_document_restriction() needs a callable.")
+    if predicate not in _DOCUMENT_RESTRICTIONS:
+        _DOCUMENT_RESTRICTIONS.append(predicate)
+
+
+def can_access_document(user: AnyUser, document: Document) -> bool:
+    """Read access to one document: the M2 rule AND every registered restriction.
+
+    Restrictions are asked only once the M2 rule has granted access, explicit
+    grants included (a grant never bypasses a restriction). A restriction that
+    raises is never read as an acceptance: the exception propagates.
+    """
+    if not _m2_document_rule(user, document):
+        return False
+    return all(restriction(user, document) for restriction in _DOCUMENT_RESTRICTIONS)
 
 
 # --------------------------------------------------------------------------- view guards

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-13 06:58+0100\n"
+"POT-Creation-Date: 2026-11-13 07:45+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -176,7 +176,7 @@ msgstr "date de première inscription"
 msgid "planned end date"
 msgstr "date de fin prévue"
 
-#: apps/accounts/models.py:107
+#: apps/accounts/models.py:107 apps/admin_file/models.py:101
 msgid "status"
 msgstr "statut"
 
@@ -237,7 +237,7 @@ msgstr "Échec de l'envoi"
 msgid "Sent, awaiting acceptance"
 msgstr "Envoyée, en attente d'acceptation"
 
-#: apps/accounts/models.py:229
+#: apps/accounts/models.py:229 apps/admin_file/models.py:65
 msgid "Expired"
 msgstr "Expirée"
 
@@ -400,6 +400,150 @@ msgstr "Documents"
 msgid "Administrative file"
 msgstr "Dossier administratif"
 
+#: apps/admin_file/catalog.py:61
+msgid "ST employment contract"
+msgstr "Contrat de travail ST"
+
+#: apps/admin_file/catalog.py:63
+msgid ""
+"The industrial tutor will be able to read this file: prefer an employment "
+"certificate to the contract itself (salary)."
+msgstr "Le tuteur industriel pourra lire ce fichier : préférez une attestation d'emploi au contrat lui-même (salaire)."
+
+#: apps/admin_file/catalog.py:67
+msgid "CIFRE agreement (ANRT)"
+msgstr "Convention CIFRE (ANRT)"
+
+#: apps/admin_file/catalog.py:73
+msgid "ST-LIRMM collaboration contract"
+msgstr "Contrat de collaboration ST-LIRMM"
+
+#: apps/admin_file/catalog.py:78
+msgid "Proof of funding"
+msgstr "Justificatif de financement"
+
+#: apps/admin_file/catalog.py:80
+msgid ""
+"Certificate stating salary ≥ doctoral school threshold, without the amount."
+msgstr "Attestation mentionnant salaire ≥ seuil de l'école doctorale, sans le montant."
+
+#: apps/admin_file/catalog.py:84
+msgid "FSD notice / ZRR access"
+msgstr "Avis FSD / accès ZRR"
+
+#: apps/admin_file/catalog.py:86
+msgid ""
+"Attach the notice only, never the application file (passport, nationality)."
+msgstr "Joignez l'avis seulement, jamais le dossier de demande (passeport, nationalité)."
+
+#: apps/admin_file/catalog.py:89
+msgid "ADUM enrolment"
+msgstr "Inscription ADUM"
+
+#: apps/admin_file/catalog.py:93
+msgid "Signed doctoral charter"
+msgstr "Charte du doctorat signée"
+
+#: apps/admin_file/catalog.py:97
+msgid "Individual training agreement"
+msgstr "Convention individuelle de formation"
+
+#: apps/admin_file/catalog.py:101
+msgid "Individual training plan"
+msgstr "Plan individuel de formation"
+
+#: apps/admin_file/catalog.py:105
+msgid "CVEC certificate"
+msgstr "Attestation CVEC"
+
+#: apps/admin_file/models.py:29
+msgid "CIFRE"
+msgstr "CIFRE"
+
+#: apps/admin_file/models.py:30
+msgid "Academic"
+msgstr "Académique"
+
+#: apps/admin_file/models.py:53
+msgid "To do"
+msgstr "À faire"
+
+#: apps/admin_file/models.py:54
+msgid "Submitted"
+msgstr "Déposée"
+
+#: apps/admin_file/models.py:55
+msgid "Validated"
+msgstr "Validée"
+
+#: apps/admin_file/models.py:56
+msgid "Rejected"
+msgstr "Refusée"
+
+#: apps/admin_file/models.py:62
+msgid "Wrong document"
+msgstr "Mauvais document"
+
+#: apps/admin_file/models.py:63
+msgid "Illegible"
+msgstr "Illisible"
+
+#: apps/admin_file/models.py:64
+msgid "Missing signature"
+msgstr "Signature manquante"
+
+#: apps/admin_file/models.py:66
+msgid "Amendment"
+msgstr "Avenant"
+
+#: apps/admin_file/models.py:67
+msgid "Other"
+msgstr "Autre"
+
+#: apps/admin_file/models.py:89
+msgid "label"
+msgstr "libellé"
+
+#: apps/admin_file/models.py:90
+msgid "section"
+msgstr "section"
+
+#: apps/admin_file/models.py:92
+msgid "validated by"
+msgstr "validée par"
+
+#: apps/admin_file/models.py:95
+msgid "default level"
+msgstr "niveau par défaut"
+
+#: apps/admin_file/models.py:97
+msgid "mandatory"
+msgstr "obligatoire"
+
+#: apps/admin_file/models.py:98
+msgid "attachment required"
+msgstr "pièce jointe obligatoire"
+
+#: apps/admin_file/models.py:99
+msgid "due date"
+msgstr "échéance"
+
+#: apps/admin_file/models.py:126
+msgid "required item"
+msgstr "pièce du dossier"
+
+#: apps/admin_file/models.py:127
+msgid "required items"
+msgstr "pièces du dossier"
+
+#: apps/admin_file/models.py:205
+msgid "approval"
+msgstr "approbation"
+
+#: apps/admin_file/models.py:206
+msgid "approvals"
+msgstr "approbations"
+
 #: apps/core/confidentiality.py:12
 msgid "Public"
 msgstr "Public"
@@ -431,18 +575,19 @@ msgstr "créé par"
 #: apps/vault/forms.py:14 templates/vault/upload.html:6
 msgid ""
 "The title is not encrypted: do not put any confidential information in it."
-msgstr "Le titre n'est pas chiffré : n'y mettez aucune information confidentielle."
+msgstr ""
+"Le titre n'est pas chiffré : n'y mettez aucune information confidentielle."
 
-#: apps/vault/forms.py:26 templates/vault/document_list.html:9
+#: apps/vault/forms.py:33 templates/vault/document_list.html:9
 msgid "Title"
 msgstr "Titre"
 
-#: apps/vault/forms.py:27 apps/vault/forms.py:40
+#: apps/vault/forms.py:34 apps/vault/forms.py:47
 #: templates/vault/document_detail.html:6 templates/vault/document_list.html:9
 msgid "Confidentiality"
 msgstr "Confidentialité"
 
-#: apps/vault/forms.py:28 apps/vault/forms.py:36
+#: apps/vault/forms.py:35 apps/vault/forms.py:43
 msgid "File"
 msgstr "Fichier"
 
@@ -854,7 +999,9 @@ msgstr "Niveau de confidentialité"
 msgid ""
 "Changing the level re-encrypts every version; a recent second factor is "
 "asked."
-msgstr "Changer le niveau rechiffre toutes les versions ; un second facteur récent est demandé."
+msgstr ""
+"Changer le niveau rechiffre toutes les versions ; un second facteur récent "
+"est demandé."
 
 #: templates/vault/document_detail.html:37
 msgid "Change the level"
@@ -915,7 +1062,9 @@ msgstr "Document indisponible"
 #: templates/vault/unavailable.html:5
 msgid ""
 "This document cannot be opened at the moment. The incident has been logged."
-msgstr "Ce document ne peut pas être ouvert pour le moment. L'incident a été journalisé."
+msgstr ""
+"Ce document ne peut pas être ouvert pour le moment. L'incident a été "
+"journalisé."
 
 #: templates/vault/upload.html:9
 msgid "Store"

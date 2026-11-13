@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     "apps.core",
     "apps.accounts",
     "apps.vault",
+    "apps.admin_file",
     # Authentication: sign-in, password reset, mandatory second factor (M1).
     "allauth",
     "allauth.account",

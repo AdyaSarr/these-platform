@@ -10,6 +10,7 @@ from django.db import transaction
 
 from apps.accounts import services, tasks
 from apps.accounts.models import Organization, Thesis
+from apps.admin_file.services import seed_items
 from apps.vault.services import AuditAction, audit, vault_problems
 
 
@@ -59,6 +60,8 @@ class Command(BaseCommand):
                 planned_end_date=opts["planned_end"],
             )
             audit(AuditAction.THESIS_CREATED, obj=thesis)
+            # The administrative file (M3): catalogue items, in the same transaction.
+            seed_items(thesis)
             try:
                 inv = services.invite_phd_student(
                     thesis=thesis, email=opts["student_email"], organization=org
