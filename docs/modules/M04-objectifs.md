@@ -22,7 +22,13 @@ avec des statistiques de suivi visibles par les encadrants.
 1. Le doctorant propose les objectifs d'une année ; le directeur les approuve
    (ré-authentification) ; ensuite toute modification de titre, critère ou
    échéance exige une raison et crée une révision.
-2. Mises à jour d'avancement datées, avec preuve facultative.
+2. Mises à jour d'avancement datées, avec preuve facultative. Un changement de
+   **résultat** (`ACHIEVED`, `PARTIAL`, `NOT_ACHIEVED`, déclaré ou retiré) d'un
+   objectif approuvé compte aussitôt dans les statistiques, mais l'objectif est
+   marqué « résultat déclaré, à prendre en connaissance » jusqu'à la prise de
+   connaissance du directeur (même mécanisme que « modifié depuis
+   l'approbation » : second facteur récent, journalisée) ; il figure dans son
+   résumé hebdomadaire (`services.pending_acknowledgements`).
 3. Encadrants : commentaires sur un objectif (fil simple).
 4. Tableau de bord : taux d'atteinte pondéré par année, objectifs en retard,
    évolution mensuelle (graphique simple, données agrégées côté serveur),
