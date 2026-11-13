@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-13 21:21+0100\n"
+"POT-Creation-Date: 2026-11-13 21:33+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -83,193 +83,196 @@ msgstr "Nouveau rôle"
 msgid "Days"
 msgstr "Jours"
 
-#: apps/accounts/models.py:32 apps/accounts/models.py:237
+#: apps/accounts/models.py:33 apps/accounts/models.py:239
 msgid "email address"
 msgstr "adresse électronique"
 
-#: apps/accounts/models.py:33
+#: apps/accounts/models.py:34
 msgid "first name"
 msgstr "prénom"
 
-#: apps/accounts/models.py:34
+#: apps/accounts/models.py:35
 msgid "last name"
 msgstr "nom"
 
-#: apps/accounts/models.py:35
+#: apps/accounts/models.py:36
+#: apps/accounts/tests/test_thesis_status_label.py:38
 msgid "active"
 msgstr "actif"
 
-#: apps/accounts/models.py:36
+#: apps/accounts/models.py:37
 msgid "staff status"
 msgstr "statut équipe"
 
-#: apps/accounts/models.py:37
+#: apps/accounts/models.py:38
 msgid "date joined"
 msgstr "date d’inscription"
 
-#: apps/accounts/models.py:46 apps/accounts/models.py:140
+#: apps/accounts/models.py:47 apps/accounts/models.py:142
 msgid "user"
 msgstr "utilisateur"
 
-#: apps/accounts/models.py:47
+#: apps/accounts/models.py:48
 msgid "users"
 msgstr "utilisateurs"
 
-#: apps/accounts/models.py:52
+#: apps/accounts/models.py:53
 msgid "A user with this email address already exists."
 msgstr "Un utilisateur avec cette adresse électronique existe déjà."
 
-#: apps/accounts/models.py:78
+#: apps/accounts/models.py:79
 msgid "University"
 msgstr "Université"
 
-#: apps/accounts/models.py:79
+#: apps/accounts/models.py:80
 msgid "External"
 msgstr "Externe"
 
-#: apps/accounts/models.py:82
+#: apps/accounts/models.py:83
 msgid "name"
 msgstr "nom"
 
-#: apps/accounts/models.py:83
+#: apps/accounts/models.py:84
 msgid "kind"
 msgstr "type"
 
-#: apps/accounts/models.py:86 apps/accounts/models.py:146
-#: apps/accounts/models.py:240
+#: apps/accounts/models.py:87 apps/accounts/models.py:148
+#: apps/accounts/models.py:242
 msgid "organization"
 msgstr "organisation"
 
-#: apps/accounts/models.py:87
+#: apps/accounts/models.py:88
 msgid "organizations"
 msgstr "organisations"
 
-#: apps/accounts/models.py:96
+#: apps/accounts/models.py:97
 msgid "Setting up"
 msgstr "En préparation"
 
-#: apps/accounts/models.py:97
+#: apps/accounts/models.py:99
+#: apps/accounts/tests/test_thesis_status_label.py:36
+msgctxt "thesis status"
 msgid "Active"
-msgstr "Active"
+msgstr "En cours"
 
-#: apps/accounts/models.py:98
+#: apps/accounts/models.py:100
 msgid "Defended"
 msgstr "Soutenue"
 
-#: apps/accounts/models.py:99
+#: apps/accounts/models.py:101
 msgid "Closed"
 msgstr "Clôturée"
 
-#: apps/accounts/models.py:102 apps/objectives/models.py:226
+#: apps/accounts/models.py:104 apps/objectives/models.py:226
 #: apps/vault/models.py:219
 msgid "title"
 msgstr "titre"
 
-#: apps/accounts/models.py:103
+#: apps/accounts/models.py:105
 msgid "CIFRE start date"
 msgstr "date d'effet CIFRE"
 
-#: apps/accounts/models.py:104
+#: apps/accounts/models.py:106
 msgid "first enrollment date"
 msgstr "date de première inscription"
 
-#: apps/accounts/models.py:105
+#: apps/accounts/models.py:107
 msgid "planned end date"
 msgstr "date de fin prévue"
 
-#: apps/accounts/models.py:107 apps/admin_file/models.py:101
+#: apps/accounts/models.py:109 apps/admin_file/models.py:101
 #: apps/objectives/models.py:133 apps/objectives/models.py:233
 msgid "status"
 msgstr "statut"
 
-#: apps/accounts/models.py:113 apps/accounts/models.py:143
-#: apps/accounts/models.py:235
+#: apps/accounts/models.py:115 apps/accounts/models.py:145
+#: apps/accounts/models.py:237
 msgid "thesis"
 msgstr "thèse"
 
-#: apps/accounts/models.py:114
+#: apps/accounts/models.py:116
 msgid "theses"
 msgstr "thèses"
 
-#: apps/accounts/models.py:148 apps/accounts/models.py:238
+#: apps/accounts/models.py:150 apps/accounts/models.py:240
 msgid "role"
 msgstr "rôle"
 
-#: apps/accounts/models.py:149
+#: apps/accounts/models.py:151
 msgid "active from"
 msgstr "actif depuis"
 
-#: apps/accounts/models.py:150
+#: apps/accounts/models.py:152
 msgid "active until"
 msgstr "actif jusqu'au"
 
-#: apps/accounts/models.py:155
+#: apps/accounts/models.py:157
 msgid "membership"
 msgstr "appartenance"
 
-#: apps/accounts/models.py:156
+#: apps/accounts/models.py:158
 msgid "memberships"
 msgstr "appartenances"
 
-#: apps/accounts/models.py:220
+#: apps/accounts/models.py:222
 msgid "Queued"
 msgstr "En file d'attente"
 
-#: apps/accounts/models.py:221 apps/admin_file/models.py:243
+#: apps/accounts/models.py:223 apps/admin_file/models.py:243
 #: apps/objectives/models.py:352
 msgid "Sent"
 msgstr "Envoyé"
 
-#: apps/accounts/models.py:222 apps/admin_file/models.py:244
+#: apps/accounts/models.py:224 apps/admin_file/models.py:244
 #: apps/objectives/models.py:353
 msgid "Failed"
 msgstr "Échec"
 
-#: apps/accounts/models.py:225
+#: apps/accounts/models.py:227
 msgid "Being sent"
 msgstr "En cours d'envoi"
 
-#: apps/accounts/models.py:226
+#: apps/accounts/models.py:228
 msgid "Not sent"
 msgstr "Non parti"
 
-#: apps/accounts/models.py:227
+#: apps/accounts/models.py:229
 msgid "Sending failed"
 msgstr "Échec de l'envoi"
 
-#: apps/accounts/models.py:228
+#: apps/accounts/models.py:230
 msgid "Sent, awaiting acceptance"
 msgstr "Envoyée, en attente d'acceptation"
 
-#: apps/accounts/models.py:229 apps/admin_file/models.py:65
+#: apps/accounts/models.py:231 apps/admin_file/models.py:65
 msgid "Expired"
 msgstr "Expirée"
 
-#: apps/accounts/models.py:230
+#: apps/accounts/models.py:232
 msgid "Accepted"
 msgstr "Acceptée"
 
-#: apps/accounts/models.py:231
+#: apps/accounts/models.py:233
 msgid "Revoked"
 msgstr "Révoquée"
 
-#: apps/accounts/models.py:243
+#: apps/accounts/models.py:245
 msgid "expires at"
 msgstr "expire le"
 
-#: apps/accounts/models.py:248
+#: apps/accounts/models.py:250
 msgid "used at"
 msgstr "utilisée le"
 
-#: apps/accounts/models.py:249
+#: apps/accounts/models.py:251
 msgid "revoked at"
 msgstr "révoquée le"
 
-#: apps/accounts/models.py:259
+#: apps/accounts/models.py:261
 msgid "invitation"
 msgstr "invitation"
 
-#: apps/accounts/models.py:260
+#: apps/accounts/models.py:262
 msgid "invitations"
 msgstr "invitations"
 
@@ -381,6 +384,10 @@ msgstr "Invitation renvoyée."
 #: apps/accounts/team_views.py:178
 msgid "Invitation revoked."
 msgstr "Invitation révoquée."
+
+#: apps/accounts/tests/test_thesis_status_label.py:37
+msgid "Active"
+msgstr "Active"
 
 #: apps/accounts/views.py:36 templates/accounts/team.html:3
 #: templates/accounts/team.html:6
@@ -1343,13 +1350,13 @@ msgstr "Le dossier CSI sera disponible dans un prochain module."
 msgid "Objectives (read only)"
 msgstr "Objectifs (lecture seule)"
 
-#: templates/accounts/dashboard.html:8
 #
+#: templates/accounts/dashboard.html:8
 msgid "CIFRE effective date"
 msgstr "Date d'effet CIFRE"
 
-#: templates/accounts/dashboard.html:9
 #
+#: templates/accounts/dashboard.html:9
 msgid "First enrolment"
 msgstr "Première inscription"
 
@@ -1358,7 +1365,9 @@ msgstr "Première inscription"
 msgid ""
 "The thesis will become “%(status)s” when the mandatory items of the "
 "administrative file are validated"
-msgstr "La thèse passera « %(status)s » quand les pièces obligatoires du dossier administratif seront validées"
+msgstr ""
+"La thèse passera « %(status)s » quand les pièces obligatoires du dossier "
+"administratif seront validées"
 
 #: templates/accounts/dashboard.html:16
 msgid "that you see"

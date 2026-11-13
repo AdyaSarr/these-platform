@@ -77,7 +77,7 @@ def test_a_setup_thesis_explains_its_status(team: SimpleNamespace, validated: in
     line = _line(html)
     assert line is not None
     assert line.startswith(
-        "La thèse passera « Active » quand les pièces obligatoires du dossier "
+        "La thèse passera « En cours » quand les pièces obligatoires du dossier "
         "administratif seront validées"
     ), line
     assert f"({validated} / 10)" in line
@@ -89,7 +89,7 @@ def test_an_active_thesis_has_no_explanation(team: SimpleNamespace) -> None:
     Thesis.objects.filter(pk=team.thesis.pk).update(status=Thesis.Status.ACTIVE)
     html = _dashboard(team)
     assert _line(html) is None
-    assert "Active" in html  # the status itself is shown
+    assert "En cours" in html  # the status itself is shown
 
 
 @pytest.mark.parametrize("role", ["student", "director", "tutor"])

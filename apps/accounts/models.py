@@ -12,6 +12,7 @@ from django.db.models import Case, F, Q, Value, When
 from django.db.models.functions import Lower
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import pgettext_lazy
 
 from apps.core.db_functions import TsTzRange
 from apps.core.models import TimeStampedModel
@@ -94,7 +95,8 @@ class Organization(TimeStampedModel):
 class Thesis(TimeStampedModel):
     class Status(models.TextChoices):
         SETUP = "SETUP", _("Setting up")
-        ACTIVE = "ACTIVE", _("Active")
+        # Own context: « En cours » for a thesis, without touching any other "Active".
+        ACTIVE = "ACTIVE", pgettext_lazy("thesis status", "Active")
         DEFENDED = "DEFENDED", _("Defended")
         CLOSED = "CLOSED", _("Closed")
 
