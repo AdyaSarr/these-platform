@@ -257,6 +257,11 @@ def require_writer(user: Any, meeting: Meeting, operation: str) -> None:
     _require_writer(user, meeting, operation)
 
 
+def refuse_unknown(user: Any, meeting: Meeting, operation: str, what: str) -> PermissionDenied:
+    """A decision, action or link id that is not of the meeting of the URL: audited."""
+    return _deny(user, operation, f"unknown_{what}", obj=meeting)
+
+
 def require_attendee(user: Any, meeting: Meeting, operation: str) -> None:
     """For the views' per-meeting guard (before any re-authentication)."""
     _require(user, Action.MEETING_ACKNOWLEDGE, _thesis(meeting), operation)

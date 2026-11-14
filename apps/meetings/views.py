@@ -383,6 +383,7 @@ class DuplicateView(_Mixin, View):
 
     def get(self, request: HttpRequest, *args: Any, meeting_id: Any, **kwargs: Any) -> HttpResponse:
         meeting = self._meeting(meeting_id, "duplicate")
+        services.require_writer(_user(request), meeting, "duplicate")
         day, wall = timing.paris_parts(meeting.starts_at)
         form = DuplicateForm(initial={"date": day, "time": wall})
         return self._page(meeting, form)
@@ -429,6 +430,9 @@ class IcsView(_Mixin, View):
         response["Content-Disposition"] = f'attachment; filename="meeting-{meeting.pk}.ics"'
         response["Cache-Control"] = "no-store"
         response["X-Content-Type-Options"] = "nosniff"
+        # As the vault's downloads: nothing in the file may run if it is opened.
+        response["Content-Security-Policy"] = "sandbox; default-src 'none'"
+        response["Referrer-Policy"] = "no-referrer"
         return response
 
 
@@ -571,7 +575,7 @@ class WithdrawDecisionView(_MeetingAction, View):
     def act(self, meeting: Meeting, user: User) -> None:
         decision = Decision.objects.filter(pk=self.kwargs_["decision_id"], meeting=meeting).first()
         if decision is None:
-            raise PermissionDenied
+            raise services.refuse_unknown(user, meeting, self.operation, "decision")
         services.withdraw_decision(decision=decision, user=user)
 
 
@@ -604,7 +608,7 @@ class ActionStatusView(_MeetingAction, View):
     def act(self, meeting: Meeting, user: User) -> None:
         action = ActionItem.objects.filter(pk=self.kwargs_["action_id"], meeting=meeting).first()
         if action is None:
-            raise PermissionDenied
+            raise services.refuse_unknown(user, meeting, self.operation, "action")
         form = ActionStatusForm(self.request.POST)
         data = self._valid(form, "status_form")
         services.set_action_status(action=action, user=user, status=data["status"])
@@ -628,7 +632,7 @@ class UnlinkDocumentView(_MeetingAction, View):
     def act(self, meeting: Meeting, user: User) -> None:
         link = MeetingDocument.objects.filter(pk=self.kwargs_["link_id"], meeting=meeting).first()
         if link is None:
-            raise PermissionDenied
+            raise services.refuse_unknown(user, meeting, self.operation, "link")
         services.unlink_document(link=link, user=user)
 
 
