@@ -19,7 +19,9 @@ from __future__ import annotations
 import ipaddress
 import json
 import re
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
+from contextlib import contextmanager
+from contextvars import ContextVar
 from dataclasses import dataclass, field
 from enum import StrEnum
 from types import MappingProxyType
@@ -147,6 +149,31 @@ FORBIDDEN_KEY_FRAGMENTS: tuple[str, ...] = (
 _DETAIL_KEY = re.compile(r"[a-z][a-z0-9_]*")
 
 
+# --------------------------------------------------------------------------- source
+
+_SOURCE_NAME = re.compile(r"[a-z][a-z0-9_]{0,63}")
+# Per thread and per asyncio task: another request is never tagged.
+_SOURCE: ContextVar[str | None] = ContextVar("audit_source", default=None)
+
+
+@contextmanager
+def audit_source(name: str) -> Iterator[None]:
+    """Every event written inside carries ``details.source = name`` (demo_seed).
+
+    Only the content of ``details`` changes: the chain format (chain_v1) is the
+    same. Not nestable; a caller passing ``source=`` itself inside is refused.
+    """
+    if not isinstance(name, str) or not _SOURCE_NAME.fullmatch(name):
+        raise ValueError("audit source: [a-z][a-z0-9_]{0,63}")
+    if _SOURCE.get() is not None:
+        raise ValueError("audit_source() is not nestable")
+    token = _SOURCE.set(name)
+    try:
+        yield
+    finally:
+        _SOURCE.reset(token)
+
+
 # --------------------------------------------------------------------------- validation
 
 
@@ -229,6 +256,11 @@ def audit(
     """
     if not isinstance(action, AuditAction):
         raise AuditError(f"unknown audit action {action!r}")
+    source = _SOURCE.get()
+    if source is not None:
+        if "source" in details:
+            raise AuditError("details.source is set by audit_source()")
+        details["source"] = source
     _check_details(details)
     deduced = _thesis_of(obj)
     if thesis is not None and deduced is not None and thesis.pk != deduced.pk:
