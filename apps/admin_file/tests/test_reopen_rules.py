@@ -11,7 +11,7 @@ from typing import Any
 
 import pytest
 from django.core import mail
-from django.core.exceptions import ValidationError
+from django.core.exceptions import PermissionDenied, ValidationError
 
 from apps.accounts.roles import Role
 from apps.admin_file import services
@@ -60,18 +60,43 @@ def _reopen(item: RequiredItem, user: Any, capture: Any, reason: Reason = Reason
 
 @pytest.mark.parametrize("reason", list(Reason))
 def test_the_student_reopens_with_three_reasons_only(team: SimpleNamespace, reason: Reason) -> None:
+    """A validators' reason never comes from the student's form (it does not offer
+    it): a forged request, refused as a right (audited 403), not as a typo."""
     item = _validated(team, [T])
-    events = AuditEvent.objects.count()
     if reason in STUDENT_REASONS:
         assert services.reopen(item=item, user=team.student, reason=reason).status == S.TODO
         return
+    events = AuditEvent.objects.count()
+    with pytest.raises(PermissionDenied):
+        services.reopen(item=item, user=team.student, reason=reason, comment="Fictif QWERTY")
+    item.refresh_from_db()
+    assert item.status == S.VALIDATED
+    assert not ItemReopening.objects.exists()
+    [event] = AuditEvent.objects.order_by("seq")[events:]
+    assert (event.action, event.actor, event.object_id) == (
+        "ADMIN_ITEM_ACCESS_DENIED",
+        team.student,
+        str(item.pk),
+    )
+    assert event.details_json == {
+        "operation": "reopen",
+        "reason": "reason_not_allowed",
+        "attempted_reason": reason.value,
+    }
+    assert "QWERTY" not in str(event.details_json)
+
+
+@pytest.mark.parametrize("reason", ["", "NONSENSE", "amendment", None, 3])
+def test_an_unknown_reason_is_an_input_error_not_audited(
+    team: SimpleNamespace, reason: Any
+) -> None:
+    item = _validated(team, [T])
+    events = AuditEvent.objects.count()
     with pytest.raises(ValidationError) as caught:
         services.reopen(item=item, user=team.student, reason=reason)
     assert caught.value.code == "reason"
-    item.refresh_from_db()
-    assert item.status == S.VALIDATED
     assert AuditEvent.objects.count() == events
-    assert not ItemReopening.objects.exists()
+    assert RequiredItem.objects.get(pk=item.pk).status == S.VALIDATED
 
 
 @pytest.mark.parametrize("reason", list(Reason))

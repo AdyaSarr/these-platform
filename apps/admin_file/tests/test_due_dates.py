@@ -412,3 +412,75 @@ def test_a_proposal_of_another_item_is_refused(team: SimpleNamespace) -> None:
     with pytest.raises(PermissionDenied):
         services.proposal_for(team.tutor, second, proposal.pk, operation="accept_due_date")
     assert services.proposal_for(team.tutor, first, proposal.pk, operation="x") == proposal
+
+
+# ------------------------------------------------------------- one control for every date
+
+
+@pytest.mark.parametrize(
+    ("day", "code"),
+    [(dt.date(2026, 2, 28), "due_date_before_start"), (dt.date(2029, 3, 1), "due_date_after_end")],
+)
+def test_a_custom_item_is_created_inside_the_thesis_only(
+    team: SimpleNamespace, day: dt.date, code: str
+) -> None:
+    events = AuditEvent.objects.count()
+    with pytest.raises(ValidationError) as caught:
+        services.create_custom_item(
+            thesis=team.thesis,
+            user=team.student,
+            label="Pièce hors bornes fictive",
+            section=Section.ACADEMIC,
+            validator_roles=[D],
+            default_level=ConfidentialityLevel.CONFIDENTIAL,
+            mandatory=True,
+            attachment_required=False,
+            due_date=day,
+        )
+    assert caught.value.code == code
+    assert not RequiredItem.objects.filter(label="Pièce hors bornes fictive").exists()
+    assert AuditEvent.objects.count() == events
+
+
+def test_a_custom_item_may_still_be_created_without_a_due_date(team: SimpleNamespace) -> None:
+    item = services.create_custom_item(
+        thesis=team.thesis,
+        user=team.student,
+        label="Pièce sans échéance fictive",
+        section=Section.ACADEMIC,
+        validator_roles=[D],
+        default_level=ConfidentialityLevel.CONFIDENTIAL,
+        mandatory=True,
+        attachment_required=False,
+        due_date=None,
+    )
+    assert item.due_date is None
+
+
+def test_every_due_date_entry_goes_through_one_control() -> None:
+    """Every service receiving a due date calls _check_bounds, and no other code of
+    the module compares a date with the thesis bounds."""
+    import ast
+    import inspect
+
+    tree = ast.parse(inspect.getsource(services))
+    entries = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.FunctionDef) or node.name == "_check_bounds":
+            continue
+        params = {a.arg for a in [*node.args.args, *node.args.kwonlyargs]}
+        if "due_date" in params:
+            entries.append(node.name)
+            calls = {
+                n.func.id
+                for n in ast.walk(node)
+                if isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
+            }
+            assert "_check_bounds" in calls, node.name
+        for attr in ast.walk(node):
+            if isinstance(attr, ast.Attribute) and attr.attr in {
+                "cifre_start_date",
+                "planned_end_date",
+            }:
+                raise AssertionError(f"{node.name} compares with the thesis bounds itself")
+    assert {"create_custom_item", "update_due_date", "propose_due_date"} <= set(entries)

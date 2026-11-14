@@ -369,3 +369,63 @@ def test_a_rejected_two_party_item_shows_the_cancelled_approval(team: SimpleName
     assert "Approbations annulées" in html
     assert 'class="approvals"' not in html
     assert "Vous avez approuvé ce dépôt" not in html
+
+
+# --------------------------------------------------------------------------- forged reopen reason
+
+
+def _validated_by_tutor(team: SimpleNamespace) -> RequiredItem:
+    item = _item(team, "employment_contract")
+    services.submit(item=item, user=team.student)
+    services.approve(item=item, user=team.tutor)
+    return item
+
+
+def test_a_forged_validator_reason_is_an_audited_403(team: SimpleNamespace) -> None:
+    item = _validated_by_tutor(team)
+    client = _mfa(team.student)  # reopening asks a second factor of the student too
+    events = AuditEvent.objects.count()
+    data = {"reason": Reason.WRONG_DOCUMENT.value, "comment": "Fictif QWERTY"}
+    response = client.post(_url("reopen", team, item), data, headers=HX)
+    assert response.status_code == 403
+    assert _item(team, "employment_contract").status == "VALIDATED"
+    [event] = AuditEvent.objects.order_by("seq")[events:]
+    assert event.action == "ADMIN_ITEM_ACCESS_DENIED"
+    assert event.details_json == {
+        "operation": "reopen",
+        "reason": "reason_not_allowed",
+        "attempted_reason": "WRONG_DOCUMENT",
+    }
+    assert "QWERTY" not in str(event.details_json)
+
+
+@pytest.mark.parametrize("reason", ["NONSENSE", "", "wrong_document"])
+def test_an_unknown_reopen_reason_is_a_400_without_audit(
+    team: SimpleNamespace, reason: str
+) -> None:
+    item = _validated_by_tutor(team)
+    client = _mfa(team.student)
+    events = AuditEvent.objects.count()
+    response = client.post(_url("reopen", team, item), {"reason": reason}, headers=HX)
+    assert response.status_code == 400
+    assert AuditEvent.objects.count() == events
+    assert _item(team, "employment_contract").status == "VALIDATED"
+
+
+# --------------------------------------------------------------------------- custom item creation
+
+
+@pytest.mark.parametrize("due", ["2026-02-28", "2029-03-01"])
+def test_a_custom_item_is_not_created_outside_the_thesis(team: SimpleNamespace, due: str) -> None:
+    data = {
+        "label": "Pièce hors bornes fictive",
+        "section": "ACADEMIC",
+        "validators": "DIRECTOR",
+        "default_level": "INTERNAL_LIRMM",
+        "mandatory": "on",
+        "due_date": due,
+    }
+    new_item = reverse("admin_file:new_item", kwargs={"thesis_id": team.thesis.pk})
+    response = _signed_in(team.student).post(new_item, data)
+    assert response.status_code == 400
+    assert not RequiredItem.objects.filter(label="Pièce hors bornes fictive").exists()
