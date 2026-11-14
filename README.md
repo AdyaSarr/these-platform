@@ -112,3 +112,23 @@ ce terminal en hériterait.
 
 Tant que l'hébergement n'est pas validé par ST et le LIRMM, n'utilise que des
 **données fictives**. Aucune trace de mesure, aucun résultat ST dans ce dépôt.
+
+## Démonstration sur un poste local
+
+Une base séparée (`<base de DATABASE_URL>_demo`, coffre `var/vault-demo`) reçoit
+une thèse de démonstration entièrement fictive, écrite par les services comme le
+ferait un vrai usage (`apps/demo/scenario.py`). La base de dev n'est jamais touchée.
+
+```bash
+docker compose up -d db redis
+scripts/demo_reset.sh            # montre ce qui sera supprimé, demande « oui »
+DJANGO_SETTINGS_MODULE=config.settings.demo uv run python manage.py runserver
+```
+
+Le script supprime puis recrée la base `_demo`, `var/vault-demo` et
+`var/demo-audit`, lance `migrate` puis `demo_seed`, exporte la clé publique et
+un point de contrôle dans `var/demo-audit/`, puis vérifie le journal avec
+`audit_verify`. À la fin, il affiche **une seule fois** un lien par personne :
+chacune choisit son mot de passe, se connecte, puis enrôle son second facteur.
+Ensuite, « Mot de passe oublié » fonctionne normalement. Pour recommencer, on
+relance le script : `demo_seed` refuse de s'exécuter sur une base non vide.
