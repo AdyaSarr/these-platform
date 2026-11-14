@@ -10,7 +10,7 @@ from __future__ import annotations
 import uuid
 from collections.abc import Mapping
 from types import MappingProxyType
-from typing import ClassVar
+from typing import Any, ClassVar
 
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
@@ -65,6 +65,39 @@ class Reason(models.TextChoices):
     EXPIRED = "EXPIRED", _("Expired")
     AMENDMENT = "AMENDMENT", _("Amendment")
     OTHER = "OTHER", _("Other")
+
+
+class DueDateReason(models.TextChoices):
+    """Why the student proposes another due date (closed list; the code is audited)."""
+
+    WAITING_SIGNATURE = "WAITING_SIGNATURE", _("Waiting for a signature")
+    WAITING_THIRD_PARTY = (
+        "WAITING_THIRD_PARTY",
+        _("Waiting for a third party (ANRT, doctoral school, company)"),
+    )
+    ADMINISTRATIVE_DELAY = "ADMINISTRATIVE_DELAY", _("Administrative delay")
+    AMENDMENT = "AMENDMENT", _("Amendment in progress")
+    OTHER = "OTHER", _("Other")
+
+
+class HistoryError(Exception):
+    """A history row (reopening, decided due-date proposal) is never modified or deleted."""
+
+
+class _HistoryQuerySet(models.QuerySet[Any]):
+    """No bulk update or delete of a history (tests/test_histories.py)."""
+
+    def update(self, **kwargs: Any) -> int:
+        raise HistoryError("a history is never updated in bulk")
+
+    def delete(self) -> tuple[int, dict[str, int]]:
+        raise HistoryError("a history is never deleted")
+
+    def bulk_update(self, *args: Any, **kwargs: Any) -> int:
+        raise HistoryError("a history is never updated in bulk")
+
+    def _raw_delete(self, *args: Any, **kwargs: Any) -> int:
+        raise HistoryError("a history is never deleted")
 
 
 class RequiredItem(TimeStampedModel):
@@ -128,6 +161,13 @@ class RequiredItem(TimeStampedModel):
         ordering: ClassVar[list[str]] = ["thesis", "due_date", "code"]
         constraints: ClassVar[list[models.BaseConstraint]] = [
             models.UniqueConstraint(fields=["thesis", "code"], name="admin_file_item_code_unique"),
+            # A mandatory catalogue item always has a due date (custom items: the
+            # student's rule); existing rows filled in by migration 0004.
+            models.CheckConstraint(
+                condition=~(Q(code__regex=CATALOGUE_CODE_REGEX) & Q(mandatory=True))
+                | Q(due_date__isnull=False),
+                name="admin_file_item_catalogue_due_date",
+            ),
             models.CheckConstraint(
                 condition=(Q(code__regex=CATALOGUE_CODE_REGEX) & Q(label=""))
                 | (Q(code__regex=CUSTOM_CODE_REGEX) & ~Q(label="")),
@@ -278,3 +318,203 @@ class ReminderLog(TimeStampedModel):
 
     def __str__(self) -> str:
         return f"reminder {self.pk}"
+
+
+# Spelled out (not .values): a constraint must not change when an enum does.
+_PROPOSAL_STATUSES = ["PENDING", "ACCEPTED", "REFUSED", "WITHDRAWN", "SUPERSEDED"]
+_NOTIFICATION_KINDS = ["REOPENED", "DUE_PROPOSED", "DUE_ACCEPTED", "DUE_REFUSED", "DUE_CHANGED"]
+
+
+class ItemReopening(TimeStampedModel):
+    """One reopened cycle of an item: who, when, why, and when it had been validated.
+
+    History: written once by services.reopen(), never modified nor deleted.
+    """
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    item = models.ForeignKey(
+        RequiredItem, on_delete=models.PROTECT, related_name="reopenings", editable=False
+    )
+    cycle = models.PositiveIntegerField(editable=False)
+    reopened_by = models.ForeignKey(
+        "accounts.User", on_delete=models.PROTECT, related_name="+", editable=False
+    )
+    reason_code = models.CharField(max_length=20, choices=Reason.choices, editable=False)
+    reason_comment = models.CharField(max_length=280, blank=True, editable=False)
+    validated_at = models.DateTimeField(editable=False)
+
+    objects = _HistoryQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = _("reopening")
+        verbose_name_plural = _("reopenings")
+        ordering: ClassVar[list[str]] = ["item", "cycle"]
+        constraints: ClassVar[list[models.BaseConstraint]] = [
+            models.UniqueConstraint(fields=["item", "cycle"], name="admin_file_reopening_once"),
+            models.CheckConstraint(condition=Q(cycle__gte=1), name="admin_file_reopening_cycle"),
+            models.CheckConstraint(
+                condition=Q(reason_code__in=Reason.values), name="admin_file_reopening_reason"
+            ),
+        ]
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        if not self._state.adding:
+            raise HistoryError("a reopening is never modified")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args: Any, **kwargs: Any) -> tuple[int, dict[str, int]]:
+        raise HistoryError("a reopening is never deleted")
+
+    def __str__(self) -> str:
+        return f"reopening {self.pk}"
+
+
+class DueDateProposal(TimeStampedModel):
+    """A due date proposed by the student for a catalogue item, decided by a validator.
+
+    PENDING is changed once (accepted, refused, withdrawn, superseded by a direct
+    change), by the services, on the locked row; a decided proposal is history:
+    never modified, and no proposal is ever deleted. The comment is clear text
+    (warned on the form), never in the audit log.
+    """
+
+    class Status(models.TextChoices):
+        PENDING = "PENDING", _("Pending")
+        ACCEPTED = "ACCEPTED", _("Accepted")
+        REFUSED = "REFUSED", _("Refused")
+        WITHDRAWN = "WITHDRAWN", _("Withdrawn")
+        SUPERSEDED = "SUPERSEDED", _("Superseded")
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    item = models.ForeignKey(
+        RequiredItem, on_delete=models.PROTECT, related_name="due_date_proposals", editable=False
+    )
+    proposed_by = models.ForeignKey(
+        "accounts.User", on_delete=models.PROTECT, related_name="+", editable=False
+    )
+    from_date = models.DateField(null=True, editable=False)  # the due date when proposed
+    to_date = models.DateField(editable=False)
+    reason_code = models.CharField(max_length=30, choices=DueDateReason.choices, editable=False)
+    comment = models.CharField(max_length=280, blank=True, editable=False)
+    status = models.CharField(
+        max_length=12, choices=Status.choices, default=Status.PENDING, editable=False
+    )
+    decided_by = models.ForeignKey(
+        "accounts.User", on_delete=models.PROTECT, null=True, related_name="+", editable=False
+    )
+    decided_at = models.DateTimeField(null=True, editable=False)
+
+    objects = _HistoryQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = _("due-date proposal")
+        verbose_name_plural = _("due-date proposals")
+        ordering: ClassVar[list[str]] = ["item", "created_at"]
+        constraints: ClassVar[list[models.BaseConstraint]] = [
+            models.UniqueConstraint(
+                fields=["item"], condition=Q(status="PENDING"), name="admin_file_proposal_pending"
+            ),
+            models.CheckConstraint(
+                condition=Q(status__in=_PROPOSAL_STATUSES), name="admin_file_proposal_status"
+            ),
+            models.CheckConstraint(
+                condition=Q(reason_code__in=DueDateReason.values),
+                name="admin_file_proposal_reason",
+            ),
+            models.CheckConstraint(
+                condition=(
+                    Q(status="PENDING") & Q(decided_at__isnull=True) & Q(decided_by__isnull=True)
+                )
+                | (
+                    Q(status__in=["ACCEPTED", "REFUSED", "SUPERSEDED"])
+                    & Q(decided_at__isnull=False)
+                    & Q(decided_by__isnull=False)
+                )
+                | (
+                    Q(status="WITHDRAWN") & Q(decided_at__isnull=False) & Q(decided_by__isnull=True)
+                ),
+                name="admin_file_proposal_decision",
+            ),
+            models.CheckConstraint(
+                condition=Q(decided_by__isnull=True) | ~Q(decided_by=F("proposed_by")),
+                name="admin_file_proposal_not_self_decided",
+            ),
+        ]
+
+    @classmethod
+    def from_db(cls, db: Any, field_names: Any, values: Any) -> DueDateProposal:
+        instance = super().from_db(db, field_names, values)
+        instance._stored_status = instance.__dict__.get("status")
+        return instance
+
+    def refresh_from_db(self, *args: Any, **kwargs: Any) -> None:
+        super().refresh_from_db(*args, **kwargs)
+        self._stored_status = self.status
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        stored = getattr(self, "_stored_status", None)
+        if not self._state.adding and stored != self.Status.PENDING:
+            raise HistoryError("a decided due-date proposal is never modified")
+        super().save(*args, **kwargs)
+        self._stored_status = self.status
+
+    def delete(self, *args: Any, **kwargs: Any) -> tuple[int, dict[str, int]]:
+        raise HistoryError("a due-date proposal is never deleted")
+
+    def __str__(self) -> str:
+        # Never the comment: str() ends up in admin pages, logs and error reports.
+        return f"due-date proposal {self.pk}"
+
+
+class ItemNotification(TimeStampedModel):
+    """One e-mail about an event of an item (reopening, due date): a link only.
+
+    The reminders' mechanism (ReminderLog), for events: queued after commit with
+    its id only, sent once (the task locks the row), retried by the daily run up
+    to reminders.MAX_ATTEMPTS. ``event_id`` names the event (a reopening, a
+    proposal, or one direct change of the due date).
+    """
+
+    class Kind(models.TextChoices):
+        REOPENED = "REOPENED", _("Item reopened")
+        DUE_PROPOSED = "DUE_PROPOSED", _("Due date proposed")
+        DUE_ACCEPTED = "DUE_ACCEPTED", _("Proposed due date accepted")
+        DUE_REFUSED = "DUE_REFUSED", _("Proposed due date refused")
+        DUE_CHANGED = "DUE_CHANGED", _("Due date changed")
+
+    Status = ReminderLog.Status
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    item = models.ForeignKey(
+        RequiredItem, on_delete=models.PROTECT, related_name="notifications", editable=False
+    )
+    kind = models.CharField(max_length=15, choices=Kind.choices, editable=False)
+    event_id = models.UUIDField(editable=False)
+    recipient = models.ForeignKey(
+        "accounts.User", on_delete=models.PROTECT, related_name="+", editable=False
+    )
+    status = models.CharField(
+        max_length=10, choices=Status.choices, default=Status.PENDING, editable=False
+    )
+    attempts = models.PositiveSmallIntegerField(default=0, editable=False)
+    sent_at = models.DateTimeField(null=True, editable=False)
+
+    class Meta:
+        verbose_name = _("item notification")
+        verbose_name_plural = _("item notifications")
+        constraints: ClassVar[list[models.BaseConstraint]] = [
+            models.UniqueConstraint(
+                fields=["kind", "event_id", "recipient"], name="admin_file_notification_once"
+            ),
+            models.CheckConstraint(
+                condition=Q(kind__in=_NOTIFICATION_KINDS), name="admin_file_notification_kind"
+            ),
+            models.CheckConstraint(
+                condition=(Q(status="SENT") & Q(sent_at__isnull=False))
+                | (~Q(status="SENT") & Q(sent_at__isnull=True)),
+                name="admin_file_notification_sent_at",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"item notification {self.pk}"
