@@ -50,6 +50,10 @@ class InvalidInvitationError(Exception):
     """Unknown, expired, used, revoked or unsent invitation. Deliberately uninformative."""
 
 
+class ThesisCreationError(Exception):
+    """create_thesis refused (vault not initialized, inconsistent dates). Nothing written."""
+
+
 _MSG_SAME_ROLE = gettext_noop("This person already holds this role on the thesis.")
 _MSG_CSI = gettext_noop("A CSI member cannot also be the PhD student or part of the supervision.")
 
@@ -325,6 +329,56 @@ def create_invitation(
         request=request,
         enqueue=True,
     )
+
+
+def create_thesis(
+    *,
+    title: str,
+    cifre_start: dt.date,
+    first_enrollment: dt.date,
+    planned_end: dt.date,
+    student_email: str,
+    student_organization: str,
+    student_organization_kind: str,
+) -> Invitation:
+    """Create a thesis with its administrative file, invite its PhD student and send
+    the e-mail synchronously (no Celery worker needed). Returns the invitation;
+    the caller checks ``email_status``. Callers: `manage.py create_thesis`, demo_seed.
+
+    One transaction for the thesis, its file and the invitation: an invalid address
+    rolls everything back. The e-mail is sent after the commit.
+    """
+    # Local import: admin_file depends on accounts, not the other way at load time.
+    from apps.admin_file.services import seed_items
+    from apps.vault.services import vault_problems
+
+    # The student's first sign-in seals a TOTP secret with the vault: it must be
+    # initialized before any invitation goes out.
+    problems = vault_problems()
+    if problems:
+        raise ThesisCreationError(
+            "The vault is not initialized (" + "; ".join(problems) + "): "
+            "run `manage.py vault_init` first."
+        )
+    if planned_end <= cifre_start:
+        raise ThesisCreationError("The planned end must be after the CIFRE start.")
+    with transaction.atomic():
+        org, _created = Organization.objects.get_or_create(
+            name=student_organization, defaults={"kind": student_organization_kind}
+        )
+        thesis = Thesis.objects.create(
+            title=title,
+            cifre_start_date=cifre_start,
+            first_enrollment_date=first_enrollment,
+            planned_end_date=planned_end,
+        )
+        audit(AuditAction.THESIS_CREATED, obj=thesis)
+        # The administrative file (M3): catalogue items, in the same transaction.
+        seed_items(thesis)
+        inv = invite_phd_student(thesis=thesis, email=student_email, organization=org)
+    tasks.send_invitation_email(str(inv.pk))
+    inv.refresh_from_db()
+    return inv
 
 
 def invite_phd_student(*, thesis: Thesis, email: str, organization: Organization) -> Invitation:
