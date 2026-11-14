@@ -38,7 +38,20 @@ def venue_of(team: SimpleNamespace, **kw: Any) -> Venue:
     return services.create_venue(**fields)
 
 
+def default_edition(team: SimpleNamespace) -> Edition:
+    """The fictitious SFCA 2027 of the thesis, created once."""
+    existing = Edition.objects.filter(
+        thesis=team.thesis, venue__acronym="SFCA", venue__kind="CONFERENCE", year=2027
+    ).first()
+    if existing is not None:
+        return existing
+    venue = Venue.objects.filter(thesis=team.thesis, acronym="SFCA", kind="CONFERENCE").first()
+    return edition_of(team, venue=venue or venue_of(team))
+
+
 def edition_of(team: SimpleNamespace, venue: Venue | None = None, **kw: Any) -> Edition:
+    if venue is None:
+        venue = Venue.objects.filter(thesis=team.thesis, acronym="SFCA", kind="CONFERENCE").first()
     fields: dict[str, Any] = {
         "venue": venue or venue_of(team),
         "user": team.student,
@@ -64,12 +77,17 @@ def deadline_of(
     )
 
 
-def submission_of(team: SimpleNamespace, edition: Edition | None = None, **kw: Any) -> Submission:
-    edition = edition or edition_of(team)
+_DEFAULT: Any = object()
+
+
+def submission_of(team: SimpleNamespace, edition: Any = _DEFAULT, **kw: Any) -> Submission:
+    """``edition=None`` for a journal (give ``venue``); the SFCA 2027 by default."""
+    if edition is _DEFAULT:
+        edition = default_edition(team)
     fields: dict[str, Any] = {
         "thesis": team.thesis,
         "user": team.student,
-        "venue": edition.venue,
+        "venue": edition.venue if edition is not None else None,
         "edition": edition,
         "title": "Attaque fictive sur un circuit fictif",
         "abstract": "Résumé fictif.",

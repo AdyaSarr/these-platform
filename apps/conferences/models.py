@@ -365,6 +365,9 @@ class StApproval(TimeStampedModel):
     Reason = RefusalReason
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    thesis = models.ForeignKey(
+        "accounts.Thesis", on_delete=models.PROTECT, related_name="+", editable=False
+    )
     submission = models.ForeignKey(
         Submission, on_delete=models.PROTECT, related_name="approvals", editable=False
     )
@@ -454,6 +457,9 @@ class Preprint(TimeStampedModel):
     Platform = PreprintPlatform
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    thesis = models.ForeignKey(
+        "accounts.Thesis", on_delete=models.PROTECT, related_name="+", editable=False
+    )
     submission = models.ForeignKey(
         Submission, on_delete=models.PROTECT, related_name="preprints", editable=False
     )

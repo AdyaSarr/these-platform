@@ -178,6 +178,7 @@ def test_authors_and_documents_once(team: SimpleNamespace) -> None:
 
 def _approval(team: SimpleNamespace, submission: Submission, **kw: Any) -> StApproval:
     fields: dict[str, Any] = {
+        "thesis": team.thesis,
         "submission": submission,
         "purpose": "SUBMISSION",
         "version": kw.pop("version", None) or _version(team),
@@ -251,11 +252,14 @@ def test_a_decided_approval_is_history(team: SimpleNamespace) -> None:
 def test_preprints_are_history(team: SimpleNamespace) -> None:
     submission = _submission(team)
     preprint = Preprint.objects.create(
-        submission=submission, platform="EPRINT", posted_on=dt.date(2027, 1, 9)
+        thesis=team.thesis, submission=submission, platform="EPRINT", posted_on=dt.date(2027, 1, 9)
     )
     _refused(
         lambda: Preprint.objects.create(
-            submission=submission, platform="BOGUS", posted_on=dt.date(2027, 1, 9)
+            thesis=team.thesis,
+            submission=submission,
+            platform="BOGUS",
+            posted_on=dt.date(2027, 1, 9),
         )
     )
     with pytest.raises(HistoryError):
