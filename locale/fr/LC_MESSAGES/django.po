@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-13 21:33+0100\n"
+"POT-Creation-Date: 2026-11-14 14:56+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -755,7 +755,7 @@ msgstr ""
 msgid "The item has changed, reload the page."
 msgstr "La pièce a changé, rechargez la page."
 
-#: apps/admin_file/views.py:174 apps/objectives/views.py:321
+#: apps/admin_file/views.py:174 apps/objectives/views.py:327
 msgid "Saved."
 msgstr "Enregistré."
 
@@ -814,6 +814,16 @@ msgstr "modifié le"
 #: apps/core/models.py:23
 msgid "created by"
 msgstr "créé par"
+
+#: apps/core/month_abbreviations.py:13
+msgctxt "abbrev. month"
+msgid "Jan."
+msgstr "janv."
+
+#: apps/core/month_abbreviations.py:14
+msgctxt "abbrev. month"
+msgid "Feb."
+msgstr "févr."
 
 #: apps/objectives/forms.py:18
 msgid ""
@@ -1124,46 +1134,46 @@ msgid "This document cannot be attached."
 msgstr "Ce document ne peut pas être joint."
 
 #
-#: apps/objectives/views.py:258
+#: apps/objectives/views.py:264
 msgid "Objective created."
 msgstr "Objectif créé."
 
 #
-#: apps/objectives/views.py:305
+#: apps/objectives/views.py:311
 msgid "Objective saved."
 msgstr "Objectif enregistré."
 
 #
-#: apps/objectives/views.py:353
+#: apps/objectives/views.py:359
 msgid "Objective dropped."
 msgstr "Objectif abandonné."
 
 #
-#: apps/objectives/views.py:368
+#: apps/objectives/views.py:374
 msgid "Objective approved."
 msgstr "Objectif approuvé."
 
 #
-#: apps/objectives/views.py:379
+#: apps/objectives/views.py:385
 msgid "Changes acknowledged."
 msgstr "Prise de connaissance enregistrée."
 
 #
-#: apps/objectives/views.py:390
+#: apps/objectives/views.py:396
 msgid "Confidentiality changed."
 msgstr "Confidentialité modifiée."
 
-#: apps/objectives/views.py:420
+#: apps/objectives/views.py:426
 msgid "Unknown year."
 msgstr "Année inconnue."
 
-#: apps/objectives/views.py:429
+#: apps/objectives/views.py:435
 #, python-format
 msgid "%(count)d objective(s) approved."
 msgstr "%(count)d objectif(s) approuvé(s)."
 
 #
-#: apps/objectives/views.py:470
+#: apps/objectives/views.py:476
 msgid "Progress recorded."
 msgstr "Avancement enregistré."
 

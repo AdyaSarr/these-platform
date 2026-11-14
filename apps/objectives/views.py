@@ -15,6 +15,7 @@ generic: an objective's title never leaves the body of the page that shows it.
 
 from __future__ import annotations
 
+import datetime as dt
 from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any
@@ -63,6 +64,13 @@ def _is_htmx(request: HttpRequest) -> bool:
 
 def _status(exc: ValidationError) -> int:
     return 409 if getattr(exc, "code", None) in CONFLICTS else 400
+
+
+def month_label(day: dt.date) -> str:
+    """« janv. 2026 »: Django's localized month abbreviation (format "N"), whose French
+    translations for January and February are completed in our catalogue
+    (apps/core/month_abbreviations.py)."""
+    return formats.date_format(day, "N Y")
 
 
 @dataclass(frozen=True)
@@ -198,9 +206,7 @@ class DashboardView(_Mixin, View):
     def _render(self, year: ThesisYear, *, status: int = 200, error: str = "") -> HttpResponse:
         user = _user(self.request)
         data = services.dashboard(user, self.thesis, year)
-        series = [
-            (formats.date_format(point.month, "M Y"), point.value) for point in data.stats.monthly
-        ]
+        series = [(month_label(point.month), point.value) for point in data.stats.monthly]
         context = {
             "thesis": self.thesis,
             "data": data,
