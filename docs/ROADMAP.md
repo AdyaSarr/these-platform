@@ -64,3 +64,12 @@ Idées validées, sans module ni date pour l'instant.
     thèse, RGPD) ; à l'échéance, purge explicite (voir plus haut) des documents
     et des textes scellés, le journal d'audit et ses points de contrôle restant
     conservés et vérifiables.
+
+- **Vérifier en vrai les cookies `SameSite=Strict`** (avant la mise en service,
+  sur l'HTTPS de recette) : un clic depuis Mail sur Safari (macOS) et sur iPhone
+  doit ouvrir un **lien d'invitation** (POST « Continuer » accepté) et un **lien de
+  notification** (rappel, résumé hebdomadaire : connexion puis retour sur la page
+  demandée), avec les cookies CSRF et de session en `SameSite=Strict`. Le
+  2026-11-14, un échec « CSRF cookie not set » dans Safari venait du réglage
+  « Bloquer tous les cookies », pas de la plateforme : la piste `SameSite` n'a pas
+  été démontrée, et la prod n'a pas été changée.
