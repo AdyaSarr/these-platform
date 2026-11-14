@@ -13,6 +13,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 
+from .members import is_internal_member
 from .models import MeetingNotification
 
 logger = logging.getLogger(__name__)
@@ -22,9 +23,11 @@ logger = logging.getLogger(__name__)
 def send_meeting_notification(notification_id: str) -> None:
     """E-mail one meeting notification: a link to the meeting, nothing else (rule 7).
 
-    The row is locked: two queued copies send it once. No automatic retry: the
-    daily run queues a FAILED one again, up to notifications.MAX_ATTEMPTS. Logs
-    hold the notification id only, never a title, an address or the SMTP reply.
+    The row is locked: two queued copies send it once. The recipient must still
+    be an active internal member of the thesis at send time (SKIPPED otherwise).
+    No automatic retry: the daily run queues a FAILED one again, up to
+    notifications.MAX_ATTEMPTS. Logs hold the notification id only, never a
+    title, an address or the SMTP reply.
     """
     from .notifications import MAX_ATTEMPTS
 
@@ -37,10 +40,14 @@ def send_meeting_notification(notification_id: str) -> None:
         )
         if (
             row is None
-            or row.status == MeetingNotification.Status.SENT
+            or row.status in (MeetingNotification.Status.SENT, MeetingNotification.Status.SKIPPED)
             or row.attempts >= MAX_ATTEMPTS
-            or not row.recipient.is_active
         ):
+            return
+        if not is_internal_member(row.recipient, row.meeting.thesis_id):
+            # The membership ended (or the account was deactivated) after queueing.
+            row.status = MeetingNotification.Status.SKIPPED
+            row.save(update_fields=["status", "updated_at"])
             return
         url = settings.SITE_URL + reverse(
             "meetings:detail",

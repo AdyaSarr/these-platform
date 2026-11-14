@@ -40,7 +40,7 @@ from django.db.models import Q, QuerySet
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
-from apps.accounts.models import Membership, Thesis, User
+from apps.accounts.models import Thesis, User
 from apps.accounts.permissions import (
     LEVEL_ROLES,
     Action,
@@ -48,7 +48,6 @@ from apps.accounts.permissions import (
     can_access_document,
     roles_of,
 )
-from apps.accounts.roles import Role
 from apps.core.confidentiality import ConfidentialityLevel
 from apps.objectives.models import Objective
 from apps.objectives.models import Status as ObjectiveStatus
@@ -59,6 +58,7 @@ from apps.vault.errors import ReauthenticationRequiredError
 from apps.vault.models import Document
 
 from . import timing
+from .members import INTERNAL_ROLES, internal_member_ids
 from .models import (
     ActionItem,
     Attendee,
@@ -71,9 +71,6 @@ from .notifications import Kind as Notify
 from .notifications import notify
 
 OPEN_THESIS = (Thesis.Status.SETUP, Thesis.Status.ACTIVE)
-INTERNAL_ROLES = frozenset(
-    {Role.PHD_STUDENT, Role.DIRECTOR, Role.CO_SUPERVISOR, Role.INDUSTRIAL_TUTOR}
-)
 MEETING_TEXTS = ("title", "agenda", "minutes", "location_detail", "visio_link")
 FRAME_FIELDS = ("kind", "presentation_venue", "starts_at", "duration_minutes", "location")
 EDITABLE_TEXTS = ("title", "location_detail", "visio_link")
@@ -312,19 +309,17 @@ def _sealing(user: User, thesis: Thesis, level: ConfidentialityLevel) -> Any:
     return vault.sealing(user=user, thesis=thesis, level=level, action=Action.MEETING_WRITE)
 
 
-def internal_members(thesis: Thesis) -> list[User]:
-    """Active users holding an internal role on ``thesis`` (attendees, assignees)."""
-    ids = (
-        Membership.objects.active()
-        .filter(thesis=thesis, role__in=[r.value for r in INTERNAL_ROLES], user__is_active=True)
-        .values_list("user_id", flat=True)
-    )
-    return list(User.objects.filter(pk__in=list(ids)).order_by("last_name", "first_name", "email"))
-
-
 def _attendee_users(meeting: Meeting) -> list[User]:
+    """Every attendance row's user, current member or not (history)."""
     ids = Attendee.objects.filter(meeting=meeting).values_list("user_id", flat=True)
     return list(User.objects.filter(pk__in=list(ids)).order_by("last_name", "email"))
+
+
+def _current_attendees(meeting: Meeting) -> list[User]:
+    """The attendees who are still active internal members of the thesis: the only
+    ones who count (level check, duplicate, notifications, attendee edits)."""
+    members = internal_member_ids(meeting.thesis_id)
+    return [u for u in _attendee_users(meeting) if u.pk in members]
 
 
 # =========================================================================== reading
@@ -363,7 +358,8 @@ class ActionView:
 class MeetingDetail:
     meeting: Meeting
     texts: dict[str, Any]  # every MEETING_TEXTS name: str ("" if none) or RESTRICTED
-    attendees: list[User]
+    attendees: list[User]  # current members
+    former_attendees: list[User]  # attended, no longer a member (kept for the history)
     decisions: list[DecisionView]
     actions: list[ActionView]
     documents: list[Document]
@@ -421,11 +417,13 @@ def meeting_detail(user: User, meeting: Meeting) -> MeetingDetail:
     shown = [link for link in links if can_access_document(user, link.document)]
     marks, older = _marks(meeting)
     attendee = is_attendee(user, meeting)
+    everyone, current = _attendee_users(meeting), _current_attendees(meeting)
     today = timezone.localdate()
     return MeetingDetail(
         meeting=meeting,
         texts={name: opened.get((meeting.pk, name), "") for name in MEETING_TEXTS},
-        attendees=_attendee_users(meeting),
+        attendees=current,
+        former_attendees=[u for u in everyone if u.pk not in {c.pk for c in current}],
         decisions=[DecisionView(d, opened.get((d.pk, "text"), "")) for d in decisions],
         actions=[
             ActionView(a, opened.get((a.pk, "title"), ""), _overdue(a, today)) for a in actions
@@ -699,7 +697,7 @@ def duplicate_meeting(*, meeting: Meeting, user: User, starts_at: dt.datetime) -
     )
     if title is vault.RESTRICTED:
         raise _deny(user, "duplicate", "unreadable_level", obj=source)
-    people = _check_attendees(thesis, _attendee_users(source), level)
+    people = _check_attendees(thesis, _current_attendees(source), level)
     return _create(
         thesis=thesis,
         user=user,
@@ -784,7 +782,7 @@ def update_meeting(*, meeting: Meeting, user: User, changes: Mapping[str, Any]) 
             locked.ics_sequence += 1
         locked.save()
         if NOTIFIED_FIELDS & set(changed):
-            notify(locked, Notify.CHANGED, uuid.uuid4(), _attendee_users(locked), exclude=user)
+            notify(locked, Notify.CHANGED, uuid.uuid4(), _current_attendees(locked), exclude=user)
         audit(AuditAction.MEETING_UPDATED, actor=user, obj=locked, fields=changed)
     return changed
 
@@ -807,7 +805,7 @@ def change_level(
     previous = _level(fresh)
     if level == previous:
         return fresh
-    _check_attendees(thesis, _attendee_users(fresh), level)
+    _check_attendees(thesis, _current_attendees(fresh), level)
     with _sealing(user, thesis, level) as sealer:
         locked = _locked(fresh)
         if locked.level != previous.value:
@@ -841,7 +839,8 @@ def set_attendees(*, meeting: Meeting, user: User, attendees: Iterable[User]) ->
         locked = _locked(fresh)
         if locked.level != fresh.level:
             raise _stale()
-        before = set(Attendee.objects.filter(meeting=locked).values_list("user_id", flat=True))
+        # Former members' rows stay (history): only current members are managed here.
+        before = {u.pk for u in _current_attendees(locked)}
         after = {p.pk for p in people}
         Attendee.objects.filter(meeting=locked, user_id__in=before - after).delete()
         added = [p for p in people if p.pk not in before]
@@ -870,7 +869,7 @@ def cancel_meeting(*, meeting: Meeting, user: User) -> Meeting:
         locked.cancelled_at = timezone.now()
         locked.ics_sequence += 1
         locked.save()
-        notify(locked, Notify.CANCELLED, uuid.uuid4(), _attendee_users(locked), exclude=user)
+        notify(locked, Notify.CANCELLED, uuid.uuid4(), _current_attendees(locked), exclude=user)
         audit(AuditAction.MEETING_CANCELLED, actor=user, obj=locked)
     return locked
 
@@ -1004,7 +1003,7 @@ def save_minutes(*, meeting: Meeting, user: User, minutes: str, version: int) ->
         locked.minutes_updated_by = user
         locked.save()
         if locked.minutes_version == 1:
-            recipients = _attendee_users(locked)
+            recipients = _current_attendees(locked)
         else:
             marked = MinutesAcknowledgement.objects.filter(meeting=locked).values_list(
                 "user_id", flat=True
@@ -1145,62 +1144,6 @@ def add_action(
             objective_linked=linked is not None,
         )
     return action
-
-
-def edit_action(
-    *,
-    action: ActionItem,
-    user: User,
-    title: str,
-    assignee: User,
-    due_date: dt.date,
-    objective: Objective | None,
-) -> list[str]:
-    """A writer of the meeting changes an action; returns the changed field names."""
-    meeting = Meeting.objects.get(pk=action.meeting_id)
-    thesis = _require_writer(user, meeting, "edit_action")
-    _check_open(thesis)
-    _not_cancelled(meeting)
-    fresh = ActionItem.objects.get(pk=action.pk)
-    new_title = _clean_text(title, "action")
-    new_assignee = _check_assignee(thesis, assignee)
-    new_due = _check_due(thesis, due_date)
-    new_objective = _check_objective(thesis, objective)
-    current_title = vault.open_texts(
-        user, thesis, [(fresh, "title")], action=Action.MEETING_READ
-    ).get((fresh.pk, "title"), "")
-    if current_title is vault.RESTRICTED:
-        raise _deny(user, "edit_action", "unreadable_level", obj=meeting)
-    changed = []
-    if new_title != current_title:
-        changed.append("title")
-    if new_assignee.pk != fresh.assignee_id:
-        changed.append("assignee")
-    if new_due != fresh.due_date:
-        changed.append("due_date")
-    if (new_objective.pk if new_objective else None) != fresh.objective_id:
-        changed.append("objective")
-    if not changed:
-        return []
-    with _sealing(user, thesis, _level(meeting)) as sealer:
-        locked_meeting = _locked(meeting)
-        locked = ActionItem.objects.select_for_update().get(pk=fresh.pk)
-        if locked.updated_at != fresh.updated_at or locked_meeting.level != meeting.level:
-            raise _stale()
-        if "title" in changed:
-            sealer.seal(locked, "title", new_title)
-        locked.assignee = new_assignee
-        locked.due_date = new_due
-        locked.objective = new_objective
-        locked.save()
-        audit(
-            AuditAction.MEETING_ACTION_UPDATED,
-            actor=user,
-            obj=locked_meeting,
-            action_id=str(locked.pk),
-            fields=changed,
-        )
-    return changed
 
 
 def set_action_status(*, action: ActionItem, user: User, status: str) -> ActionItem:

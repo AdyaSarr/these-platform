@@ -161,7 +161,6 @@ class _Mixin(ThesisPermissionRequiredMixin):
         texts = {name: shown(value) for name, value in detail.texts.items()}
         readable = not texts["title"].restricted
         csi_pending = m.is_csi
-        names = {u.pk: u for u in detail.attendees}
         context = {
             "thesis": self.thesis,
             "meeting": m,
@@ -174,7 +173,7 @@ class _Mixin(ThesisPermissionRequiredMixin):
                 }
                 for u in detail.attendees
             ],
-            "other_marks": [(pk, kind) for pk, kind in detail.marks.items() if pk not in names],
+            "former_attendees": [{"user": u} for u in detail.former_attendees],
             "decisions": [(d.decision, shown(d.text)) for d in detail.decisions],
             "actions": [
                 {

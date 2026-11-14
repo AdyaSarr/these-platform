@@ -188,3 +188,14 @@ def test_a_change_of_role_keeps_the_attendance(team: SimpleNamespace) -> None:
     )
     assert MeetingNotification.objects.filter(recipient=team.co_supervisor, kind="CHANGED").exists()
     services.meeting_detail(team.co_supervisor, meeting)
+
+
+def test_the_page_lists_former_attendees_apart(team: SimpleNamespace) -> None:
+    meeting = meeting_of(team)
+    _removed(team)
+    client = Client()
+    client.force_login(team.student)
+    url = reverse("meetings:detail", kwargs={"thesis_id": team.thesis.pk, "meeting_id": meeting.pk})
+    html = client.get(url).content.decode()
+    assert "Anciens participants" in html
+    assert team.co_supervisor.get_full_name() in html.split("Anciens participants", 1)[1]

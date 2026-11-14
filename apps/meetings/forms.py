@@ -16,6 +16,7 @@ from apps.core.confidentiality import ConfidentialityLevel
 from apps.objectives.models import Objective
 
 from . import services, timing
+from .members import internal_members
 from .models import ActionItem, Meeting
 
 TEXT_WARNING = _(
@@ -44,7 +45,7 @@ def level_choices(user: User, thesis: Thesis) -> list[tuple[str, Any]]:
 
 def member_choices(thesis: Thesis) -> list[tuple[str, str]]:
     """Active internal members of the thesis (the possible attendees and assignees)."""
-    users = [u for u in services.internal_members(thesis)]
+    users = internal_members(thesis)
     return [(str(u.pk), u.get_full_name() or u.email) for u in users]
 
 

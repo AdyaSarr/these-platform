@@ -16,6 +16,7 @@ from django.db import transaction
 
 from apps.accounts.models import User
 
+from .members import internal_member_ids
 from .models import Meeting, MeetingNotification, NotificationKind
 
 Kind = MeetingNotification.Kind
@@ -37,10 +38,12 @@ def notify(
     *,
     exclude: User | None = None,
 ) -> int:
-    """Record and queue one notification per distinct active recipient; return how many."""
+    """Record and queue one notification per distinct recipient who is still an
+    active internal member of the meeting's thesis; return how many."""
     count = 0
+    members = internal_member_ids(meeting.thesis_id)  # never a former member
     for user in {u.pk: u for u in recipients}.values():
-        if not user.is_active or (exclude is not None and user.pk == exclude.pk):
+        if user.pk not in members or (exclude is not None and user.pk == exclude.pk):
             continue
         notification = MeetingNotification.objects.create(
             meeting=meeting, kind=kind, event_id=event_id, recipient=user

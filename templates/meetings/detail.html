@@ -39,6 +39,10 @@
       </li>
     {% endfor %}
   </ul>
+  {% if former_attendees %}
+  <p class="muted">{% translate "Former attendees, no longer members of the thesis:" %}
+    {% for row in former_attendees %}{{ row.user.get_full_name|default:row.user.email }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+  {% endif %}
 </section>
 
 <section aria-labelledby="agenda-title">

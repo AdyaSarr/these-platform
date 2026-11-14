@@ -342,6 +342,7 @@ class NotificationStatus(models.TextChoices):
     PENDING = "PENDING", _("Pending")
     SENT = "SENT", _("Sent")
     FAILED = "FAILED", _("Failed")
+    SKIPPED = "SKIPPED", _("Not sent: no longer a member")
 
 
 class MeetingNotification(TimeStampedModel):

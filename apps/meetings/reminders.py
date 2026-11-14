@@ -25,9 +25,9 @@ from django.utils import timezone
 
 from apps.accounts.models import Thesis, User
 
+from .members import internal_member_ids
 from .models import ActionItem, Meeting, MeetingNotification
 from .notifications import Kind, _queue, requeue_failed
-from .services import internal_members
 
 OPEN_THESIS = (Thesis.Status.SETUP, Thesis.Status.ACTIVE)
 # Fixed namespace of the reminders' event ids (uuid5): never change it, or every
@@ -82,7 +82,7 @@ def run(today: dt.date | None = None) -> RunResult:
         thesis__status__in=OPEN_THESIS,
     ).select_related("thesis")
     for meeting in meetings.order_by("starts_at", "pk"):
-        members = {u.pk for u in internal_members(meeting.thesis)}
+        members = internal_member_ids(meeting.thesis_id)
         attendees = User.objects.filter(
             pk__in=meeting.attendees.values_list("user_id", flat=True)
         ).order_by("pk")
@@ -96,7 +96,7 @@ def run(today: dt.date | None = None) -> RunResult:
         thesis__status__in=OPEN_THESIS,
     ).select_related("meeting", "thesis", "assignee")
     for action in actions.order_by("pk"):
-        if action.assignee_id in {u.pk for u in internal_members(action.thesis)}:
+        if action.assignee_id in internal_member_ids(action.thesis_id):
             overdue += _record_once(
                 action.meeting, Kind.ACTION_OVERDUE, overdue_event(action), action.assignee
             )
