@@ -163,53 +163,86 @@ Hors de M5a, rien n'est codé. À reprendre au plan de M5b :
 - Critère repris de la première fiche : un `GUEST` ne voit que la réunion à
   laquelle il est convié.
 
-### Partie de l'entretien CSI hors de la direction de thèse
+### Entretien du CSI : trois étapes, quatre textes
 
-**Source.** Le cahier des charges (`docs/specs/plateforme_these.tex`, tableau du
-cadre réglementaire, art. 13) résume l'arrêté du 25 mai 2016 modifié par l'arrêté
-du 26 août 2022 ainsi : « entretien annuel en trois temps : avancement, échange
-avec le doctorant seul, échange avec la direction seule ». **Le texte de l'arrêté
-n'est pas dans `docs/specs`** : la rédaction exacte de l'article 13
-(Légifrance, JORFTEXT000046228965) et la pratique de l'ED I2S (charte, guide du
-CSI) sont à vérifier par le développeur avant le plan de M5b. En particulier :
-le co-encadrant et le tuteur industriel font-ils partie de la « direction de
-thèse » pour le troisième temps ?
+**Source** : article 13 de l'arrêté du 25 mai 2016, modifié par l'arrêté du
+26 août 2022 (en vigueur depuis le 31 décembre 2022), texte officiel dans
+`docs/specs/arrete-2016-article-13.md`. Il dispose :
 
-**Besoin.** Le compte rendu de l'échange avec le doctorant seul n'est lisible ni
-par le directeur, ni par le co-encadrant, ni par le tuteur. Symétriquement,
-celui de l'échange avec la direction seule ne devrait pas être lisible par le
-doctorant. Aucun des quatre niveaux ne convient : `CONFIDENTIAL` ouvre au
-directeur et au tuteur, `INTERNAL_LIRMM` au directeur et au co-encadrant,
-`INTERNAL_ST` au tuteur, et le `CSI_MEMBER` ne lit que `PUBLIC`.
+> « Les entretiens sont organisés sous la forme de trois étapes distinctes :
+> présentation de l'avancement des travaux et discussions, entretien avec le
+> doctorant sans la direction de thèse, entretien avec la direction de thèse sans
+> le doctorant. »
 
-**Conception proposée : deux niveaux dédiés** (« audiences ») plutôt qu'un
-emplacement à part avec une règle propre.
+et, pour l'entretien avec le doctorant, que le comité « est particulièrement
+vigilant à repérer toute forme de conflit, de discrimination, de harcèlement
+moral ou sexuel ou d'agissement sexiste » et « transmet un rapport de
+l'entretien au directeur de l'école doctorale, au doctorant et au directeur de
+thèse ». Les membres du comité « ne participent pas à la direction du travail du
+doctorant ».
 
-| Niveau (code) | Lecteurs (`LEVEL_ROLES`) | Usage |
+**Qui lit quoi** (décision du développeur, 2026-11-14, `docs/decisions.md`) :
+
+| Texte | Lecteurs | Rédacteurs |
 |---|---|---|
-| `CSI_STUDENT_ONLY` (5) | `PHD_STUDENT`, `CSI_MEMBER` | échange avec le doctorant seul |
-| `CSI_DIRECTION_ONLY` (6) | `CSI_MEMBER`, `DIRECTOR` (+ selon la vérification ci-dessus) | échange avec la direction seule |
+| Partie 1 — présentation de l'avancement et discussion | niveau normal de la réunion (règles de M5a, CSI convié compris, M5b) | comme un compte rendu de M5a |
+| Partie 2 — entretien avec le doctorant sans la direction | **doctorant et membres du CSI** seulement | membres du CSI |
+| Partie 3 — entretien avec la direction sans le doctorant | **membres du CSI, directeur et co-encadrant** ; ni le doctorant, ni le tuteur | membres du CSI |
+| Rapport final du CSI | **doctorant et directeur** | membres du CSI |
 
-- Chaque niveau a **son propre domaine de KEK** (`LEVEL_TO_DOMAIN` est une table
-  explicite, codes figés : on ajoute, on ne renumérote pas ; `vault_init` crée la
-  version 1). Une DEK de ce compte rendu n'est jamais encapsulée par une KEK que
-  le chemin de lecture du directeur utilise.
-- **Refus par défaut structurel** : avec un emplacement scellé en `CONFIDENTIAL`
-  plus une restriction par emplacement, oublier la restriction (un nouvel appel à
-  `open_texts`, un export M8) ouvrirait le texte au directeur et au tuteur. Avec
-  un niveau dédié, la seule table `LEVEL_ROLES` décide, et toute la mécanique
-  existante (`can_access_level`, `RESTRICTED`, journal des lectures, rotation)
-  s'applique sans exception.
-- Ces niveaux sont **interdits partout ailleurs** : `CHECK` en base sur
-  `SealedText` (couple emplacement / niveau : seuls les emplacements dédiés du
-  compte rendu CSI, par exemple 0x0208 et 0x0209, les acceptent, et ces
-  emplacements n'acceptent qu'eux) ; listes de niveaux des formulaires (objectifs,
-  documents, réunions) inchangées ; `Document.confidentiality` refuse 5 et 6.
-- Rédaction par le `CSI_MEMBER` (membre rapporteur) ; lecture par le doctorant
-  (partie « doctorant seul ») ; un CSI expiré perd la lecture (adhésion active
-  exigée), le doctorant la garde. Aucune approbation par la direction.
-- Limite à écrire dans `SECURITY.md` : c'est un contrôle d'accès du serveur, pas
-  un chiffrement de bout en bout. Qui administre le serveur et ses KEK peut lire
-  ces textes ; M10 (chiffrement côté navigateur) est la réponse à cette menace.
-- Le rapport et l'avis du CSI restent dans M8 et ADUM ; M5b ne garde que le
-  compte rendu de l'entretien.
+- **Tuteur ST exclu de la partie 2, par prudence** : l'arrêté ne parle que de la
+  « direction de thèse », mais le tuteur représente l'employeur, et cette partie
+  peut rapporter un conflit ou un harcèlement, y compris dans l'entreprise.
+- **Partie 3 : le co-encadrant est compté dans la direction de thèse**, le tuteur
+  non.
+- **À signaler : la partie 3 est un texte que le doctorant ne peut pas lire sur
+  sa propre plateforme.** Conséquences à traiter au plan de M5b :
+  1. le doctorant gère l'équipe (`INVITE_MEMBER`, `REMOVE_MEMBER`) : il peut
+     retirer un membre du CSI, qui perd alors la lecture, mais jamais lire le
+     texte lui-même ;
+  2. aucun export, rapport (M8) ni sauvegarde lisible par le doctorant ne doit
+     contenir la partie 3 (test structurel sur les emplacements et niveaux
+     dédiés) ;
+  3. **limite de la protection** : c'est un contrôle d'accès du serveur, pas un
+     chiffrement de bout en bout. Qui administre le serveur et ses KEK peut lire
+     le texte. Tant que le doctorant (développeur) exploite le serveur, la
+     partie 3 n'est protégée contre lui que par l'application. À écrire dans
+     `SECURITY.md` et à présenter à l'ED, à ST et au LIRMM avec l'hébergement ;
+     M10 (chiffrement côté navigateur, clés des seuls lecteurs) est la vraie
+     réponse.
+- **Rapport final** : l'arrêté le fait transmettre au directeur de l'école
+  doctorale, au doctorant et au directeur de thèse. La plateforme le garde pour
+  le doctorant et le directeur ; l'envoi à l'ED se fait **hors plateforme**
+  (ADUM). Point à confirmer au plan : les membres du CSI, qui le rédigent, le
+  lisent tant que leur adhésion est active. Ce rapport du comité est distinct du
+  rapport d'avancement que le doctorant prépare pour le CSI (M8).
+
+**Conception proposée : des niveaux dédiés** (« audiences ») plutôt que des
+emplacements à part avec une règle propre.
+
+| Niveau (code proposé) | `LEVEL_ROLES` | Emplacement (proposé) |
+|---|---|---|
+| `CSI_STUDENT_INTERVIEW` (5) | `PHD_STUDENT`, `CSI_MEMBER` | `meetings.Meeting.csi_student_interview` (0x0208) |
+| `CSI_DIRECTION_INTERVIEW` (6) | `CSI_MEMBER`, `DIRECTOR`, `CO_SUPERVISOR` | `meetings.Meeting.csi_direction_interview` (0x0209) |
+| `CSI_REPORT` (7) | `PHD_STUDENT`, `DIRECTOR` (+ `CSI_MEMBER` si confirmé) | `meetings.Meeting.csi_report` (0x020A) |
+
+- **Un domaine de KEK par niveau** (`LEVEL_TO_DOMAIN` est une table explicite,
+  codes figés : on ajoute, on ne renumérote pas ; `vault_init` crée la
+  version 1). Aucune DEK de ces textes n'est encapsulée par une KEK que le
+  chemin de lecture d'un autre rôle utilise.
+- **Refus par défaut structurel** : avec un emplacement scellé en
+  `CONFIDENTIAL` plus une restriction par emplacement, oublier la restriction (un
+  nouvel appel à `open_texts`, un export M8) ouvrirait la partie 2 au directeur
+  et au tuteur. Avec un niveau dédié, la seule table `LEVEL_ROLES` décide, et
+  toute la mécanique existante (`can_access_level`, `RESTRICTED`, journal des
+  lectures, rotation) s'applique sans exception.
+- **Niveaux interdits partout ailleurs** : `CHECK` en base sur `SealedText`
+  (chacun de ces trois emplacements n'accepte que son niveau, et ces niveaux
+  n'apparaissent dans aucun autre emplacement) ; listes de niveaux des
+  formulaires (objectifs, documents, réunions) inchangées ;
+  `Document.confidentiality` refuse 5, 6 et 7 ; un changement de niveau de la
+  réunion ne rescelle jamais ces trois textes.
+- Un membre du CSI expiré perd la lecture (adhésion active exigée). Aucun
+  « lu / approuvé » sur les parties 2 et 3.
+- Le rapport et l'avis du CSI restent déposés dans ADUM ; la plateforme prépare
+  et archive.
