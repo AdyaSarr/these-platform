@@ -37,6 +37,12 @@ EVER_ASSIGNED_SLOTS = {
     0x0205: "meetings.Meeting.visio_link",
     0x0206: "meetings.Decision.text",
     0x0207: "meetings.ActionItem.title",
+    0x0301: "conferences.Submission.title",
+    0x0302: "conferences.Submission.abstract",
+    0x0303: "conferences.Submission.external_authors",
+    0x0304: "conferences.Submission.notes",
+    0x0305: "conferences.StApproval.comment",
+    0x0306: "conferences.Preprint.url",
 }
 EXPECTED_SLOT_RANGES = {
     0x01: "objectives",
