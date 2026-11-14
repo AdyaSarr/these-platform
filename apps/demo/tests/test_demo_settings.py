@@ -3,7 +3,7 @@
 
 import json
 import os
-import subprocess  # nosec B404 - runs the project's own interpreter
+import subprocess  # nosec B404
 import sys
 from pathlib import Path
 
@@ -31,7 +31,7 @@ print(json.dumps({
 def demo_settings() -> dict[str, object]:
     env = {**os.environ, "DJANGO_SETTINGS_MODULE": "config.settings.demo"}
     env.pop("TEST_CLOCK", None)
-    result = subprocess.run(  # nosec B603 - fixed command line
+    result = subprocess.run(  # nosec B603
         [sys.executable, "-c", PROBE],
         cwd=REPO,
         env=env,
