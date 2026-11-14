@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-14 18:45+0100\n"
+"POT-Creation-Date: 2026-11-14 19:06+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -408,7 +408,7 @@ msgstr "Réunions"
 msgid "Documents"
 msgstr "Documents"
 
-#: apps/accounts/views.py:57 apps/admin_file/services.py:274
+#: apps/accounts/views.py:57 apps/admin_file/services.py:278
 #: templates/admin_file/file.html:2 templates/admin_file/file.html:4
 #: templates/admin_file/item_page.html:4 templates/admin_file/new_item.html:5
 msgid "Administrative file"
@@ -532,52 +532,52 @@ msgstr "Confidentialité"
 msgid "Give a new file or an existing document, not both."
 msgstr "Donnez un nouveau fichier ou un document existant, pas les deux."
 
-#: apps/admin_file/forms.py:69 apps/admin_file/forms.py:94
+#: apps/admin_file/forms.py:69 apps/admin_file/forms.py:99
 #: templates/admin_file/item_row.html:26 templates/objectives/detail.html:52
 msgid "Reason"
 msgstr "Motif"
 
-#: apps/admin_file/forms.py:71 apps/admin_file/forms.py:96
+#: apps/admin_file/forms.py:71 apps/admin_file/forms.py:101
 #: apps/objectives/forms.py:141 templates/objectives/_comments.html:19
 msgid "Comment"
 msgstr "Commentaire"
 
-#: apps/admin_file/forms.py:92
+#: apps/admin_file/forms.py:97
 msgid "Proposed due date"
 msgstr "Échéance proposée"
 
-#: apps/admin_file/forms.py:106 apps/admin_file/forms.py:131
+#: apps/admin_file/forms.py:111 apps/admin_file/forms.py:136
 #: apps/objectives/forms.py:55 templates/admin_file/item_row.html:11
 #: templates/objectives/dashboard.html:74 templates/objectives/detail.html:11
 msgid "Due date"
 msgstr "Échéance"
 
-#: apps/admin_file/forms.py:119
+#: apps/admin_file/forms.py:124
 msgid "Label"
 msgstr "Libellé"
 
-#: apps/admin_file/forms.py:121
+#: apps/admin_file/forms.py:126
 msgid "Part of the file"
 msgstr "Partie du dossier"
 
-#: apps/admin_file/forms.py:122 templates/admin_file/item_row.html:10
+#: apps/admin_file/forms.py:127 templates/admin_file/item_row.html:10
 msgid "Validated by"
 msgstr "Validée par"
 
-#: apps/admin_file/forms.py:124
+#: apps/admin_file/forms.py:129
 msgid "Default confidentiality"
 msgstr "Confidentialité par défaut"
 
-#: apps/admin_file/forms.py:128
+#: apps/admin_file/forms.py:133
 msgid "Mandatory"
 msgstr "Obligatoire"
 
-#: apps/admin_file/forms.py:129
+#: apps/admin_file/forms.py:134
 msgid "Attachment required"
 msgstr "Pièce jointe obligatoire"
 
-#: apps/admin_file/forms.py:143 apps/admin_file/forms.py:145
-#: apps/admin_file/services.py:728
+#: apps/admin_file/forms.py:148 apps/admin_file/forms.py:150
+#: apps/admin_file/services.py:731
 msgid "These validators are not allowed."
 msgstr "Ces validateurs ne sont pas permis."
 
@@ -769,115 +769,113 @@ msgstr "notification de pièce"
 msgid "item notifications"
 msgstr "notifications de pièce"
 
-#: apps/admin_file/services.py:210 apps/admin_file/services.py:304
-#: apps/admin_file/services.py:761 apps/admin_file/views.py:66
+#: apps/admin_file/services.py:214 apps/admin_file/services.py:308
+#: apps/admin_file/services.py:764 apps/admin_file/views.py:66
 msgid "The thesis is finished: its administrative file is frozen."
 msgstr "La thèse est terminée : son dossier administratif est gelé."
 
-#: apps/admin_file/services.py:257 apps/admin_file/services.py:951
+#: apps/admin_file/services.py:261 apps/admin_file/services.py:956
 msgid "Choose a reason."
 msgstr "Choisissez un motif."
 
-#: apps/admin_file/services.py:260 apps/admin_file/services.py:934
+#: apps/admin_file/services.py:264 apps/admin_file/services.py:939
 msgid "The comment is too long."
 msgstr "Le commentaire est trop long."
 
-#: apps/admin_file/services.py:262 apps/admin_file/services.py:936
+#: apps/admin_file/services.py:266 apps/admin_file/services.py:941
 msgid "The comment contains a control character."
 msgstr "Le commentaire contient un caractère de contrôle."
 
-#: apps/admin_file/services.py:309
+#: apps/admin_file/services.py:313
 msgid "A validator could not read this document."
 msgstr "Un validateur ne pourrait pas lire ce document."
 
-#: apps/admin_file/services.py:311 apps/admin_file/services.py:355
+#: apps/admin_file/services.py:315 apps/admin_file/services.py:359
 msgid "This document belongs to another item."
 msgstr "Ce document appartient déjà à une autre pièce."
 
-#: apps/admin_file/services.py:322 apps/admin_file/services.py:734
+#: apps/admin_file/services.py:326 apps/admin_file/services.py:737
 msgid "A validator could not read the file at this level."
 msgstr "Un validateur ne pourrait pas lire le fichier à ce niveau."
 
-#: apps/admin_file/services.py:345
+#: apps/admin_file/services.py:349
 msgid "This item needs an attachment."
 msgstr "Cette pièce demande une pièce jointe."
 
-#: apps/admin_file/services.py:414
+#: apps/admin_file/services.py:418
 msgid "The attachment changed since it was submitted."
 msgstr "La pièce jointe a changé depuis le dépôt."
 
-#: apps/admin_file/services.py:538
-msgid ""
-"Choose Amendment, Expired or Other: the other reasons are the validators'."
-msgstr "Choisissez Avenant, Expiré ou Autre : les autres motifs sont réservés aux validateur·rices."
-
-#: apps/admin_file/services.py:715
+#: apps/admin_file/services.py:718
 msgid "A label is required."
 msgstr "Un libellé est obligatoire."
 
-#: apps/admin_file/services.py:717
+#: apps/admin_file/services.py:720
 msgid "The label is too long."
 msgstr "Le libellé est trop long."
 
-#: apps/admin_file/services.py:719
+#: apps/admin_file/services.py:722
 msgid "The label contains a control character."
 msgstr "Le libellé contient un caractère de contrôle."
 
-#: apps/admin_file/services.py:731
+#: apps/admin_file/services.py:734
 msgid "A validator would not see this section."
 msgstr "Un validateur ne verrait pas cette partie du dossier."
 
-#: apps/admin_file/services.py:815
+#: apps/admin_file/services.py:820
 msgid "Enter a valid date."
 msgstr "Saisissez une date valide."
 
-#: apps/admin_file/services.py:818
+#: apps/admin_file/services.py:823
 msgid "The due date cannot be before the CIFRE start date."
 msgstr "L'échéance ne peut pas précéder la date d'effet CIFRE."
 
-#: apps/admin_file/services.py:822
+#: apps/admin_file/services.py:827
 msgid "The due date cannot be after the planned end of the thesis."
 msgstr "L'échéance ne peut pas dépasser la fin prévue de la thèse."
 
-#: apps/admin_file/services.py:878
+#: apps/admin_file/services.py:883
 msgid "A mandatory item of the catalogue keeps a due date."
 msgstr "Une pièce obligatoire du catalogue garde une échéance."
 
-#: apps/admin_file/services.py:921
+#: apps/admin_file/services.py:926
 msgid "No industrial tutor in the team: invite them first."
-msgstr "Aucun·e tuteur·rice industriel·le dans l'équipe : invitez-le·la d'abord."
+msgstr ""
+"Aucun·e tuteur·rice industriel·le dans l'équipe : invitez-le·la d'abord."
 
-#: apps/admin_file/services.py:922
+#: apps/admin_file/services.py:927
 msgid "No thesis director in the team: invite them first."
 msgstr "Aucun·e directeur·rice de thèse dans l'équipe : invitez-le·la d'abord."
 
-#: apps/admin_file/services.py:924
+#: apps/admin_file/services.py:929
 msgid ""
 "Neither a thesis director nor an industrial tutor in the team: invite one "
 "first."
-msgstr "Ni directeur·rice de thèse ni tuteur·rice industriel·le dans l'équipe : invitez l'un·e d'eux d'abord."
+msgstr ""
+"Ni directeur·rice de thèse ni tuteur·rice industriel·le dans l'équipe : "
+"invitez l'un·e d'eux d'abord."
 
-#: apps/admin_file/services.py:931
+#: apps/admin_file/services.py:936
 msgid "The comment is not text."
 msgstr "Le commentaire n'est pas du texte."
 
-#: apps/admin_file/services.py:959
+#: apps/admin_file/services.py:964
 msgid "The due date of a custom item is changed directly."
 msgstr "L'échéance d'une pièce personnalisée se modifie directement."
 
-#: apps/admin_file/services.py:962
+#: apps/admin_file/services.py:967
 msgid "Give the proposed due date."
 msgstr "Indiquez l'échéance proposée."
 
-#: apps/admin_file/services.py:965
+#: apps/admin_file/services.py:970
 msgid "This is already the due date."
 msgstr "C'est déjà l'échéance actuelle."
 
-#: apps/admin_file/services.py:968
+#: apps/admin_file/services.py:973
 msgid "A proposal is already waiting for a decision."
 msgstr "Une proposition attend déjà une décision."
 
-#: apps/admin_file/services.py:1020
+#: apps/admin_file/services.py:1025
 msgid "This proposal has already been decided."
 msgstr "Cette proposition a déjà été tranchée."
 
@@ -1799,7 +1797,9 @@ msgstr "Une pièce jointe existe, mais vous ne pouvez pas la lire."
 msgid ""
 "Validated on %(validated)s, then reopened on %(reopened)s by %(name)s — "
 "reason: %(reason)s"
-msgstr "Validée le %(validated)s puis rouverte le %(reopened)s par %(name)s — motif : %(reason)s"
+msgstr ""
+"Validée le %(validated)s puis rouverte le %(reopened)s par %(name)s — "
+"motif : %(reason)s"
 
 #: templates/admin_file/item_row.html:33
 #, python-format
@@ -1810,7 +1810,9 @@ msgstr "Approbations annulées (dépôt %(cycle)s) :"
 #, python-format
 msgid ""
 "Proposed due date: %(date)s, by %(name)s on %(created)s — reason: %(reason)s"
-msgstr "Échéance proposée : %(date)s, par %(name)s le %(created)s — motif : %(reason)s"
+msgstr ""
+"Échéance proposée : %(date)s, par %(name)s le %(created)s — motif : "
+"%(reason)s"
 
 #: templates/admin_file/item_row.html:48
 msgid "Accept"

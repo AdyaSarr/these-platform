@@ -77,14 +77,19 @@ class DecisionForm(forms.Form):
 
 
 class ReopenForm(DecisionForm):
-    """The reasons the user may give (the student: Amendment, Expired, Other)."""
+    """Offers the reasons the user may give (the student: Amendment, Expired, Other).
+
+    Only the OFFER is narrowed (the widget): any known reason passes the form,
+    so that a forged validators' reason reaches the service, which refuses it as
+    a right (audited 403); an unknown value stays an input error (400).
+    """
 
     def __init__(self, *args: Any, reasons: list[Reason], **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
         reason = self.fields["reason"]
         if not isinstance(reason, forms.ChoiceField):
             raise TypeError("reason must be a ChoiceField")
-        reason.choices = [("", "—"), *((r.value, r.label) for r in reasons)]
+        reason.widget.choices = [("", "—"), *((r.value, r.label) for r in reasons)]
 
 
 class ProposalForm(forms.Form):

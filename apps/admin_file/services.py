@@ -104,11 +104,15 @@ COMMENT_MAX = 280
 
 
 class _DeniedError(Exception):
-    """Raised inside the work transaction; audited once it has rolled back."""
+    """Raised inside the work transaction; audited once it has rolled back.
 
-    def __init__(self, reason: str) -> None:
+    ``details`` go to the audit event with the reason (codes only, never text).
+    """
+
+    def __init__(self, reason: str, **details: Any) -> None:
         super().__init__(reason)
         self.reason = reason
+        self.details = details
 
 
 # --------------------------------------------------------------------------- seeding
@@ -218,7 +222,7 @@ def _run(item: RequiredItem, user: Any, operation: str, work: Any) -> RequiredIt
             result: RequiredItem = work(_locked(item))
             return result
     except _DeniedError as denied:
-        _audit_denial(user, operation, denied.reason, obj=item)
+        _audit_denial(user, operation, denied.reason, obj=item, **denied.details)
         raise PermissionDenied from None
 
 
@@ -534,10 +538,9 @@ def reopen(*, item: RequiredItem, user: User, reason: Any, comment: str = "") ->
         if not (can(user, Action.ADMIN_FILE_WRITE, locked) or validator):
             raise _DeniedError("not_validator")
         if not validator and Reason(code) not in STUDENT_REOPEN_REASONS:
-            raise ValidationError(
-                _("Choose Amendment, Expired or Other: the other reasons are the validators'."),
-                code="reason",
-            )
+            # The student's form never offers it: a forged request, refused as a
+            # right (audited 403); an unknown value was already a 400 above.
+            raise _DeniedError("reason_not_allowed", attempted_reason=code)
         before = locked.status
         locked.status = target(before, Event.REOPEN)
         validated_at = locked.validated_at
@@ -760,6 +763,8 @@ def create_custom_item(
     if thesis.status not in OPEN_THESIS:
         raise FrozenFileError(_("The thesis is finished: its administrative file is frozen."))
     label = _clean_label(label)
+    if due_date is not None:
+        _check_bounds(thesis, due_date)
     section, default_level = Section(section), ConfidentialityLevel(default_level)
     roles = [Role(r) for r in validator_roles]
     check_validators(section, roles, default_level)
@@ -838,7 +843,7 @@ def require_due_date_validator(user: Any, item: RequiredItem, *, operation: str)
         if _is_custom(item):
             raise _DeniedError("custom_item")
     except _DeniedError as denied:
-        _audit_denial(user, operation, denied.reason, obj=item)
+        _audit_denial(user, operation, denied.reason, obj=item, **denied.details)
         raise PermissionDenied from None
 
 
