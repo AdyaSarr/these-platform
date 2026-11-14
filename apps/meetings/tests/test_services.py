@@ -431,7 +431,7 @@ def test_decision_register_filters(team: SimpleNamespace) -> None:
     second = meeting_of(
         team,
         kind=Meeting.Kind.ST_TUTOR,
-        starts_at=START + dt.timedelta(days=40),
+        starts_at=START - dt.timedelta(days=40),
         attendees=[team.student, team.tutor],
     )
     a = services.add_decision(meeting=first, user=team.student, text="Décision A")

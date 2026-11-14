@@ -124,10 +124,10 @@ def test_a_former_attendee_gets_no_notification(
     meeting = _meeting_with_minutes(team)
     ending(team)
     before = len(_former(team))
+    services.save_minutes(meeting=meeting, user=team.student, minutes="Version 2", version=1)
     services.update_meeting(
         meeting=meeting, user=team.student, changes={"starts_at": START + dt.timedelta(days=7)}
     )
-    services.save_minutes(meeting=meeting, user=team.student, minutes="Version 2", version=1)
     services.cancel_meeting(meeting=meeting, user=team.student)
     assert len(_former(team)) == before
     assert {r.recipient for r in MeetingNotification.objects.filter(kind="CHANGED")} == {

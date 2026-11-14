@@ -70,6 +70,7 @@ CONFLICTS = frozenset(
         "already_linked",
         "withdrawn",
         "nothing_to_prefill",
+        "not_started",
     }
 )
 
@@ -161,6 +162,7 @@ class _Mixin(ThesisPermissionRequiredMixin):
         texts = {name: shown(value) for name, value in detail.texts.items()}
         readable = not texts["title"].restricted
         csi_pending = m.is_csi
+        started = m.starts_at <= timezone.now()
         context = {
             "thesis": self.thesis,
             "meeting": m,
@@ -188,7 +190,11 @@ class _Mixin(ThesisPermissionRequiredMixin):
             "hidden_documents": detail.hidden_documents,
             "can_write": writer and readable,
             "csi_pending": csi_pending,
-            "can_acknowledge": detail.can_acknowledge and m.minutes_version > 0 and not csi_pending,
+            "can_acknowledge": detail.can_acknowledge
+            and m.minutes_version > 0
+            and not csi_pending
+            and started,
+            "started": started,
             "my_mark": detail.marks.get(user.pk, ""),
             "status_choices": ActionItem.Status.choices,
             "error": error,
@@ -197,7 +203,7 @@ class _Mixin(ThesisPermissionRequiredMixin):
             context["agenda_form"] = forms.get("agenda_form") or AgendaForm(
                 initial={"agenda": texts["agenda"].text}
             )
-            if not csi_pending:
+            if not csi_pending and started:
                 context["minutes_form"] = forms.get("minutes_form") or MinutesForm(
                     initial={"minutes": texts["minutes"].text, "version": m.minutes_version}
                 )

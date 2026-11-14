@@ -19,6 +19,10 @@ vault.sealing()), thesis row, meeting row, then audit() LAST. Current texts are
 read BEFORE the sealing block (open_texts audits a CONFIDENTIAL read); a
 concurrent change in between is detected (``stale``).
 
+Minutes, decisions, actions and acknowledgements open when the meeting starts
+(``starts_at <= now``, server time: ``not_started`` before); the agenda is
+prepared before.
+
 M5a: a CSI meeting is planned (frame, attendees, agenda, documents) but its
 minutes, decisions, actions and acknowledgements wait for M5b (``csi_pending``):
 nothing is stored that cannot yet be protected correctly.
@@ -299,6 +303,16 @@ def _not_csi(meeting: Meeting) -> None:
         raise ValidationError(
             _("The minutes of a CSI meeting will be available in a later version."),
             code="csi_pending",
+        )
+
+
+def _started(meeting: Meeting) -> None:
+    """Minutes, decisions, actions and marks come from a meeting that has begun
+    (server time); the agenda is prepared before."""
+    if meeting.starts_at > timezone.now():
+        raise ValidationError(
+            _("The minutes, decisions and actions open when the meeting starts."),
+            code="not_started",
         )
 
 
@@ -996,12 +1010,14 @@ def save_minutes(*, meeting: Meeting, user: User, minutes: str, version: int) ->
     fresh = Meeting.objects.get(pk=meeting.pk)
     _not_csi(fresh)
     _not_cancelled(fresh)
+    _started(fresh)
     text = _clean_text(minutes, "minutes")
     with _sealing(user, thesis, _level(fresh)) as sealer:
         locked = _locked(fresh)
         if locked.minutes_version != version or locked.level != fresh.level:
             raise _stale()
         _not_csi(locked)
+        _started(locked)
         sealer.seal(locked, "minutes", text)
         locked.minutes_version += 1
         locked.minutes_updated_at = timezone.now()
@@ -1040,6 +1056,7 @@ def acknowledge(
     with transaction.atomic():
         locked = _locked(meeting)
         _not_csi(locked)
+        _started(locked)
         if locked.minutes_version == 0:
             raise ValidationError(_("There are no minutes yet."), code="no_minutes")
         if version != locked.minutes_version:
@@ -1075,6 +1092,7 @@ def add_decision(*, meeting: Meeting, user: User, text: str) -> Decision:
     fresh = Meeting.objects.get(pk=meeting.pk)
     _not_csi(fresh)
     _not_cancelled(fresh)
+    _started(fresh)
     body = _clean_text(text, "decision")
     with _sealing(user, thesis, _level(fresh)) as sealer:
         locked = _locked(fresh)
@@ -1123,6 +1141,7 @@ def add_action(
     fresh = Meeting.objects.get(pk=meeting.pk)
     _not_csi(fresh)
     _not_cancelled(fresh)
+    _started(fresh)
     text = _clean_text(title, "action")
     person = _check_assignee(thesis, assignee)
     due = _check_due(thesis, due_date)
