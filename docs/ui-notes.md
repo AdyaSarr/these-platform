@@ -18,6 +18,7 @@ plus tard. Cocher une note quand elle est faite.
       détail technique.
 - Graphique objectifs : la dernière étiquette de l'axe est coupée (« nov. 20: ») ; élargir le viewBox ou les marges.
 - Dossier admin : le bouton « Rouvrir » prend toute la largeur et le formulaire d'échéance le chevauche ; aligner les actions sur une ligne.
+
 ## Tour visuel M5a (2026-11-14)
 
 - [ ] Réunion : bouton "Annuler la réunion" illisible (texte rouge sur fond bleu) ; prévoir un style "danger" lisible et une confirmation.
