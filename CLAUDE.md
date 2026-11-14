@@ -48,7 +48,11 @@ uv run mypy apps
 uv run bandit -r apps -ll
 uv run pip-audit
 uv run python manage.py check --deploy --settings=config.settings.prod
+scripts/demo_reset.sh                         # base de démonstration _demo (README)
 ```
+
+**Ne jamais lancer `scripts/demo_reset.sh` depuis Claude Code ; c'est l'utilisateur
+qui le lance.**
 
 ## Règles de sécurité non négociables
 

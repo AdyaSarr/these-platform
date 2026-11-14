@@ -6,12 +6,9 @@ import datetime as dt
 from typing import Any
 
 from django.core.management.base import BaseCommand, CommandError, CommandParser
-from django.db import transaction
 
-from apps.accounts import services, tasks
-from apps.accounts.models import Organization, Thesis
-from apps.admin_file.services import seed_items
-from apps.vault.services import AuditAction, audit, vault_problems
+from apps.accounts import services
+from apps.accounts.models import Organization
 
 
 def _date(value: str) -> dt.date:
@@ -38,39 +35,18 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args: Any, **opts: Any) -> None:
-        # The student's first sign-in seals a TOTP secret with the vault: it must
-        # be initialized before any invitation goes out.
-        problems = vault_problems()
-        if problems:
-            raise CommandError(
-                "The vault is not initialized (" + "; ".join(problems) + "): "
-                "run `manage.py vault_init` first."
-            )
-        if opts["planned_end"] <= opts["cifre_start"]:
-            raise CommandError("--planned-end must be after --cifre-start.")
-        with transaction.atomic():
-            org, _ = Organization.objects.get_or_create(
-                name=opts["student_organization"],
-                defaults={"kind": opts["student_organization_kind"]},
-            )
-            thesis = Thesis.objects.create(
+        try:
+            inv = services.create_thesis(
                 title=opts["title"],
-                cifre_start_date=opts["cifre_start"],
-                first_enrollment_date=opts["first_enrollment"],
-                planned_end_date=opts["planned_end"],
+                cifre_start=opts["cifre_start"],
+                first_enrollment=opts["first_enrollment"],
+                planned_end=opts["planned_end"],
+                student_email=opts["student_email"],
+                student_organization=opts["student_organization"],
+                student_organization_kind=opts["student_organization_kind"],
             )
-            audit(AuditAction.THESIS_CREATED, obj=thesis)
-            # The administrative file (M3): catalogue items, in the same transaction.
-            seed_items(thesis)
-            try:
-                inv = services.invite_phd_student(
-                    thesis=thesis, email=opts["student_email"], organization=org
-                )
-            except services.TeamError as exc:  # rolls the thesis back too
-                raise CommandError(str(exc)) from exc
-        # Sent synchronously: the command works without a Celery worker.
-        tasks.send_invitation_email(str(inv.pk))
-        inv.refresh_from_db()
+        except (services.ThesisCreationError, services.TeamError) as exc:
+            raise CommandError(str(exc)) from exc
         if inv.email_status != inv.EmailStatus.SENT:
             raise CommandError("Thesis created, but the invitation e-mail could not be sent.")
         self.stdout.write(self.style.SUCCESS(f"Thesis created; invitation sent to {inv.email}."))

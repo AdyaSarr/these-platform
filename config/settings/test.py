@@ -27,7 +27,7 @@ DEBUG = False
 ALLOWED_HOSTS = ["testserver", "localhost"]
 
 ADMIN_ENABLED = True
-INSTALLED_APPS = [*INSTALLED_APPS, "django.contrib.admin"]
+INSTALLED_APPS = [*INSTALLED_APPS, "django.contrib.admin", "apps.demo"]
 
 # Still Argon2 first, with low cost parameters so the suite stays fast.
 PASSWORD_HASHERS = ["config.test_hashers.FastArgon2PasswordHasher", *PASSWORD_HASHERS]

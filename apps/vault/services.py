@@ -40,7 +40,7 @@ from apps.accounts.permissions import Action, can, can_access_document, can_acce
 from apps.core.confidentiality import ConfidentialityLevel
 
 from . import crypto, formats, keys, locks, storage
-from .audit import FORBIDDEN_KEY_FRAGMENTS, AuditAction, audit, canonical_ip
+from .audit import FORBIDDEN_KEY_FRAGMENTS, AuditAction, audit, audit_source, canonical_ip
 from .errors import (
     INTEGRITY_MESSAGE,
     AuditError,
@@ -70,6 +70,7 @@ __all__ = [
     "TextSealer",
     "add_version",
     "audit",
+    "audit_source",
     "canonical_ip",
     "change_level",
     "decrypt_secret",
