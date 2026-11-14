@@ -4,10 +4,12 @@ bypassing the services; decided approvals and preprints are history."""
 from __future__ import annotations
 
 import datetime as dt
+import itertools
 from types import SimpleNamespace
 from typing import Any
 
 import pytest
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import IntegrityError, models, transaction
 
 from apps.accounts.roles import Role
@@ -25,10 +27,12 @@ from apps.conferences.models import (
     SubmissionDocument,
     Venue,
 )
+from apps.core.confidentiality import ConfidentialityLevel as L
 from apps.vault import formats
-from apps.vault.models import Document, DocumentVersion
+from apps.vault import services as vault
+from apps.vault.models import DocumentVersion
 
-pytestmark = pytest.mark.django_db
+pytestmark = pytest.mark.django_db(transaction=True)
 
 NOW = dt.datetime(2027, 1, 10, 9, 0, tzinfo=dt.UTC)
 
@@ -57,25 +61,21 @@ def _venue(team: SimpleNamespace, **kw: Any) -> Venue:
     return Venue.objects.create(**fields)
 
 
+_N = itertools.count(1)
+
+
 def _submission(team: SimpleNamespace, **kw: Any) -> Submission:
-    fields: dict[str, Any] = {"thesis": team.thesis, "venue": _venue(team, acronym=f"V{id(kw)}")}
+    fields: dict[str, Any] = {"thesis": team.thesis, "venue": _venue(team, acronym=f"V{next(_N)}")}
     fields.update(kw)
     return Submission.objects.create(**fields)
 
 
 def _version(team: SimpleNamespace) -> DocumentVersion:
-    document = Document.objects.create(
-        thesis=team.thesis, title="Article fictif", confidentiality="PUBLIC", owner=team.student
+    upload = SimpleUploadedFile("a.pdf", b"%PDF-1.7\n%article fictif\n%%EOF\n")
+    document = vault.store(
+        thesis=team.thesis, upload=upload, title="Article fictif", level=L.PUBLIC, user=team.student
     )
-    return DocumentVersion.objects.create(
-        document=document,
-        version=1,
-        ciphertext_path="x" * 40,
-        wrapped_dek=b"\x00" * 60,
-        kek_id="env:PUBLIC:1",
-        size=1,
-        mime_type="application/pdf",
-    )
+    return DocumentVersion.objects.get(document=document, version=1)
 
 
 # --------------------------------------------------------------------------- catalogue
