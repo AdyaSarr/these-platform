@@ -626,3 +626,90 @@ def test_pending_approvals_for_the_tutor(team: SimpleNamespace) -> None:
     )
     assert [a.pk for a in services.pending_approvals(team.tutor, team.thesis)] == [approval.pk]
     assert services.pending_approvals(team.director, team.thesis) == []
+
+
+# =========================================================================== end-of-module review
+
+
+def test_the_target_is_locked_once_an_approval_is_pending_or_granted(team: SimpleNamespace) -> None:
+    """Changing the venue of an approved submission would be « submitting elsewhere »
+    without a new approval."""
+    submission = submission_of(team)
+    other = edition_of(team, venue=venue_of(team, acronym="AFPQ", name="Atelier fictif"))
+    version = article_version(team, submission)
+    approval = services.request_approval(submission=submission, user=team.student, version=version)
+    for changes in ({"venue": other.venue, "edition": other}, {"edition": other}):
+        with pytest.raises(ValidationError) as exc:
+            services.update_submission(submission=submission, user=team.student, changes=changes)
+        assert _code(exc) in {"target_locked", "edition"}
+    services.decide_approval(
+        approval=approval, user=team.tutor, decision="GRANTED", recent_mfa=True
+    )
+    with pytest.raises(ValidationError) as exc:
+        services.update_submission(
+            submission=submission,
+            user=team.student,
+            changes={"venue": other.venue, "edition": other},
+        )
+    assert _code(exc) == "target_locked"
+    # The texts stay editable.
+    services.update_submission(submission=submission, user=team.student, changes={"notes": "Note"})
+    fresh = submission_of(team, title="Article neuf fictif")
+    services.update_submission(
+        submission=fresh, user=team.student, changes={"venue": other.venue, "edition": other}
+    )
+    assert Submission.objects.get(pk=fresh.pk).edition_id == other.pk
+
+
+def test_a_request_needs_a_document_the_tutor_reads(team: SimpleNamespace) -> None:
+    from django.core.files.uploadedfile import SimpleUploadedFile
+
+    submission = submission_of(team)
+    lirmm = vault.store(
+        thesis=team.thesis,
+        upload=SimpleUploadedFile("a.pdf", b"%PDF-1.7\n%article fictif\n%%EOF\n"),
+        title="Version LIRMM fictive",
+        level=L.INTERNAL_LIRMM,
+        user=team.student,
+    )
+    services.link_document(submission=submission, user=team.student, document=lirmm)
+    version = lirmm.versions.get(version=1)
+    with pytest.raises(ValidationError) as exc:
+        services.request_approval(submission=submission, user=team.student, version=version)
+    assert _code(exc) == "tutor_cannot_read"
+
+
+def test_st_work_off_after_a_grant_lets_the_submission_be_submitted(team: SimpleNamespace) -> None:
+    submission = submission_of(team)
+    granted(team, submission, article_version(team, submission))
+    services.set_st_work(submission=submission, user=team.tutor, value=False, recent_mfa=True)
+    services.set_status(submission=submission, user=team.student, status="SUBMITTED")
+    assert _status(submission) == "SUBMITTED"
+
+
+def test_withdraw_a_request(team: SimpleNamespace) -> None:
+    submission = submission_of(team)
+    approval = services.request_approval(
+        submission=submission, user=team.student, version=article_version(team, submission)
+    )
+    with pytest.raises(PermissionDenied):
+        services.withdraw_approval(approval=approval, user=team.tutor)
+    services.withdraw_approval(approval=approval, user=team.student)
+    approval.refresh_from_db()
+    assert approval.decision == "WITHDRAWN" and approval.decided_by is None
+    assert _status(submission) == "PREPARING"
+    with pytest.raises(ValidationError) as exc:
+        services.withdraw_approval(approval=approval, user=team.student)
+    assert _code(exc) == "decided"
+
+
+def test_unlink_a_document(team: SimpleNamespace) -> None:
+    submission = submission_of(team)
+    article_version(team, submission)
+    link = submission.document_links.get()
+    with pytest.raises(PermissionDenied):
+        services.unlink_document(link=link, user=team.director)
+    services.unlink_document(link=link, user=team.student)
+    assert not submission.document_links.exists()
+    (unlinked,) = _details(AuditAction.SUBMISSION_DOCUMENT_UNLINKED)
+    assert unlinked == {"document_id": str(link.document_id)}

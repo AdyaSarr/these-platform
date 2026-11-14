@@ -417,3 +417,61 @@ def test_linked_submissions_on_the_objective_page(team: SimpleNamespace) -> None
     csi = _client(team, "csi").get(page)
     assert csi.status_code == 200 and fragment not in csi.content.decode()
     assert _client(team, "csi").get(fragment).status_code == 403
+
+
+# =========================================================================== end-of-module review
+
+
+def test_edit_a_venue_posted_like_a_browser(team: SimpleNamespace) -> None:
+    venue = venue_of(team)
+    page = _url(team, "venue", venue_id=venue.pk)
+    client = _browser(team, "tutor")
+    data = {"kind": "CONFERENCE", "acronym": "SFCA", "name": "Nom corrigé fictif", "url": ""}
+    response = _browser_post(client, page, page, data)
+    assert response.status_code == 302, response.content[:400]
+    venue.refresh_from_db()
+    assert (venue.name, venue.url) == ("Nom corrigé fictif", "")
+    assert _client(team, "csi").post(page, data).status_code == 403
+
+
+def test_edit_a_submission_posted_like_a_browser(team: SimpleNamespace) -> None:
+    submission = submission_of(team)
+    url = _s(team, submission, "edit_submission")
+    client = _browser(team, "student")
+    data = {
+        "target": f"edition:{submission.edition_id}",
+        "title": "Titre corrigé fictif",
+        "abstract": "",
+        "external_authors": "",
+        "notes": "",
+        "objective": "",
+        "authors": [str(team.director.pk)],
+    }
+    response = _browser_post(client, url, url, data)
+    assert response.status_code == 302, response.content[:400]
+    detail = services.submission_detail(team.student, submission)
+    assert detail.texts["title"] == "Titre corrigé fictif" and detail.authors == [team.director]
+    assert _client(team, "director").post(url, data).status_code == 403
+
+
+def test_the_history_hides_the_title_of_an_unreadable_document(team: SimpleNamespace) -> None:
+    title = "Version " + marker()
+    submission = submission_of(team, level=L.PUBLIC)
+    from django.core.files.uploadedfile import SimpleUploadedFile
+
+    from apps.vault import services as vault
+
+    document = vault.store(
+        thesis=team.thesis,
+        upload=SimpleUploadedFile("a.pdf", b"%PDF-1.7\n%article fictif\n%%EOF\n"),
+        title=title,
+        level=L.CONFIDENTIAL,
+        user=team.student,
+    )
+    services.link_document(submission=submission, user=team.student, document=document)
+    services.request_approval(
+        submission=submission, user=team.student, version=document.versions.get(version=1)
+    )
+    assert title in _client(team, "tutor").get(_s(team, submission, "submission")).content.decode()
+    html = _client(team, "co_supervisor").get(_s(team, submission, "submission")).content.decode()
+    assert title not in html
