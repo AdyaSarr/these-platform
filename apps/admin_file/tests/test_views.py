@@ -231,13 +231,21 @@ def test_withdraw(team: SimpleNamespace) -> None:
 
 
 def test_due_date(team: SimpleNamespace) -> None:
+    """Revised 2026-11-14: a validator of the item changes it (second factor), the
+    student no longer does (they propose); audited with from and to."""
     item = _item(team, "adum_enrollment")
+    before = item.due_date
     data = {"due_date": "2027-02-01"}
-    assert _signed_in(team.director).post(_url("due_date", team, item), data).status_code == 403
-    assert _signed_in(team.student).post(_url("due_date", team, item), data).status_code == 302
+    assert _signed_in(team.student).post(_url("due_date", team, item), data).status_code == 403
+    assert _mfa(team.director).post(_url("due_date", team, item), data).status_code == 302
     assert RequiredItem.objects.get(pk=item.pk).due_date == dt.date(2027, 2, 1)
     event = AuditEvent.objects.get(action="ADMIN_ITEM_UPDATED")
-    assert event.details_json == {"field": "due_date"}
+    assert before is not None
+    assert event.details_json == {
+        "field": "due_date",
+        "from": before.isoformat(),
+        "to": "2027-02-01",
+    }
 
 
 # --------------------------------------------------------------------------- decisions

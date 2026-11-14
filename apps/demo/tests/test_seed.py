@@ -316,3 +316,21 @@ def test_a_non_empty_database_is_refused(settings: Any) -> None:
     with pytest.raises(CommandError, match="not empty"):
         call_command("demo_seed", stdout=io.StringIO())
     assert AuditEvent.objects.count() == 1
+
+
+def test_a_reopened_item_and_a_pending_due_date_proposal(demo: scenario.SeedResult) -> None:
+    from apps.admin_file.models import DueDateProposal, ItemNotification, ItemReopening
+
+    items = {i.code: i for i in RequiredItem.objects.filter(thesis=_thesis())}
+    reopened = items["employment_contract"]
+    assert reopened.status == ItemStatus.TODO
+    [row] = ItemReopening.objects.filter(item=reopened)
+    assert row.reopened_by == _user(Role.PHD_STUDENT)
+    [proposal] = DueDateProposal.objects.filter(item=items["training_agreement"])
+    assert proposal.status == DueDateProposal.Status.PENDING
+    assert proposal.from_date is not None and proposal.to_date > proposal.from_date
+    kinds = set(ItemNotification.objects.values_list("kind", flat=True))
+    assert {"REOPENED", "DUE_PROPOSED"} <= kinds
+    assert set(ItemNotification.objects.values_list("status", flat=True)) == {"SENT"}
+    tutor = _user(Role.INDUSTRIAL_TUTOR)
+    assert ItemNotification.objects.filter(kind="REOPENED", recipient=tutor).exists()

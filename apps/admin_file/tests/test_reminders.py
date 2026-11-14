@@ -117,7 +117,7 @@ def test_the_submitter_is_never_reminded_as_validator() -> None:
 def test_nothing_for_validated_undated_or_frozen() -> None:
     team = make_team()
     put(item_of(team, due_date=dt.date(2026, 12, 10)), S.VALIDATED, team.student)
-    item_of(team, due_date=None)
+    item_of(team, due_date=None, mandatory=False)  # a mandatory one always has a date
     closed = make_team(status=Thesis.Status.CLOSED)
     item_of(closed, due_date=dt.date(2026, 12, 10))
     assert _run("2026-12-01T09:00:00+00:00")["queued"] == 0

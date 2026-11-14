@@ -107,8 +107,8 @@ def test_a_submitted_item_has_a_submitter_and_a_cycle(status: str) -> None:
     _refused(status=status, cycle=1, submitted_by=None, **extra)
 
 
-def test_due_date_is_optional() -> None:
-    assert RequiredItemFactory.create(due_date=None).due_date is None
+def test_due_date_is_optional_for_an_optional_item() -> None:
+    assert RequiredItemFactory.create(due_date=None, mandatory=False).due_date is None
     assert RequiredItemFactory.create(due_date=dt.date(2027, 1, 1)).due_date == dt.date(2027, 1, 1)
 
 

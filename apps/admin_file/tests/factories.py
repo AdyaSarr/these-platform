@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import datetime as dt
+
 import factory
 
 from apps.accounts.roles import Role
@@ -21,6 +23,9 @@ class RequiredItemFactory(factory.django.DjangoModelFactory[RequiredItem]):
     default_level = ConfidentialityLevel.INTERNAL_LIRMM
     mandatory = True
     attachment_required = False
+    # A mandatory catalogue-like item always has a due date (CHECK, migration 0005);
+    # far in the future: no reminder window unless a test sets its own date.
+    due_date = dt.date(2028, 12, 1)
 
 
 class ItemApprovalFactory(factory.django.DjangoModelFactory[ItemApproval]):
