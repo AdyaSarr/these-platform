@@ -60,6 +60,12 @@ EXPECTED: dict[Action, set[Role]] = {
     A.MEETING_READ: _SUPERVISION,
     A.MEETING_WRITE: _SUPERVISION,
     A.MEETING_ACKNOWLEDGE: _SUPERVISION,
+    # Conferences and submissions (M6): the student writes submissions; the tutor
+    # decides the ST approval (VALIDATE_PUBLICATION, below).
+    A.CONFERENCE_READ: _SUPERVISION,
+    A.CONFERENCE_WRITE: _SUPERVISION,
+    A.SUBMISSION_READ: _SUPERVISION,
+    A.SUBMISSION_WRITE: {R.PHD_STUDENT},
     # Documents: écrire / lire, commenter x3 / rapport CSI / projet partagé (per-object, M2)
     A.DOCUMENT_READ: _SUPERVISION,
     A.DOCUMENT_WRITE: {R.PHD_STUDENT},
