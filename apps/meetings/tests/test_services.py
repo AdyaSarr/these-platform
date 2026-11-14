@@ -34,6 +34,13 @@ RESTRICTED = vault.RESTRICTED
 Ack = MinutesAcknowledgement.Kind
 
 
+@pytest.fixture(autouse=True)
+def _after_the_start(time_machine: Any) -> None:
+    """One hour after START (the helpers' meeting): minutes, decisions and actions
+    are open. Tests about a meeting not started yet use a later meeting."""
+    time_machine.move_to(START + dt.timedelta(hours=1), tick=True)
+
+
 @pytest.fixture
 def team() -> SimpleNamespace:
     return make_team()
@@ -658,3 +665,50 @@ def test_an_unrelated_thesis_cannot_be_used(team: SimpleNamespace) -> None:
     thesis = ThesisFactory.create()
     with pytest.raises(PermissionDenied):
         meeting_of(team, thesis=thesis)
+
+
+# =========================================================================== not started
+
+
+def test_nothing_from_the_meeting_before_it_starts(team: SimpleNamespace) -> None:
+    """Minutes, decisions, actions and marks wait for the start (server time); the
+    agenda does not."""
+    later = meeting_of(team, starts_at=START + dt.timedelta(days=7))
+    services.save_agenda(meeting=later, user=team.student, agenda="Ordre du jour fictif")
+    calls = [
+        lambda: _minutes(team, later),
+        lambda: services.add_decision(meeting=later, user=team.student, text="Décision"),
+        lambda: services.add_action(
+            meeting=later,
+            user=team.student,
+            title="Action fictive",
+            assignee=team.student,
+            due_date=dt.date(2027, 2, 1),
+        ),
+    ]
+    for call in calls:
+        with pytest.raises(ValidationError) as exc:
+            call()
+        assert _code(exc) == "not_started"
+    assert not SealedText.objects.filter(object_id=later.pk, slot=0x0203).exists()
+
+
+def test_the_start_is_the_boundary(team: SimpleNamespace, time_machine: Any) -> None:
+    later = meeting_of(team, starts_at=START + dt.timedelta(days=7))
+    time_machine.move_to(later.starts_at - dt.timedelta(seconds=1), tick=False)
+    with pytest.raises(ValidationError) as exc:
+        _minutes(team, later)
+    assert _code(exc) == "not_started"
+    time_machine.move_to(later.starts_at, tick=False)
+    _minutes(team, later)
+
+
+def test_no_mark_on_a_meeting_moved_after_its_minutes(team: SimpleNamespace) -> None:
+    meeting = meeting_of(team)
+    _minutes(team, meeting)
+    services.update_meeting(
+        meeting=meeting, user=team.student, changes={"starts_at": START + dt.timedelta(days=7)}
+    )
+    with pytest.raises(ValidationError) as exc:
+        services.acknowledge(meeting=meeting, user=team.director, kind=Ack.READ, version=1)
+    assert _code(exc) == "not_started"

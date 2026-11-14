@@ -68,8 +68,8 @@ from apps.vault.tests.concurrency import run_threads
 pytestmark = pytest.mark.django_db(transaction=True)
 
 PASSWORD = secrets.token_urlsafe(16)
-NOW = dt.datetime(2027, 1, 5, 9, 0, tzinfo=dt.UTC)
 START = dt.datetime(2027, 1, 12, 13, 0, tzinfo=dt.UTC)
+NOW = START + dt.timedelta(hours=1)  # minutes, decisions and actions open after the start
 
 
 def _marker() -> str:
@@ -308,7 +308,7 @@ def test_a_sub_object_of_another_meeting_of_the_same_thesis_is_refused(
 ) -> None:
     """A decision, action or link id is looked up under the meeting of the URL."""
     mine = _meeting(team)
-    other = _meeting(team, starts_at=START + dt.timedelta(days=1))
+    other = _meeting(team, starts_at=START - dt.timedelta(days=1))
     decision = services.add_decision(meeting=other, user=team.student, text="Décision fictive")
     action = services.add_action(
         meeting=other,

@@ -30,6 +30,11 @@ pytestmark = pytest.mark.django_db(transaction=True)
 D = dt.date
 
 
+@pytest.fixture(autouse=True)
+def _after_the_start(time_machine: Any) -> None:
+    time_machine.move_to(START + dt.timedelta(hours=1), tick=True)
+
+
 @pytest.fixture
 def team() -> SimpleNamespace:
     return make_team()

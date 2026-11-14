@@ -24,7 +24,7 @@ from apps.accounts.tests.factories import MembershipFactory, ThesisFactory, User
 from apps.accounts.tests.helpers import mfa_login
 from apps.meetings import services, views
 from apps.meetings.models import Meeting, MinutesAcknowledgement
-from apps.meetings.tests.helpers import L, marker, meeting_of
+from apps.meetings.tests.helpers import START, L, marker, meeting_of
 from apps.objectives.tests.helpers import D, objective_of
 from apps.vault.audit import AuditAction
 from apps.vault.models import AuditEvent
@@ -32,7 +32,8 @@ from apps.vault.models import AuditEvent
 pytestmark = pytest.mark.django_db(transaction=True)
 
 PASSWORD = secrets.token_urlsafe(16)
-NOW = dt.datetime(2027, 1, 5, 9, 0, tzinfo=dt.UTC)
+# One hour after the helpers' meeting (START): its minutes, decisions and actions are open.
+NOW = dt.datetime(2027, 1, 12, 14, 0, tzinfo=dt.UTC)
 SITE_ORIGIN = "http://testserver"
 RESTRICTED_TEXT = "Contenu restreint"
 ROLES = ("student", "director", "co_supervisor", "tutor", "csi", "guest", "outsider")
@@ -400,16 +401,17 @@ def test_ics_is_refused_outside_the_team(team: SimpleNamespace, role: str) -> No
 
 
 def test_dashboard_card(team: SimpleNamespace, time_machine: Any) -> None:
-    title = marker()
-    meeting = meeting_of(team, title=title, starts_at=NOW + dt.timedelta(days=3))
+    held = meeting_of(team)  # START, already started
     services.add_action(
-        meeting=meeting,
+        meeting=held,
         user=team.student,
         title="Action en retard fictive",
         assignee=team.director,
-        due_date=D(2027, 1, 6),
+        due_date=D(2027, 1, 13),
     )
-    time_machine.move_to(dt.datetime(2027, 1, 7, 9, 0, tzinfo=dt.UTC), tick=True)
+    title = marker()
+    meeting_of(team, title=title, starts_at=NOW + dt.timedelta(days=3))
+    time_machine.move_to(dt.datetime(2027, 1, 14, 9, 0, tzinfo=dt.UTC), tick=True)
     html = (
         _client(team, "director")
         .get(reverse("accounts:dashboard", kwargs={"thesis_id": team.thesis.pk}))
@@ -463,10 +465,39 @@ def test_ics_download_headers_match_the_vault_downloads(team: SimpleNamespace) -
 
 def test_a_sub_object_not_of_the_meeting_is_an_audited_refusal(team: SimpleNamespace) -> None:
     mine = meeting_of(team)
-    other = meeting_of(team, starts_at=NOW + dt.timedelta(days=10))
+    other = meeting_of(team, starts_at=START - dt.timedelta(days=1))
     decision = services.add_decision(meeting=other, user=team.student, text="Décision fictive")
     url = _url(team, "withdraw_decision", meeting_id=mine.pk, decision_id=decision.pk)
     assert _client(team, "student").post(url).status_code == 403
     denied = AuditEvent.objects.filter(action=AuditAction.MEETING_ACCESS_DENIED).last()
     assert denied is not None
     assert denied.details_json["reason"] == "unknown_decision"
+
+
+def test_before_the_start_only_the_agenda_is_offered(team: SimpleNamespace) -> None:
+    later = meeting_of(team, starts_at=NOW + dt.timedelta(days=7))
+    html = _client(team, "student").get(_m(team, later, "detail")).content.decode()
+    assert 'name="agenda"' in html
+    for field in ('name="minutes"', 'name="text"', 'name="assignee"'):
+        assert field not in html
+    assert "à partir du début de la réunion" in html
+    response = _client(team, "student").post(
+        _m(team, later, "minutes"), {"minutes": "CR fictif", "version": "0"}
+    )
+    assert response.status_code == 409
+    for name, data in (("decision", {"text": "Décision"}), ("read", {"version": "1"})):
+        assert _client(team, "student").post(_m(team, later, name), data).status_code == 409
+    started = _client(team, "student").get(_m(team, meeting_of(team), "detail"))
+    assert 'name="minutes"' in started.content.decode()
+
+
+def test_the_video_link_opens_apart_without_referrer(team: SimpleNamespace) -> None:
+    link = "https://visio.example.org/" + marker()
+    meeting = meeting_of(team, visio_link=link)
+    html = _client(team, "director").get(_m(team, meeting, "detail")).content.decode()
+    anchors = re.findall(r"<a\b[^>]*>", html)
+    external = [a for a in anchors if 'href="http' in a]
+    assert external, "the video link is shown"
+    for anchor in external:
+        assert 'target="_blank"' in anchor
+        assert 'rel="noopener noreferrer"' in anchor
