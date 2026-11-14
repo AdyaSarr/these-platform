@@ -1,0 +1,1 @@
+{% load i18n %}{% if kind == "REMINDER" %}{% translate "CIFRE thesis: a meeting takes place tomorrow" %}{% elif kind == "ACTION_OVERDUE" %}{% translate "CIFRE thesis: an action is overdue" %}{% elif kind == "MINUTES" %}{% translate "CIFRE thesis: minutes to read" %}{% else %}{% translate "CIFRE thesis: a meeting has changed" %}{% endif %}

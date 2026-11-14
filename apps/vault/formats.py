@@ -133,6 +133,13 @@ TEXT_SLOTS: Mapping[str, int] = MappingProxyType(
         "objectives.ObjectiveRevision.new_value": 0x0106,
         "objectives.ProgressUpdate.note": 0x0107,
         "objectives.ObjectiveComment.body": 0x0108,
+        "meetings.Meeting.title": 0x0201,
+        "meetings.Meeting.agenda": 0x0202,
+        "meetings.Meeting.minutes": 0x0203,
+        "meetings.Meeting.location_detail": 0x0204,
+        "meetings.Meeting.visio_link": 0x0205,
+        "meetings.Decision.text": 0x0206,
+        "meetings.ActionItem.title": 0x0207,
     }
 )
 RETIRED_SLOT_CODES: frozenset[int] = frozenset()

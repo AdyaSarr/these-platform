@@ -1,0 +1,10 @@
+{% load i18n %}{% if rows %}
+<ul class="linked-actions">
+  {% for action, meeting, title, overdue in rows %}
+    <li>{% include "meetings/_text.html" with value=title %} — {{ action.assignee.get_full_name|default:action.assignee.email }}, {{ action.due_date|date:"SHORT_DATE_FORMAT" }} · {{ action.get_status_display }}{% if overdue %} <strong class="overdue">{% translate "overdue" %}</strong>{% endif %}
+      (<a href="{% url 'meetings:detail' thesis_id=thesis.pk meeting_id=meeting.pk %}">{% translate "meeting" %}</a>)</li>
+  {% endfor %}
+</ul>
+{% else %}
+<p class="muted">{% translate "No action linked to this objective." %}</p>
+{% endif %}

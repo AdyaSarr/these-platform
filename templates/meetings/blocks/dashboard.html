@@ -1,0 +1,18 @@
+{% load i18n %}{# data = meetings.services.dashboard_block #}
+{% if data.next_meeting %}
+<p>{% translate "Next meeting" %}{% if not data.next_is_mine %} <span class="muted">({% translate "you do not attend" %})</span>{% endif %} :
+  <a href="{% url 'meetings:detail' thesis_id=thesis.pk meeting_id=data.next_meeting.pk %}">{% include "meetings/_when.html" with meeting=data.next_meeting %}</a>
+  — {{ data.next_meeting.get_kind_display }}, {{ data.next_meeting.get_location_display }}</p>
+<p>{% include "meetings/_text.html" with value=data.next_title %}</p>
+{% else %}
+<p class="muted">{% translate "No upcoming meeting." %}</p>
+{% endif %}
+<p>{% blocktranslate count counter=data.overdue_count %}{{ counter }} overdue action{% plural %}{{ counter }} overdue actions{% endblocktranslate %}</p>
+{% if data.my_overdue %}
+<ul>
+  {% for action, title in data.my_overdue %}
+    <li>{% include "meetings/_text.html" with value=title %} — {{ action.due_date|date:"SHORT_DATE_FORMAT" }} <strong class="overdue">{% translate "overdue" %}</strong></li>
+  {% endfor %}
+</ul>
+{% endif %}
+<p><a href="{% url 'meetings:list' thesis_id=thesis.pk %}">{% translate "Open the meetings" %}</a></p>

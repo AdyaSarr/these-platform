@@ -121,14 +121,14 @@ def test_no_isolated_documents_link_outside_the_card(team: SimpleNamespace) -> N
     assert f'href="{url}"' in _card(html)
 
 
-def test_only_the_meetings_card_is_still_upcoming(team: SimpleNamespace) -> None:
+def test_no_card_is_still_upcoming(team: SimpleNamespace) -> None:
     html = _dashboard(team, "director")
     upcoming = re.findall(
         r'<section class="block" data-block="([a-z_]+)">((?:(?!</section>).)*?prochain module)',
         html,
         re.S | re.I,
     )
-    assert [key for key, _ in upcoming] == ["meetings"]
+    assert [key for key, _ in upcoming] == []  # the meetings card came with M5a
 
 
 def test_counting_reads_and_audits_nothing(team: SimpleNamespace) -> None:

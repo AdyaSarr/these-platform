@@ -36,8 +36,9 @@ from apps.vault.models import AuditEvent, Document
 pytestmark = [pytest.mark.django_db(transaction=True), pytest.mark.without_vault_keys]
 
 SITE_ORIGIN = "http://testserver"
-# Fields that are in the future by design (end of a validity), not a creation time.
-FUTURE_BY_DESIGN = {"expires_at", "active_until"}
+# Fields that are in the future by design (end of a validity), or a planned
+# instant (a meeting's start, typed by a person), not a creation time.
+FUTURE_BY_DESIGN = {"expires_at", "active_until", "starts_at"}
 
 
 @pytest.fixture
@@ -187,6 +188,34 @@ def test_objectives_and_a_real_curve(demo: scenario.SeedResult) -> None:
     assert points == sorted(points) and len(set(points)) >= 4  # a rising curve
     assert board.overdue == []
     assert board.pending  # a declared result awaits the director
+
+
+def test_meetings_past_and_upcoming(demo: scenario.SeedResult) -> None:
+    from apps.meetings import services as meetings
+    from apps.meetings.models import Meeting, MinutesAcknowledgement
+    from apps.vault.services import RESTRICTED
+
+    thesis = _thesis()
+    student, director = _user(Role.PHD_STUDENT), _user(Role.DIRECTOR)
+    now = timezone.now()
+    past = Meeting.objects.filter(thesis=thesis, starts_at__lt=now)
+    upcoming = Meeting.objects.filter(thesis=thesis, starts_at__gt=now)
+    assert past.count() >= 3 and upcoming.count() >= 3
+    assert {m.level for m in Meeting.objects.filter(thesis=thesis)} >= {
+        "PUBLIC", "INTERNAL_ST", "CONFIDENTIAL", "INTERNAL_LIRMM",
+    }  # fmt: skip
+    assert all(m.minutes_version >= 1 for m in past)
+    assert upcoming.filter(kind=Meeting.Kind.CSI, minutes_version=0).exists()
+    kinds = MinutesAcknowledgement.Kind
+    assert MinutesAcknowledgement.objects.filter(kind=kinds.APPROVED).exists()
+    assert MinutesAcknowledgement.objects.filter(kind=kinds.READ).exists()
+    overdue = list(meetings.overdue_actions(thesis))
+    assert overdue and overdue[0].objective is not None
+    block = meetings.dashboard_block(type("R", (), {"user": student})(), thesis)
+    assert block["next_meeting"] is not None and block["overdue_count"] >= 1
+    # The tutor's meeting is INTERNAL_ST: the director sees it, its texts restricted.
+    tutor_meeting = past.get(kind=Meeting.Kind.ST_TUTOR)
+    assert meetings.meeting_detail(director, tutor_meeting).texts["title"] is RESTRICTED
 
 
 # --------------------------------------------------------------------------- accounts

@@ -1,0 +1,189 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% translate "Meeting" %}{% endblock %}
+{% block content %}
+<p><a href="{% url 'meetings:list' thesis_id=thesis.pk %}">{% translate "Meetings" %}</a></p>
+<h1>{% include "meetings/_text.html" with value=texts.title %}</h1>
+{% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
+
+<p class="muted">
+  {{ meeting.get_kind_display }}{% if meeting.presentation_venue %} — {{ meeting.get_presentation_venue_display }}{% endif %} ·
+  {% include "meetings/_when.html" %} ·
+  {{ meeting.get_location_display }} ·
+  {% translate "Confidentiality" %} : {{ meeting.get_level_display }}
+  {% if meeting.is_cancelled %}· <strong class="overdue">{% translate "cancelled" %}</strong>{% endif %}
+</p>
+{% if texts.location_detail.text or texts.location_detail.restricted %}<p>{% translate "Room or address" %} : {% include "meetings/_text.html" with value=texts.location_detail %}</p>{% endif %}
+{% if texts.visio_link.restricted %}<p>{% translate "Video link" %} : {% include "meetings/_text.html" with value=texts.visio_link %}</p>
+{% elif texts.visio_link.text %}<p>{% translate "Video link" %} : <a href="{{ texts.visio_link.text }}" target="_blank" rel="noopener noreferrer">{{ texts.visio_link.text }}</a></p>{% endif %}
+
+<div class="actions">
+  <a href="{% url 'meetings:ics' thesis_id=thesis.pk meeting_id=meeting.pk %}">{% translate "Add to my calendar (.ics)" %}</a>
+  {% if can_write %}
+    <a href="{% url 'meetings:edit' thesis_id=thesis.pk meeting_id=meeting.pk %}">{% translate "Edit" %}</a>
+    <a href="{% url 'meetings:duplicate' thesis_id=thesis.pk meeting_id=meeting.pk %}">{% translate "Duplicate" %}</a>
+    <form method="post" action="{% url 'meetings:cancel' thesis_id=thesis.pk meeting_id=meeting.pk %}">
+      {% csrf_token %}<button type="submit" class="danger">{% translate "Cancel the meeting" %}</button>
+    </form>
+  {% endif %}
+</div>
+<p class="muted">{% translate "The calendar file contains the type, date and place only, never the title or the texts." %}</p>
+
+<section aria-labelledby="attendees-title">
+  <h2 id="attendees-title">{% translate "Attendees" %}</h2>
+  <ul>
+    {% for row in attendees %}
+      <li>{{ row.user.get_full_name|default:row.user.email }}
+        {% if row.mark == "APPROVED" %}<span class="mark">{% translate "approved the minutes" %}</span>
+        {% elif row.mark == "READ" %}<span class="mark">{% translate "read the minutes" %}</span>
+        {% elif row.older %}<span class="muted">{% translate "marked an earlier version of the minutes" %}</span>{% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+  {% if former_attendees %}
+  <p class="muted">{% translate "Former attendees, no longer members of the thesis:" %}
+    {% for row in former_attendees %}{{ row.user.get_full_name|default:row.user.email }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+  {% endif %}
+</section>
+
+<section aria-labelledby="agenda-title">
+  <h2 id="agenda-title">{% translate "Agenda" %}</h2>
+  {% if agenda_form %}
+    <form class="stack" method="post" action="{% url 'meetings:agenda' thesis_id=thesis.pk meeting_id=meeting.pk %}">
+      {% csrf_token %}
+      {% for field in agenda_form %}<p>{{ field.label_tag }} {{ field }}{% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}{{ field.errors }}</p>{% endfor %}
+      <button type="submit">{% translate "Save the agenda" %}</button>
+    </form>
+    <form method="post" action="{% url 'meetings:prefill' thesis_id=thesis.pk meeting_id=meeting.pk %}">
+      {% csrf_token %}<button type="submit">{% translate "Add the open actions and overdue objectives" %}</button>
+      <span class="helptext">{% translate "Only items that every reader of this meeting may read are copied." %}</span>
+    </form>
+  {% elif texts.agenda.text or texts.agenda.restricted %}
+    <p>{% include "meetings/_text.html" with value=texts.agenda %}</p>
+  {% else %}
+    <p class="muted">{% translate "No agenda." %}</p>
+  {% endif %}
+</section>
+
+<section aria-labelledby="minutes-title">
+  <h2 id="minutes-title">{% translate "Minutes" %}</h2>
+  {% if csi_pending %}
+    <p class="muted">{% translate "The minutes of a CSI meeting will be available soon." %}</p>
+  {% else %}
+    {% if not started %}<p class="muted">{% translate "The minutes, decisions and actions can be written from the start of the meeting." %}</p>{% endif %}
+    {% if meeting.minutes_version %}
+      <p class="muted">{% blocktranslate with version=meeting.minutes_version date=meeting.minutes_updated_at|date:"SHORT_DATETIME_FORMAT" %}Version {{ version }}, {{ date }}{% endblocktranslate %}</p>
+    {% endif %}
+    {% if minutes_form %}
+      <form class="stack" method="post" action="{% url 'meetings:minutes' thesis_id=thesis.pk meeting_id=meeting.pk %}">
+        {% csrf_token %}
+        {% for field in minutes_form %}{% if field.is_hidden %}{{ field }}{% else %}<p>{{ field.label_tag }} {{ field }}{% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}{{ field.errors }}</p>{% endif %}{% endfor %}
+        <button type="submit">{% translate "Save the minutes" %}</button>
+      </form>
+    {% elif texts.minutes.text or texts.minutes.restricted %}
+      <p>{% include "meetings/_text.html" with value=texts.minutes %}</p>
+    {% else %}
+      <p class="muted">{% translate "No minutes yet." %}</p>
+    {% endif %}
+    {% if can_acknowledge %}
+      <div class="actions">
+        {% if not my_mark %}
+          <form method="post" action="{% url 'meetings:read' thesis_id=thesis.pk meeting_id=meeting.pk %}">
+            {% csrf_token %}<input type="hidden" name="version" value="{{ meeting.minutes_version }}">
+            <button type="submit">{% translate "Mark as read" %}</button>
+          </form>
+        {% endif %}
+        {% if my_mark != "APPROVED" %}
+          <form method="post" action="{% url 'meetings:approve' thesis_id=thesis.pk meeting_id=meeting.pk %}">
+            {% csrf_token %}<input type="hidden" name="version" value="{{ meeting.minutes_version }}">
+            <button type="submit">{% translate "Approve the minutes" %}</button>
+          </form>
+          <span class="muted">{% translate "Approving asks for your second factor." %}</span>
+        {% endif %}
+      </div>
+    {% endif %}
+  {% endif %}
+</section>
+
+{% if not csi_pending %}
+<section aria-labelledby="decisions-title">
+  <h2 id="decisions-title">{% translate "Decisions" %}</h2>
+  {% if decisions %}
+  <ul>
+    {% for decision, text in decisions %}
+      <li>{% include "meetings/_text.html" with value=text %}
+        {% if decision.withdrawn_at %}<span class="mark">{% blocktranslate with date=decision.withdrawn_at|date:"SHORT_DATE_FORMAT" %}withdrawn on {{ date }}{% endblocktranslate %}</span>
+        {% elif can_write %}<form method="post" action="{% url 'meetings:withdraw_decision' thesis_id=thesis.pk meeting_id=meeting.pk decision_id=decision.pk %}">{% csrf_token %}<button type="submit">{% translate "Withdraw" %}</button></form>{% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="muted">{% translate "No decision." %}</p>{% endif %}
+  {% if decision_form %}
+    <form class="stack" method="post" action="{% url 'meetings:decision' thesis_id=thesis.pk meeting_id=meeting.pk %}">
+      {% csrf_token %}{{ decision_form.as_p }}
+      <button type="submit">{% translate "Record the decision" %}</button>
+    </form>
+  {% endif %}
+</section>
+
+<section aria-labelledby="actions-title">
+  <h2 id="actions-title">{% translate "Actions" %}</h2>
+  {% if actions %}
+  <ul>
+    {% for row in actions %}
+      <li>{% include "meetings/_text.html" with value=row.title %} — {{ row.action.assignee.get_full_name|default:row.action.assignee.email }}, {{ row.action.due_date|date:"SHORT_DATE_FORMAT" }} · {{ row.action.get_status_display }}{% if row.overdue %} <strong class="overdue">{% translate "overdue" %}</strong>{% endif %}
+        {% if row.action.objective_id %}(<a href="{% url 'objectives:detail' thesis_id=thesis.pk objective_id=row.action.objective_id %}">{% translate "linked objective" %}</a>){% endif %}
+        {% if row.can_status %}
+          <form method="post" action="{% url 'meetings:action_status' thesis_id=thesis.pk meeting_id=meeting.pk action_id=row.action.pk %}">
+            {% csrf_token %}
+            <label for="status-{{ row.action.pk }}">{% translate "Status" %}</label>
+            <select name="status" id="status-{{ row.action.pk }}">
+              {% for value, label in status_choices %}<option value="{{ value }}"{% if value == row.action.status %} selected{% endif %}>{{ label }}</option>{% endfor %}
+            </select>
+            <button type="submit">{% translate "Update" %}</button>
+          </form>
+        {% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="muted">{% translate "No action." %}</p>{% endif %}
+  {% if action_form %}
+    <form class="stack" method="post" action="{% url 'meetings:action' thesis_id=thesis.pk meeting_id=meeting.pk %}">
+      {% csrf_token %}{{ action_form.as_p }}
+      <button type="submit">{% translate "Record the action" %}</button>
+    </form>
+  {% endif %}
+</section>
+{% endif %}
+
+<section aria-labelledby="documents-title">
+  <h2 id="documents-title">{% translate "Linked documents" %}</h2>
+  {% if documents %}
+  <ul>
+    {% for document, link in documents %}
+      <li><a href="{% url 'vault:document' thesis_id=thesis.pk document_id=document.pk %}">{{ document.title }}</a> ({{ document.get_confidentiality_display }})
+        {% if can_write %}<form method="post" action="{% url 'meetings:unlink_document' thesis_id=thesis.pk meeting_id=meeting.pk link_id=link.pk %}">{% csrf_token %}<button type="submit">{% translate "Unlink" %}</button></form>{% endif %}
+      </li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  {% if hidden_documents %}<p class="muted">{% blocktranslate count counter=hidden_documents %}{{ counter }} linked document you may not read.{% plural %}{{ counter }} linked documents you may not read.{% endblocktranslate %}</p>{% endif %}
+  {% if not documents and not hidden_documents %}<p class="muted">{% translate "No linked document." %}</p>{% endif %}
+  {% if document_form and document_form.fields.document.choices %}
+    <form class="stack" method="post" action="{% url 'meetings:document' thesis_id=thesis.pk meeting_id=meeting.pk %}">
+      {% csrf_token %}{{ document_form.as_p }}
+      <button type="submit">{% translate "Link the document" %}</button>
+    </form>
+  {% endif %}
+</section>
+
+{% if level_form %}
+<section aria-labelledby="level-title">
+  <h2 id="level-title">{% translate "Confidentiality" %}</h2>
+  <form class="stack" method="post" action="{% url 'meetings:level' thesis_id=thesis.pk meeting_id=meeting.pk %}">
+    {% csrf_token %}{{ level_form.as_p }}
+    <button type="submit">{% translate "Change the confidentiality" %}</button>
+    <span class="muted">{% translate "Asks for your second factor. Every attendee must be able to read the new level." %}</span>
+  </form>
+</section>
+{% endif %}
+{% endblock %}

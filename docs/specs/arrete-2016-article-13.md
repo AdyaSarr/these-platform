@@ -1,0 +1,32 @@
+# Arrêté du 25 mai 2016 — Article 13 (version en vigueur, modifiée par l'arrêté du 26 août 2022)
+
+Source : https://www.legifrance.gouv.fr/loda/id/LEGISCTA000032588101 (Titre II, article 13)
+Consulté le : 14/11/2026
+
+---
+Article 13
+En vigueur depuis le 31 décembre 2022
+Modifié par Arrêté du 26 août 2022 - art. 11
+
+Un comité de suivi individuel du doctorant veille au bon déroulement du cursus en s'appuyant sur la charte du doctorat et la convention de formation.
+
+
+Le comité de suivi individuel du doctorant assure un accompagnement de ce dernier pendant toute la durée du doctorat. Il se réunit obligatoirement avant l'inscription en deuxième année et ensuite avant chaque nouvelle inscription jusqu'à la fin du doctorat.
+
+
+Les entretiens sont organisés sous la forme de trois étapes distinctes : présentation de l'avancement des travaux et discussions, entretien avec le doctorant sans la direction de thèse, entretien avec la direction de thèse sans le doctorant.
+
+
+Au cours de l'entretien avec le doctorant, le comité évalue les conditions de sa formation et les avancées de sa recherche. Lors de ce même entretien, il est particulièrement vigilant à repérer toute forme de conflit, de discrimination, de harcèlement moral ou sexuel ou d'agissement sexiste. Il formule des recommandations et transmet un rapport de l'entretien au directeur de l'école doctorale, au doctorant et au directeur de thèse.
+
+
+En cas de difficulté, le comité de suivi individuel du doctorant alerte l'école doctorale, qui prend toute mesure nécessaire relative à la situation du doctorant et au déroulement de son doctorat.
+
+
+Dès que l'école doctorale prend connaissance d'actes de violence, de discrimination, de harcèlement moral ou sexuel ou d'agissements sexistes, elle procède à un signalement à la cellule d'écoute de l'établissement contre les discriminations et les violences sexuelles.
+
+
+Les modalités de composition, d'organisation et de fonctionnement de ce comité sont proposées par le conseil de l'école doctorale. L'école doctorale veille à ce que dans la mesure du possible, la composition du comité de suivi individuel du doctorant reste constante tout au long de son doctorat. Le comité de suivi individuel du doctorant comprend au moins un membre spécialiste de la discipline ou en lien avec le domaine de la thèse. Dans la mesure du possible, le comité de suivi individuel du doctorant comprend un membre extérieur à l'établissement. Il comprend également un membre non spécialiste extérieur au domaine de recherche du travail de la thèse. Les membres de ce comité ne participent pas à la direction du travail du doctorant. L'école doctorale veille à ce que le doctorant soit consulté sur la composition de son comité de suivi individuel, avant sa réunion.
+
+NOTA:
+Conformément à l’article 21 de l’arrêté du 26 août 2022 (NOR : ESRS2220637A), ces dispositions entrent en vigueur après avis et délibération des instances compétentes des établissements publics d'enseignement supérieur et au plus tard le 31 décembre 2022.

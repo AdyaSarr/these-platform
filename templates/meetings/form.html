@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% if meeting %}{% translate "Edit the meeting" %}{% else %}{% translate "New meeting" %}{% endif %}{% endblock %}
+{% block content %}
+<h1>{% if meeting %}{% translate "Edit the meeting" %}{% else %}{% translate "New meeting" %}{% endif %}</h1>
+<p><a href="{% if meeting %}{% url 'meetings:detail' thesis_id=thesis.pk meeting_id=meeting.pk %}{% else %}{% url 'meetings:list' thesis_id=thesis.pk %}{% endif %}">{% translate "Back" %}</a></p>
+<form class="stack" method="post">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  {% for field in form %}
+    <p>{{ field.label_tag }} {{ field }}{% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}{{ field.errors }}</p>
+  {% endfor %}
+  {% if meeting %}<p class="muted">{% translate "The confidentiality has its own form on the meeting's page." %}</p>{% endif %}
+  <button type="submit">{% translate "Save" %}</button>
+</form>
+{% endblock %}

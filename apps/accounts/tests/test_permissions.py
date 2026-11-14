@@ -59,6 +59,7 @@ EXPECTED: dict[Action, set[Role]] = {
     # Réunions: écrire x4 / — / une réunion (per-object grant, M5)
     A.MEETING_READ: _SUPERVISION,
     A.MEETING_WRITE: _SUPERVISION,
+    A.MEETING_ACKNOWLEDGE: _SUPERVISION,
     # Documents: écrire / lire, commenter x3 / rapport CSI / projet partagé (per-object, M2)
     A.DOCUMENT_READ: _SUPERVISION,
     A.DOCUMENT_WRITE: {R.PHD_STUDENT},

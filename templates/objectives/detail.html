@@ -1,4 +1,4 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}{% load i18n meetings_tags %}
 {% block title %}{% translate "Objective" %}{% endblock %}
 {% block content %}
 <p><a href="{% url 'objectives:dashboard' thesis_id=thesis.pk %}?year={{ objective.year.number }}">{% translate "Objectives" %}</a></p>
@@ -57,6 +57,8 @@
   <p class="muted">{% translate "No change since approval." %}</p>
   {% endif %}
 </section>
+
+{% linked_actions objective %}
 
 {% if can_comment %}
 <section aria-labelledby="comments-title">

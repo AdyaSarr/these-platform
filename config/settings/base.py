@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "apps.vault",
     "apps.admin_file",
     "apps.objectives",
+    "apps.meetings",
     # Authentication: sign-in, password reset, mandatory second factor (M1).
     "allauth",
     "allauth.account",

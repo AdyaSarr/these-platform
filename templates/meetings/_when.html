@@ -1,0 +1,1 @@
+{% load i18n tz %}{% timezone "Europe/Paris" %}{{ meeting.starts_at|date:"l j F Y, H:i" }} ({{ meeting.duration_minutes }} min){% endtimezone %}

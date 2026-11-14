@@ -1,0 +1,5 @@
+{% load i18n %}{% if kind == "ACTION_OVERDUE" %}{% translate "An action assigned to you is overdue on the platform:" %}{% else %}{% translate "A meeting concerns you on the platform:" %}{% endif %}
+
+{{ url }}
+
+{% translate "This message contains no detail: sign in to see it." %}

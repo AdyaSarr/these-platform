@@ -221,6 +221,17 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       *Vérifier* : `systemctl list-timers` montre le timer ; la sortie de la
       commande ne contient que des nombres (ni libellé, ni adresse).
 
+- [ ] **Courriels des réunions (M5a) : un timer quotidien.**
+      *Timer systemd* (utilisateur du serveur), chaque jour à 07 h 00 Europe/Paris
+      (`OnCalendar=*-*-* 07:00:00 Europe/Paris`, `Persistent=true`) :
+      ```
+      manage.py meetings_reminders
+      ```
+      Rappel des réunions du lendemain aux participants, action en retard (J+1,
+      une fois) à son responsable, nouvel essai des courriels en échec (3 au plus).
+      Dates à Paris ; la relancer n'envoie rien deux fois (`MeetingNotification`,
+      contrainte d'unicité). *Vérifier* : la sortie ne contient que des nombres.
+
 - [ ] **Résumé hebdomadaire des objectifs (M4) : un timer le lundi.**
       *Timer systemd* (utilisateur du serveur), chaque lundi à 08 h 00 Europe/Paris
       (`OnCalendar=Mon *-*-* 08:00:00 Europe/Paris`, `Persistent=true` pour

@@ -46,6 +46,8 @@ from apps.accounts.roles import Role
 from apps.admin_file import services as admin_file
 from apps.admin_file.models import DueDateReason, Reason, RequiredItem
 from apps.core.confidentiality import ConfidentialityLevel as Level
+from apps.meetings import services as meetings
+from apps.meetings.models import Meeting, MinutesAcknowledgement
 from apps.objectives import services as objectives
 from apps.objectives.models import Category, Objective, Status
 from apps.objectives.years import add_years
@@ -173,6 +175,48 @@ class SeedResult:
     links: tuple[AccountLink, ...]
 
 
+# --------------------------------------------------------------------------- meetings
+
+TUTOR_MEETING: dict[str, object] = {
+    "kind": "ST_TUTOR",
+    "duration_minutes": 60,
+    "location": "ROUSSET",
+    "level": Level.INTERNAL_ST,
+    "title": "Point mensuel avec le tuteur (fictif)",
+    "location_detail": "Salle fictive B",
+    "attendees": [Role.PHD_STUDENT, Role.INDUSTRIAL_TUTOR],
+}
+TUTOR_AGENDA = "1. Accès au banc fictif\n2. Calendrier des mesures fictives"
+TUTOR_MINUTES = (
+    "Compte rendu fictif : le banc est disponible deux jours par semaine ; "
+    "les mesures se font sur le circuit fictif uniquement."
+)
+TRIPARTITE_MEETING: dict[str, object] = {
+    "kind": "TRIPARTITE",
+    "duration_minutes": 90,
+    "location": "VISIO",
+    "level": Level.CONFIDENTIAL,
+    "title": "Réunion tripartite du trimestre (fictive)",
+    "visio_link": "https://visio.example.org/tripartite-fictive",
+    "attendees": [Role.PHD_STUDENT, Role.DIRECTOR, Role.INDUSTRIAL_TUTOR],
+}
+TRIPARTITE_AGENDA = "1. Bilan du trimestre (fictif)\n2. Stratégie de publication"
+TRIPARTITE_MINUTES = (
+    "Compte rendu fictif : bilan conforme au plan ; un premier article est envisagé "
+    "après la relecture de l'entreprise fictive."
+)
+SEMINAR: dict[str, object] = {
+    "kind": "PRESENTATION",
+    "presentation_venue": "TEAM_SEMINAR",
+    "duration_minutes": 45,
+    "location": "MONTPELLIER",
+    "level": Level.PUBLIC,
+    "title": "Séminaire d'équipe : présentation du sujet (fictive)",
+    "attendees": [Role.PHD_STUDENT, Role.DIRECTOR, Role.CO_SUPERVISOR],
+}
+SEMINAR_MINUTES = "Présentation fictive du sujet ; questions sur le modèle de menace fictif."
+
+
 # --------------------------------------------------------------------------- dates
 
 
@@ -240,6 +284,8 @@ class _Run:
     thesis: Thesis | None = None
     objectives: dict[str, Objective] = field(default_factory=dict)
     note: Document | None = None
+    meetings: dict[str, Meeting] = field(default_factory=dict)
+    summary: Document | None = None
 
     # ---------------------------------------------------------------- machinery
 
@@ -445,6 +491,115 @@ class _Run:
             user=self.users[Role.PHD_STUDENT],
         )
 
+    # ---------------------------------------------------------------- meetings
+
+    def meeting(self, key: str, role: Role, starts_at: dt.datetime, **fields: object) -> None:
+        roles = fields.pop("attendees")
+        self.meetings[key] = meetings.create_meeting(
+            thesis=self.t,
+            user=self.users[role],
+            starts_at=starts_at,
+            attendees=[self.users[r] for r in roles],  # type: ignore[attr-defined]
+            **fields,  # type: ignore[arg-type]
+        )
+
+    def agenda(self, key: str, role: Role, text: str) -> None:
+        meetings.save_agenda(meeting=self.meetings[key], user=self.users[role], agenda=text)
+
+    def minutes(self, key: str, role: Role, text: str) -> None:
+        meeting = Meeting.objects.get(pk=self.meetings[key].pk)
+        meetings.save_minutes(
+            meeting=meeting, user=self.users[role], minutes=text, version=meeting.minutes_version
+        )
+
+    def decide(self, key: str, role: Role, text: str) -> None:
+        meetings.add_decision(meeting=self.meetings[key], user=self.users[role], text=text)
+
+    def assign(
+        self, key: str, role: Role, title: str, assignee: Role, due: dt.date, objective: str = ""
+    ) -> None:
+        meetings.add_action(
+            meeting=self.meetings[key],
+            user=self.users[role],
+            title=title,
+            assignee=self.users[assignee],
+            due_date=due,
+            objective=self.objectives[objective] if objective else None,
+        )
+
+    def mark(self, key: str, role: Role, kind: str) -> None:
+        meeting = Meeting.objects.get(pk=self.meetings[key].pk)
+        # recent_mfa=True for an approval: stated by the command (module docstring).
+        meetings.acknowledge(
+            meeting=meeting,
+            user=self.users[role],
+            kind=kind,
+            version=meeting.minutes_version,
+            recent_mfa=kind == MinutesAcknowledgement.Kind.APPROVED,
+        )
+
+    def finish_tutor_action(self) -> None:
+        action = self.meetings["tutor"].actions.get(assignee=self.users[Role.INDUSTRIAL_TUTOR])
+        meetings.set_action_status(
+            action=action, user=self.users[Role.INDUSTRIAL_TUTOR], status="DONE"
+        )
+
+    def link_summary(self) -> None:
+        if self.summary is None:
+            raise ScenarioError("no public summary yet")
+        meetings.link_document(
+            meeting=self.meetings["seminar"],
+            user=self.users[Role.PHD_STUDENT],
+            document=self.summary,
+        )
+
+    def store_summary(self) -> None:
+        self.summary = self.store("Résumé public du sujet (fictif)", Level.PUBLIC)
+
+    def upcoming(self) -> None:
+        """Meetings to come, a few days after the real time (created at month 4)."""
+        student, director, co = Role.PHD_STUDENT, Role.DIRECTOR, Role.CO_SUPERVISOR
+        today = timezone.localdate(self.real_now)
+
+        def on(days: int, hour: int) -> dt.datetime:
+            day = today + dt.timedelta(days=days)
+            return timezone.make_aware(dt.datetime.combine(day, dt.time(hour)))
+
+        self.meeting(
+            "supervision",
+            student,
+            on(2, 10),
+            kind=Meeting.Kind.SUPERVISION,
+            duration_minutes=60,
+            location=Meeting.Location.VISIO,
+            level=Level.INTERNAL_LIRMM,
+            title="Point d'encadrement : banc de mesure (fictif)",
+            visio_link="https://visio.example.org/point-fictif",
+            attendees=[student, director, co],
+        )
+        self.agenda(
+            "supervision",
+            student,
+            "1. Résultats fictifs du banc\n2. Plan du chapitre d'état de l'art",
+        )
+        self.meetings["tutor-next"] = meetings.duplicate_meeting(
+            meeting=self.meetings["tutor"],
+            user=self.users[student],
+            starts_at=on(9, 14),
+        )
+        self.meeting(
+            "csi",
+            student,
+            on(20, 9),
+            kind=Meeting.Kind.CSI,
+            duration_minutes=120,
+            location=Meeting.Location.MONTPELLIER,
+            level=Level.PUBLIC,
+            title="Comité de suivi individuel, année 1 (fictif)",
+            attendees=[student, director],
+        )
+        self.agenda("csi", student, "Présentation de l'avancement (fictive), puis échanges.")
+
     # ---------------------------------------------------------------- the story
 
     def play(self) -> None:
@@ -477,7 +632,69 @@ class _Run:
             lambda: self.approve(tutor, "cifre_agreement"),
         )
         s("progress-0", end(0), lambda: self.progress(MONTHLY_PROGRESS[0]))
+        s(
+            "meeting-tutor",
+            at(1, 5, 10),
+            lambda: self.meeting("tutor", Role.PHD_STUDENT, at(1, 12, 14), **TUTOR_MEETING),
+            lambda: self.agenda("tutor", Role.PHD_STUDENT, TUTOR_AGENDA),
+        )
+        s(
+            "meeting-tutor-minutes",
+            at(1, 12, 16),
+            lambda: self.minutes("tutor", Role.PHD_STUDENT, TUTOR_MINUTES),
+            lambda: self.decide("tutor", tutor, "Les mesures restent sur le banc fictif."),
+            lambda: self.assign(
+                "tutor",
+                Role.PHD_STUDENT,
+                "Envoyer le protocole de mesure fictif",
+                tutor,
+                _day(self.anchor, 1, 26),
+            ),
+            lambda: self.assign(
+                "tutor",
+                tutor,
+                "Préparer le banc de simulation",
+                Role.PHD_STUDENT,
+                _day(self.anchor, 2, 28),
+                "bench",
+            ),
+        )
+        s("meeting-tutor-approved", at(1, 13, 9), lambda: self.mark("tutor", tutor, "APPROVED"))
+        s("meeting-tutor-action-done", at(1, 25, 10), self.finish_tutor_action)
         s("progress-1", end(1), lambda: self.progress(MONTHLY_PROGRESS[1]))
+        s(
+            "meeting-tripartite",
+            at(2, 1, 10),
+            lambda: self.meeting(
+                "tripartite", Role.PHD_STUDENT, at(2, 20, 10), **TRIPARTITE_MEETING
+            ),
+            lambda: self.agenda("tripartite", Role.PHD_STUDENT, TRIPARTITE_AGENDA),
+        )
+        s(
+            "meeting-tripartite-minutes",
+            at(2, 20, 15),
+            lambda: self.minutes("tripartite", Role.PHD_STUDENT, TRIPARTITE_MINUTES),
+            lambda: self.decide(
+                "tripartite", director, "Le premier article vise une conférence fictive."
+            ),
+            lambda: self.decide(
+                "tripartite", tutor, "Relecture ST de quatre semaines avant soumission."
+            ),
+            lambda: self.assign(
+                "tripartite",
+                director,
+                "Rédiger le plan de l'article fictif",
+                Role.PHD_STUDENT,
+                _day(self.anchor, 3, 10),
+                "sota",
+            ),
+        )
+        s(
+            "meeting-tripartite-marks",
+            at(2, 21, 9),
+            lambda: self.mark("tripartite", director, "APPROVED"),
+            lambda: self.mark("tripartite", tutor, "READ"),
+        )
         s(
             "collaboration",
             at(2, 25, 10),
@@ -490,8 +707,19 @@ class _Run:
             lambda: self.approve(director, "collaboration_contract"),
         )
         s("progress-2", end(2), lambda: self.progress(MONTHLY_PROGRESS[2]))
+        s(
+            "seminar",
+            at(3, 1, 10),
+            lambda: self.meeting("seminar", Role.PHD_STUDENT, at(3, 14, 14), **SEMINAR),
+        )
         s("side-objective", at(3, 10, 10), lambda: self.create_objectives(SIDE_TOOL))
         s("side-objective-approved", at(3, 11, 9), lambda: self.approve_objective("tool"))
+        s(
+            "seminar-minutes",
+            at(3, 14, 17),
+            lambda: self.minutes("seminar", Role.PHD_STUDENT, SEMINAR_MINUTES),
+        )
+        s("seminar-read", at(3, 15, 9), lambda: self.mark("seminar", Role.CO_SUPERVISOR, "READ"))
         s(
             "director-comment",
             at(3, 15, 17),
@@ -527,14 +755,12 @@ class _Run:
             at(4, 20, 10),
             lambda: self.submit("doctoral_charter", "Charte du doctorat (fictive)"),
         )
-        s(
-            "public-summary",
-            at(4, 22, 10),
-            lambda: self.store("Résumé public du sujet (fictif)", Level.PUBLIC),
-        )
+        s("public-summary", at(4, 22, 10), self.store_summary)
+        s("seminar-document", at(4, 22, 12), self.link_summary)
         s("note", at(4, 23, 10), self.store_note)
         s("due-date-proposed", at(4, 25, 10), self.propose_due_date)
         s("charter-rejected", at(4, 27, 15), self.reject_charter)
+        s("upcoming-meetings", at(4, 28, 10), self.upcoming)
         s("progress-4", end(4), lambda: self.progress(MONTHLY_PROGRESS[4]))
         # The last steps happen today, a few hours before the real time.
         hour = dt.timedelta(hours=1)
