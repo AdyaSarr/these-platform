@@ -1,0 +1,26 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% translate "Decision register" %}{% endblock %}
+{% block content %}
+<h1>{% translate "Decision register" %}</h1>
+<p><a href="{% url 'meetings:list' thesis_id=thesis.pk %}">{% translate "Meetings" %}</a></p>
+<form method="get" class="stack">
+  {% for field in form %}<p>{{ field.label_tag }} {{ field }}{{ field.errors }}</p>{% endfor %}
+  <button type="submit">{% translate "Filter" %}</button>
+</form>
+{% if rows %}
+<table class="table decisions">
+  <thead><tr><th>{% translate "Meeting" %}</th><th>{% translate "Decision" %}</th></tr></thead>
+  <tbody>
+  {% for decision, meeting, text, meeting_title in rows %}
+    <tr>
+      <td>{% include "meetings/_when.html" %} — {{ meeting.get_kind_display }}<br>
+        <a href="{% url 'meetings:detail' thesis_id=thesis.pk meeting_id=meeting.pk %}">{% include "meetings/_text.html" with value=meeting_title %}</a></td>
+      <td>{% include "meetings/_text.html" with value=text %}{% if decision.withdrawn_at %} <span class="mark">{% blocktranslate with date=decision.withdrawn_at|date:"SHORT_DATE_FORMAT" %}withdrawn on {{ date }}{% endblocktranslate %}</span>{% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+<p class="muted">{% translate "No decision." %}</p>
+{% endif %}
+{% endblock %}

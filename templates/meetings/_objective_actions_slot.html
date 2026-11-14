@@ -1,0 +1,8 @@
+{% load i18n %}{% if show %}
+<section aria-labelledby="linked-actions-title">
+  <h2 id="linked-actions-title">{% translate "Linked actions" %}</h2>
+  <div hx-get="{% url 'meetings:objective_actions' thesis_id=thesis.pk objective_id=objective.pk %}" hx-trigger="load" hx-swap="innerHTML">
+    <p><a href="{% url 'meetings:objective_actions' thesis_id=thesis.pk objective_id=objective.pk %}">{% translate "Show the linked actions" %}</a></p>
+  </div>
+</section>
+{% endif %}

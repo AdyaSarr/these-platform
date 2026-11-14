@@ -31,6 +31,7 @@ dev = [
     "detect-secrets>=1.5",
     "time-machine>=2.16",
     "pytest-randomly>=5.1.0",
+    "icalendar>=7.3.0",
 ]
 
 [tool.uv]

@@ -31,7 +31,7 @@ class DashboardBlock:
     data: str = ""
 
 
-# Later modules replace the "upcoming" placeholder by their own block template.
+# Each module gives its block template (and its data function, resolved at render time).
 DASHBOARD_BLOCKS: tuple[DashboardBlock, ...] = (
     DashboardBlock("team", Action.VIEW_TEAM, _("Team"), "accounts/blocks/team.html"),
     DashboardBlock(
@@ -41,7 +41,13 @@ DASHBOARD_BLOCKS: tuple[DashboardBlock, ...] = (
         "objectives/blocks/dashboard.html",
         data="apps.objectives.services.dashboard_block",
     ),
-    DashboardBlock("meetings", Action.MEETING_READ, _("Meetings"), "accounts/blocks/upcoming.html"),
+    DashboardBlock(
+        "meetings",
+        Action.MEETING_READ,
+        _("Meetings"),
+        "meetings/blocks/dashboard.html",
+        data="apps.meetings.services.dashboard_block",
+    ),
     DashboardBlock(
         "documents",
         Action.DOCUMENT_READ,

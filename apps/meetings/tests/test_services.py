@@ -44,11 +44,11 @@ def _code(exc: pytest.ExceptionInfo[ValidationError]) -> str | None:
 
 
 def _details(action: AuditAction) -> list[dict[str, Any]]:
-    return [e.details for e in AuditEvent.objects.filter(action=action).order_by("seq")]
+    return [e.details_json for e in AuditEvent.objects.filter(action=action).order_by("seq")]
 
 
 def _no_text_in_audit(*texts: str) -> None:
-    dumped = json.dumps([e.details for e in AuditEvent.objects.all()], ensure_ascii=False)
+    dumped = json.dumps([e.details_json for e in AuditEvent.objects.all()], ensure_ascii=False)
     for text in texts:
         assert text not in dumped
 
