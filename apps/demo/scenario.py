@@ -44,7 +44,7 @@ from apps.accounts.forms import InviteForm
 from apps.accounts.models import Invitation, Organization, Thesis, User
 from apps.accounts.roles import Role
 from apps.admin_file import services as admin_file
-from apps.admin_file.models import Reason, RequiredItem
+from apps.admin_file.models import DueDateReason, Reason, RequiredItem
 from apps.core.confidentiality import ConfidentialityLevel as Level
 from apps.objectives import services as objectives
 from apps.objectives.models import Category, Objective, Status
@@ -144,6 +144,8 @@ RECENT_PROGRESS = {"counter": (50, _IP), "training": (50, _IP)}
 DIRECTOR_COMMENT = "Commentaire fictif : bonne piste, à confirmer."
 CO_SUPERVISOR_COMMENT = "Commentaire fictif : prévoir un second scénario."
 CHARTER_REJECTION = "Signature du directeur manquante en page 2 (document fictif)."
+CONTRACT_REOPENING = "Avenant fictif au contrat (démonstration)."
+DUE_DATE_PROPOSAL = "Convention en attente de l'école doctorale (fictif)."
 
 
 # --------------------------------------------------------------------------- results
@@ -249,6 +251,10 @@ class _Run:
         with time_machine.travel(when, tick=True):
             for action in actions:
                 action()
+            # Notifications of the step (reopening, due dates) went to the in-memory
+            # mailbox too: fictional people, nothing to read; the next invitation
+            # link must be the only e-mail there.
+            self.outbox.clear()
             if timezone.now() >= when + STEP_WINDOW:
                 raise ScenarioError(f"step {name}: took longer than {STEP_WINDOW}")
         self.steps.append(StepWindow(name, when, when + STEP_WINDOW))
@@ -327,6 +333,28 @@ class _Run:
     def approve(self, role: Role, *codes: str) -> None:
         for code in codes:
             admin_file.approve(item=self.item(code), user=self.users[role])
+
+    def reopen_contract(self) -> None:
+        """The student reopens a piece the tutor had validated: the tutor is notified."""
+        admin_file.reopen(
+            item=self.item("employment_contract"),
+            user=self.users[Role.PHD_STUDENT],
+            reason=Reason.AMENDMENT,
+            comment=CONTRACT_REOPENING,
+        )
+
+    def propose_due_date(self) -> None:
+        """A pending proposal for the director (training agreement, academic part)."""
+        item = self.item("training_agreement")
+        if item.due_date is None:
+            raise ScenarioError("the training agreement has a due date (catalogue)")
+        admin_file.propose_due_date(
+            item=item,
+            user=self.users[Role.PHD_STUDENT],
+            due_date=item.due_date + dt.timedelta(days=30),
+            reason=DueDateReason.WAITING_THIRD_PARTY,
+            comment=DUE_DATE_PROPOSAL,
+        )
 
     def reject_charter(self) -> None:
         admin_file.reject(
@@ -492,6 +520,7 @@ class _Run:
             at(4, 10, 11),
             lambda: self.comment(Role.CO_SUPERVISOR, "bench", CO_SUPERVISOR_COMMENT),
         )
+        s("contract-reopened", at(4, 12, 10), self.reopen_contract)
         s("side-objective-dropped", at(4, 15, 10), lambda: self.drop("tool"))
         s(
             "charter",
@@ -504,6 +533,7 @@ class _Run:
             lambda: self.store("Résumé public du sujet (fictif)", Level.PUBLIC),
         )
         s("note", at(4, 23, 10), self.store_note)
+        s("due-date-proposed", at(4, 25, 10), self.propose_due_date)
         s("charter-rejected", at(4, 27, 15), self.reject_charter)
         s("progress-4", end(4), lambda: self.progress(MONTHLY_PROGRESS[4]))
         # The last steps happen today, a few hours before the real time.
