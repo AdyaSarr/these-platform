@@ -38,6 +38,7 @@ def notify(
     *,
     window: str = "",
     exclude: User | None = None,
+    link_id: uuid.UUID | None = None,
 ) -> int:
     """Record and queue one notification per new (kind, target, window, recipient)."""
     members = internal_member_ids(thesis.pk)
@@ -48,8 +49,9 @@ def notify(
         try:
             with transaction.atomic():
                 row = ConferenceNotification.objects.create(
-                    thesis=thesis, kind=kind, target_id=target_id, window=window, recipient=user
-                )
+                    thesis=thesis, kind=kind, target_id=target_id, window=window,
+                    recipient=user, link_id=link_id,
+                )  # fmt: skip
                 _queue(row)
         except IntegrityError:  # already recorded (a twin run, or an earlier one)
             continue

@@ -17,7 +17,6 @@ from apps.meetings.members import is_internal_member
 
 from .models import (
     ConferenceNotification,
-    Deadline,
     NotificationKind,
     NotificationStatus,
     StApproval,
@@ -29,22 +28,20 @@ logger = logging.getLogger(__name__)
 def _url(row: ConferenceNotification) -> str:
     """The page the e-mail links to; ids only in the URL."""
     thesis = {"thesis_id": row.thesis_id}
-    if row.kind == NotificationKind.DEADLINE:
-        deadline = Deadline.objects.filter(pk=row.target_id).first()
-        if deadline is not None:
-            return reverse(
-                "conferences:edition", kwargs={**thesis, "edition_id": deadline.edition_id}
-            )
-    if row.kind in (NotificationKind.APPROVAL_REQUESTED, NotificationKind.APPROVAL_DECIDED,
-                    NotificationKind.APPROVAL_PENDING):  # fmt: skip
+    if row.kind == NotificationKind.DEADLINE and row.link_id:
+        return reverse("conferences:edition", kwargs={**thesis, "edition_id": row.link_id})
+    if (
+        row.kind in (NotificationKind.REQUEST_DUE, NotificationKind.APPROVAL_PENDING)
+        and row.link_id
+    ):
+        return reverse("conferences:submission", kwargs={**thesis, "submission_id": row.link_id})
+    if row.kind in (NotificationKind.APPROVAL_REQUESTED, NotificationKind.APPROVAL_DECIDED):
         approval = StApproval.objects.filter(pk=row.target_id).first()
         if approval is not None:
             return reverse(
                 "conferences:submission",
                 kwargs={**thesis, "submission_id": approval.submission_id},
             )
-    if row.kind == NotificationKind.REQUEST_DUE:
-        return reverse("conferences:submission", kwargs={**thesis, "submission_id": row.target_id})
     if row.kind == NotificationKind.POLICY_CHANGED:
         return reverse("conferences:policy", kwargs=thesis)
     return reverse("conferences:deadlines", kwargs=thesis)

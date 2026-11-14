@@ -535,6 +535,9 @@ class ConferenceNotification(TimeStampedModel):
     )
     kind = models.CharField(max_length=20, choices=NotificationKind.choices, editable=False)
     target_id = models.UUIDField(editable=False)
+    # The page the e-mail links to: an edition (DEADLINE) or a submission (REQUEST_DUE,
+    # APPROVAL_PENDING); target_id names the event (deadline and its instant, etc.).
+    link_id = models.UUIDField(null=True, blank=True, editable=False)
     window = models.CharField(max_length=4, choices=Window.choices, blank=True, default="")
     recipient = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+", editable=False
