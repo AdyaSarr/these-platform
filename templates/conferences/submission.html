@@ -60,8 +60,8 @@
   <p class="muted">{% translate "Submitting, publishing the final version and posting a preprint each need ST's approval of the exact version, for ST work." %}</p>
   {% if approvals %}
   <ul>
-    {% for approval, comment in approvals %}
-      <li>{{ approval.get_purpose_display }} — {{ approval.version.document.title }} v{{ approval.version.version }} ·
+    {% for approval, comment, document_title in approvals %}
+      <li>{{ approval.get_purpose_display }} — {% if document_title %}{{ document_title }}{% else %}<span class="restricted">{% translate "Restricted document" %}</span>{% endif %} v{{ approval.version.version }} ·
         <strong>{{ approval.get_decision_display }}</strong>{% if approval.reason %} ({{ approval.get_reason_display }}){% endif %}
         · {% blocktranslate with days=approval.review_days %}period {{ days }} days{% endblocktranslate %}{% if approval.request_due %} · {% blocktranslate with date=approval.request_due|date:"SHORT_DATE_FORMAT" %}to request by {{ date }}{% endblocktranslate %}{% endif %}
         {% if comment.text or comment.restricted %}<br>{% translate "Comment" %} : {% include "conferences/_text.html" with value=comment %}{% endif %}

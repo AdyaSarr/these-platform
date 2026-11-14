@@ -83,6 +83,8 @@ CONFLICTS = frozenset(
         "duplicate",
         "not_st_work",
         "no_tutor",
+        "tutor_cannot_read",
+        "target_locked",
     }
 )
 
@@ -556,7 +558,17 @@ def render_submission(
         "submission": s,
         "texts": {n: shown(v) for n, v in detail.texts.items()},
         "authors": detail.authors,
-        "approvals": [(a.approval, shown(a.comment)) for a in detail.approvals],
+        # The title of a reviewed document only for who may read the document.
+        "approvals": [
+            (
+                a.approval,
+                shown(a.comment),
+                a.approval.version.document.title
+                if can_access_document(user, a.approval.version.document)
+                else None,
+            )
+            for a in detail.approvals
+        ],
         "preprints": [(p.preprint, shown(p.url)) for p in detail.preprints],
         "documents": detail.documents,
         "hidden_documents": detail.hidden_documents,

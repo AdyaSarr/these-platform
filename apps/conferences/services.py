@@ -357,32 +357,6 @@ def create_edition(
     return edition
 
 
-def update_edition(*, edition: Edition, user: User, changes: Mapping[str, Any]) -> list[str]:
-    thesis = _thesis(edition)
-    _require(user, Action.CONFERENCE_WRITE, thesis, "edition")
-    _check_open(thesis)
-    current = {n: getattr(edition, n) for n in ("year", "location", "event_start", "event_end")}
-    unknown = sorted(set(changes) - set(current))
-    if unknown:
-        raise ValueError(f"{unknown} cannot be changed here")
-    values = _clean_edition(current | dict(changes))
-    with transaction.atomic():
-        _lock_thesis(thesis.pk)
-        locked = Edition.objects.select_for_update().get(pk=edition.pk)
-        changed = [n for n, v in values.items() if getattr(locked, n) != v]
-        if not changed:
-            return []
-        for name in changed:
-            setattr(locked, name, values[name])
-        try:
-            with transaction.atomic():
-                locked.save()
-        except IntegrityError:
-            raise ValidationError(_("This edition already exists."), code="duplicate") from None
-        audit(AuditAction.CONFERENCE_EDITION_UPDATED, actor=user, obj=locked, fields=changed)
-    return changed
-
-
 def add_deadline(
     *, edition: Edition, user: User, kind: str, day: dt.date, wall: dt.time, tz_name: str
 ) -> Deadline:
@@ -782,6 +756,15 @@ def _current_texts(user: User, thesis: Thesis, submission: Submission) -> dict[s
     return texts
 
 
+def _approval_on_record(submission: Submission) -> bool:
+    """A request of ST's approval for submitting, pending or granted, binds the target."""
+    return StApproval.objects.filter(
+        submission=submission,
+        purpose=ApprovalPurpose.SUBMISSION,
+        decision__in=[ApprovalDecision.PENDING, ApprovalDecision.GRANTED],
+    ).exists()
+
+
 def update_submission(
     *, submission: Submission, user: User, changes: Mapping[str, Any]
 ) -> list[str]:
@@ -800,6 +783,15 @@ def update_submission(
     edition = changes.get("edition", fresh.edition)
     _check_target(thesis, venue, edition)
     objective = _check_objective(thesis, changes.get("objective", fresh.objective))
+    retargeted = venue.pk != fresh.venue_id or (edition.pk if edition else None) != fresh.edition_id
+    if retargeted and _approval_on_record(fresh):
+        raise ValidationError(
+            _(
+                "ST's approval was requested for this target: submit elsewhere instead "
+                "(a new submission, a new approval)."
+            ),
+            code="target_locked",
+        )
     texts = {n: _clean_text(changes[n], n) for n in SUBMISSION_TEXTS if n in changes}
     current = _current_texts(user, thesis, fresh)
     changed = [n for n, v in texts.items() if v != current[n]]
@@ -1056,6 +1048,12 @@ def request_approval(
         raise ValidationError(
             _("No industrial tutor in the team: invite them first."), code="no_tutor"
         )
+    document = Document.objects.get(pk=version.document_id)
+    if not any(can_access_document(tutor, document) for tutor in tutors):
+        raise ValidationError(
+            _("The industrial tutor cannot read this document: change its level first."),
+            code="tutor_cannot_read",
+        )
     days = review_days(thesis)
     with transaction.atomic():
         locked = _locked(fresh)
@@ -1206,7 +1204,7 @@ def set_status(
         target = SubmissionStatus(status)
         now = timezone.now()
         if target == S.SUBMITTED:
-            if current not in ((S.ST_GRANTED, S.PREPARING) if locked.st_work else (S.PREPARING,)):
+            if current not in (S.ST_GRANTED, S.PREPARING):
                 raise _transition()
             if locked.st_work:
                 checked = _check_version(locked, version)

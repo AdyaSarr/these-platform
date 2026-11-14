@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-14 23:09+0100\n"
+"POT-Creation-Date: 2026-11-15 00:00+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -862,7 +862,7 @@ msgstr "L'échéance ne peut pas dépasser la fin prévue de la thèse."
 msgid "A mandatory item of the catalogue keeps a due date."
 msgstr "Une pièce obligatoire du catalogue garde une échéance."
 
-#: apps/admin_file/services.py:926 apps/conferences/services.py:1057
+#: apps/admin_file/services.py:926 apps/conferences/services.py:1049
 msgid "No industrial tutor in the team: invite them first."
 msgstr ""
 "Aucun·e tuteur·rice industriel·le dans l'équipe : invitez-le·la d'abord."
@@ -915,7 +915,7 @@ msgstr ""
 msgid "The item has changed, reload the page."
 msgstr "La pièce a changé, rechargez la page."
 
-#: apps/admin_file/views.py:220 apps/conferences/views.py:596
+#: apps/admin_file/views.py:220 apps/conferences/views.py:608
 #: apps/meetings/views.py:454 apps/objectives/views.py:344
 msgid "Saved."
 msgstr "Enregistré."
@@ -1335,7 +1335,7 @@ msgstr "Événement"
 msgid "Not sent: no longer a member"
 msgstr "Non envoyé : ne fait plus partie de la thèse"
 
-#: apps/conferences/models.py:549
+#: apps/conferences/models.py:552
 msgid "conference notification"
 msgstr "notification de conférence"
 
@@ -1404,7 +1404,7 @@ msgstr "La thèse est terminée : ses soumissions sont figées."
 msgid "This change of status is not possible now."
 msgstr "Ce changement de statut n'est pas possible maintenant."
 
-#: apps/conferences/services.py:271 apps/conferences/services.py:394
+#: apps/conferences/services.py:271 apps/conferences/services.py:368
 msgid "Unknown type."
 msgstr "Type inconnu."
 
@@ -1426,170 +1426,184 @@ msgstr "Une date est obligatoire."
 msgid "The event ends before it starts."
 msgstr "L'événement finit avant de commencer."
 
-#: apps/conferences/services.py:352 apps/conferences/services.py:381
+#: apps/conferences/services.py:352
 msgid "This edition already exists."
 msgstr "Cette édition existe déjà."
 
-#: apps/conferences/services.py:424 apps/conferences/services.py:448
+#: apps/conferences/services.py:398 apps/conferences/services.py:422
 msgid "This deadline was cancelled."
 msgstr "Cette échéance a été annulée."
 
-#: apps/conferences/services.py:498
+#: apps/conferences/services.py:472
 #, python-format
 msgid "Between 0 and %(max)d days."
 msgstr "Entre 0 et %(max)d jours."
 
-#: apps/conferences/services.py:798 apps/conferences/services.py:1285
+#: apps/conferences/services.py:781 apps/conferences/services.py:1283
 msgid "This submission is closed."
 msgstr "Cette soumission est close."
 
-#: apps/conferences/services.py:817 apps/conferences/services.py:871
-#: apps/conferences/services.py:1130 apps/conferences/services.py:1295
+#: apps/conferences/services.py:790
+msgid ""
+"ST's approval was requested for this target: submit elsewhere instead (a new "
+"submission, a new approval)."
+msgstr ""
+"L'accord de ST a été demandé pour cette cible : soumettez plutôt ailleurs "
+"(une nouvelle soumission, un nouvel accord)."
+
+#: apps/conferences/services.py:809 apps/conferences/services.py:863
+#: apps/conferences/services.py:1128 apps/conferences/services.py:1293
 msgid "The submission changed meanwhile: try again."
 msgstr "La soumission a été modifiée entre-temps : recommencez."
 
-#: apps/conferences/services.py:914
+#: apps/conferences/services.py:906
 msgid "An ST approval is pending: decide it first."
 msgstr "Un accord ST est en attente : décidez-le d'abord."
 
-#: apps/conferences/services.py:936 apps/meetings/services.py:1217
+#: apps/conferences/services.py:928 apps/meetings/services.py:1217
 msgid "This document is already linked."
 msgstr "Ce document est déjà lié."
 
-#: apps/conferences/services.py:958 apps/meetings/services.py:1236
+#: apps/conferences/services.py:950 apps/meetings/services.py:1236
 msgid "This document is no longer linked."
 msgstr "Ce document n'est plus lié."
 
-#: apps/conferences/services.py:977
+#: apps/conferences/services.py:969
 msgid "Choose a version of a document linked to this submission."
 msgstr "Choisissez une version d'un document lié à cette soumission."
 
-#: apps/conferences/services.py:995
+#: apps/conferences/services.py:987
 msgid "ST's approval of this exact version is required first."
 msgstr "L'accord de ST sur cette version exacte est d'abord nécessaire."
 
-#: apps/conferences/services.py:1046
+#: apps/conferences/services.py:1038
 msgid "Unknown purpose."
 msgstr "Objet inconnu."
 
-#: apps/conferences/services.py:1050
+#: apps/conferences/services.py:1042
 msgid "This submission does not concern ST work: no approval is needed."
 msgstr ""
 "Cette soumission ne concerne pas des travaux ST : aucun accord n'est "
 "nécessaire."
 
-#: apps/conferences/services.py:1066
+#: apps/conferences/services.py:1054
+msgid "The industrial tutor cannot read this document: change its level first."
+msgstr ""
+"Le tuteur industriel ne peut pas lire ce document : changez d'abord son "
+"niveau."
+
+#: apps/conferences/services.py:1064
 msgid "A request is already pending."
 msgstr "Une demande est déjà en attente."
 
-#: apps/conferences/services.py:1116
+#: apps/conferences/services.py:1114
 msgid "Grant or refuse."
 msgstr "Accordez ou refusez."
 
-#: apps/conferences/services.py:1118
+#: apps/conferences/services.py:1116
 msgid "A refusal needs its reason."
 msgstr "Un refus a besoin de son motif."
 
-#: apps/conferences/services.py:1120
+#: apps/conferences/services.py:1118
 msgid "A grant has no refusal reason."
 msgstr "Un accord n'a pas de motif de refus."
 
-#: apps/conferences/services.py:1128 apps/conferences/services.py:1170
+#: apps/conferences/services.py:1126 apps/conferences/services.py:1168
 msgid "This request was already decided."
 msgstr "Cette demande a déjà été décidée."
 
-#: apps/conferences/services.py:1217
+#: apps/conferences/services.py:1215
 msgid "The document has a newer version than the one ST approved."
 msgstr "Le document a une version plus récente que celle que ST a accordée."
 
-#: apps/conferences/services.py:1275
+#: apps/conferences/services.py:1273
 msgid "Unknown platform."
 msgstr "Plateforme inconnue."
 
-#: apps/conferences/services.py:1282
+#: apps/conferences/services.py:1280
 msgid "The date of a preprint is today or earlier."
 msgstr "La date d'une prépublication est aujourd'hui ou avant."
 
-#: apps/conferences/views.py:125 apps/meetings/views.py:121
+#: apps/conferences/views.py:127 apps/meetings/views.py:121
 #: templates/conferences/_text.html:1 templates/meetings/_text.html:1
 #: templates/objectives/_text.html:1
 msgid "Restricted content"
 msgstr "Contenu restreint"
 
-#: apps/conferences/views.py:151 apps/meetings/forms.py:196
+#: apps/conferences/views.py:153 apps/meetings/forms.py:196
 msgid "Unknown objective."
 msgstr "Objectif inconnu."
 
-#: apps/conferences/views.py:227
+#: apps/conferences/views.py:229
 msgid "Venue created."
 msgstr "Conférence ou revue créée."
 
-#: apps/conferences/views.py:253
+#: apps/conferences/views.py:255
 msgid "Venue saved."
 msgstr "Conférence ou revue enregistrée."
 
-#: apps/conferences/views.py:302
+#: apps/conferences/views.py:304
 msgid "Edition created."
 msgstr "Édition créée."
 
-#: apps/conferences/views.py:323
+#: apps/conferences/views.py:325
 msgid "Deadline added."
 msgstr "Échéance ajoutée."
 
-#: apps/conferences/views.py:398
+#: apps/conferences/views.py:400
 msgid "ST review period saved."
 msgstr "Délai de relecture ST enregistré."
 
-#: apps/conferences/views.py:465
+#: apps/conferences/views.py:467
 msgid "Submission created."
 msgstr "Soumission créée."
 
-#: apps/conferences/views.py:524
+#: apps/conferences/views.py:526
 msgid "Submission saved."
 msgstr "Soumission enregistrée."
 
-#: apps/conferences/views.py:639 apps/meetings/views.py:625
+#: apps/conferences/views.py:651 apps/meetings/views.py:625
 msgid "Document linked."
 msgstr "Document lié."
 
-#: apps/conferences/views.py:650 apps/meetings/views.py:636
+#: apps/conferences/views.py:662 apps/meetings/views.py:636
 msgid "Document unlinked."
 msgstr "Document délié."
 
-#: apps/conferences/views.py:663
+#: apps/conferences/views.py:675
 msgid "ST approval requested."
 msgstr "Accord ST demandé."
 
-#: apps/conferences/views.py:675
+#: apps/conferences/views.py:687
 msgid "Request withdrawn."
 msgstr "Demande retirée."
 
-#: apps/conferences/views.py:686 apps/meetings/views.py:569
+#: apps/conferences/views.py:698 apps/meetings/views.py:569
 msgid "Decision recorded."
 msgstr "Décision enregistrée."
 
-#: apps/conferences/views.py:704
+#: apps/conferences/views.py:716
 msgid "Status changed."
 msgstr "Statut modifié."
 
-#: apps/conferences/views.py:716
+#: apps/conferences/views.py:728
 msgid "Preprint recorded."
 msgstr "Prépublication enregistrée."
 
-#: apps/conferences/views.py:726 apps/meetings/views.py:494
+#: apps/conferences/views.py:738 apps/meetings/views.py:494
 #: apps/objectives/views.py:413
 msgid "Confidentiality changed."
 msgstr "Confidentialité modifiée."
 
-#: apps/conferences/views.py:744
+#: apps/conferences/views.py:756
 msgid "This submission no longer needs ST's approval."
 msgstr "Cette soumission n'a plus besoin de l'accord de ST."
 
-#: apps/conferences/views.py:758
+#: apps/conferences/views.py:770
 msgid "This submission needs ST's approval again."
 msgstr "Cette soumission a de nouveau besoin de l'accord de ST."
 
-#: apps/conferences/views.py:766
+#: apps/conferences/views.py:778
 msgid "New submission created: ST's approval must be requested again."
 msgstr "Nouvelle soumission créée : l'accord de ST doit être redemandé."
 
@@ -3090,6 +3104,10 @@ msgid ""
 msgstr ""
 "Soumettre, publier la version finale et déposer une prépublication exigent "
 "chacun, pour des travaux ST, l'accord de ST sur la version exacte."
+
+#: templates/conferences/submission.html:64
+msgid "Restricted document"
+msgstr "Document restreint"
 
 #: templates/conferences/submission.html:66
 #, python-format
