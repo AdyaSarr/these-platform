@@ -134,19 +134,26 @@ nombres d'éléments bornés ; crée ce qui manque, **ne modifie jamais** une li
 existante ; une transaction ; sortie : des nombres seulement ; aucun appel réseau.
 
 ## Critères d'acceptation
-- [ ] Une échéance AoE et une échéance IANA sont converties correctement en UTC et en
+- [x] Une échéance AoE et une échéance IANA sont converties correctement en UTC et en
       heure de Paris, de part et d'autre des changements d'heure (tests).
-- [ ] Date limite de demande = date à Paris de l'échéance de référence − délai figé
+- [x] Date limite de demande = date à Paris de l'échéance de référence − délai figé
       dans la demande (tests).
-- [ ] « Soumis », « publié » et une prépublication sont refusés sans accord `GRANTED`
+- [x] « Soumis », « publié » et une prépublication sont refusés sans accord `GRANTED`
       sur la version exacte (tests), y compris avec un accord sur une version dépassée.
-- [ ] Seul le tuteur décide un accord, désactive `st_work` et règle le délai, avec un
+- [x] Seul le tuteur décide un accord, désactive `st_work` et règle le délai, avec un
       second facteur récent demandé après le contrôle des droits.
-- [ ] Rappels J-30/J-14/J-7/J-1 calculés en dates du fuseau de l'échéance ; aucun
+- [x] Rappels J-30/J-14/J-7/J-1 calculés en dates du fuseau de l'échéance ; aucun
       envoi en double ; un lien seulement.
-- [ ] Un import ne modifie jamais une ligne existante ; un fichier mal formé ou trop
+- [x] Un import ne modifie jamais une ligne existante ; un fichier mal formé ou trop
       gros est rejeté sans rien écrire (tests).
-- [ ] Aucun titre, résumé, nom d'auteur externe, commentaire ou URL de prépublication
+- [x] Aucun titre, résumé, nom d'auteur externe, commentaire ou URL de prépublication
       en clair en base.
-- [ ] `demo_seed` : conférences fictives, une soumission acceptée, une en attente
+- [x] `demo_seed` : conférences fictives, une soumission acceptée, une en attente
       d'accord ST, une refusée.
+
+Ajoutés à la revue de fin de M6 :
+- [x] La cible (conférence, édition) d'une soumission est verrouillée dès qu'un
+      accord ST pour soumettre est demandé ou accordé (409 `target_locked`) :
+      changer de cible, c'est « soumettre ailleurs », avec un nouvel accord.
+- [x] Une demande d'accord exige un document qu'un tuteur actif peut lire ;
+      l'historique des accords ne montre pas le titre d'un document illisible.
