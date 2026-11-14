@@ -130,22 +130,30 @@ lier un document ni télécharger le `.ics`.
     non saisissables** (« disponible prochainement ») jusqu'à M5b.
 
 ## M5a — Critères d'acceptation
-- [ ] Le `.ics` ne contient ni titre, ni ordre du jour, ni compte rendu, ni lien
+- [x] Le `.ics` ne contient ni titre, ni ordre du jour, ni compte rendu, ni lien
       de visio, ni participant, même pour une réunion `PUBLIC` (test).
-- [ ] Aucun texte de réunion en clair en base ; textes liés à (thèse, objet,
+- [x] Aucun texte de réunion en clair en base ; textes liés à (thèse, objet,
       emplacement, niveau).
-- [ ] Un participant doit pouvoir lire le niveau de la réunion ; un changement de
+- [x] Un participant doit pouvoir lire le niveau de la réunion ; un changement de
       niveau qui exclurait un participant est refusé.
-- [ ] Une action liée à un objectif apparaît sur la fiche de l'objectif.
-- [ ] L'ordre du jour prérempli ne copie aucun élément d'un niveau lu par moins de
+- [x] Une action liée à un objectif apparaît sur la fiche de l'objectif.
+- [x] L'ordre du jour prérempli ne copie aucun élément d'un niveau lu par moins de
       rôles que celui de la réunion.
-- [ ] Approuver un compte rendu et changer de niveau exigent un second facteur de
+- [x] Approuver un compte rendu et changer de niveau exigent un second facteur de
       moins de 10 minutes, après le contrôle des droits.
-- [ ] Courriels : un lien seulement ; aucun envoi en double.
-- [ ] Heures saisies à Paris ; heures inexistantes ou ambiguës refusées ; bornes de
+- [x] Courriels : un lien seulement ; aucun envoi en double.
+- [x] Heures saisies à Paris ; heures inexistantes ou ambiguës refusées ; bornes de
       `meeting_bounds` testées.
-- [ ] Le compte rendu d'une réunion `CSI` n'est pas saisissable en M5a.
-- [ ] `demo_seed` contient des réunions passées et à venir.
+- [x] Le compte rendu d'une réunion `CSI` n'est pas saisissable en M5a.
+- [x] `demo_seed` contient des réunions passées et à venir.
+
+Ajoutés à la revue de fin de M5a :
+- [x] Un participant dont l'adhésion est terminée (retrait, fin de CSI,
+      désactivation) ne voit plus la réunion ni ses textes, ne marque plus le
+      compte rendu et ne reçoit plus aucun courriel, même déjà en file.
+- [x] Un identifiant de décision, d'action ou de lien d'une autre réunion est un
+      refus journalisé ; le `.ics` est servi comme un téléchargement du coffre
+      (`sandbox`, `no-referrer`, `nosniff`, `no-store`).
 
 ## M5b — Invités, CSI et partie confidentielle de l'entretien (à planifier)
 
