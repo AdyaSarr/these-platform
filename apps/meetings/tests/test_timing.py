@@ -38,7 +38,7 @@ def test_add_months_clamps_to_the_last_day_of_the_month(
 
 def test_add_months_refuses_datetimes_and_non_ints() -> None:
     with pytest.raises(TypeError):
-        timing.add_months(dt.datetime(2026, 1, 1), 1)  # type: ignore[arg-type]
+        timing.add_months(dt.datetime(2026, 1, 1), 1)
     with pytest.raises(TypeError):
         timing.add_months(D(2026, 1, 1), True)
 
