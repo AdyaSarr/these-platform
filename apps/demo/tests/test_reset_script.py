@@ -7,7 +7,7 @@ and answers `demo_db describe` as told: no Django, no database is touched.
 import os
 import re
 import stat
-import subprocess  # nosec B404 - runs our own script with fixed arguments
+import subprocess  # nosec B404
 from pathlib import Path
 
 import pytest
@@ -35,7 +35,7 @@ def _fake_uv(tmp_path: Path, describe: str) -> tuple[dict[str, str], Path]:
 
 
 def _run(env: dict[str, str], *args: str, answer: str = "") -> subprocess.CompletedProcess[str]:
-    return subprocess.run(  # nosec B603 - fixed command line
+    return subprocess.run(  # nosec B603
         [BASH, str(SCRIPT), *args],
         input=answer,
         env=env,
@@ -63,7 +63,7 @@ def test_strict_mode_and_hard_coded_paths() -> None:
     for line in text.splitlines():
         if re.search(r"\brm\b", line) and not line.lstrip().startswith("#"):
             assert re.search(r'rm -rf -- "\$\{[A-Z_]+:\?[^}]*\}"', line), line
-    result = subprocess.run([BASH, "-n", str(SCRIPT)], capture_output=True, check=False)  # nosec
+    result = subprocess.run([BASH, "-n", str(SCRIPT)], capture_output=True, check=False)
     assert result.returncode == 0, result.stderr
 
 
