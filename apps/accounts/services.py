@@ -481,10 +481,16 @@ def accept_invitation_new_user(
     *,
     first_name: str,
     last_name: str,
-    password: str,
+    password: str | None,
     request: HttpRequest | None = None,
 ) -> User:
-    """New account for the invited address. ``password`` was validated by the form."""
+    """New account for the invited address. ``password`` was validated by the form.
+
+    ``password=None`` (demo_seed only; the view always passes the form's value,
+    tests/test_unusable_password.py) gives an UNUSABLE password: no sign-in is
+    possible until the person chooses one through the password-reset link, then
+    enrolls the second factor like any new account.
+    """
     with transaction.atomic():
         inv = _lock_usable(invitation_id)
         if User.objects.filter(email=UserManager.normalize_email(inv.email)).exists():
