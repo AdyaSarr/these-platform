@@ -97,11 +97,11 @@ def _browser_post(client: Client, page_url: str, url: str, data: dict[str, Any])
 
 
 def _browser(user: Any, *, mfa: bool) -> Client:
+    """A CSRF-enforcing client carrying a real session (signed in by a plain client:
+    the sign-in forms are not what is tested here)."""
+    signed = _mfa(user) if mfa else _signed_in(user)
     client = Client(enforce_csrf_checks=True)
-    if mfa:
-        mfa_login(client, user, PASSWORD)
-    else:
-        client.force_login(user)
+    client.cookies = signed.cookies
     return client
 
 
