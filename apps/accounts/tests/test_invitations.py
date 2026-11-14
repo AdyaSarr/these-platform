@@ -468,7 +468,9 @@ def test_signed_in_as_someone_else_is_refused(client: Client, invite: Invite) ->
     client.force_login(intruder)
     _open_link(client, token)
     response = client.post(reverse("invitation_accept"), {})
-    assert response.status_code == 400
+    # Valid link, other account: the clear 409 message (test_invitation_other_account.py).
+    assert response.status_code == 409
+    assert "autre adresse" in response.content.decode()
     assert not Membership.objects.filter(user=intruder).exists()
     inv.refresh_from_db()
     assert inv.used_at is None
@@ -486,7 +488,7 @@ def test_new_account_form_refused_when_signed_in_as_someone_else(
         reverse("invitation_accept"),
         {"first_name": "P", "last_name": "N", "password1": PASSWORD, "password2": PASSWORD},
     )
-    assert response.status_code == 400
+    assert response.status_code == 409  # « another address », nothing created
     assert not User.objects.filter(email="fresh@example.org").exists()
 
 

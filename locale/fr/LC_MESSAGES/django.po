@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-14 14:56+0100\n"
+"POT-Creation-Date: 2026-11-14 15:01+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1452,6 +1452,8 @@ msgstr ""
 #: templates/accounts/invitation_invalid.html:5
 #: templates/accounts/invitation_link.html:3
 #: templates/accounts/invitation_link.html:5
+#: templates/accounts/invitation_other_account.html:3
+#: templates/accounts/invitation_other_account.html:5
 #: templates/accounts/invitation_signin.html:3
 #: templates/accounts/invitation_signin.html:5
 msgid "Invitation"
@@ -1482,6 +1484,17 @@ msgstr "Vous avez été invité·e sur la plateforme de suivi de thèse."
 #: templates/accounts/invitation_link.html:10
 msgid "Continue"
 msgstr "Continuer"
+
+#: templates/accounts/invitation_other_account.html:7
+msgid ""
+"You are signed in with another address; sign out to accept this invitation."
+msgstr ""
+"Vous êtes connecté·e avec une autre adresse ; déconnectez-vous pour accepter "
+"cette invitation."
+
+#: templates/accounts/invitation_other_account.html:10 templates/base.html:21
+msgid "Log out"
+msgstr "Se déconnecter"
 
 #: templates/accounts/invitation_signin.html:6
 msgid "You already have an account. Sign in to accept the invitation."
@@ -1645,10 +1658,6 @@ msgstr "Ajouter la pièce"
 #: templates/base.html:9 templates/base.html:16
 msgid "CIFRE thesis"
 msgstr "Thèse CIFRE"
-
-#: templates/base.html:21
-msgid "Log out"
-msgstr "Se déconnecter"
 
 #: templates/core/home.html:3 templates/core/home.html:5
 msgid "Dashboard"

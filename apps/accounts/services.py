@@ -416,7 +416,8 @@ def accept_invitation(
     """Existing account: ``user`` must be active and own the invited address."""
     with transaction.atomic():
         inv = _lock_usable(invitation_id)
-        if not user.is_active or user.email != inv.email:
+        same = UserManager.normalize_email(user.email) == UserManager.normalize_email(inv.email)
+        if not user.is_active or not same:  # compared as account creation stores them
             raise InvalidInvitationError
         return _accept(inv, user, request)
 
@@ -432,7 +433,7 @@ def accept_invitation_new_user(
     """New account for the invited address. ``password`` was validated by the form."""
     with transaction.atomic():
         inv = _lock_usable(invitation_id)
-        if User.objects.filter(email=inv.email).exists():
+        if User.objects.filter(email=UserManager.normalize_email(inv.email)).exists():
             raise InvalidInvitationError
         user = User.objects.create_user(
             email=inv.email, password=password, first_name=first_name, last_name=last_name

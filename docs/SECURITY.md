@@ -190,6 +190,14 @@ d'un texte bourré, et une `kek_id` d'un autre domaine que le niveau.
   CSRF de Django refuse (« null » n'est jamais une origine de confiance).
   `no-referrer` reste sur le téléchargement d'un document (réponse en pièce
   jointe, sans formulaire).
+  Un lien encore valable ouvert alors qu'un **autre compte** est connecté (adresses
+  comparées après la normalisation de la création de compte : casse, espaces) :
+  rien n'est attribué ni consommé, l'identifiant d'invitation quitte la session, et
+  la page dit seulement « Vous êtes connecté·e avec une autre adresse ;
+  déconnectez-vous pour accepter cette invitation » (409), sans l'adresse invitée
+  et à l'identique qu'elle ait un compte ou non. Un lien invalide garde le message
+  générique. Le bouton « Se déconnecter » passe par la déconnexion d'allauth (POST,
+  CSRF) et renvoie toujours à l'accueil, jamais vers une adresse lue dans la requête.
 
 ## Paramètres Django (prod)
 

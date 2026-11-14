@@ -67,14 +67,15 @@ urlpatterns: list[URLPattern | URLResolver] = [
     path("t/<uuid:thesis_id>/documents/", include("apps.vault.urls")),
     path("t/<uuid:thesis_id>/admin-file/", include("apps.admin_file.urls")),
     path("t/<uuid:thesis_id>/objectives/", include("apps.objectives.urls")),
-    # Invitation acceptance (apps/accounts/invitation_views.py). "accept/" first:
-    # the <str:token> route would match it otherwise.
+    # Invitation acceptance (apps/accounts/invitation_views.py). "accept/" and
+    # "logout/" first: the <str:token> route would match them otherwise.
     path("invitation/", invitation_views.invitation_continue, name="invitation_continue"),
     path(
         "invitation/accept/",
         invitation_views.AcceptInvitationView.as_view(),
         name="invitation_accept",
     ),
+    path("invitation/logout/", invitation_views.invitation_logout, name="invitation_logout"),
     path("invitation/<str:token>/", invitation_views.invitation_link, name="invitation_link"),
     # Sign-in through allauth (password, then second factor). The "login" and
     # "logout" names are kept for the templates; logout stays POST-only.

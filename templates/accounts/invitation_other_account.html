@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% translate "Invitation" %}{% endblock %}
+{% block content %}
+  <h1>{% translate "Invitation" %}</h1>
+  {# Never the invited address; the same page whether it has an account or not. #}
+  <p>{% translate "You are signed in with another address; sign out to accept this invitation." %}</p>
+  <form method="post" action="{% url 'invitation_logout' %}">
+    {% csrf_token %}
+    <button type="submit">{% translate "Log out" %}</button>
+  </form>
+{% endblock %}
