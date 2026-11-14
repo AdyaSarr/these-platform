@@ -999,7 +999,7 @@ def _missing_approval() -> ValidationError:
 # =========================================================================== ST approval
 
 
-def _reference_deadline(submission: Submission, kind: str) -> Deadline | None:
+def reference_deadline(submission: Submission, kind: str) -> Deadline | None:
     """The next deadline of ``kind`` of the edition (the last one once all passed)."""
     if submission.edition_id is None:
         return None
@@ -1013,7 +1013,7 @@ def _reference_deadline(submission: Submission, kind: str) -> Deadline | None:
 def _request_due(submission: Submission, purpose: str, days: int) -> dt.date | None:
     """Paris date of the reference deadline - the review period (a date, never hours)."""
     kind = REFERENCE_DEADLINE.get(ApprovalPurpose(purpose))
-    deadline = _reference_deadline(submission, kind) if kind else None
+    deadline = reference_deadline(submission, kind) if kind else None
     if deadline is None:
         return None
     return timezone.localtime(deadline.due_at).date() - dt.timedelta(days=days)

@@ -232,6 +232,16 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       Dates à Paris ; la relancer n'envoie rien deux fois (`MeetingNotification`,
       contrainte d'unicité). *Vérifier* : la sortie ne contient que des nombres.
 
+- [ ] **Rappels des conférences (M6) : un timer quotidien.**
+      *Timer systemd*, chaque jour à 07 h 00 Europe/Paris (`Persistent=true`) :
+      ```
+      manage.py conferences_reminders
+      ```
+      Fenêtres J-30, J-14, J-7, J-1 comptées en dates **dans le fuseau de chaque
+      échéance** (AoE, IANA) ; date limite de demande d'accord ST en dates de Paris ;
+      accords en attente rappelés au tuteur (J-7, J-1). La relancer n'envoie rien deux
+      fois. *Vérifier* : la sortie ne contient que des nombres.
+
 - [ ] **Résumé hebdomadaire des objectifs (M4) : un timer le lundi.**
       *Timer systemd* (utilisateur du serveur), chaque lundi à 08 h 00 Europe/Paris
       (`OnCalendar=Mon *-*-* 08:00:00 Europe/Paris`, `Persistent=true` pour

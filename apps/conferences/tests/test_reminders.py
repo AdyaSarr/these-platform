@@ -45,8 +45,8 @@ def team() -> SimpleNamespace:
     return make_team()
 
 
-def _at(*args: int) -> dt.datetime:
-    return dt.datetime(*args, tzinfo=UTC)
+def _at(year: int, month: int, day: int, hour: int, minute: int) -> dt.datetime:
+    return dt.datetime(year, month, day, hour, minute, tzinfo=UTC)
 
 
 def _rows(kind: str = "DEADLINE") -> list[ConferenceNotification]:
@@ -94,6 +94,9 @@ def test_each_window_once_and_a_link_only(team: SimpleNamespace) -> None:
     assert {r.recipient for r in _rows()} == {team.student, team.tutor}  # co-authors too
     for message in mail.outbox:
         assert title not in message.body and title not in message.subject
+    reminders_sent = [m for m in mail.outbox if "échéance de conférence" in m.subject]
+    assert len(reminders_sent) == 8  # four windows, two recipients
+    for message in reminders_sent:
         assert f"/conferences/editions/{deadline.edition_id}/" in message.body
 
 
