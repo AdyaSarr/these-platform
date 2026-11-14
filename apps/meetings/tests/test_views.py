@@ -442,3 +442,31 @@ def test_linked_actions_on_the_objective_page(team: SimpleNamespace) -> None:
     assert csi_page.status_code == 200
     assert fragment not in csi_page.content.decode()
     assert _client(team, "csi").get(fragment).status_code == 403
+
+
+# =========================================================================== end-of-module review
+
+
+def test_the_duplicate_page_is_refused_to_a_non_writer(team: SimpleNamespace) -> None:
+    meeting = meeting_of(team, attendees=[team.student, team.director])
+    assert _client(team, "tutor").get(_m(team, meeting, "duplicate")).status_code == 403
+    assert _client(team, "director").get(_m(team, meeting, "duplicate")).status_code == 200
+
+
+def test_ics_download_headers_match_the_vault_downloads(team: SimpleNamespace) -> None:
+    meeting = meeting_of(team)
+    response = _client(team, "student").get(_m(team, meeting, "ics"))
+    assert response["Content-Security-Policy"] == "sandbox; default-src 'none'"
+    assert response["Referrer-Policy"] == "no-referrer"
+    assert response["X-Content-Type-Options"] == "nosniff"
+
+
+def test_a_sub_object_not_of_the_meeting_is_an_audited_refusal(team: SimpleNamespace) -> None:
+    mine = meeting_of(team)
+    other = meeting_of(team, starts_at=NOW + dt.timedelta(days=10))
+    decision = services.add_decision(meeting=other, user=team.student, text="Décision fictive")
+    url = _url(team, "withdraw_decision", meeting_id=mine.pk, decision_id=decision.pk)
+    assert _client(team, "student").post(url).status_code == 403
+    denied = AuditEvent.objects.filter(action=AuditAction.MEETING_ACCESS_DENIED).last()
+    assert denied is not None
+    assert denied.details_json["reason"] == "unknown_decision"
