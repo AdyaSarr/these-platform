@@ -93,6 +93,48 @@ Tous validés à la revue de fin de M3 (2026-11-13).
 - [x] Rappels J-14, J-3 et J+1 en dates à Paris, une fois chacun, un lien
   seulement. *Tests* : `test_reminders.py` (tous), `test_reminder_timeout.py`.
 
+## Révision du 2026-11-14 (après la clôture : droits de réouverture et échéances)
+
+Branche `m3-droits-echeances`, décidée après l'essai de la démo
+(`docs/decisions.md`). Nouveaux modèles : `ItemReopening` (un cycle rouvert),
+`DueDateProposal` (une seule en attente par pièce), `ItemNotification`
+(courriel d'événement, lien seulement) ; migrations `0003` à `0005`.
+
+- [x] Le doctorant rouvre avec les motifs `AMENDMENT`, `EXPIRED`, `OTHER`
+  seulement ; un validateur, avec tous. *Tests* : `test_reopen_rules.py`
+  (`test_the_student_reopens_with_three_reasons_only`,
+  `test_a_validator_keeps_every_reason`), `test_due_date_views.py
+  ::test_the_student_reopen_form_offers_three_reasons`.
+- [x] Une réouverture notifie (lien seulement) les auteurs des validations
+  annulées, sauf s'ils rouvrent eux-mêmes ; un ancien membre n'est pas notifié.
+  *Tests* : `test_reopen_rules.py` (section *notifications*).
+- [x] Une pièce rouverte n'affiche plus ses validations comme valides (« Validée
+  le … puis rouverte le … par … — motif … ») ; un cycle refusé ou retiré liste
+  ses approbations annulées. *Tests* : `test_due_date_views.py
+  ::test_a_reopened_item_shows_no_valid_approval`,
+  `::test_a_rejected_two_party_item_shows_the_cancelled_approval`.
+- [x] Seul un validateur de la pièce modifie l'échéance d'une pièce du catalogue,
+  avec second facteur récent (403 avant toute ré-authentification pour un autre
+  rôle) ; le doctorant est notifié ; pièces personnalisées : le doctorant, comme
+  avant. *Tests* : `test_due_dates.py`, `test_due_date_views.py
+  ::test_catalogue_due_date_by_role`, `::test_custom_due_date_by_role`.
+- [x] Le doctorant propose une date avec un motif de liste fermée ; un validateur
+  accepte ou refuse (second facteur) ; une seule proposition en attente ;
+  refusée sans validateur actif dans l'équipe. *Tests* : `test_due_dates.py`
+  (sections *proposals*, *decisions*), `test_due_date_views.py`.
+- [x] Échéance entre la date d'effet CIFRE et la fin prévue ; jamais effacée pour
+  une pièce obligatoire du catalogue (service et contrainte en base). *Tests* :
+  `test_due_dates.py::test_dates_stay_inside_the_thesis`,
+  `::test_a_mandatory_catalogue_item_keeps_a_due_date`,
+  `::test_the_database_refuses_it_too`.
+- [x] Journal : `from` et `to` (dates ISO) pour toute modification, proposition,
+  acceptation, refus, retrait, remplacement ; code du motif, jamais le
+  commentaire. *Tests* : `test_due_dates.py`.
+- [x] Réouvertures et propositions décidées jamais modifiées ni supprimées.
+  *Tests* : `test_histories.py`.
+- [x] Migration `0004` : calcul du catalogue figé dans la migration, rejouée
+  depuis `0002`. *Test* : `test_due_date_migration.py`.
+
 ## Notes issues de M1
 - Validation par pièce : le tuteur industriel et le directeur peuvent valider les
   pièces dont ils sont validateurs. C'est une **autorisation par pièce**, fondée

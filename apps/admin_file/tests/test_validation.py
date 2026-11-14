@@ -119,13 +119,16 @@ def test_only_the_student_submits_and_withdraws(team: SimpleNamespace, role: str
 
 
 def test_reopen_by_student_or_validator_only(team: SimpleNamespace) -> None:
-    item = item_of(team, section=Section.CIFRE, validator_roles=[T])
+    # One item per role: a cycle is reopened once at most (ItemReopening), and
+    # put() writes VALIDATED in cycle 1 without a new submission.
     for role in ("director", "co_supervisor", "csi", "guest"):
-        put(item, S.VALIDATED, team.student)
+        item = put(item_of(team, section=Section.CIFRE, validator_roles=[T]), S.VALIDATED,
+                   team.student)  # fmt: skip
         with pytest.raises(PermissionDenied):
             services.reopen(item=item, user=getattr(team, role), reason=Reason.AMENDMENT)
     for role in ("student", "tutor"):
-        put(item, S.VALIDATED, team.student)
+        item = put(item_of(team, section=Section.CIFRE, validator_roles=[T]), S.VALIDATED,
+                   team.student)  # fmt: skip
         assert services.reopen(item=item, user=getattr(team, role), reason=Reason.AMENDMENT)
 
 

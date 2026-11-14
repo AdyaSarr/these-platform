@@ -16,6 +16,31 @@ urlpatterns = [
     path("<uuid:item_id>/submit/", views.SubmitView.as_view(), name="submit"),
     path("<uuid:item_id>/withdraw/", views.WithdrawView.as_view(), name="withdraw"),
     path("<uuid:item_id>/due-date/", views.DueDateView.as_view(), name="due_date"),
+    path(
+        "<uuid:item_id>/due-date/custom/",
+        views.CustomDueDateView.as_view(),
+        name="custom_due_date",
+    ),
+    path(
+        "<uuid:item_id>/due-date/propose/",
+        views.ProposeDueDateView.as_view(),
+        name="propose_due_date",
+    ),
+    path(
+        "<uuid:item_id>/due-date/proposals/<uuid:proposal_id>/accept/",
+        views.AcceptDueDateView.as_view(),
+        name="accept_due_date",
+    ),
+    path(
+        "<uuid:item_id>/due-date/proposals/<uuid:proposal_id>/refuse/",
+        views.RefuseDueDateView.as_view(),
+        name="refuse_due_date",
+    ),
+    path(
+        "<uuid:item_id>/due-date/proposals/<uuid:proposal_id>/withdraw/",
+        views.WithdrawDueDateView.as_view(),
+        name="withdraw_due_date",
+    ),
     path("<uuid:item_id>/approve/", views.ApproveView.as_view(), name="approve"),
     path("<uuid:item_id>/reject/", views.RejectView.as_view(), name="reject"),
     path("<uuid:item_id>/reopen/", views.ReopenView.as_view(), name="reopen"),

@@ -12,7 +12,7 @@ from apps.accounts.roles import Role
 from apps.core.confidentiality import ConfidentialityLevel
 
 from . import services
-from .models import VALIDATOR_ROLES, Reason, RequiredItem, Section
+from .models import VALIDATOR_ROLES, DueDateReason, Reason, RequiredItem, Section
 
 CLEAR_TEXT_WARNING = _(
     "This comment is not encrypted and is shown to the supervisors of the section: "
@@ -67,6 +67,36 @@ class SubmitForm(forms.Form):
 
 class DecisionForm(forms.Form):
     reason = forms.ChoiceField(label=_("Reason"), choices=[("", "—"), *Reason.choices])
+    comment = forms.CharField(
+        label=_("Comment"),
+        required=False,
+        max_length=services.COMMENT_MAX,
+        help_text=CLEAR_TEXT_WARNING,
+        widget=forms.TextInput,
+    )
+
+
+class ReopenForm(DecisionForm):
+    """Offers the reasons the user may give (the student: Amendment, Expired, Other).
+
+    Only the OFFER is narrowed (the widget): any known reason passes the form,
+    so that a forged validators' reason reaches the service, which refuses it as
+    a right (audited 403); an unknown value stays an input error (400).
+    """
+
+    def __init__(self, *args: Any, reasons: list[Reason], **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        reason = self.fields["reason"]
+        if not isinstance(reason, forms.ChoiceField):
+            raise TypeError("reason must be a ChoiceField")
+        reason.widget.choices = [("", "—"), *((r.value, r.label) for r in reasons)]
+
+
+class ProposalForm(forms.Form):
+    due_date = forms.DateField(
+        label=_("Proposed due date"), widget=forms.DateInput(attrs={"type": "date"})
+    )
+    reason = forms.ChoiceField(label=_("Reason"), choices=[("", "—"), *DueDateReason.choices])
     comment = forms.CharField(
         label=_("Comment"),
         required=False,

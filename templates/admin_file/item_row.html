@@ -16,13 +16,52 @@
     <p class="muted">{% translate "An attachment exists, but you cannot read it." %}</p>
   {% endif %}
   {% if row.stale %}<p class="message message-error">{% translate "The document has changed since it was submitted: withdraw it and submit it again, or reject it." %}</p>{% endif %}
-  {% if row.item.reason_code %}
+  {% if row.reopening %}
+    {% with r=row.reopening %}
+      <p class="reopening">{% blocktranslate trimmed with validated=r.validated_at|date:"SHORT_DATE_FORMAT" reopened=r.created_at|date:"SHORT_DATE_FORMAT" name=r.reopened_by.get_full_name|default:r.reopened_by.email reason=r.get_reason_code_display %}
+        Validated on {{ validated }}, then reopened on {{ reopened }} by {{ name }} — reason: {{ reason }}
+      {% endblocktranslate %}{% if r.reason_comment %} — {{ r.reason_comment }}{% endif %}</p>
+    {% endwith %}
+  {% elif row.item.reason_code %}
     <p>{% translate "Reason" %} : {{ row.item.get_reason_code_display }}{% if row.item.reason_comment %} — {{ row.item.reason_comment }}{% endif %}</p>
   {% endif %}
   {% if row.approvals %}
     <ul class="approvals">
       {% for approval in row.approvals %}<li>{{ approval.get_role_display }} : {{ approval.user.get_full_name|default:approval.user.email }}, {{ approval.created_at|date:"SHORT_DATETIME_FORMAT" }}</li>{% endfor %}
     </ul>
+  {% elif row.cancelled_approvals %}
+    <p class="muted">{% blocktranslate trimmed with cycle=row.item.cycle %}Cancelled approvals (submission {{ cycle }}):{% endblocktranslate %}</p>
+    <ul class="cancelled-approvals muted">
+      {% for approval in row.cancelled_approvals %}<li><s>{{ approval.get_role_display }} : {{ approval.user.get_full_name|default:approval.user.email }}, {{ approval.created_at|date:"SHORT_DATETIME_FORMAT" }}</s></li>{% endfor %}
+    </ul>
+  {% endif %}
+  {% if row.pending %}
+    {% with p=row.pending %}
+      <p class="proposal">{% blocktranslate trimmed with date=p.to_date|date:"SHORT_DATE_FORMAT" name=p.proposed_by.get_full_name|default:p.proposed_by.email created=p.created_at|date:"SHORT_DATE_FORMAT" reason=p.get_reason_code_display %}
+        Proposed due date: {{ date }}, by {{ name }} on {{ created }} — reason: {{ reason }}
+      {% endblocktranslate %}{% if p.comment %} — {{ p.comment }}{% endif %}</p>
+      <div class="actions">
+        {% if row.rights.decide_proposal %}
+          <form method="post" action="{% url 'admin_file:accept_due_date' thesis_id=thesis.pk item_id=row.item.pk proposal_id=p.pk %}"
+                hx-post="{% url 'admin_file:accept_due_date' thesis_id=thesis.pk item_id=row.item.pk proposal_id=p.pk %}"
+                hx-target="#item-{{ row.item.pk }}" hx-swap="outerHTML">
+            {% csrf_token %}<button type="submit">{% translate "Accept" %}</button>
+          </form>
+          <form method="post" action="{% url 'admin_file:refuse_due_date' thesis_id=thesis.pk item_id=row.item.pk proposal_id=p.pk %}"
+                hx-post="{% url 'admin_file:refuse_due_date' thesis_id=thesis.pk item_id=row.item.pk proposal_id=p.pk %}"
+                hx-target="#item-{{ row.item.pk }}" hx-swap="outerHTML">
+            {% csrf_token %}<button type="submit" class="danger">{% translate "Refuse the proposal" %}</button>
+          </form>
+        {% endif %}
+        {% if row.rights.withdraw_proposal %}
+          <form method="post" action="{% url 'admin_file:withdraw_due_date' thesis_id=thesis.pk item_id=row.item.pk proposal_id=p.pk %}"
+                hx-post="{% url 'admin_file:withdraw_due_date' thesis_id=thesis.pk item_id=row.item.pk proposal_id=p.pk %}"
+                hx-target="#item-{{ row.item.pk }}" hx-swap="outerHTML">
+            {% csrf_token %}<button type="submit">{% translate "Withdraw the proposal" %}</button>
+          </form>
+        {% endif %}
+      </div>
+    {% endwith %}
   {% endif %}
   {% if row.rights.already_approved %}<p class="muted">{% translate "You have approved this submission." %}</p>{% endif %}
 
@@ -62,21 +101,28 @@
       {% csrf_token %}{{ row.decision_form.as_p }}
       <button type="submit" class="danger">{% translate "Reject" %}</button>
     </form>
-  {% elif row.rights.reopen and row.decision_form %}
+  {% elif row.reopen_form %}
     <form class="stack" method="post" action="{% url 'admin_file:reopen' thesis_id=thesis.pk item_id=row.item.pk %}"
           hx-post="{% url 'admin_file:reopen' thesis_id=thesis.pk item_id=row.item.pk %}"
           hx-target="#item-{{ row.item.pk }}" hx-swap="outerHTML">
-      {% csrf_token %}{{ row.decision_form.as_p }}
+      {% csrf_token %}{{ row.reopen_form.as_p }}
       <button type="submit">{% translate "Reopen" %}</button>
     </form>
   {% endif %}
 
   {% if row.due_form %}
-    <form class="actions" method="post" action="{% url 'admin_file:due_date' thesis_id=thesis.pk item_id=row.item.pk %}"
-          hx-post="{% url 'admin_file:due_date' thesis_id=thesis.pk item_id=row.item.pk %}"
-          hx-target="#item-{{ row.item.pk }}" hx-swap="outerHTML">
+    <form class="actions" method="post" action="{{ row.due_url }}"
+          hx-post="{{ row.due_url }}" hx-target="#item-{{ row.item.pk }}" hx-swap="outerHTML">
       {% csrf_token %}{{ row.due_form.due_date.label_tag }} {{ row.due_form.due_date }}
       <button type="submit">{% translate "Save the due date" %}</button>
+    </form>
+  {% endif %}
+  {% if row.propose_form %}
+    <form class="stack" method="post" action="{% url 'admin_file:propose_due_date' thesis_id=thesis.pk item_id=row.item.pk %}"
+          hx-post="{% url 'admin_file:propose_due_date' thesis_id=thesis.pk item_id=row.item.pk %}"
+          hx-target="#item-{{ row.item.pk }}" hx-swap="outerHTML">
+      {% csrf_token %}{{ row.propose_form.as_p }}
+      <button type="submit">{% translate "Propose this due date" %}</button>
     </form>
   {% endif %}
 </article>

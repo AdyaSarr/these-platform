@@ -16,3 +16,5 @@ plus tard. Cocher une note quand elle est faite.
       page à nous (`CSRF_FAILURE_VIEW`) qui dit simplement « Votre navigateur
       bloque les cookies de ce site ou la page a expiré : rechargez-la », sans
       détail technique.
+- Graphique objectifs : la dernière étiquette de l'axe est coupée (« nov. 20: ») ; élargir le viewBox ou les marges.
+- Dossier admin : le bouton « Rouvrir » prend toute la largeur et le formulaire d'échéance le chevauche ; aligner les actions sur une ligne.
