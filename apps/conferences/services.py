@@ -211,6 +211,11 @@ def _deny(user: Any, operation: str, reason: str, **kwargs: Any) -> PermissionDe
     return PermissionDenied()
 
 
+def deny_unknown(user: Any, thesis: Thesis, what: str) -> PermissionDenied:
+    """An id of another thesis (or none) in a URL: audited, the same 403."""
+    return _deny(user, what, f"unknown_{what}", thesis=thesis)
+
+
 def _require(user: Any, action: Action, thesis: Thesis, operation: str) -> None:
     if not can(user, action, thesis):
         raise _deny(user, operation, "missing_right", thesis=thesis)

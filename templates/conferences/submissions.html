@@ -1,0 +1,19 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% translate "Submissions" %}{% endblock %}
+{% block content %}
+<h1>{% translate "Submissions" %}</h1>
+<p><a href="{% url 'conferences:deadlines' thesis_id=thesis.pk %}">{% translate "Conferences" %}</a>
+  {% if can_submit %} · <a href="{% url 'conferences:new_submission' thesis_id=thesis.pk %}">{% translate "New submission" %}</a>{% endif %}</p>
+{% if rows %}
+<table class="table submissions">
+  <thead><tr><th>{% translate "Title" %}</th><th>{% translate "Venue" %}</th><th>{% translate "Status" %}</th><th>{% translate "Confidentiality" %}</th></tr></thead>
+  <tbody>
+  {% for submission, title in rows %}
+    <tr><td><a href="{% url 'conferences:submission' thesis_id=thesis.pk submission_id=submission.pk %}">{% include "conferences/_text.html" with value=title %}</a></td>
+      <td>{{ submission.venue.acronym }}{% if submission.edition %} {{ submission.edition.year }}{% endif %}</td>
+      <td>{{ submission.get_status_display }}</td><td>{{ submission.get_level_display }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}<p class="muted">{% translate "No submission." %}</p>{% endif %}
+{% endblock %}

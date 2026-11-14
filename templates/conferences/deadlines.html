@@ -1,0 +1,37 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% translate "Conferences" %}{% endblock %}
+{% block content %}
+<h1>{% translate "Conferences" %}</h1>
+<p><a href="{% url 'accounts:dashboard' thesis_id=thesis.pk %}">{% translate "Back to the thesis" %}</a> ·
+  <a href="{% url 'conferences:submissions' thesis_id=thesis.pk %}">{% translate "Submissions" %}</a> ·
+  <a href="{% url 'conferences:policy' thesis_id=thesis.pk %}">{% blocktranslate with days=review_days %}ST review period: {{ days }} days{% endblocktranslate %}</a>
+  {% if can_write %} · <a href="{% url 'conferences:new_venue' thesis_id=thesis.pk %}">{% translate "New venue" %}</a>{% endif %}</p>
+
+<section aria-labelledby="deadlines-title">
+  <h2 id="deadlines-title">{% translate "Upcoming deadlines" %}</h2>
+  {% if deadlines %}
+  <table class="table deadlines">
+    <thead><tr><th>{% translate "Deadline" %}</th><th>{% translate "Venue" %}</th><th>{% translate "Type" %}</th></tr></thead>
+    <tbody>
+    {% for d in deadlines %}
+      <tr><td>{% include "conferences/_deadline.html" %}</td>
+        <td><a href="{% url 'conferences:edition' thesis_id=thesis.pk edition_id=d.deadline.edition_id %}">{{ d.deadline.edition.venue.acronym }} {{ d.deadline.edition.year }}</a></td>
+        <td>{{ d.deadline.get_kind_display }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}<p class="muted">{% translate "No upcoming deadline." %}</p>{% endif %}
+</section>
+
+<section aria-labelledby="venues-title">
+  <h2 id="venues-title">{% translate "Venues" %}</h2>
+  {% if venues %}
+  <ul>
+    {% for venue in venues %}
+      <li><a href="{% url 'conferences:venue' thesis_id=thesis.pk venue_id=venue.pk %}">{{ venue.acronym }}</a> — {{ venue.name }} ({{ venue.get_kind_display }})
+        {% for edition in venue.editions.all %}· <a href="{% url 'conferences:edition' thesis_id=thesis.pk edition_id=edition.pk %}">{{ edition.year }}</a>{% endfor %}</li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="muted">{% translate "No venue yet." %}</p>{% endif %}
+</section>
+{% endblock %}

@@ -49,6 +49,13 @@ DASHBOARD_BLOCKS: tuple[DashboardBlock, ...] = (
         data="apps.meetings.services.dashboard_block",
     ),
     DashboardBlock(
+        "conferences",
+        Action.CONFERENCE_READ,
+        _("Conferences"),
+        "conferences/blocks/dashboard.html",
+        data="apps.conferences.services.dashboard_block",
+    ),
+    DashboardBlock(
         "documents",
         Action.DOCUMENT_READ,
         _("Documents"),

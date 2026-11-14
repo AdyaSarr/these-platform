@@ -1,0 +1,7 @@
+{% load i18n %}{% if rows %}
+<ul class="linked-submissions">
+  {% for submission, title in rows %}
+    <li><a href="{% url 'conferences:submission' thesis_id=thesis.pk submission_id=submission.pk %}">{% include "conferences/_text.html" with value=title %}</a> — {{ submission.venue.acronym }} · {{ submission.get_status_display }}</li>
+  {% endfor %}
+</ul>
+{% else %}<p class="muted">{% translate "No submission linked to this objective." %}</p>{% endif %}

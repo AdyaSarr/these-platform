@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% translate "New venue" %}{% endblock %}
+{% block content %}
+<h1>{% translate "New venue" %}</h1>
+<p><a href="{% url 'conferences:deadlines' thesis_id=thesis.pk %}">{% translate "Back" %}</a></p>
+<form class="stack" method="post">{% csrf_token %}{% include "conferences/_form.html" %}
+  <button type="submit">{% translate "Save" %}</button></form>
+{% endblock %}
