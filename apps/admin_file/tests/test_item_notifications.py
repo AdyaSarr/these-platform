@@ -31,10 +31,10 @@ def _changed_due_date() -> ItemNotification:
         team,
         section=Section.CIFRE,
         validator_roles=[Role.INDUSTRIAL_TUTOR],
-        due_date=dt.date(2027, 1, 15),
+        due_date=dt.date(2028, 6, 1),  # far: no reminder window, even under TEST_CLOCK
     )
     with mock.patch("apps.admin_file.tasks.send_mail", side_effect=smtplib.SMTPException("no")):
-        services.update_due_date(item=item, user=team.tutor, due_date=dt.date(2027, 2, 1))
+        services.update_due_date(item=item, user=team.tutor, due_date=dt.date(2028, 7, 1))
     return ItemNotification.objects.get()
 
 

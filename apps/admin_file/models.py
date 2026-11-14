@@ -441,22 +441,14 @@ class DueDateProposal(TimeStampedModel):
             ),
         ]
 
-    @classmethod
-    def from_db(cls, db: Any, field_names: Any, values: Any) -> DueDateProposal:
-        instance = super().from_db(db, field_names, values)
-        instance._stored_status = instance.__dict__.get("status")
-        return instance
-
-    def refresh_from_db(self, *args: Any, **kwargs: Any) -> None:
-        super().refresh_from_db(*args, **kwargs)
-        self._stored_status = self.status
-
     def save(self, *args: Any, **kwargs: Any) -> None:
-        stored = getattr(self, "_stored_status", None)
-        if not self._state.adding and stored != self.Status.PENDING:
-            raise HistoryError("a decided due-date proposal is never modified")
+        """A row changes only while it is PENDING in the database (the services
+        hold its lock: the status read here is the one they decide on)."""
+        if not self._state.adding:
+            stored = type(self).objects.filter(pk=self.pk).values_list("status", flat=True).first()
+            if stored != self.Status.PENDING:
+                raise HistoryError("a decided due-date proposal is never modified")
         super().save(*args, **kwargs)
-        self._stored_status = self.status
 
     def delete(self, *args: Any, **kwargs: Any) -> tuple[int, dict[str, int]]:
         raise HistoryError("a due-date proposal is never deleted")

@@ -6,7 +6,9 @@ Every service decides rights HERE, even when a view checked too:
 - approve, reject: a role of the item's ``validator_roles`` (per-item rule, NOT
   the section's read right), never the cycle's submitter, one approval per
   role and per person in a cycle (the latter enforced by the database);
-- reopen: the student or a validator role of the item.
+- reopen: the student (AMENDMENT, EXPIRED, OTHER) or a validator role of the item;
+- due date of a catalogue item: a validator role of the item; the student
+  proposes, a validator accepts or refuses; custom item: the student.
 A refusal is audited (ADMIN_ITEM_ACCESS_DENIED) in its own transaction, after
 the work transaction rolled back, then PermissionDenied is raised. A state
 conflict raises InvalidTransitionError and is not audited (not a security event).
@@ -47,11 +49,13 @@ from apps.vault import services as vault
 from apps.vault.models import Document
 from apps.vault.services import AuditAction, audit
 
-from . import catalog
+from . import catalog, notifications
 from .models import (
     SECTION_READ_ACTION,
     VALIDATOR_ROLES,
     ItemApproval,
+    ItemNotification,
+    ItemReopening,
     ItemStatus,
     Reason,
     RequiredItem,
@@ -76,6 +80,7 @@ __all__ = [
     "progress",
     "reject",
     "reopen",
+    "reopen_reasons_for",
     "seed_items",
     "submit",
     "update_due_date",
@@ -483,28 +488,75 @@ def reject(*, item: RequiredItem, user: User, reason: Any, comment: str = "") ->
     return _run(item, user, "reject", work)
 
 
+# The student reopens for a change of the piece itself; judging it (wrong
+# document, illegible, missing signature) is the validators' (decision 2026-11-14).
+STUDENT_REOPEN_REASONS = (Reason.AMENDMENT, Reason.EXPIRED, Reason.OTHER)
+
+
+def reopen_reasons_for(user: Any, item: RequiredItem) -> list[Reason]:
+    """The reasons ``user`` may give to reopen ``item`` (the form offers these only)."""
+    return list(Reason) if _validator_roles_of(user, item) else list(STUDENT_REOPEN_REASONS)
+
+
+def _cancelled_validators(item: RequiredItem, reopener: User) -> list[User]:
+    """Authors of the cycle's approvals, still active in a validator role, but the reopener."""
+    approvals = ItemApproval.objects.filter(item=item, cycle=item.cycle).exclude(user=reopener)
+    authors = {a.user_id: Role(a.role) for a in approvals}
+    roles = set(authors.values())
+    return [u for u in notifications.members(item, roles) if u.pk in authors]
+
+
 def reopen(*, item: RequiredItem, user: User, reason: Any, comment: str = "") -> RequiredItem:
     """VALIDATED -> TODO by the student or a validator role, with a reason.
 
-    An ACTIVE thesis stays ACTIVE (SETUP -> ACTIVE is one-way in M3); the event
-    says whether the item is mandatory, for the "incomplete file" banner.
+    The student gives AMENDMENT, EXPIRED or OTHER only; a validator any reason.
+    The cancelled cycle is kept (ItemReopening); the authors of its approvals
+    are notified unless they reopen it themselves. An ACTIVE thesis stays ACTIVE
+    (SETUP -> ACTIVE is one-way in M3); the event says whether the item is
+    mandatory, for the "incomplete file" banner.
     """
     code, comment = _clean_reason(reason, comment)
 
     def work(locked: RequiredItem) -> RequiredItem:
         _require_sees(user, locked)
-        if not (can(user, Action.ADMIN_FILE_WRITE, locked) or _validator_roles_of(user, locked)):
+        validator = bool(_validator_roles_of(user, locked))
+        if not (can(user, Action.ADMIN_FILE_WRITE, locked) or validator):
             raise _DeniedError("not_validator")
+        if not validator and Reason(code) not in STUDENT_REOPEN_REASONS:
+            raise ValidationError(
+                _("Choose Amendment, Expired or Other: the other reasons are the validators'."),
+                code="reason",
+            )
         before = locked.status
         locked.status = target(before, Event.REOPEN)
+        validated_at = locked.validated_at
+        if validated_at is None:  # impossible once VALIDATED (database constraint)
+            raise InvalidTransitionError("a validated item has a validation time")
         locked.validated_at = None
         locked.reason_code, locked.reason_comment = code, comment
         locked.save()
+        reopening = ItemReopening.objects.create(
+            item=locked,
+            cycle=locked.cycle,
+            reopened_by=user,
+            reason_code=code,
+            reason_comment=comment,
+            validated_at=validated_at,
+            created_by=user,
+        )
+        notified = notifications.notify(
+            locked,
+            ItemNotification.Kind.REOPENED,
+            reopening.pk,
+            _cancelled_validators(locked, user),
+        )
         audit(
             AuditAction.ADMIN_ITEM_REOPENED,
             actor=user,
             obj=locked,
-            **_transition_details(locked, before, reason=code, mandatory=locked.mandatory),
+            **_transition_details(
+                locked, before, reason=code, mandatory=locked.mandatory, notified=notified
+            ),
         )
         return locked
 

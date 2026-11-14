@@ -48,7 +48,8 @@ def reminder_kind(today: dt.date, due: dt.date) -> ReminderLog.Kind | None:
     return None
 
 
-def _members(item: RequiredItem, roles: Iterable[Role], at: dt.datetime) -> list[User]:
+def active_members(item: RequiredItem, roles: Iterable[Role], at: dt.datetime) -> list[User]:
+    """Active users holding one of ``roles`` on the item's thesis at ``at``."""
     user_ids = (
         Membership.objects.active(at)
         .filter(thesis_id=item.thesis_id, role__in=list(roles), user__is_active=True)
@@ -60,7 +61,7 @@ def _members(item: RequiredItem, roles: Iterable[Role], at: dt.datetime) -> list
 def _recipients(item: RequiredItem, at: dt.datetime) -> list[User]:
     status = ItemStatus(item.status)
     if status in (ItemStatus.TODO, ItemStatus.REJECTED):
-        return _members(item, [Role.PHD_STUDENT], at)
+        return active_members(item, [Role.PHD_STUDENT], at)
     if status != ItemStatus.SUBMITTED:
         return []
     approved = ItemApproval.objects.filter(item=item, cycle=item.cycle)
@@ -69,7 +70,7 @@ def _recipients(item: RequiredItem, at: dt.datetime) -> list[User]:
     pending = [Role(r) for r in item.validator_roles if r not in done_roles]
     return [
         u
-        for u in _members(item, pending, at)
+        for u in active_members(item, pending, at)
         if u.pk not in done_users and u.pk != item.submitted_by_id
     ]
 
@@ -113,7 +114,7 @@ def run(today: dt.date | None = None) -> dict[str, int]:
         .filter(~Q(status=ItemStatus.VALIDATED))
         .order_by("thesis_id", "due_date", "pk")
     )
-    counts = {"items": 0, "queued": 0}
+    counts = {"items": 0, "queued": 0, "notifications": 0}
     for item in items:
         due = item.due_date
         kind = reminder_kind(today, due) if due is not None else None
@@ -126,4 +127,7 @@ def run(today: dt.date | None = None) -> dict[str, int]:
                 if reminder is not None:
                     _queue(reminder)
                     counts["queued"] += 1
+    from .notifications import requeue_failed  # notifications imports this module
+
+    counts["notifications"] = requeue_failed()
     return counts
