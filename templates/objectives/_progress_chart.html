@@ -1,8 +1,8 @@
 {% load i18n %}{% if chart %}
 <figure class="chart">
   <svg class="chart-svg" viewBox="0 0 {{ chart.width }} {{ chart.height }}" role="img" aria-labelledby="progress-chart-title progress-chart-desc">
-    <title id="progress-chart-title">{% translate "Monthly progress" %}</title>
-    <desc id="progress-chart-desc">{% translate "Weighted progress at the end of each month. The table below gives the same values." %}</desc>
+    <title id="progress-chart-title">{% translate "Weighted average progress over time" %}</title>
+    <desc id="progress-chart-desc">{% translate "Weighted average progress at the end of each month. The table below gives the same values." %}</desc>
     {% for tick in chart.y_ticks %}
     <line class="chart-grid" x1="{{ chart.left }}" x2="{{ chart.right }}" y1="{{ tick.y }}" y2="{{ tick.y }}"/>
     <text class="chart-tick" x="{{ chart.left }}" y="{{ tick.y }}" dx="-6" dy="4" text-anchor="end">{{ tick.label }}</text>
@@ -18,8 +18,8 @@
     {% endfor %}
   </svg>
   <table class="chart-data">
-    <caption>{% translate "Weighted progress by month" %}</caption>
-    <thead><tr><th scope="col">{% translate "Month" %}</th><th scope="col">{% translate "Weighted progress" %}</th></tr></thead>
+    <caption>{% translate "Weighted average progress by month" %}</caption>
+    <thead><tr><th scope="col">{% translate "Month" %}</th><th scope="col">{% translate "Weighted average progress" %}</th></tr></thead>
     <tbody>
       {% for label, percent in chart.table %}
       <tr><th scope="row">{{ label }}</th><td>{% if percent is None %}—{% else %}{{ percent }} %{% endif %}</td></tr>

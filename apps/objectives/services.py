@@ -802,7 +802,6 @@ def stats_for(user: User, thesis: Thesis, year: ThesisYear) -> YearStats:
             category=o.category,
             weight=o.weight,
             status=o.status,
-            progress=o.progress,
             due_date=o.due_date,
             approved=o.is_approved,
             created_on=timezone.localdate(o.created_at),

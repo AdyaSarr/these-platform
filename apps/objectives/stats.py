@@ -7,10 +7,11 @@ denominator gives None ("—" on screen), never 0. Rounding happens only for
 display (as_percent).
 
 - attainment = sum(w * s) / sum(w), s = 1 (ACHIEVED), 1/2 (PARTIAL), 0 otherwise
-- progress   = sum(w * p) / (100 * sum(w)), p = 100 for ACHIEVED
+- progress   = weighted_progress(rows, day): sum(w * p) / (100 * sum(w)), p the
+  progress of each objective's last report dated on or before ``day`` (100 for
+  ACHIEVED). ONE function for the card (day = today) and the monthly chart
+  (day = each month end): rows carry no progress of their own.
 - overdue    = due before today (a date in Paris) and still PLANNED or IN_PROGRESS
-- monthly progress: at the end of each month (or today for the current one),
-  each objective at its last progress update dated on or before that day.
 
 No text here: titles are never needed to count.
 """
@@ -43,7 +44,6 @@ class Row:
     category: str
     weight: int
     status: str
-    progress: int
     due_date: dt.date
     approved: bool
     created_on: dt.date  # date in Paris
@@ -86,15 +86,12 @@ def compute_stats(rows: Iterable[Row], today: dt.date) -> Stats:
     dropped = [r for r in approved if r.status == Status.DROPPED]
     total = sum(r.weight for r in active)
     attained = sum((r.weight * SCORE.get(r.status, Fraction(0)) for r in active), Fraction(0))
-    advanced = sum(
-        (Fraction(r.weight * _points(r.status, r.progress), 100) for r in active), Fraction(0)
-    )
     by_category: dict[str, Counter[str]] = {}
     for r in approved:
         by_category.setdefault(r.category, Counter())[r.status] += 1
     return Stats(
         attainment=_ratio(attained, total),
-        progress=_ratio(advanced, total),
+        progress=weighted_progress(rows, today),  # the chart's function, at today
         counted=len(active),
         weight_total=total,
         dropped=len(dropped),
@@ -129,6 +126,17 @@ def _progress_at(row: Row, day: dt.date) -> int:
     return _points(last.status, last.progress) if last is not None else 0
 
 
+def weighted_progress(rows: Iterable[Row], day: dt.date) -> Fraction | None:
+    """Weighted progress on ``day``: approved, not dropped objectives created on or
+    before ``day``, each at its last report dated on or before ``day``. None when
+    there is no such objective."""
+    _date(day, "day")
+    present = [r for r in rows if r.approved and r.status != Status.DROPPED and r.created_on <= day]
+    total = sum(r.weight for r in present)
+    value = sum((Fraction(r.weight * _progress_at(r, day), 100) for r in present), Fraction(0))
+    return _ratio(value, total)
+
+
 def monthly_progress(
     rows: Iterable[Row], *, first_day: dt.date, last_day: dt.date, today: dt.date
 ) -> list[MonthPoint]:
@@ -139,16 +147,13 @@ def monthly_progress(
     """
     for day, name in ((first_day, "first_day"), (last_day, "last_day"), (today, "today")):
         _date(day, name)
-    counted = [r for r in rows if r.approved and r.status != Status.DROPPED]
+    rows = list(rows)
     end = min(last_day, today)
     points: list[MonthPoint] = []
     month = first_day.replace(day=1)
     while month <= end:
         at = min(_month_end(month), end)
-        present = [r for r in counted if r.created_on <= at]
-        total = sum(r.weight for r in present)
-        value = sum((Fraction(r.weight * _progress_at(r, at), 100) for r in present), Fraction(0))
-        points.append(MonthPoint(month=month, at=at, value=_ratio(value, total)))
+        points.append(MonthPoint(month=month, at=at, value=weighted_progress(rows, at)))
         month = _month_end(month) + dt.timedelta(days=1)
     return points
 

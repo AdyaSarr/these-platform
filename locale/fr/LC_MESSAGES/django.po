@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-14 15:08+0100\n"
+"POT-Creation-Date: 2026-11-14 15:10+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -544,7 +544,7 @@ msgstr "Commentaire"
 
 #: apps/admin_file/forms.py:81 apps/admin_file/forms.py:106
 #: apps/objectives/forms.py:55 templates/admin_file/item_row.html:11
-#: templates/objectives/dashboard.html:72 templates/objectives/detail.html:11
+#: templates/objectives/dashboard.html:74 templates/objectives/detail.html:11
 msgid "Due date"
 msgstr "Échéance"
 
@@ -674,7 +674,7 @@ msgstr "14 jours avant"
 msgid "3 days before"
 msgstr "3 jours avant"
 
-#: apps/admin_file/models.py:239 templates/objectives/dashboard.html:20
+#: apps/admin_file/models.py:239 templates/objectives/dashboard.html:22
 msgid "Overdue"
 msgstr "En retard"
 
@@ -847,7 +847,7 @@ msgid "CIFRE year"
 msgstr "Année CIFRE"
 
 #: apps/objectives/forms.py:41 apps/vault/forms.py:33
-#: templates/objectives/dashboard.html:72 templates/vault/document_list.html:9
+#: templates/objectives/dashboard.html:74 templates/vault/document_list.html:9
 msgid "Title"
 msgstr "Titre"
 
@@ -861,12 +861,12 @@ msgstr "Description"
 msgid "Success criterion"
 msgstr "Critère de réussite"
 
-#: apps/objectives/forms.py:54 templates/objectives/dashboard.html:59
-#: templates/objectives/dashboard.html:72
+#: apps/objectives/forms.py:54 templates/objectives/dashboard.html:61
+#: templates/objectives/dashboard.html:74
 msgid "Category"
 msgstr "Catégorie"
 
-#: apps/objectives/forms.py:57 templates/objectives/dashboard.html:72
+#: apps/objectives/forms.py:57 templates/objectives/dashboard.html:74
 #: templates/objectives/detail.html:12
 msgid "Weight"
 msgstr "Poids"
@@ -888,7 +888,7 @@ msgid "Progress (%)"
 msgstr "Avancement (%)"
 
 #
-#: apps/objectives/forms.py:120 templates/objectives/dashboard.html:72
+#: apps/objectives/forms.py:120 templates/objectives/dashboard.html:74
 msgid "Status"
 msgstr "Statut"
 
@@ -970,7 +970,7 @@ msgstr "Partiellement atteint"
 msgid "Not achieved"
 msgstr "Non atteint"
 
-#: apps/objectives/models.py:102 templates/objectives/dashboard.html:22
+#: apps/objectives/models.py:102 templates/objectives/dashboard.html:24
 msgid "Dropped"
 msgstr "Abandonné"
 
@@ -1137,7 +1137,9 @@ msgstr "Ce document ne peut pas être joint."
 msgid ""
 "An objective with progress cannot go back to “Planned”: keep “In progress” "
 "or set the progress back to zero."
-msgstr "Un objectif avec un avancement ne peut pas revenir à « Prévu » : gardez « En cours » ou ramenez l'avancement à zéro."
+msgstr ""
+"Un objectif avec un avancement ne peut pas revenir à « Prévu » : gardez « En "
+"cours » ou ramenez l'avancement à zéro."
 
 #
 #: apps/objectives/views.py:281
@@ -1611,8 +1613,8 @@ msgstr "Ajouter une pièce personnalisée"
 msgid "optional"
 msgstr "facultative"
 
-#: templates/admin_file/item_row.html:11 templates/objectives/dashboard.html:44
-#: templates/objectives/dashboard.html:78
+#: templates/admin_file/item_row.html:11 templates/objectives/dashboard.html:46
+#: templates/objectives/dashboard.html:80
 msgid "overdue"
 msgstr "en retard"
 
@@ -1748,30 +1750,28 @@ msgid "Record the progress"
 msgstr "Enregistrer l'avancement"
 
 #: templates/objectives/_progress_chart.html:4
-#: templates/objectives/dashboard.html:51
-msgid "Monthly progress"
-msgstr "Évolution mensuelle"
+#: templates/objectives/dashboard.html:53
+msgid "Weighted average progress over time"
+msgstr "Évolution de l'avancement moyen pondéré"
 
 #: templates/objectives/_progress_chart.html:5
 msgid ""
-"Weighted progress at the end of each month. The table below gives the same "
-"values."
-msgstr ""
-"Avancement pondéré à la fin de chaque mois. Le tableau ci-dessous donne les "
-"mêmes valeurs."
+"Weighted average progress at the end of each month. The table below gives "
+"the same values."
+msgstr "Avancement moyen pondéré à la fin de chaque mois. Le tableau ci-dessous donne les mêmes valeurs."
 
 #: templates/objectives/_progress_chart.html:21
-msgid "Weighted progress by month"
-msgstr "Avancement pondéré par mois"
+msgid "Weighted average progress by month"
+msgstr "Avancement moyen pondéré par mois"
 
 #: templates/objectives/_progress_chart.html:22
 msgid "Month"
 msgstr "Mois"
 
 #: templates/objectives/_progress_chart.html:22
-#: templates/objectives/dashboard.html:19
-msgid "Weighted progress"
-msgstr "Avancement pondéré"
+#: templates/objectives/dashboard.html:20
+msgid "Weighted average progress"
+msgstr "Avancement moyen pondéré"
 
 #: templates/objectives/_progress_chart.html:31
 msgid "No progress to show yet."
@@ -1816,67 +1816,77 @@ msgstr "Années CIFRE"
 msgid "CIFRE year from %(start)s to %(end)s"
 msgstr "Année CIFRE du %(start)s au %(end)s"
 
+#: templates/objectives/dashboard.html:19
+msgid ""
+"Approved objectives declared achieved (½ for partially), weighted by their "
+"weight."
+msgstr "Objectifs approuvés déclarés atteints (½ pour partiellement), pondérés par leur poids."
+
 #: templates/objectives/dashboard.html:21
+msgid "Average of the declared progress percentages, weighted by the weight."
+msgstr "Moyenne des pourcentages d'avancement déclarés, pondérée par le poids."
+
+#: templates/objectives/dashboard.html:23
 msgid "Drafts awaiting approval"
 msgstr "Brouillons en attente d'approbation"
 
-#: templates/objectives/dashboard.html:27
+#: templates/objectives/dashboard.html:29
 msgid "To acknowledge"
 msgstr "À prendre en connaissance"
 
-#: templates/objectives/dashboard.html:31 templates/objectives/detail.html:19
+#: templates/objectives/dashboard.html:33 templates/objectives/detail.html:19
 msgid "changed since approval"
 msgstr "modifié depuis l'approbation"
 
-#: templates/objectives/dashboard.html:32 templates/objectives/detail.html:20
+#: templates/objectives/dashboard.html:34 templates/objectives/detail.html:20
 msgid "result declared, to acknowledge"
 msgstr "résultat déclaré, à prendre en connaissance"
 
 #
-#: templates/objectives/dashboard.html:41
+#: templates/objectives/dashboard.html:43
 msgid "Overdue objectives"
 msgstr "Objectifs en retard"
 
 #
-#: templates/objectives/dashboard.html:57
+#: templates/objectives/dashboard.html:59
 msgid "By category"
 msgstr "Par catégorie"
 
-#: templates/objectives/dashboard.html:59
+#: templates/objectives/dashboard.html:61
 msgid "Approved objectives by status"
 msgstr "Objectifs approuvés par statut"
 
 #
-#: templates/objectives/dashboard.html:68
+#: templates/objectives/dashboard.html:70
 msgid "Objectives of the year"
 msgstr "Objectifs de l'année"
 
 #
-#: templates/objectives/dashboard.html:69 templates/objectives/form.html:2
+#: templates/objectives/dashboard.html:71 templates/objectives/form.html:2
 #: templates/objectives/form.html:4
 msgid "New objective"
 msgstr "Nouvel objectif"
 
-#: templates/objectives/dashboard.html:80 templates/objectives/detail.html:17
+#: templates/objectives/dashboard.html:82 templates/objectives/detail.html:17
 msgid "to be declared achieved"
 msgstr "à déclarer atteint"
 
-#: templates/objectives/dashboard.html:80
+#: templates/objectives/dashboard.html:82
 msgid "draft"
 msgstr "brouillon"
 
-#: templates/objectives/dashboard.html:86
+#: templates/objectives/dashboard.html:88
 msgid "No objective for this year yet."
 msgstr "Aucun objectif pour cette année."
 
-#: templates/objectives/dashboard.html:91
+#: templates/objectives/dashboard.html:93
 #, python-format
 msgid "Approve the draft of the year"
 msgid_plural "Approve the %(counter)s drafts of the year"
 msgstr[0] "Approuver le brouillon de l'année"
 msgstr[1] "Approuver les %(counter)s brouillons de l'année"
 
-#: templates/objectives/dashboard.html:92 templates/objectives/detail.html:40
+#: templates/objectives/dashboard.html:94 templates/objectives/detail.html:40
 #: templates/objectives/detail.html:77
 msgid "Asks for your second factor."
 msgstr "Demande votre second facteur."
@@ -2097,3 +2107,6 @@ msgstr ""
 #: templates/vault/upload.html:9
 msgid "Store"
 msgstr "Déposer"
+
+#~ msgid "Monthly progress"
+#~ msgstr "Évolution mensuelle"

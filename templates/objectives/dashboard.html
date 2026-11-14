@@ -15,8 +15,10 @@
 <p class="muted">{% blocktranslate with start=data.year.cifre_start|date:"SHORT_DATE_FORMAT" end=data.year.cifre_end|date:"SHORT_DATE_FORMAT" %}CIFRE year from {{ start }} to {{ end }}{% endblocktranslate %}</p>
 
 <dl class="stats" data-drafts="{{ stats.drafts }}" data-overdue="{{ stats.overdue }}">
-  <div><dt>{% translate "Weighted attainment" %}</dt><dd>{% if attainment is None %}—{% else %}{{ attainment }} %{% endif %}</dd></div>
-  <div><dt>{% translate "Weighted progress" %}</dt><dd>{% if progress_rate is None %}—{% else %}{{ progress_rate }} %{% endif %}</dd></div>
+  <div><dt>{% translate "Weighted attainment" %}</dt><dd>{% if attainment is None %}—{% else %}{{ attainment }} %{% endif %}</dd>
+    <dd class="helptext">{% translate "Approved objectives declared achieved (½ for partially), weighted by their weight." %}</dd></div>
+  <div><dt>{% translate "Weighted average progress" %}</dt><dd>{% if progress_rate is None %}—{% else %}{{ progress_rate }} %{% endif %}</dd>
+    <dd class="helptext">{% translate "Average of the declared progress percentages, weighted by the weight." %}</dd></div>
   <div><dt>{% translate "Overdue" %}</dt><dd>{{ stats.overdue }}</dd></div>
   <div><dt>{% translate "Drafts awaiting approval" %}</dt><dd>{{ stats.drafts }}</dd></div>
   <div><dt>{% translate "Dropped" %}</dt><dd>{{ stats.dropped }}</dd></div>
@@ -48,7 +50,7 @@
 {% endif %}
 
 <section aria-labelledby="chart-title">
-  <h2 id="chart-title">{% translate "Monthly progress" %}</h2>
+  <h2 id="chart-title">{% translate "Weighted average progress over time" %}</h2>
   {% include "objectives/_progress_chart.html" %}
 </section>
 

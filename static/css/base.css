@@ -160,3 +160,4 @@ textarea {
    themes, or an authenticator app could not read it in dark mode. */
 .qr { display: inline-block; background: #ffffff; padding: 0.75rem; border-radius: 6px; }
 .qr svg { display: block; width: 12rem; height: auto; }
+.stats dd.helptext { font-size: 0.85rem; font-weight: normal; color: var(--muted); }

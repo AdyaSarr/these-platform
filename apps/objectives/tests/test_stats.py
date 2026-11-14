@@ -35,11 +35,13 @@ def row(
 ) -> Row:
     if status == Status.ACHIEVED:
         progress = 100
+    if not updates and progress:
+        # Progress only ever comes from a report: the one that set it, on creation day.
+        updates = (Update(created, progress, status),)
     return Row(
         category=category,
         weight=weight,
         status=status,
-        progress=progress,
         due_date=due,
         approved=approved,
         created_on=created,
