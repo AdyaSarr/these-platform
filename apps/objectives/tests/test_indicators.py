@@ -106,3 +106,49 @@ def test_the_labels_and_their_help() -> None:
     assert "<dt>Avancement moyen pondéré</dt>" in page and PROGRESS_HELP in page
     assert "Évolution de l'avancement moyen pondéré" in page
     assert "<dt>Avancement pondéré</dt>" not in page  # the old, ambiguous label
+
+
+@pytest.mark.django_db(transaction=True)
+def test_a_finished_year_is_measured_on_its_last_day(time_machine: Any) -> None:
+    """CIFRE year 1 ends on 2027-11-30: a report made later (here in January 2028,
+    year 2) no longer moves year 1's card, which equals the chart's last point."""
+    time_machine.move_to(dt.datetime(2027, 3, 15, 10, 0, tzinfo=dt.UTC), tick=False)
+    team = make_team()
+    objective = approved(team, weight=2)
+    time_machine.move_to(dt.datetime(2027, 11, 25, 10, 0, tzinfo=dt.UTC), tick=False)
+    services.add_progress(
+        objective=objective,
+        user=team.student,
+        date=D(2027, 11, 20),
+        progress=50,
+        status=Status.IN_PROGRESS,
+    )
+    time_machine.move_to(dt.datetime(2028, 1, 15, 10, 0, tzinfo=dt.UTC), tick=False)
+    services.add_progress(
+        objective=objective,
+        user=team.student,
+        date=D(2028, 1, 10),
+        progress=90,
+        status=Status.IN_PROGRESS,
+    )
+    year_one = team.thesis.years.get(number=1)
+    result = services.stats_for(team.director, team.thesis, year_one)
+    assert result.monthly[-1].at == year_one.cifre_end == D(2027, 11, 30)
+    assert result.stats.progress == result.monthly[-1].value == Fraction(1, 2)
+
+
+@pytest.mark.django_db(transaction=True)
+def test_the_current_year_is_measured_today(time_machine: Any) -> None:
+    time_machine.move_to(dt.datetime(2027, 3, 15, 10, 0, tzinfo=dt.UTC), tick=False)
+    team = make_team()
+    objective = approved(team)
+    services.add_progress(
+        objective=objective,
+        user=team.student,
+        date=D(2027, 3, 10),
+        progress=40,
+        status=Status.IN_PROGRESS,
+    )
+    result = services.stats_for(team.director, team.thesis, team.thesis.years.get(number=1))
+    assert result.monthly[-1].at == D(2027, 3, 15)
+    assert result.stats.progress == result.monthly[-1].value == Fraction(2, 5)

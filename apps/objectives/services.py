@@ -815,7 +815,8 @@ def stats_for(user: User, thesis: Thesis, year: ThesisYear) -> YearStats:
     today = timezone.localdate()  # the date in Paris
     return YearStats(
         year=year,
-        stats=stats_module.compute_stats(rows, today),
+        # A finished year is measured on its last day, like its chart's last point.
+        stats=stats_module.compute_stats(rows, today, progress_day=min(today, year.cifre_end)),
         monthly=stats_module.monthly_progress(
             rows, first_day=year.cifre_start, last_day=year.cifre_end, today=today
         ),

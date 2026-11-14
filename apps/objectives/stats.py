@@ -9,8 +9,9 @@ display (as_percent).
 - attainment = sum(w * s) / sum(w), s = 1 (ACHIEVED), 1/2 (PARTIAL), 0 otherwise
 - progress   = weighted_progress(rows, day): sum(w * p) / (100 * sum(w)), p the
   progress of each objective's last report dated on or before ``day`` (100 for
-  ACHIEVED). ONE function for the card (day = today) and the monthly chart
-  (day = each month end): rows carry no progress of their own.
+  ACHIEVED). ONE function for the card (day = today, or the last day of a
+  finished year) and the monthly chart (day = each month end, up to the same
+  day): rows carry no progress of their own.
 - overdue    = due before today (a date in Paris) and still PLANNED or IN_PROGRESS
 
 No text here: titles are never needed to count.
@@ -78,7 +79,11 @@ def _ratio(numerator: Fraction, denominator: int) -> Fraction | None:
     return numerator / denominator if denominator else None
 
 
-def compute_stats(rows: Iterable[Row], today: dt.date) -> Stats:
+def compute_stats(
+    rows: Iterable[Row], today: dt.date, *, progress_day: dt.date | None = None
+) -> Stats:
+    """Statistics on ``today``; the progress is measured on ``progress_day`` (default
+    today): the last day of a finished year, as its chart's last point."""
     _date(today, "today")
     rows = list(rows)
     approved = [r for r in rows if r.approved]
@@ -91,7 +96,7 @@ def compute_stats(rows: Iterable[Row], today: dt.date) -> Stats:
         by_category.setdefault(r.category, Counter())[r.status] += 1
     return Stats(
         attainment=_ratio(attained, total),
-        progress=weighted_progress(rows, today),  # the chart's function, at today
+        progress=weighted_progress(rows, progress_day or today),  # the chart's function
         counted=len(active),
         weight_total=total,
         dropped=len(dropped),
