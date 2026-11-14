@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-14 15:01+0100\n"
+"POT-Creation-Date: 2026-11-14 15:08+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -163,7 +163,7 @@ msgstr "Soutenue"
 msgid "Closed"
 msgstr "Clôturée"
 
-#: apps/accounts/models.py:104 apps/objectives/models.py:226
+#: apps/accounts/models.py:104 apps/objectives/models.py:230
 #: apps/vault/models.py:219
 msgid "title"
 msgstr "titre"
@@ -181,7 +181,7 @@ msgid "planned end date"
 msgstr "date de fin prévue"
 
 #: apps/accounts/models.py:109 apps/admin_file/models.py:101
-#: apps/objectives/models.py:133 apps/objectives/models.py:233
+#: apps/objectives/models.py:133 apps/objectives/models.py:237
 msgid "status"
 msgstr "statut"
 
@@ -219,12 +219,12 @@ msgid "Queued"
 msgstr "En file d'attente"
 
 #: apps/accounts/models.py:223 apps/admin_file/models.py:243
-#: apps/objectives/models.py:352
+#: apps/objectives/models.py:356
 msgid "Sent"
 msgstr "Envoyé"
 
 #: apps/accounts/models.py:224 apps/admin_file/models.py:244
-#: apps/objectives/models.py:353
+#: apps/objectives/models.py:357
 msgid "Failed"
 msgstr "Échec"
 
@@ -523,7 +523,7 @@ msgstr "Ou un document existant"
 
 #: apps/admin_file/forms.py:41 apps/objectives/forms.py:60
 #: apps/objectives/forms.py:97 apps/vault/forms.py:34 apps/vault/forms.py:47
-#: templates/objectives/detail.html:13 templates/objectives/detail.html:71
+#: templates/objectives/detail.html:13 templates/objectives/detail.html:72
 #: templates/vault/document_detail.html:6 templates/vault/document_list.html:9
 msgid "Confidentiality"
 msgstr "Confidentialité"
@@ -533,7 +533,7 @@ msgid "Give a new file or an existing document, not both."
 msgstr "Donnez un nouveau fichier ou un document existant, pas les deux."
 
 #: apps/admin_file/forms.py:69 templates/admin_file/item_row.html:20
-#: templates/objectives/detail.html:51
+#: templates/objectives/detail.html:52
 msgid "Reason"
 msgstr "Motif"
 
@@ -646,7 +646,7 @@ msgid "attachment required"
 msgstr "pièce jointe obligatoire"
 
 #: apps/admin_file/models.py:99 apps/objectives/models.py:130
-#: apps/objectives/models.py:230
+#: apps/objectives/models.py:234
 msgid "due date"
 msgstr "échéance"
 
@@ -678,7 +678,7 @@ msgstr "3 jours avant"
 msgid "Overdue"
 msgstr "En retard"
 
-#: apps/admin_file/models.py:242 apps/objectives/models.py:351
+#: apps/admin_file/models.py:242 apps/objectives/models.py:355
 msgid "Pending"
 msgstr "En attente"
 
@@ -755,7 +755,7 @@ msgstr ""
 msgid "The item has changed, reload the page."
 msgstr "La pièce a changé, rechargez la page."
 
-#: apps/admin_file/views.py:174 apps/objectives/views.py:327
+#: apps/admin_file/views.py:174 apps/objectives/views.py:344
 msgid "Saved."
 msgstr "Enregistré."
 
@@ -852,12 +852,12 @@ msgid "Title"
 msgstr "Titre"
 
 #
-#: apps/objectives/forms.py:43 templates/objectives/detail.html:22
+#: apps/objectives/forms.py:43 templates/objectives/detail.html:23
 msgid "Description"
 msgstr "Description"
 
 #
-#: apps/objectives/forms.py:49 templates/objectives/detail.html:24
+#: apps/objectives/forms.py:49 templates/objectives/detail.html:25
 msgid "Success criterion"
 msgstr "Critère de réussite"
 
@@ -974,19 +974,19 @@ msgstr "Non atteint"
 msgid "Dropped"
 msgstr "Abandonné"
 
-#: apps/objectives/models.py:129 apps/objectives/models.py:229
+#: apps/objectives/models.py:129 apps/objectives/models.py:233
 msgid "category"
 msgstr "catégorie"
 
-#: apps/objectives/models.py:131 apps/objectives/models.py:231
+#: apps/objectives/models.py:131 apps/objectives/models.py:235
 msgid "weight"
 msgstr "poids"
 
-#: apps/objectives/models.py:135 apps/objectives/models.py:290
+#: apps/objectives/models.py:135 apps/objectives/models.py:294
 msgid "progress"
 msgstr "avancement"
 
-#: apps/objectives/models.py:137 apps/objectives/models.py:232
+#: apps/objectives/models.py:137 apps/objectives/models.py:236
 #: apps/vault/models.py:221
 msgid "confidentiality"
 msgstr "confidentialité"
@@ -1002,52 +1002,52 @@ msgid "objectives"
 msgstr "objectifs"
 
 #
-#: apps/objectives/models.py:227
+#: apps/objectives/models.py:231
 msgid "description"
 msgstr "description"
 
 #
-#: apps/objectives/models.py:228
+#: apps/objectives/models.py:232
 msgid "success criterion"
 msgstr "critère de réussite"
 
 #
-#: apps/objectives/models.py:261
+#: apps/objectives/models.py:265
 msgid "objective revision"
 msgstr "révision d'objectif"
 
 #
-#: apps/objectives/models.py:262
+#: apps/objectives/models.py:266
 msgid "objective revisions"
 msgstr "révisions d'objectif"
 
 #
-#: apps/objectives/models.py:289
+#: apps/objectives/models.py:293
 msgid "date"
 msgstr "date"
 
-#: apps/objectives/models.py:302
+#: apps/objectives/models.py:306
 msgid "progress update"
 msgstr "point d'avancement"
 
-#: apps/objectives/models.py:303
+#: apps/objectives/models.py:307
 msgid "progress updates"
 msgstr "points d'avancement"
 
-#: apps/objectives/models.py:334
+#: apps/objectives/models.py:338
 msgid "objective comment"
 msgstr "commentaire d'objectif"
 
 #
-#: apps/objectives/models.py:335
+#: apps/objectives/models.py:339
 msgid "objective comments"
 msgstr "commentaires d'objectif"
 
-#: apps/objectives/models.py:370
+#: apps/objectives/models.py:374
 msgid "weekly summary"
 msgstr "point hebdomadaire"
 
-#: apps/objectives/models.py:371
+#: apps/objectives/models.py:375
 msgid "weekly summaries"
 msgstr "points hebdomadaires"
 
@@ -1103,7 +1103,7 @@ msgid "This year belongs to another thesis."
 msgstr "Cette année appartient à une autre thèse."
 
 #: apps/objectives/services.py:508 apps/objectives/services.py:656
-#: apps/objectives/services.py:721 apps/objectives/services.py:762
+#: apps/objectives/services.py:721 apps/objectives/services.py:774
 msgid "The objective changed meanwhile: try again."
 msgstr "L'objectif a été modifié entre-temps : recommencez."
 
@@ -1133,47 +1133,53 @@ msgstr "Choisissez un statut."
 msgid "This document cannot be attached."
 msgstr "Ce document ne peut pas être joint."
 
+#: apps/objectives/services.py:728
+msgid ""
+"An objective with progress cannot go back to “Planned”: keep “In progress” "
+"or set the progress back to zero."
+msgstr "Un objectif avec un avancement ne peut pas revenir à « Prévu » : gardez « En cours » ou ramenez l'avancement à zéro."
+
 #
-#: apps/objectives/views.py:264
+#: apps/objectives/views.py:281
 msgid "Objective created."
 msgstr "Objectif créé."
 
 #
-#: apps/objectives/views.py:311
+#: apps/objectives/views.py:328
 msgid "Objective saved."
 msgstr "Objectif enregistré."
 
 #
-#: apps/objectives/views.py:359
+#: apps/objectives/views.py:376
 msgid "Objective dropped."
 msgstr "Objectif abandonné."
 
 #
-#: apps/objectives/views.py:374
+#: apps/objectives/views.py:391
 msgid "Objective approved."
 msgstr "Objectif approuvé."
 
 #
-#: apps/objectives/views.py:385
+#: apps/objectives/views.py:402
 msgid "Changes acknowledged."
 msgstr "Prise de connaissance enregistrée."
 
 #
-#: apps/objectives/views.py:396
+#: apps/objectives/views.py:413
 msgid "Confidentiality changed."
 msgstr "Confidentialité modifiée."
 
-#: apps/objectives/views.py:426
+#: apps/objectives/views.py:443
 msgid "Unknown year."
 msgstr "Année inconnue."
 
-#: apps/objectives/views.py:435
+#: apps/objectives/views.py:452
 #, python-format
 msgid "%(count)d objective(s) approved."
 msgstr "%(count)d objectif(s) approuvé(s)."
 
 #
-#: apps/objectives/views.py:476
+#: apps/objectives/views.py:493
 msgid "Progress recorded."
 msgstr "Avancement enregistré."
 
@@ -1635,7 +1641,7 @@ msgstr "Déposer"
 msgid "Withdraw the submission"
 msgstr "Retirer le dépôt"
 
-#: templates/admin_file/item_row.html:53 templates/objectives/detail.html:31
+#: templates/admin_file/item_row.html:53 templates/objectives/detail.html:32
 msgid "Approve"
 msgstr "Approuver"
 
@@ -1818,11 +1824,11 @@ msgstr "Brouillons en attente d'approbation"
 msgid "To acknowledge"
 msgstr "À prendre en connaissance"
 
-#: templates/objectives/dashboard.html:31 templates/objectives/detail.html:18
+#: templates/objectives/dashboard.html:31 templates/objectives/detail.html:19
 msgid "changed since approval"
 msgstr "modifié depuis l'approbation"
 
-#: templates/objectives/dashboard.html:32 templates/objectives/detail.html:19
+#: templates/objectives/dashboard.html:32 templates/objectives/detail.html:20
 msgid "result declared, to acknowledge"
 msgstr "résultat déclaré, à prendre en connaissance"
 
@@ -1851,6 +1857,10 @@ msgstr "Objectifs de l'année"
 msgid "New objective"
 msgstr "Nouvel objectif"
 
+#: templates/objectives/dashboard.html:80 templates/objectives/detail.html:17
+msgid "to be declared achieved"
+msgstr "à déclarer atteint"
+
 #: templates/objectives/dashboard.html:80
 msgid "draft"
 msgstr "brouillon"
@@ -1866,8 +1876,8 @@ msgid_plural "Approve the %(counter)s drafts of the year"
 msgstr[0] "Approuver le brouillon de l'année"
 msgstr[1] "Approuver les %(counter)s brouillons de l'année"
 
-#: templates/objectives/dashboard.html:92 templates/objectives/detail.html:39
-#: templates/objectives/detail.html:76
+#: templates/objectives/dashboard.html:92 templates/objectives/detail.html:40
+#: templates/objectives/detail.html:77
 msgid "Asks for your second factor."
 msgstr "Demande votre second facteur."
 
@@ -1876,54 +1886,54 @@ msgstr "Demande votre second facteur."
 msgid "Objective"
 msgstr "Objectif"
 
-#: templates/objectives/detail.html:17
+#: templates/objectives/detail.html:18
 #, python-format
 msgid "approved on %(date)s"
 msgstr "approuvé le %(date)s"
 
 #
-#: templates/objectives/detail.html:17
+#: templates/objectives/detail.html:18
 msgid "draft, awaiting approval"
 msgstr "brouillon, en attente d'approbation"
 
-#: templates/objectives/detail.html:28
+#: templates/objectives/detail.html:29
 msgid "Edit"
 msgstr "Modifier"
 
-#: templates/objectives/detail.html:36
+#: templates/objectives/detail.html:37
 msgid "Acknowledge"
 msgstr "Prendre connaissance"
 
-#: templates/objectives/detail.html:45
+#: templates/objectives/detail.html:46
 msgid "History"
 msgstr "Historique"
 
-#: templates/objectives/detail.html:56
+#: templates/objectives/detail.html:57
 msgid "No change since approval."
 msgstr "Aucune modification depuis l'approbation."
 
-#: templates/objectives/detail.html:62
+#: templates/objectives/detail.html:63
 msgid "Comments of the supervision"
 msgstr "Commentaires de l'encadrement"
 
-#: templates/objectives/detail.html:64
+#: templates/objectives/detail.html:65
 msgid "Show the comments"
 msgstr "Afficher les commentaires"
 
 #
-#: templates/objectives/detail.html:75
+#: templates/objectives/detail.html:76
 msgid "Change the confidentiality"
 msgstr "Changer la confidentialité"
 
-#: templates/objectives/detail.html:83
+#: templates/objectives/detail.html:84
 msgid "Drop this objective"
 msgstr "Abandonner cet objectif"
 
-#: templates/objectives/detail.html:87
+#: templates/objectives/detail.html:88
 msgid "A dropped objective stays visible, with its reason."
 msgstr "Un objectif abandonné reste visible, avec son motif."
 
-#: templates/objectives/detail.html:88
+#: templates/objectives/detail.html:89
 msgid "Drop"
 msgstr "Abandonner"
 

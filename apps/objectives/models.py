@@ -208,6 +208,10 @@ class Objective(TimeStampedModel):
                 condition=~Q(status=Status.ACHIEVED) | Q(progress=100),
                 name="objectives_objective_achieved_is_100",
             ),
+            models.CheckConstraint(
+                condition=~Q(status=Status.PLANNED) | Q(progress=0),
+                name="objectives_objective_planned_has_no_progress",
+            ),
         ]
 
     def __str__(self) -> str:

@@ -77,7 +77,7 @@
         <td>{{ row.objective.get_category_display }}</td>
         <td>{{ row.objective.due_date|date:"SHORT_DATE_FORMAT" }}{% if row.overdue %} <strong class="overdue">{% translate "overdue" %}</strong>{% endif %}</td>
         <td>{{ row.objective.weight }}</td>
-        <td>{{ row.objective.get_status_display }} ({{ row.objective.progress }} %){% if not row.objective.is_approved %} — <span class="muted">{% translate "draft" %}</span>{% endif %}</td>
+        <td>{{ row.objective.get_status_display }} ({{ row.objective.progress }} %){% if can_write and row.objective.status == "IN_PROGRESS" and row.objective.progress == 100 %} — <span class="mark">{% translate "to be declared achieved" %}</span>{% endif %}{% if not row.objective.is_approved %} — <span class="muted">{% translate "draft" %}</span>{% endif %}</td>
       </tr>
       {% endfor %}
     </tbody>

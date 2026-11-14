@@ -14,6 +14,7 @@
 </p>
 <p>
   <strong>{{ objective.get_status_display }}</strong> ({{ objective.progress }} %)
+  {% if to_declare %}<span class="mark">100 % — {% translate "to be declared achieved" %}</span>{% endif %}
   {% if objective.is_approved %}— {% blocktranslate with date=objective.approved_at|date:"SHORT_DATE_FORMAT" %}approved on {{ date }}{% endblocktranslate %}{% else %}— <span class="muted">{% translate "draft, awaiting approval" %}</span>{% endif %}
   {% if objective.changed_since_approval %}<span class="mark">{% translate "changed since approval" %}</span>{% endif %}
   {% if objective.result_declared %}<span class="mark">{% translate "result declared, to acknowledge" %}</span>{% endif %}

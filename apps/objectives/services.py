@@ -719,6 +719,18 @@ def add_progress(
         _not_dropped(locked)
         if locked.level != objective.level:
             raise ValidationError(_("The objective changed meanwhile: try again."), code="stale")
+        # A progress above 0 % is never « Planned » (also a CHECK in the database):
+        # from PLANNED it starts the objective; back to PLANNED it is refused.
+        if status == Status.PLANNED and progress > 0:
+            if locked.status != Status.PLANNED:
+                raise ValidationError(
+                    _(
+                        "An objective with progress cannot go back to “Planned”: keep "
+                        "“In progress” or set the progress back to zero."
+                    ),
+                    code="planned_with_progress",
+                )
+            status = Status.IN_PROGRESS
         update = ProgressUpdate(
             thesis=thesis,
             objective=locked,

@@ -25,7 +25,7 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.http import HttpRequest, HttpResponse, HttpResponseBase
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django.utils import formats
+from django.utils import formats, timezone
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django.views import View
@@ -108,6 +108,22 @@ def _by_category(counts: dict[str, dict[str, int]]) -> list[tuple[str, str]]:
     return rows
 
 
+def _progress_form(objective: Objective, documents: dict[str, Document]) -> ProgressForm:
+    """Pre-filled with the CURRENT status and progress: an untouched select must never
+    send the first choice (« Prévu ») and set the objective back."""
+    initial = {
+        "status": objective.status,
+        "progress": objective.progress,
+        "date": timezone.localdate(),
+    }
+    return ProgressForm(documents=documents, initial=initial)
+
+
+def _to_declare(objective: Objective) -> bool:
+    """100 % but not declared achieved: the student decides (ACHIEVED is never automatic)."""
+    return objective.status == Status.IN_PROGRESS and objective.progress == 100
+
+
 class _Mixin(ThesisPermissionRequiredMixin):
     required_action = Action.OBJECTIVE_READ
     request: HttpRequest
@@ -174,7 +190,8 @@ class _Mixin(ThesisPermissionRequiredMixin):
             "can_acknowledge": Action.VALIDATE_OBJECTIVES in allowed
             and (fresh.changed_since_approval or fresh.result_declared),
             "progress_form": forms.get("progress_form")
-            or (ProgressForm(documents=_documents(user, self.thesis)) if writer else None),
+            or (_progress_form(fresh, _documents(user, self.thesis)) if writer else None),
+            "to_declare": writer and _to_declare(fresh),
             "drop_form": forms.get("drop_form") or (DropForm() if writer else None),
             "level_form": forms.get("level_form")
             or (LevelForm(initial={"level": fresh.level}) if writer else None),
@@ -466,7 +483,7 @@ class ProgressView(_Mixin, View):
                     note=data["note"],
                     evidence=data["evidence"],
                 )
-                form = ProgressForm(documents=documents)
+                form = _progress_form(Objective.objects.get(pk=objective.pk), documents)
             except ValidationError as exc:
                 status, error = _status(exc), " ".join(exc.messages)
         else:
