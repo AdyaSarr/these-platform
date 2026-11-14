@@ -45,6 +45,8 @@ from apps.accounts.models import Invitation, Organization, Thesis, User
 from apps.accounts.roles import Role
 from apps.admin_file import services as admin_file
 from apps.admin_file.models import DueDateReason, Reason, RequiredItem
+from apps.conferences import services as conferences
+from apps.conferences.models import Edition, StApproval, Submission, Venue
 from apps.core.confidentiality import ConfidentialityLevel as Level
 from apps.meetings import services as meetings
 from apps.meetings.models import Meeting, MinutesAcknowledgement
@@ -52,7 +54,7 @@ from apps.objectives import services as objectives
 from apps.objectives.models import Category, Objective, Status
 from apps.objectives.years import add_years
 from apps.vault import services as vault
-from apps.vault.models import AuditEvent, Document
+from apps.vault.models import AuditEvent, Document, DocumentVersion
 
 from . import guard
 from .pdf import fictional_pdf
@@ -285,6 +287,10 @@ class _Run:
     objectives: dict[str, Objective] = field(default_factory=dict)
     note: Document | None = None
     meetings: dict[str, Meeting] = field(default_factory=dict)
+    venues: dict[str, Venue] = field(default_factory=dict)
+    editions: dict[str, Edition] = field(default_factory=dict)
+    submissions: dict[str, Submission] = field(default_factory=dict)
+    articles: dict[str, Document] = field(default_factory=dict)
     summary: Document | None = None
 
     # ---------------------------------------------------------------- machinery
@@ -600,6 +606,117 @@ class _Run:
         )
         self.agenda("csi", student, "Présentation de l'avancement (fictive), puis échanges.")
 
+    # ---------------------------------------------------------------- conferences
+
+    def _venue(self, key: str, kind: str, acronym: str, name: str) -> None:
+        self.venues[key] = conferences.create_venue(
+            thesis=self.t,
+            user=self.users[Role.PHD_STUDENT],
+            kind=kind,
+            acronym=acronym,
+            name=name,
+            url=f"https://{acronym.lower()}.example.org/",
+        )
+
+    def _edition(self, key: str, venue: str, year: int, location: str) -> None:
+        self.editions[key] = conferences.create_edition(
+            venue=self.venues[venue],
+            user=self.users[Role.PHD_STUDENT],
+            year=year,
+            location=location,
+        )
+
+    def _deadline(self, edition: str, kind: str, day: dt.date, tz_name: str = "AoE") -> None:
+        conferences.add_deadline(
+            edition=self.editions[edition],
+            user=self.users[Role.PHD_STUDENT],
+            kind=kind,
+            day=day,
+            wall=dt.time(23, 59),
+            tz_name=tz_name,
+        )
+
+    def catalogue(self) -> None:
+        a = self.anchor
+        self._venue("sfca", "CONFERENCE", "SFCA", "Symposium fictif sur les canaux auxiliaires")
+        self._venue("afpq", "WORKSHOP", "AFPQ", "Atelier fictif de cryptographie post-quantique")
+        self._venue("rfsm", "JOURNAL", "RFSM", "Revue fictive de sécurité matérielle")
+        self._edition("sfca", "sfca", _day(a, 3, 1).year, "Ville fictive A")
+        self._deadline("sfca", "ABSTRACT", _day(a, 2, 20))
+        self._deadline("sfca", "PAPER", _day(a, 3, 1))
+        self._deadline("sfca", "NOTIFICATION", _day(a, 4, 1))
+        self._deadline("sfca", "CAMERA_READY", _day(a, 4, 25), "America/Los_Angeles")
+        self._edition("afpq", "afpq", _day(a, 2, 15).year, "Ville fictive B")
+        self._deadline("afpq", "PAPER", _day(a, 2, 15))
+        self._deadline("afpq", "NOTIFICATION", _day(a, 3, 15))
+
+    def submission(self, key: str, edition: str, title: str, objective: str = "") -> None:
+        student = self.users[Role.PHD_STUDENT]
+        target = self.editions[edition]
+        self.submissions[key] = conferences.create_submission(
+            thesis=self.t,
+            user=student,
+            venue=target.venue,
+            edition=target,
+            title=title,
+            abstract="Résumé fictif (démonstration).",
+            external_authors="Co-autrice fictive",
+            level=Level.CONFIDENTIAL,
+            objective=self.objectives[objective] if objective else None,
+            authors=[self.users[Role.INDUSTRIAL_TUTOR]],
+        )
+        self.articles[key] = self.store(f"Article fictif {key.upper()}", Level.CONFIDENTIAL)
+        conferences.link_document(
+            submission=self.submissions[key], user=student, document=self.articles[key]
+        )
+
+    def _current_version(self, key: str) -> DocumentVersion:
+        document = Document.objects.get(pk=self.articles[key].pk)
+        return DocumentVersion.objects.get(document=document, version=document.current_version)
+
+    def request(self, key: str) -> None:
+        conferences.request_approval(
+            submission=self.submissions[key],
+            user=self.users[Role.PHD_STUDENT],
+            version=self._current_version(key),
+        )
+
+    def st_decide(self, key: str, decision: str, reason: str = "", comment: str = "") -> None:
+        approval = StApproval.objects.get(submission=self.submissions[key], decision="PENDING")
+        # recent_mfa=True: stated by the command for the fictional tutor (docstring).
+        conferences.decide_approval(
+            approval=approval,
+            user=self.users[Role.INDUSTRIAL_TUTOR],
+            decision=decision,
+            reason=reason,
+            comment=comment,
+            recent_mfa=True,
+        )
+
+    def new_article_version(self, key: str) -> None:
+        vault.add_version(
+            document=self.articles[key],
+            upload=_upload(f"Article fictif {key.upper()}, version 2"),
+            user=self.users[Role.PHD_STUDENT],
+        )
+
+    def set_status(self, key: str, status: str, *, with_version: bool = False) -> None:
+        conferences.set_status(
+            submission=self.submissions[key],
+            user=self.users[Role.PHD_STUDENT],
+            status=status,
+            version=self._current_version(key) if with_version else None,
+        )
+
+    def pending_submission(self) -> None:
+        """A submission awaiting ST's approval, for a deadline 40 days after the real time."""
+        due = timezone.localdate(self.real_now) + dt.timedelta(days=40)
+        self._venue("cfse", "CONFERENCE", "CFSE", "Colloque fictif sur la sécurité embarquée")
+        self._edition("cfse", "cfse", due.year, "Ville fictive C")
+        self._deadline("cfse", "PAPER", due)
+        self.submission("c", "cfse", "Contre-mesure fictive pour un cas d'école")
+        self.request("c")
+
     # ---------------------------------------------------------------- the story
 
     def play(self) -> None:
@@ -638,6 +755,21 @@ class _Run:
             lambda: self.meeting("tutor", Role.PHD_STUDENT, at(1, 12, 14), **TUTOR_MEETING),
             lambda: self.agenda("tutor", Role.PHD_STUDENT, TUTOR_AGENDA),
         )
+        s("conferences", at(1, 8, 10), self.catalogue)
+        s(
+            "submission-a",
+            at(1, 10, 10),
+            lambda: self.submission("a", "sfca", "Attaque fictive par canal auxiliaire", "paper"),
+            lambda: self.request("a"),
+        )
+        s(
+            "submission-b",
+            at(1, 11, 10),
+            lambda: self.submission(
+                "b", "afpq", "Implémentation fictive d'un schéma post-quantique"
+            ),
+            lambda: self.request("b"),
+        )
         s(
             "meeting-tutor-minutes",
             at(1, 12, 16),
@@ -660,7 +792,21 @@ class _Run:
             ),
         )
         s("meeting-tutor-approved", at(1, 13, 9), lambda: self.mark("tutor", tutor, "APPROVED"))
+        s("st-grants-a", at(1, 20, 10), lambda: self.st_decide("a", "GRANTED"))
         s("meeting-tutor-action-done", at(1, 25, 10), self.finish_tutor_action)
+        s(
+            "st-refuses-b",
+            at(1, 26, 10),
+            lambda: self.st_decide(
+                "b", "REFUSED", "CHANGES_REQUESTED", "Retirer la figure fictive 3."
+            ),
+        )
+        s(
+            "b-version-2",
+            at(1, 28, 10),
+            lambda: self.new_article_version("b"),
+            lambda: self.request("b"),
+        )
         s("progress-1", end(1), lambda: self.progress(MONTHLY_PROGRESS[1]))
         s(
             "meeting-tripartite",
@@ -669,6 +815,12 @@ class _Run:
                 "tripartite", Role.PHD_STUDENT, at(2, 20, 10), **TRIPARTITE_MEETING
             ),
             lambda: self.agenda("tripartite", Role.PHD_STUDENT, TRIPARTITE_AGENDA),
+        )
+        s("st-grants-b", at(2, 5, 10), lambda: self.st_decide("b", "GRANTED"))
+        s(
+            "b-submitted",
+            at(2, 10, 10),
+            lambda: self.set_status("b", "SUBMITTED", with_version=True),
         )
         s(
             "meeting-tripartite-minutes",
@@ -702,6 +854,11 @@ class _Run:
         )
         # One of the two validations: the industrial tutor's is still awaited.
         s(
+            "a-submitted",
+            at(2, 26, 10),
+            lambda: self.set_status("a", "SUBMITTED", with_version=True),
+        )
+        s(
             "collaboration-director",
             at(2, 28, 16),
             lambda: self.approve(director, "collaboration_contract"),
@@ -725,6 +882,7 @@ class _Run:
             at(3, 15, 17),
             lambda: self.comment(director, "counter", DIRECTOR_COMMENT),
         )
+        s("b-rejected", at(3, 16, 10), lambda: self.set_status("b", "REJECTED"))
         s("progress-3", end(3), lambda: self.progress(MONTHLY_PROGRESS[3]))
         s("acknowledged", at(4, 1, 9), lambda: self.acknowledge("sota"))
         s(
@@ -733,6 +891,7 @@ class _Run:
             lambda: self.submit("adum_enrollment", "Inscription ADUM (fictive)"),
             lambda: self.submit("cvec_certificate", "Attestation CVEC (fictive)"),
         )
+        s("a-accepted", at(4, 3, 10), lambda: self.set_status("a", "ACCEPTED"))
         s(
             "academic-file-validated",
             at(4, 6, 14),
@@ -759,6 +918,7 @@ class _Run:
         s("seminar-document", at(4, 22, 12), self.link_summary)
         s("note", at(4, 23, 10), self.store_note)
         s("due-date-proposed", at(4, 25, 10), self.propose_due_date)
+        s("submission-c", at(4, 26, 10), self.pending_submission)
         s("charter-rejected", at(4, 27, 15), self.reject_charter)
         s("upcoming-meetings", at(4, 28, 10), self.upcoming)
         s("progress-4", end(4), lambda: self.progress(MONTHLY_PROGRESS[4]))
