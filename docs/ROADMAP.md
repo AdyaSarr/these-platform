@@ -10,7 +10,8 @@ critères d'acceptation de la fiche tous validés.
 | [x] | M2 — Coffre : documents chiffrés et journal d'audit | `modules/M02-coffre.md` | M1 | déc. 2026 |
 | [x] | M3 — Dossier administratif | `modules/M03-dossier-admin.md` | M2 | janv. 2027 |
 | [x] | M4 — Objectifs et indicateurs | `modules/M04-objectifs.md` | M1 | janv. 2027 |
-| [ ] | M5 — Réunions et présentations | `modules/M05-reunions.md` | M2, M4 | févr. 2027 |
+| [ ] | M5a — Réunions entre membres internes | `modules/M05-reunions.md` | M2, M4 | févr. 2027 |
+| [ ] | M5b — Invités, CSI, partie confidentielle de l'entretien CSI | `modules/M05-reunions.md` | M5a | févr. 2027 |
 | [ ] | M6 — Conférences et deadlines | `modules/M06-conferences.md` | M1 | févr. 2027 |
 | | **MVP — mise en service avec les encadrants** | | M0–M6 | **mars 2027** |
 | [ ] | M7 — Déplacements et temps ST / LIRMM | `modules/M07-deplacements.md` | M1 | printemps 2027 |
@@ -26,6 +27,12 @@ Avant toute mise en production : checklist de `docs/DEPLOYMENT.md` entièrement 
 ## Plus tard
 
 Idées validées, sans module ni date pour l'instant.
+
+- **Flux iCal personnel à jeton révocable** (après M5a ; retiré de M5 le
+  2026-11-14) : URL secrète par utilisateur, ne contenant que type, date et lieu
+  (jamais titre, ordre du jour ni compte rendu), jeton haché en base, révocation
+  (ancien jeton → 404), journalisé. M5a ne propose que le `.ics` par réunion,
+  téléchargé par un utilisateur connecté.
 
 - **Chiffrement des titres des documents `CONFIDENTIAL`** (après M2) : en M2, le
   titre est en clair (tri, recherche, liste) et le formulaire de dépôt avertit de
