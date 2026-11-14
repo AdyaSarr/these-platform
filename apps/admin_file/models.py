@@ -10,7 +10,7 @@ from __future__ import annotations
 import uuid
 from collections.abc import Mapping
 from types import MappingProxyType
-from typing import Any, ClassVar
+from typing import Any, ClassVar, TypeVar
 
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
@@ -84,7 +84,10 @@ class HistoryError(Exception):
     """A history row (reopening, decided due-date proposal) is never modified or deleted."""
 
 
-class _HistoryQuerySet(models.QuerySet[Any]):
+_M = TypeVar("_M", bound=models.Model)
+
+
+class _HistoryQuerySet(models.QuerySet[_M]):
     """No bulk update or delete of a history (tests/test_histories.py)."""
 
     def update(self, **kwargs: Any) -> int:
@@ -343,7 +346,7 @@ class ItemReopening(TimeStampedModel):
     reason_comment = models.CharField(max_length=280, blank=True, editable=False)
     validated_at = models.DateTimeField(editable=False)
 
-    objects = _HistoryQuerySet.as_manager()
+    objects: ClassVar[models.Manager[ItemReopening]] = _HistoryQuerySet.as_manager()
 
     class Meta:
         verbose_name = _("reopening")
@@ -404,7 +407,7 @@ class DueDateProposal(TimeStampedModel):
     )
     decided_at = models.DateTimeField(null=True, editable=False)
 
-    objects = _HistoryQuerySet.as_manager()
+    objects: ClassVar[models.Manager[DueDateProposal]] = _HistoryQuerySet.as_manager()
 
     class Meta:
         verbose_name = _("due-date proposal")

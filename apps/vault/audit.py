@@ -79,7 +79,13 @@ class AuditAction(StrEnum):
     # Administrative file (M3).
     ADMIN_FILE_SEEDED = "ADMIN_FILE_SEEDED"
     ADMIN_ITEM_CREATED = "ADMIN_ITEM_CREATED"  # custom item (code only, never the label)
-    ADMIN_ITEM_UPDATED = "ADMIN_ITEM_UPDATED"  # due date
+    ADMIN_ITEM_UPDATED = "ADMIN_ITEM_UPDATED"  # due date (from, to: ISO dates)
+    # Due-date proposals of the student (from, to, proposal id; the reason CODE only).
+    ADMIN_DUE_DATE_PROPOSED = "ADMIN_DUE_DATE_PROPOSED"
+    ADMIN_DUE_DATE_ACCEPTED = "ADMIN_DUE_DATE_ACCEPTED"
+    ADMIN_DUE_DATE_REFUSED = "ADMIN_DUE_DATE_REFUSED"
+    ADMIN_DUE_DATE_WITHDRAWN = "ADMIN_DUE_DATE_WITHDRAWN"
+    ADMIN_DUE_DATE_SUPERSEDED = "ADMIN_DUE_DATE_SUPERSEDED"  # by a validator's direct change
     ADMIN_ITEM_SUBMITTED = "ADMIN_ITEM_SUBMITTED"
     ADMIN_ITEM_WITHDRAWN = "ADMIN_ITEM_WITHDRAWN"
     ADMIN_ITEM_APPROVED = "ADMIN_ITEM_APPROVED"  # one role's approval of a cycle

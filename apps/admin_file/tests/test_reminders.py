@@ -175,9 +175,15 @@ def test_a_new_due_date_gets_new_reminders() -> None:
     team = make_team()
     item = item_of(team, due_date=dt.date(2026, 12, 15))
     _run("2026-12-01T09:00:00+00:00")
-    services.update_due_date(item=item, user=team.student, due_date=dt.date(2026, 12, 20))
+    # Revised 2026-11-14: a validator changes a catalogue due date (the student is
+    # then notified too: count the reminders, not every e-mail).
+    services.update_due_date(item=item, user=team.director, due_date=dt.date(2026, 12, 20))
     _run("2026-12-06T09:00:00+00:00")
-    assert len(mail.outbox) == 2
+    assert ReminderLog.objects.count() == 2
+    assert {r.due_date for r in ReminderLog.objects.all()} == {
+        dt.date(2026, 12, 15),
+        dt.date(2026, 12, 20),
+    }
 
 
 @pytest.mark.django_db(transaction=True)

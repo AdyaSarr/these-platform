@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import datetime as dt
 import unicodedata
+import uuid
 from dataclasses import dataclass
 from typing import Any
 
@@ -32,6 +33,7 @@ from django.db import IntegrityError, transaction
 from django.db.models import QuerySet
 from django.utils import timezone
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_noop
 
 from apps.accounts.models import Thesis, User
 from apps.accounts.permissions import (
@@ -53,6 +55,8 @@ from . import catalog, notifications
 from .models import (
     SECTION_READ_ACTION,
     VALIDATOR_ROLES,
+    DueDateProposal,
+    DueDateReason,
     ItemApproval,
     ItemNotification,
     ItemReopening,
@@ -70,6 +74,7 @@ from .transitions import (
 )
 
 __all__ = [
+    "accept_due_date",
     "allowed_levels",
     "approve",
     "attachable_documents",
@@ -77,15 +82,21 @@ __all__ = [
     "item_for",
     "item_rights",
     "label_of",
+    "pending_proposal",
     "progress",
+    "proposal_for",
+    "propose_due_date",
+    "refuse_due_date",
     "reject",
     "reopen",
     "reopen_reasons_for",
+    "require_due_date_validator",
     "seed_items",
     "submit",
     "update_due_date",
     "visible_items",
     "withdraw",
+    "withdraw_due_date_proposal",
 ]
 
 OPEN_THESIS = (Thesis.Status.SETUP, Thesis.Status.ACTIVE)
@@ -575,20 +586,32 @@ class ItemRights:
     withdraw: bool
     decide: bool  # approve or reject
     reopen: bool
-    edit: bool  # due date
+    edit_due: bool  # change the due date directly
+    propose_due: bool  # propose a due date (the student, catalogue item)
+    decide_proposal: bool  # accept or refuse the pending proposal
+    withdraw_proposal: bool  # take one's pending proposal back
     already_approved: bool
 
 
-def item_rights(user: Any, item: RequiredItem) -> ItemRights:
+def item_rights(
+    user: Any, item: RequiredItem, *, pending: DueDateProposal | None = None
+) -> ItemRights:
+    """``pending``: the item's pending proposal, if the caller already has it."""
     writer = can(user, Action.ADMIN_FILE_WRITE, item)
     deciders = _validator_roles_of(user, item)
+    status = ItemStatus(item.status)
+    # Approvals of a withdrawn, rejected or reopened cycle count no more.
+    current = status in (ItemStatus.SUBMITTED, ItemStatus.VALIDATED)
     mine = (
-        item.cycle >= 1
+        current
+        and item.cycle >= 1
         and ItemApproval.objects.filter(item=item, cycle=item.cycle, user_id=user.pk).exists()
     )
     is_submitter = item.submitted_by_id is not None and item.submitted_by_id == user.pk
     open_file = item.thesis.status in OPEN_THESIS
-    status = ItemStatus(item.status)
+    custom = _is_custom(item)
+    if pending is None and not custom:
+        pending = pending_proposal(item)
     return ItemRights(
         submit=open_file and writer and status in (ItemStatus.TODO, ItemStatus.REJECTED),
         withdraw=open_file and writer and status == ItemStatus.SUBMITTED,
@@ -598,7 +621,10 @@ def item_rights(user: Any, item: RequiredItem) -> ItemRights:
         and not mine
         and status == ItemStatus.SUBMITTED,
         reopen=open_file and (writer or bool(deciders)) and status == ItemStatus.VALIDATED,
-        edit=open_file and writer,
+        edit_due=open_file and (writer if custom else bool(deciders)),
+        propose_due=open_file and writer and not custom and pending is None,
+        decide_proposal=open_file and bool(deciders) and pending is not None,
+        withdraw_proposal=open_file and pending is not None and pending.proposed_by_id == user.pk,
         already_approved=mine,
     )
 
@@ -762,14 +788,313 @@ def create_custom_item(
     return item
 
 
+# --------------------------------------------------------------------------- due dates
+#
+# Catalogue item: a validator role of the item changes the due date (the view
+# asks a recent second factor), never to nothing when the item is mandatory;
+# the student proposes, a validator accepts or refuses. Custom item: the
+# student, as before. Dates between the CIFRE start and the planned end.
+# Audited with ``from`` / ``to`` (ISO dates); a comment never reaches the log.
+
+
+def _is_custom(item: RequiredItem) -> bool:
+    return item.code.startswith("custom-")
+
+
+def _iso(day: dt.date | None) -> str | None:
+    return day.isoformat() if day is not None else None
+
+
+def _dates(before: dt.date | None, after: dt.date | None) -> dict[str, Any]:
+    """``from`` / ``to`` of an audit event ("from" is a Python keyword: no kwarg)."""
+    return {"from": _iso(before), "to": _iso(after)}
+
+
+def _check_bounds(thesis: Thesis, day: dt.date) -> None:
+    if not isinstance(day, dt.date) or isinstance(day, dt.datetime):
+        raise ValidationError(_("Enter a valid date."), code="due_date")
+    if day < thesis.cifre_start_date:
+        raise ValidationError(
+            _("The due date cannot be before the CIFRE start date."), code="due_date_before_start"
+        )
+    if day > thesis.planned_end_date:
+        raise ValidationError(
+            _("The due date cannot be after the planned end of the thesis."),
+            code="due_date_after_end",
+        )
+
+
+def _require_validator(user: Any, item: RequiredItem) -> None:
+    _require_sees(user, item)
+    if not _validator_roles_of(user, item):
+        raise _DeniedError("not_validator")
+
+
+def require_due_date_validator(user: Any, item: RequiredItem, *, operation: str) -> None:
+    """For the views, BEFORE the re-authentication: a refused role gets an audited
+    403 without being asked for a second factor (the service checks again)."""
+    try:
+        _require_validator(user, item)
+        if _is_custom(item):
+            raise _DeniedError("custom_item")
+    except _DeniedError as denied:
+        _audit_denial(user, operation, denied.reason, obj=item)
+        raise PermissionDenied from None
+
+
+def pending_proposal(item: RequiredItem) -> DueDateProposal | None:
+    found: DueDateProposal | None = (
+        DueDateProposal.objects.filter(item=item, status=DueDateProposal.Status.PENDING)
+        .select_related("proposed_by")
+        .first()
+    )
+    return found
+
+
+def _locked_pending(item: RequiredItem) -> DueDateProposal | None:
+    found: DueDateProposal | None = (
+        DueDateProposal.objects.select_for_update()
+        .filter(item=item, status=DueDateProposal.Status.PENDING)
+        .first()
+    )
+    return found
+
+
 def update_due_date(*, item: RequiredItem, user: User, due_date: dt.date | None) -> RequiredItem:
-    """The student moves an item's due date (reminders follow the new date)."""
+    """Change an item's due date (reminders follow the new date).
+
+    Catalogue item: a validator role of the item; the student is notified and a
+    pending proposal is superseded. Custom item: the student, as before.
+    """
 
     def work(locked: RequiredItem) -> RequiredItem:
-        _require_writer(user, locked)
+        custom = _is_custom(locked)
+        if custom:
+            _require_writer(user, locked)
+        else:
+            _require_validator(user, locked)
+            if due_date is None and locked.mandatory:
+                raise ValidationError(
+                    _("A mandatory item of the catalogue keeps a due date."),
+                    code="due_date_required",
+                )
+        if due_date is not None:
+            _check_bounds(locked.thesis, due_date)
+        before = locked.due_date
         locked.due_date = due_date
         locked.save(update_fields=["due_date", "updated_at"])
-        audit(AuditAction.ADMIN_ITEM_UPDATED, actor=user, obj=locked, field="due_date")
+        superseded = None if custom else _locked_pending(locked)
+        if superseded is not None:
+            superseded.status = DueDateProposal.Status.SUPERSEDED
+            superseded.decided_by = user
+            superseded.decided_at = timezone.now()
+            superseded.save()
+        if not custom:
+            notifications.notify(
+                locked,
+                ItemNotification.Kind.DUE_CHANGED,
+                uuid.uuid4(),  # one direct change: no row of its own, the audit keeps it
+                notifications.members(locked, [Role.PHD_STUDENT], exclude=user),
+            )
+        audit(
+            AuditAction.ADMIN_ITEM_UPDATED,
+            actor=user,
+            obj=locked,
+            field="due_date",
+            **_dates(before, due_date),
+        )
+        if superseded is not None:
+            audit(
+                AuditAction.ADMIN_DUE_DATE_SUPERSEDED,
+                actor=user,
+                obj=locked,
+                proposal=str(superseded.pk),
+                **_dates(superseded.from_date, superseded.to_date),
+            )
         return locked
 
     return _run(item, user, "update", work)
+
+
+# "Nobody to decide": a proposal would wait forever.
+_NO_VALIDATOR = {
+    (Role.INDUSTRIAL_TUTOR,): gettext_noop("No industrial tutor in the team: invite them first."),
+    (Role.DIRECTOR,): gettext_noop("No thesis director in the team: invite them first."),
+    (Role.DIRECTOR, Role.INDUSTRIAL_TUTOR): gettext_noop(
+        "Neither a thesis director nor an industrial tutor in the team: invite one first."
+    ),
+}
+
+
+def _clean_comment(value: Any) -> str:
+    if value is not None and not isinstance(value, str):
+        raise ValidationError(_("The comment is not text."), code="comment")
+    comment: str = (value or "").strip()
+    if len(comment) > COMMENT_MAX:
+        raise ValidationError(_("The comment is too long."), code="comment")
+    if any(unicodedata.category(c) == "Cc" for c in comment):
+        raise ValidationError(_("The comment contains a control character."), code="comment")
+    return comment
+
+
+def propose_due_date(
+    *, item: RequiredItem, user: User, due_date: dt.date | None, reason: Any, comment: str = ""
+) -> DueDateProposal:
+    """The student proposes a due date for a catalogue item; its validators are notified.
+
+    One pending proposal per item; refused while no validator of the item is in
+    the team (nobody could decide). The comment is clear text, never audited.
+    """
+    try:
+        code = DueDateReason(reason).value
+    except (ValueError, TypeError):
+        raise ValidationError(_("Choose a reason."), code="reason") from None
+    comment = _clean_comment(comment)
+    created: list[DueDateProposal] = []
+
+    def work(locked: RequiredItem) -> RequiredItem:
+        _require_writer(user, locked)
+        if _is_custom(locked):
+            raise ValidationError(
+                _("The due date of a custom item is changed directly."), code="custom_item"
+            )
+        if due_date is None:
+            raise ValidationError(_("Give the proposed due date."), code="due_date_required")
+        _check_bounds(locked.thesis, due_date)
+        if due_date == locked.due_date:
+            raise ValidationError(_("This is already the due date."), code="same_date")
+        if _locked_pending(locked) is not None:
+            raise ValidationError(
+                _("A proposal is already waiting for a decision."), code="pending_proposal"
+            )
+        roles = tuple(Role(r) for r in locked.validator_roles)
+        validators = notifications.members(locked, roles, exclude=user)
+        if not validators:
+            raise ValidationError(_(_NO_VALIDATOR[roles]), code="no_validator")
+        proposal = DueDateProposal.objects.create(
+            item=locked,
+            proposed_by=user,
+            from_date=locked.due_date,
+            to_date=due_date,
+            reason_code=code,
+            comment=comment,
+            created_by=user,
+        )
+        created.append(proposal)
+        notifications.notify(locked, ItemNotification.Kind.DUE_PROPOSED, proposal.pk, validators)
+        audit(
+            AuditAction.ADMIN_DUE_DATE_PROPOSED,
+            actor=user,
+            obj=locked,
+            proposal=str(proposal.pk),
+            reason=code,
+            **_dates(proposal.from_date, due_date),
+        )
+        return locked
+
+    _run(item, user, "propose_due_date", work)
+    return created[0]
+
+
+def proposal_for(
+    user: Any, item: RequiredItem, proposal_id: Any, *, operation: str
+) -> DueDateProposal:
+    """The proposal ``proposal_id`` of ``item``, or an audited 403 (IDOR: never another
+    item's, whatever the URL)."""
+    proposal: DueDateProposal | None
+    try:
+        proposal = DueDateProposal.objects.filter(pk=proposal_id, item=item).first()
+    except (ValueError, ValidationError):
+        proposal = None
+    if proposal is None:
+        _audit_denial(user, operation, "unknown_proposal", obj=item)
+        raise PermissionDenied
+    return proposal
+
+
+def _locked_proposal(proposal: DueDateProposal, item: RequiredItem) -> DueDateProposal:
+    locked: DueDateProposal = DueDateProposal.objects.select_for_update().get(
+        pk=proposal.pk, item=item
+    )
+    if locked.status != DueDateProposal.Status.PENDING:
+        raise ValidationError(_("This proposal has already been decided."), code="not_pending")
+    return locked
+
+
+def _decide(proposal: DueDateProposal, user: User, *, accept: bool) -> DueDateProposal:
+    item = RequiredItem.objects.get(pk=proposal.item_id)
+    decided: list[DueDateProposal] = []
+
+    def work(locked: RequiredItem) -> RequiredItem:
+        _require_validator(user, locked)
+        pending = _locked_proposal(proposal, locked)
+        if pending.proposed_by_id == user.pk:
+            raise _DeniedError("proposer")
+        if accept:
+            if locked.due_date != pending.from_date:
+                raise InvalidTransitionError("the due date changed since the proposal")
+            _check_bounds(locked.thesis, pending.to_date)  # the thesis dates may have moved
+            locked.due_date = pending.to_date
+            locked.save(update_fields=["due_date", "updated_at"])
+        pending.status = (
+            DueDateProposal.Status.ACCEPTED if accept else DueDateProposal.Status.REFUSED
+        )
+        pending.decided_by = user
+        pending.decided_at = timezone.now()
+        pending.save()
+        decided.append(pending)
+        proposer = [
+            u
+            for u in notifications.members(locked, [Role.PHD_STUDENT])
+            if u.pk == pending.proposed_by_id
+        ]
+        kind = ItemNotification.Kind.DUE_ACCEPTED if accept else ItemNotification.Kind.DUE_REFUSED
+        notifications.notify(locked, kind, pending.pk, proposer)
+        audit(
+            AuditAction.ADMIN_DUE_DATE_ACCEPTED if accept else AuditAction.ADMIN_DUE_DATE_REFUSED,
+            actor=user,
+            obj=locked,
+            proposal=str(pending.pk),
+            **_dates(pending.from_date, pending.to_date),
+        )
+        return locked
+
+    _run(item, user, "accept_due_date" if accept else "refuse_due_date", work)
+    return decided[0]
+
+
+def accept_due_date(*, proposal: DueDateProposal, user: User) -> DueDateProposal:
+    """A validator of the item accepts: the due date becomes the proposed one."""
+    return _decide(proposal, user, accept=True)
+
+
+def refuse_due_date(*, proposal: DueDateProposal, user: User) -> DueDateProposal:
+    """A validator of the item refuses: the due date stays as it is."""
+    return _decide(proposal, user, accept=False)
+
+
+def withdraw_due_date_proposal(*, proposal: DueDateProposal, user: User) -> DueDateProposal:
+    """The student takes their pending proposal back (nobody is notified)."""
+    item = RequiredItem.objects.get(pk=proposal.item_id)
+    withdrawn: list[DueDateProposal] = []
+
+    def work(locked: RequiredItem) -> RequiredItem:
+        _require_writer(user, locked)
+        pending = _locked_proposal(proposal, locked)
+        if pending.proposed_by_id != user.pk:
+            raise _DeniedError("not_proposer")
+        pending.status = DueDateProposal.Status.WITHDRAWN
+        pending.decided_at = timezone.now()
+        pending.save()
+        withdrawn.append(pending)
+        audit(
+            AuditAction.ADMIN_DUE_DATE_WITHDRAWN,
+            actor=user,
+            obj=locked,
+            proposal=str(pending.pk),
+            **_dates(pending.from_date, pending.to_date),
+        )
+        return locked
+
+    _run(item, user, "withdraw_due_date", work)
+    return withdrawn[0]

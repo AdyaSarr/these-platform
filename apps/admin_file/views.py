@@ -108,7 +108,7 @@ def build_row(user: User, item: RequiredItem, **forms: Any) -> Row:
         row.submit_form = forms.get("submit_form") or SubmitForm(item=item, user=user)
     if rights.decide or rights.reopen:
         row.decision_form = forms.get("decision_form") or DecisionForm()
-    if rights.edit:
+    if rights.edit_due:
         row.due_form = forms.get("due_form") or DueDateForm(initial={"due_date": item.due_date})
     return row
 
