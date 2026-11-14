@@ -151,20 +151,24 @@ _DETAIL_KEY = re.compile(r"[a-z][a-z0-9_]*")
 
 # --------------------------------------------------------------------------- source
 
-_SOURCE_NAME = re.compile(r"[a-z][a-z0-9_]{0,63}")
-# Per thread and per asyncio task: another request is never tagged.
+# Closed list: a new source is added here, by a reviewed change, never computed.
+AUDIT_SOURCES: frozenset[str] = frozenset({"demo_seed"})
+SOURCE_KEY = "source"  # reserved in details: only audit_source() writes it
+# One value per thread and per asyncio task: another request is never tagged.
 _SOURCE: ContextVar[str | None] = ContextVar("audit_source", default=None)
 
 
 @contextmanager
 def audit_source(name: str) -> Iterator[None]:
-    """Every event written inside carries ``details.source = name`` (demo_seed).
+    """Every event written inside carries ``details.source = name``.
 
-    Only the content of ``details`` changes: the chain format (chain_v1) is the
-    same. Not nestable; a caller passing ``source=`` itself inside is refused.
+    ``name`` must belong to AUDIT_SOURCES (only "demo_seed" today). The value
+    lives in a ContextVar, reset in ``finally`` (also after an exception), and
+    is invisible to other threads and asyncio tasks. Only the content of
+    ``details`` changes: the chain format (chain_v1) is the same. Not nestable.
     """
-    if not isinstance(name, str) or not _SOURCE_NAME.fullmatch(name):
-        raise ValueError("audit source: [a-z][a-z0-9_]{0,63}")
+    if type(name) is not str or name not in AUDIT_SOURCES:
+        raise ValueError(f"audit source must be one of {sorted(AUDIT_SOURCES)}")
     if _SOURCE.get() is not None:
         raise ValueError("audit_source() is not nestable")
     token = _SOURCE.set(name)
@@ -256,11 +260,11 @@ def audit(
     """
     if not isinstance(action, AuditAction):
         raise AuditError(f"unknown audit action {action!r}")
+    if SOURCE_KEY in details:  # from any caller, inside the context or not
+        raise AuditError("details.source is reserved: it is set by audit_source() only")
     source = _SOURCE.get()
     if source is not None:
-        if "source" in details:
-            raise AuditError("details.source is set by audit_source()")
-        details["source"] = source
+        details[SOURCE_KEY] = source
     _check_details(details)
     deduced = _thesis_of(obj)
     if thesis is not None and deduced is not None and thesis.pk != deduced.pk:
