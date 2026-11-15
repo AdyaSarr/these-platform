@@ -341,3 +341,143 @@ def test_the_command_prints_counts_only(team: SimpleNamespace) -> None:
     text = out.getvalue()
     assert re.fullmatch(r"[0-9a-z ,()'.\n-]+", text), text
     assert "1 approval to request" in text
+
+
+# =========================================================================== concurrency
+
+
+def test_two_simultaneous_runs_send_each_reminder_once(team: SimpleNamespace) -> None:
+    import threading
+
+    from apps.vault.tests.concurrency import run_threads
+
+    mission_of(team)
+    barrier = threading.Barrier(2, timeout=5)
+
+    def run() -> None:
+        barrier.wait()
+        reminders.run(_at(2027, 1, 20))
+
+    run_threads(run, run, control=lambda: None)
+    assert len(_rows("ORDER_TO_REQUEST")) == 1
+    assert len(_to(team.student)) == 1
+
+
+def test_two_simultaneous_sendings_send_once(team: SimpleNamespace) -> None:
+    import threading
+
+    from apps.vault.tests.concurrency import run_threads
+
+    mission = mission_of(team)
+    row = TravelNotification.objects.create(
+        thesis=team.thesis,
+        kind="ORDER_TO_REQUEST",
+        target_id=reminders.event("manual", mission.pk),
+        window="DUE",
+        recipient=team.student,
+        mission=mission,
+    )
+    barrier = threading.Barrier(2, timeout=5)
+
+    def send() -> None:
+        barrier.wait()
+        tasks.send_travel_notification(str(row.pk))
+
+    run_threads(send, send, control=lambda: None)
+    row.refresh_from_db()
+    assert (row.status, row.attempts) == ("SENT", 1)
+    assert len(_to(team.student)) == 1
+
+
+# =========================================================================== still due at sending
+
+
+@pytest.fixture
+def held(monkeypatch: pytest.MonkeyPatch) -> list[str]:
+    """Notifications recorded but not sent yet: the queue keeps their ids."""
+    from apps.travel import notifications
+
+    ids: list[str] = []
+    monkeypatch.setattr(notifications, "_queue", lambda row: ids.append(str(row.pk)))
+    return ids
+
+
+def _send(ids: list[str]) -> list[str]:
+    for row_id in ids:
+        tasks.send_travel_notification(row_id)
+    return [TravelNotification.objects.get(pk=i).status for i in ids]
+
+
+def test_unchanged_it_is_sent(team: SimpleNamespace, held: list[str]) -> None:
+    mission_of(team)
+    reminders.run(_at(2027, 1, 20))
+    assert _send(held) == ["SENT"]
+
+
+def test_a_cancelled_mission_is_not_reminded_any_more(
+    team: SimpleNamespace, held: list[str]
+) -> None:
+    mission = mission_of(team)
+    reminders.run(_at(2027, 1, 20))
+    services.cancel_mission(mission=mission, user=team.student)
+    mail.outbox.clear()
+    assert _send(held) == ["SKIPPED"] and mail.outbox == []
+
+
+def test_an_approval_requested_meanwhile_is_not_reminded(
+    team: SimpleNamespace, held: list[str]
+) -> None:
+    mission = mission_of(team)
+    reminders.run(_at(2027, 1, 20))
+    to_request = list(held)
+    services.request_order(mission=mission, user=team.student, estimated_total="1")
+    mail.outbox.clear()
+    assert _send(to_request) == ["SKIPPED"] and _to(team.student) == []
+
+
+def test_an_approval_decided_meanwhile_is_not_reminded(
+    team: SimpleNamespace, held: list[str]
+) -> None:
+    mission = mission_of(team)
+    order = services.request_order(mission=mission, user=team.student, estimated_total="1")
+    held.clear()  # the request's own notification to the tutor: not this test's
+    reminders.run(_at(2027, 2, 3))  # J-7 to the tutor
+    pending = list(held)
+    assert [TravelNotification.objects.get(pk=i).kind for i in pending] == ["ORDER_PENDING"]
+    services.decide_order(order=order, user=team.tutor, decision="GRANTED", recent_mfa=True)
+    mail.outbox.clear()
+    assert _send(pending) == ["SKIPPED"] and _to(team.tutor) == []
+
+
+def test_a_withdrawn_request_is_not_announced(team: SimpleNamespace, held: list[str]) -> None:
+    order = services.request_order(mission=mission_of(team), user=team.student, estimated_total="1")
+    requested = list(held)
+    services.withdraw_order(order=order, user=team.student)
+    assert _send(requested) == ["SKIPPED"]
+
+
+def test_a_receipt_deposited_meanwhile_is_not_reminded(
+    team: SimpleNamespace, held: list[str], time_machine: Any
+) -> None:
+    mission = _done(team, time_machine)
+    line = services.add_expense(
+        mission=mission, user=team.student, category="TRANSPORT", actual="8"
+    )
+    held.clear()
+    reminders.run(_at(2027, 2, 13))
+    missing = list(held)
+    assert [TravelNotification.objects.get(pk=i).kind for i in missing] == ["RECEIPTS_MISSING"]
+    services.attach_receipt(expense=line, user=team.student, upload=_pdf())
+    assert _send(missing) == ["SKIPPED"]
+
+
+def test_a_decision_on_a_cancelled_mission_is_not_announced(
+    team: SimpleNamespace, held: list[str]
+) -> None:
+    mission = mission_of(team)
+    order = services.request_order(mission=mission, user=team.student, estimated_total="1")
+    held.clear()
+    services.decide_order(order=order, user=team.tutor, decision="GRANTED", recent_mfa=True)
+    decided = list(held)
+    services.cancel_mission(mission=mission, user=team.student)
+    assert _send(decided) == ["SKIPPED"]
