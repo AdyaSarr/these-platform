@@ -15,8 +15,10 @@ the URL configuration, so a page added later, such as the .ics export of all
 missions, is covered without editing this test), each month of the year with its
 navigation, the counter of each CIFRE year, and the thesis dashboard (where the
 "Travel" card goes), the list of missions, the page and the edit page of each
-shared mission, and the new-mission page (refused to the co-supervisor: refused
-alike in both worlds). Pages with an object id are listed by _surfaces() itself;
+shared mission, and the new-mission page, plain and prefilled with ?meeting= and
+?submission= (shared ids, an unknown id, a malformed one: refused to the
+co-supervisor, alike in both worlds). Pages with an object id are listed by
+_surfaces() itself;
 test_every_get_route_is_covered_or_listed checks that none is forgotten.
 
 The test is not vacuous: the student's surfaces differ between the worlds, and the
@@ -36,6 +38,10 @@ import pytest
 from django.test import Client
 from django.urls import URLPattern, URLResolver, get_resolver, resolve, reverse
 
+from apps.conferences.models import Submission
+from apps.conferences.tests.helpers import submission_of
+from apps.meetings.models import Meeting
+from apps.meetings.tests.helpers import meeting_of
 from apps.travel import holidays, services
 from apps.travel.models import Mission, PresenceDay
 from apps.travel.tests.helpers import NOW, D, client_for, make_team, mission_of
@@ -96,7 +102,7 @@ def _world(team: SimpleNamespace, pattern: str) -> None:
     # Missions elsewhere: removed (a test shortcut, the platform never deletes one),
     # then the pattern's own.
     Mission.objects.filter(thesis=team.thesis).exclude(destination="LIRMM").delete()
-    elsewhere = {
+    elsewhere: list[dict[str, Any]] = {
         "a": [
             {"destination": "ROUSSET", "payer": "ST", "start_date": D(2027, 1, 11)},
             {"destination": "CONFERENCE", "payer": "LIRMM", "start_date": D(2027, 2, 15)},
@@ -110,7 +116,7 @@ def _world(team: SimpleNamespace, pattern: str) -> None:
         "b": [{"destination": "ROUSSET", "payer": "ST", "start_date": D(2026, 12, 14)}],
     }[pattern]
     for fields in elsewhere:
-        start = fields["start_date"]
+        start: dt.date = fields["start_date"]
         mission_of(team, **{**fields, "end_date": start + dt.timedelta(days=2)}, purpose=pattern)
 
 
@@ -118,6 +124,8 @@ def _lirmm(team: SimpleNamespace) -> list[Mission]:
     for day in LIRMM_DAYS:
         assert holidays.is_working_day(day)
         PresenceDay.objects.create(thesis=team.thesis, day=day, kind="LIRMM")
+    meeting_of(team)  # shared objects a mission may link (?meeting=, ?submission=)
+    submission_of(team)
     return [  # shared missions to the LIRMM: one the co-supervisor reads, one not
         mission_of(team, payer="LIRMM", start_date=D(2027, 1, 26), end_date=D(2027, 1, 26)),
         mission_of(team, payer="ST", start_date=D(2027, 3, 2), end_date=D(2027, 3, 2)),
@@ -160,7 +168,14 @@ def _surfaces(team: SimpleNamespace) -> list[str]:
         for m in shared
         for name in ("mission", "edit_mission")
     ]
-    return [*_plain_travel_pages(team), *months, *years, *missions, dashboard]
+    meeting = Meeting.objects.filter(thesis=team.thesis).order_by("created_at").first()
+    submission = Submission.objects.filter(thesis=team.thesis).order_by("created_at").first()
+    new = reverse("travel:new_mission", kwargs=kw)
+    prefills = [
+        f"{new}?meeting={getattr(meeting, 'pk', '')}&submission={getattr(submission, 'pk', '')}",
+        f"{new}?meeting=00000000-0000-4000-8000-000000000000&submission=pas-un-identifiant",
+    ]
+    return [*_plain_travel_pages(team), *months, *years, *missions, *prefills, dashboard]
 
 
 # Pages of the student only: the co-supervisor gets a 403, the same in both worlds.
@@ -212,6 +227,7 @@ def _get_routes() -> dict[str, str]:
 
 
 def test_every_get_route_is_covered_or_listed(team: SimpleNamespace) -> None:
+    _lirmm(team)  # the shared missions: their pages are in _surfaces()
     covered = set()
     for target in _surfaces(team):
         match = resolve(urlsplit(target).path)
