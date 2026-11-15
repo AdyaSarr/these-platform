@@ -879,7 +879,7 @@ class _Run:
             destination="LIRMM",
             payer="ST",
             purpose="Séjour fictif à venir (démonstration).",
-            fill_presence=False,
+            fill_presence=True,  # its LIRMM days appear in the calendar
         )
         self._request("pending", "95")
 
