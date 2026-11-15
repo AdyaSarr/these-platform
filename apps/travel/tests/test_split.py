@@ -6,7 +6,7 @@ from fractions import Fraction
 
 import pytest
 
-from apps.travel import split
+from apps.travel import holidays, split
 from apps.travel.choices import PresenceKind as K
 from apps.travel.choices import Side
 
@@ -87,8 +87,8 @@ def test_leave_and_unfilled_days_are_excluded_not_counted() -> None:
 def test_whole_cifre_year_without_until() -> None:
     count = split.cifre_year_count(CIFRE_START, 1, DAYS, split.CountingRules())
     assert (count.first, count.last) == (D(2026, 12, 21), D(2027, 12, 20))
-    assert count.working_days == len(split.holidays.working_days(count.first, count.last))
-    assert count.unfilled_days == count.working_days - 12
+    assert count.working_days == len(holidays.working_days(count.first, count.last))
+    assert count.unfilled_days == count.working_days - 13  # 12, and 11 Jan now in the year
 
 
 def test_until_before_the_year_gives_an_empty_count() -> None:
