@@ -19,6 +19,38 @@ from .models import TravelNotification
 logger = logging.getLogger(__name__)
 
 
+def still_due(row: TravelNotification) -> bool:
+    """Whether the mission still calls for this e-mail when it is SENT (it may have
+    changed since it was queued): a cancelled mission, an approval requested or
+    decided meanwhile, a receipt deposited meanwhile -> SKIPPED, not sent."""
+    from . import services
+    from .choices import MissionStatus, NotificationKind, OrderDecision
+    from .models import ORDER_PAYERS, MissionOrder
+
+    if row.kind == NotificationKind.RULES_CHANGED:
+        return True
+    mission = row.mission
+    if mission is None or mission.status == MissionStatus.CANCELLED:
+        return False
+    if row.kind == NotificationKind.ORDER_TO_REQUEST:
+        return (
+            mission.status in (MissionStatus.PLANNED, MissionStatus.ORDER_REFUSED)
+            and mission.payer in ORDER_PAYERS
+            and mission.start_date >= timezone.localdate()
+        )
+    if row.kind == NotificationKind.ORDER_REQUESTED:  # target = the order
+        return MissionOrder.objects.filter(
+            pk=row.target_id, decision=OrderDecision.PENDING
+        ).exists()
+    if row.kind == NotificationKind.ORDER_PENDING:
+        return MissionOrder.objects.filter(mission=mission, decision=OrderDecision.PENDING).exists()
+    if row.kind == NotificationKind.ORDER_DECIDED:
+        return True  # the decision happened; only a cancelled mission makes it moot
+    if row.kind == NotificationKind.RECEIPTS_MISSING:
+        return mission.status == MissionStatus.DONE and services.expenses_incomplete(mission)
+    return False
+
+
 def _url(row: TravelNotification) -> str:
     """The page the e-mail links to; ids only in the URL."""
     thesis = {"thesis_id": row.thesis_id}
@@ -30,7 +62,8 @@ def _url(row: TravelNotification) -> str:
 @shared_task(ignore_result=True)  # type: ignore[untyped-decorator]  # Celery is untyped
 def send_travel_notification(row_id: str) -> None:
     """E-mail one notification: a link, nothing else (rule 7). Locked row (sent
-    once); the recipient must still be concerned (SKIPPED otherwise); no automatic
+    once, even by two workers at once); the recipient must still be concerned and the
+    mission must still call for it (still_due), SKIPPED otherwise; no automatic
     retry; ids only in the logs."""
     from .notifications import MAX_ATTEMPTS, concerned
 
@@ -48,7 +81,7 @@ def send_travel_notification(row_id: str) -> None:
             or row.attempts >= MAX_ATTEMPTS
         ):
             return
-        if not concerned(row.recipient, row.thesis, row.kind, row.mission):
+        if not concerned(row.recipient, row.thesis, row.kind, row.mission) or not still_due(row):
             row.status = NotificationStatus.SKIPPED
             row.save(update_fields=["status", "updated_at"])
             return

@@ -251,8 +251,9 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       puis à ce délai), accord en attente rappelé à la personne du payeur (J-7, J-1
       avant le départ), justificatifs ou montants réels manquants après le retour.
       Dates à Paris ; la relancer n'envoie rien deux fois (`TravelNotification`,
-      contrainte d'unicité) ; destinataire revérifié à l'envoi. *Vérifier* : la sortie
-      ne contient que des nombres.
+      contrainte d'unicité) ; à l'envoi, destinataire revérifié et rappel encore dû
+      (mission annulée, accord décidé, justificatif déposé entre-temps : rien
+      n'est envoyé). *Vérifier* : la sortie ne contient que des nombres.
 
 - [ ] **Résumé hebdomadaire des objectifs (M4) : un timer le lundi.**
       *Timer systemd* (utilisateur du serveur), chaque lundi à 08 h 00 Europe/Paris
