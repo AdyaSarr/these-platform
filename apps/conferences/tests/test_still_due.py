@@ -128,13 +128,13 @@ def _paper(team: SimpleNamespace, **kw: Any) -> tuple[Deadline, Submission]:
 
 
 def _deadline_row(team: SimpleNamespace, deadline: Deadline, user: Any) -> ConferenceNotification:
-    target = reminders._event("deadline", deadline.pk, deadline.due_at.isoformat())
+    target = reminders.event("deadline", deadline.pk, deadline.due_at.isoformat())
     return _row(team, K.DEADLINE, user, target, link=deadline.edition_id, window="J30")
 
 
 def _request_due_row(team: SimpleNamespace, submission: Submission) -> ConferenceNotification:
     (due,) = [d for s, d in services.request_due_dates(team.thesis) if s.pk == submission.pk]
-    target = reminders._event("request", submission.pk, due.isoformat())
+    target = reminders.event("request", submission.pk, due.isoformat())
     return _row(team, K.REQUEST_DUE, team.student, target, link=submission.pk, window="J30")
 
 
@@ -147,7 +147,7 @@ def _approval(team: SimpleNamespace, submission: Submission) -> StApproval:
 def _pending_row(team: SimpleNamespace, approval: StApproval) -> ConferenceNotification:
     reference = services.reference_deadline(approval.submission, "PAPER")
     assert reference is not None
-    target = reminders._event("pending", approval.pk, reference.due_at.isoformat())
+    target = reminders.event("pending", approval.pk, reference.due_at.isoformat())
     return _row(
         team, K.APPROVAL_PENDING, team.tutor, target, link=approval.submission_id, window="J7"
     )

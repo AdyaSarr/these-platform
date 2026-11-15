@@ -80,7 +80,7 @@ def window_for(days: int) -> str | None:
     return None
 
 
-def _event(*parts: object) -> uuid.UUID:
+def event(*parts: object) -> uuid.UUID:
     return uuid.uuid5(EVENT_NAMESPACE, ":".join(str(p) for p in parts))
 
 
@@ -125,7 +125,7 @@ def run(now: dt.datetime | None = None) -> RunResult:
                 deadlines += notify(
                     thesis,
                     NotificationKind.DEADLINE,
-                    _event("deadline", deadline.pk, deadline.due_at.isoformat()),
+                    event("deadline", deadline.pk, deadline.due_at.isoformat()),
                     recipients,
                     window=window,
                     link_id=deadline.edition_id,
@@ -136,7 +136,7 @@ def run(now: dt.datetime | None = None) -> RunResult:
                 request_dues += notify(
                     thesis,
                     NotificationKind.REQUEST_DUE,
-                    _event("request", submission.pk, due.isoformat()),
+                    event("request", submission.pk, due.isoformat()),
                     students,
                     window=window,
                     link_id=submission.pk,
@@ -155,7 +155,7 @@ def run(now: dt.datetime | None = None) -> RunResult:
             pending += notify(
                 thesis,
                 NotificationKind.APPROVAL_PENDING,
-                _event("pending", approval.pk, reference.due_at.isoformat()),
+                event("pending", approval.pk, reference.due_at.isoformat()),
                 tutors,
                 window=window or "",
                 link_id=approval.submission_id,

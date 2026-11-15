@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-15 23:12+0100\n"
+"POT-Creation-Date: 2026-11-16 00:05+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -734,7 +734,8 @@ msgstr "En retard"
 msgid "Pending"
 msgstr "En attente"
 
-#: apps/admin_file/models.py:292 apps/meetings/models.py:345
+#: apps/admin_file/models.py:292 apps/conferences/models.py:522
+#: apps/meetings/models.py:345
 msgid "Not sent: no longer concerned or due"
 msgstr "Non envoyé : destinataire plus concerné ou envoi plus dû"
 
@@ -1342,10 +1343,6 @@ msgstr "Délai de relecture ST modifié"
 #: apps/conferences/models.py:511 apps/travel/choices.py:129
 msgid "Event"
 msgstr "Événement"
-
-#: apps/conferences/models.py:522
-msgid "Not sent: no longer a member"
-msgstr "Non envoyé : ne fait plus partie de la thèse"
 
 #: apps/conferences/models.py:552
 msgid "conference notification"
@@ -5190,3 +5187,6 @@ msgstr ""
 #: templates/vault/upload.html:9
 msgid "Store"
 msgstr "Déposer"
+
+#~ msgid "Not sent: no longer a member"
+#~ msgstr "Non envoyé : ne fait plus partie de la thèse"
