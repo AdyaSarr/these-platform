@@ -342,7 +342,7 @@ class NotificationStatus(models.TextChoices):
     PENDING = "PENDING", _("Pending")
     SENT = "SENT", _("Sent")
     FAILED = "FAILED", _("Failed")
-    SKIPPED = "SKIPPED", _("Not sent: no longer a member")
+    SKIPPED = "SKIPPED", _("Not sent: no longer concerned or due")
 
 
 class MeetingNotification(TimeStampedModel):
@@ -362,8 +362,9 @@ class MeetingNotification(TimeStampedModel):
         Meeting, on_delete=models.PROTECT, related_name="notifications", editable=False
     )
     kind = models.CharField(max_length=20, choices=Kind.choices, editable=False)
-    # The event that caused it: a fresh uuid per change, the action id for
-    # ACTION_OVERDUE, the meeting id and its start for REMINDER (see services).
+    # The event that caused it: a fresh uuid per change; for REMINDER and
+    # ACTION_OVERDUE a uuid5 of (meeting, start) and (action, due date), computed
+    # again at send time (reminders.reminder_event, reminders.overdue_event).
     event_id = models.UUIDField(editable=False)
     recipient = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+", editable=False

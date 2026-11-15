@@ -144,7 +144,7 @@ def _all_tables_dump() -> list[str]:
 
 
 def test_no_marker_in_the_database_the_storage_the_logs_the_mails_or_the_ics(
-    team: SimpleNamespace, caplog: pytest.LogCaptureFixture
+    team: SimpleNamespace, caplog: pytest.LogCaptureFixture, time_machine: Any
 ) -> None:
     caplog.set_level(logging.DEBUG)  # every logger, SQL included (parameters are never logged)
     keys = ("title", "room", "link", "agenda", "minutes", "decision", "action", "source")
@@ -206,7 +206,10 @@ def test_no_marker_in_the_database_the_storage_the_logs_the_mails_or_the_ics(
     director.get(_url(team.thesis, "list"))
     director.get(_url(team.thesis, "register"))
     director.get(reverse("accounts:dashboard", kwargs={"thesis_id": team.thesis.pk}))
+    # The eve's reminder is sent on the eve; rule still_due 5.7.
+    time_machine.move_to(dt.datetime(2027, 1, 11, 8, 0, tzinfo=dt.UTC), tick=True)
     reminders.run(D(2027, 1, 11))  # the day before: reminders
+    time_machine.move_to(NOW, tick=True)
     reminders.run(D(2027, 1, 16))  # J+1 of the action: overdue e-mail
     assert MinutesAcknowledgement.objects.filter(kind="APPROVED").count() == 1
     assert Decision.objects.count() == 1 and ActionItem.objects.count() == 2
@@ -425,7 +428,7 @@ def test_two_simultaneous_approvals_mark_once(team: SimpleNamespace) -> None:
     assert MinutesAcknowledgement.objects.count() == 1
 
 
-def test_two_simultaneous_reminder_runs_send_once(team: SimpleNamespace) -> None:
+def test_two_simultaneous_reminder_runs_send_once(team: SimpleNamespace, time_machine: Any) -> None:
     _meeting(team)
     mail.outbox.clear()
     barrier = threading.Barrier(2, timeout=5)
@@ -434,7 +437,10 @@ def test_two_simultaneous_reminder_runs_send_once(team: SimpleNamespace) -> None
         barrier.wait()
         reminders.run(D(2027, 1, 11))
 
+    # The eve's reminder is sent on the eve; rule still_due 5.7.
+    time_machine.move_to(dt.datetime(2027, 1, 11, 8, 0, tzinfo=dt.UTC), tick=True)
     run_threads(run, run, control=lambda: None)
+    time_machine.move_to(NOW, tick=True)
     assert len(mail.outbox) == 2  # student and director, once each
 
 
