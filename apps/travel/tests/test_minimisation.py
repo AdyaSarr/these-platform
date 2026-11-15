@@ -26,10 +26,11 @@ import re
 from collections.abc import Iterator
 from types import SimpleNamespace
 from typing import Any
+from urllib.parse import urlsplit
 
 import pytest
 from django.test import Client
-from django.urls import URLPattern, URLResolver, get_resolver, reverse
+from django.urls import URLPattern, URLResolver, get_resolver, resolve, reverse
 
 from apps.travel import holidays, services
 from apps.travel.models import PresenceDay
@@ -153,10 +154,47 @@ def _services(team: SimpleNamespace, user: Any) -> tuple[Any, ...]:
 # --------------------------------------------------------------------------- tests
 
 
-def test_surfaces_include_the_calendar_and_the_counter(team: SimpleNamespace) -> None:
-    pages = _plain_travel_pages(team)
-    assert reverse("travel:calendar", kwargs={"thesis_id": team.thesis.pk}) in pages
-    assert reverse("travel:split", kwargs={"thesis_id": team.thesis.pk}) in pages
+# GET routes of the travel module NOT rendered by _surfaces(), each with its reason.
+# A new GET route (with or without parameters: ids, a year, a month) must either be
+# rendered in _surfaces() or be listed here, or test_every_get_route_is_covered_or_listed
+# fails; an entry naming no route fails it too. Allowed while M7 is being built,
+# never at the merge: tests/test_security_audit_m7.py fails unless it is empty.
+DEFERRED: dict[str, str] = {}
+
+
+def _get_routes() -> dict[str, str]:
+    """{url name: route} of every travel route that answers GET."""
+    out = {}
+    for route, pattern in _walk(get_resolver().url_patterns):
+        if not route.startswith("t/<uuid:thesis_id>/travel/") or not pattern.name:
+            continue
+        view_class = getattr(pattern.callback, "view_class", None)
+        if view_class is None or "get" in view_class.http_method_names:
+            out[pattern.name] = route
+    return out
+
+
+def test_every_get_route_is_covered_or_listed(team: SimpleNamespace) -> None:
+    covered = set()
+    for target in _surfaces(team):
+        match = resolve(urlsplit(target).path)
+        if match.namespace == "travel":
+            covered.add(match.url_name)
+    routes = _get_routes()
+    assert set(routes) - covered - set(DEFERRED) == set(), "render it or list it in DEFERRED"
+    assert set(DEFERRED) & covered == set(), "covered now: remove it from DEFERRED"
+    assert set(DEFERRED) <= set(routes), "no such route: remove it from DEFERRED"
+
+
+def test_routes_with_integer_parameters_are_walked(team: SimpleNamespace) -> None:
+    """The month page (<int:year>/<int:month>/) is a GET route: walked, and covered by
+    the explicit months of _surfaces(), not by the parameterless walk."""
+    routes = _get_routes()
+    assert "<int:year>/<int:month>/" in routes["month"]
+    assert {"calendar", "split", "settings", "month"} <= set(routes)
+    plain = _plain_travel_pages(team)
+    assert reverse("travel:calendar", kwargs={"thesis_id": team.thesis.pk}) in plain
+    assert not any(resolve(p).url_name == "month" for p in plain)
 
 
 def test_the_co_supervisor_cannot_tell_two_worlds_apart(team: SimpleNamespace) -> None:
