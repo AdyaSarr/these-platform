@@ -14,6 +14,7 @@ def _entries() -> list[dict[str, object]]:
     for block in PO.read_text().split("\n\n"):
         refs = re.findall(r"^#: (.+)$", block, re.M)
         msgid = re.search(r'^msgid ((?:".*"\n?)+)', block, re.M)
+        context = re.search(r'^msgctxt "(.*)"$', block, re.M)
         msgstr = re.search(r'^msgstr ((?:".*"\n?)+)', block, re.M)
         if not msgid or not msgstr:
             continue
@@ -21,6 +22,7 @@ def _entries() -> list[dict[str, object]]:
         entries.append(
             {
                 "refs": " ".join(refs),
+                "context": context.group(1) if context else None,
                 "msgid": joined(msgid),
                 "msgstr": joined(msgstr),
                 "fuzzy": "#, fuzzy" in block
@@ -54,5 +56,34 @@ def test_the_compiled_catalogue_gives_the_translations() -> None:
         and ("apps/travel/" in str(e["refs"]) or "templates/travel/" in str(e["refs"]))
     ]
     with translation.override("fr"):
-        wrong = [e["msgid"] for e in mine if translation.gettext(str(e["msgid"])) != e["msgstr"]]
+        wrong = [
+            e["msgid"]
+            for e in mine
+            if (
+                translation.pgettext(str(e["context"]), str(e["msgid"]))
+                if e["context"]
+                else translation.gettext(str(e["msgid"]))
+            )
+            != e["msgstr"]
+        ]
     assert wrong == []
+
+
+def test_no_msgid_swallowed_its_translation() -> None:
+    """A msgid that ends with its own French text (or holds French letters) is a
+    corrupted entry: the source string then has no translation and the page shows
+    English, while the catalogue still looks complete to the tests above."""
+    french = re.compile(r"[àâçéèêëîïôûùüÿœÀÂÇÉÈÊËÎÏÔÛÙÜŸŒ]")
+    mine = [
+        e
+        for e in _entries()
+        if e["msgid"]
+        and ("apps/travel/" in str(e["refs"]) or "templates/travel/" in str(e["refs"]))
+    ]
+    corrupted = [
+        e["msgid"]
+        for e in mine
+        if french.search(str(e["msgid"]))
+        or (str(e["msgid"]).endswith(str(e["msgstr"])) and e["msgid"] != e["msgstr"])
+    ]
+    assert corrupted == []

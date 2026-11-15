@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-15 13:21+0100\n"
+"POT-Creation-Date: 2026-11-15 15:00+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1434,8 +1434,8 @@ msgstr "Cette édition existe déjà."
 msgid "This deadline was cancelled."
 msgstr "Cette échéance a été annulée."
 
-#: apps/conferences/services.py:472 apps/travel/services.py:464
-#: apps/travel/services.py:485 apps/travel/services.py:492
+#: apps/conferences/services.py:472 apps/travel/services.py:468
+#: apps/travel/services.py:489 apps/travel/services.py:496
 #, python-format
 msgid "Between 0 and %(max)d days."
 msgstr "Entre 0 et %(max)d jours."
@@ -2110,7 +2110,7 @@ msgstr ""
 "Obligatoire : cet objectif est approuvé. Le motif est conservé avec la "
 "modification et montré au directeur."
 
-#: apps/objectives/forms.py:40 apps/travel/forms.py:62 apps/travel/models.py:73
+#: apps/objectives/forms.py:40 apps/travel/forms.py:60 apps/travel/models.py:73
 #: templates/travel/settings.html:23
 msgid "CIFRE year"
 msgstr "Année CIFRE"
@@ -2413,35 +2413,35 @@ msgstr "Aussi les week-ends et jours fériés"
 msgid "Remote work counts for"
 msgstr "Le télétravail compte pour"
 
-#: apps/travel/forms.py:46
+#: apps/travel/forms.py:45
 msgid "Conferences count for"
 msgstr "Les conférences comptent pour"
 
-#: apps/travel/forms.py:48 apps/travel/models.py:111
+#: apps/travel/forms.py:46 apps/travel/models.py:111
 msgid "Whit Monday is a holiday"
 msgstr "Le lundi de Pentecôte est férié"
 
-#: apps/travel/forms.py:50
+#: apps/travel/forms.py:48
 msgid "Alert when the gap exceeds (points)"
 msgstr "Alerte si l'écart dépasse (points)"
 
-#: apps/travel/forms.py:53
+#: apps/travel/forms.py:51
 msgid "Minimum LIRMM days per month"
 msgstr "Minimum de jours au LIRMM par mois"
 
-#: apps/travel/forms.py:57
+#: apps/travel/forms.py:55
 msgid "Leave empty: no monthly rule."
 msgstr "Laisser vide : pas de règle mensuelle."
 
-#: apps/travel/forms.py:63 apps/travel/models.py:74
+#: apps/travel/forms.py:61 apps/travel/models.py:74
 msgid "ST share (percent)"
 msgstr "Part ST (%)"
 
-#: apps/travel/forms.py:68
+#: apps/travel/forms.py:66
 msgid "Mission order to request (days before departure)"
 msgstr "Ordre de mission à demander (jours avant le départ)"
 
-#: apps/travel/forms.py:73
+#: apps/travel/forms.py:71
 msgid "Receipts expected (days after return)"
 msgstr "Justificatifs attendus (jours après le retour)"
 
@@ -2511,32 +2511,32 @@ msgstr "Le premier jour ne peut pas être après le dernier."
 msgid "At most %(n)d days at once."
 msgstr "%(n)d jours au plus à la fois."
 
-#: apps/travel/services.py:262 apps/travel/services.py:507
+#: apps/travel/services.py:263 apps/travel/services.py:511
 msgid "Unknown CIFRE year."
 msgstr "Année CIFRE inconnue."
 
-#: apps/travel/services.py:352
+#: apps/travel/services.py:356
 msgid "Unknown month."
 msgstr "Mois inconnu."
 
-#: apps/travel/services.py:354
+#: apps/travel/services.py:358
 msgid "This month is outside the thesis."
 msgstr "Ce mois est hors de la thèse."
 
-#: apps/travel/services.py:448
+#: apps/travel/services.py:452
 msgid "Unknown side."
 msgstr "Côté inconnu."
 
-#: apps/travel/services.py:450
+#: apps/travel/services.py:454
 msgid "Yes or no."
 msgstr "Oui ou non."
 
-#: apps/travel/services.py:456
+#: apps/travel/services.py:460
 #, python-format
 msgid "Between 1 and %(max)d points."
 msgstr "Entre 1 et %(max)d points."
 
-#: apps/travel/services.py:508
+#: apps/travel/services.py:512
 msgid "Between 0 and 100."
 msgstr "Entre 0 et 100."
 
@@ -3983,8 +3983,6 @@ msgstr "Renseigner des jours"
 msgid ""
 "Working days only unless the box is ticked. A change to a past day is "
 "recorded in the audit log."
-"Jours ouvrés seulement, sauf si la case est cochée. Toute modification d'un "
-"jour passé est inscrite au journal d'audit."
 msgstr "Jours ouvrés seulement, sauf si la case est cochée. Toute modification d'un jour passé est inscrite au journal d'audit."
 
 #: templates/travel/settings.html:7
