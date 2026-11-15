@@ -48,6 +48,9 @@ EVER_ASSIGNED_SLOTS = {
     0x0403: "travel.Mission.lodging_note",
     0x0404: "travel.MissionOrder.comment",
     0x0405: "travel.MissionOrder.estimated_total",
+    0x0406: "travel.Expense.estimated_amount",
+    0x0407: "travel.Expense.actual_amount",
+    0x0408: "travel.TravelBudget.amount",
 }
 EXPECTED_SLOT_RANGES = {
     0x01: "objectives",

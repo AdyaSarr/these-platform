@@ -131,6 +131,11 @@ def _world(team: SimpleNamespace, pattern: str) -> None:
                 order=order, user=decider, decision="GRANTED", recent_mfa=True, comment="a"
             )
             services.attach_official_order(mission=mission, user=team.student, upload=_pdf())
+        if pattern == "a":  # expenses and receipts on hidden missions
+            line = services.add_expense(
+                mission=mission, user=team.student, category="LODGING", estimated="210"
+            )
+            services.attach_receipt(expense=line, user=team.student, upload=_pdf())
 
 
 def _lirmm(team: SimpleNamespace) -> list[Mission]:
@@ -145,6 +150,10 @@ def _lirmm(team: SimpleNamespace) -> list[Mission]:
     ]
     services.request_order(mission=shared[1], user=team.student, estimated_total="80")
     services.attach_official_order(mission=shared[0], user=team.student, upload=_pdf())
+    line = services.add_expense(
+        mission=shared[0], user=team.student, category="MEALS", flat_rate=True, estimated="30"
+    )
+    services.attach_receipt(expense=line, user=team.student, upload=_pdf())
     return shared
 
 
@@ -201,7 +210,7 @@ def _surfaces(team: SimpleNamespace) -> list[str]:
 
 
 # Pages of the student only: the co-supervisor gets a 403, the same in both worlds.
-REFUSED_TO_CO_SUP = frozenset({"new_mission", "edit_mission", "orders"})
+REFUSED_TO_CO_SUP = frozenset({"new_mission", "edit_mission", "orders", "budget"})
 
 _CSRF = re.compile(r'(name="csrfmiddlewaretoken" value=|"X-CSRFToken": )"[^"]+"')
 

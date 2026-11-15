@@ -219,3 +219,59 @@ def test_an_order_is_never_decided_by_its_requester() -> None:
             decided_at=NOW_DT,
         )
     )
+
+
+# --------------------------------------------------------------------------- expenses, budgets
+
+
+@pytest.mark.parametrize(
+    ("category", "flat_rate", "ok"),
+    [
+        ("MEALS", True, True),
+        ("OTHER", True, True),
+        ("TRANSPORT", True, False),
+        ("LODGING", True, False),
+        ("REGISTRATION", True, False),
+        ("TRANSPORT", False, True),
+        ("TAXI", False, False),
+    ],
+)
+def test_expense_constraints(category: str, flat_rate: bool, ok: bool) -> None:
+    from apps.travel.models import Expense
+
+    mission = _mission(ThesisFactory.create())
+
+    def create() -> Any:
+        return Expense.objects.create(
+            thesis=mission.thesis, mission=mission, category=category, flat_rate=flat_rate
+        )
+
+    if ok:
+        create()
+    else:
+        _refused(create)
+
+
+@pytest.mark.parametrize(
+    ("payer", "level", "ok"),
+    [
+        ("ST", "INTERNAL_ST", True),
+        ("LIRMM", "INTERNAL_LIRMM", True),
+        ("ST", "INTERNAL_LIRMM", False),
+        ("LIRMM", "CONFIDENTIAL", False),
+        ("OTHER", "INTERNAL_LIRMM", False),
+    ],
+)
+def test_budget_constraints(payer: str, level: str, ok: bool) -> None:
+    from apps.travel.models import TravelBudget
+
+    thesis = ThesisFactory.create()
+
+    def create() -> Any:
+        return TravelBudget.objects.create(thesis=thesis, payer=payer, year=2027, level=level)
+
+    if ok:
+        create()
+        _refused(create)  # one per (thesis, payer, year)
+    else:
+        _refused(create)
