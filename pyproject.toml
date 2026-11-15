@@ -93,10 +93,13 @@ django_settings_module = "config.settings.test"
 # --------------------------------------------------------------------------- pytest
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings.test"
-addopts = "--strict-markers --strict-config -ra"
+# merge_gate checks pass only at the merge of a module (CLAUDE.md): left out by
+# default, run with `uv run pytest -m merge_gate` (a later -m replaces this one).
+addopts = "--strict-markers --strict-config -ra -m 'not merge_gate'"
 testpaths = ["tests", "apps"]
 markers = [
     "without_vault_keys: do not create version 1 of the KEK domains (conftest.py)",
+    "merge_gate: must pass before a module is merged into main, not before (CLAUDE.md)",
 ]
 python_files = ["test_*.py"]
 

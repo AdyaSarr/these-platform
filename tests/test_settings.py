@@ -78,3 +78,18 @@ def test_email_timeout_is_bounded() -> None:
     reminder's row lock and a Celery worker indefinitely."""
     assert base.EMAIL_TIMEOUT == 10
     assert settings.EMAIL_TIMEOUT == 10
+
+
+def test_merge_gate_checks_are_declared_and_left_out_by_default() -> None:
+    """The merge_gate marker (CLAUDE.md, before a merge) is declared, and the default
+    run leaves those checks out: removing either would show here."""
+    import shlex
+    import tomllib
+    from pathlib import Path
+
+    config = tomllib.loads((Path(__file__).resolve().parent.parent / "pyproject.toml").read_text())
+    pytest_config = config["tool"]["pytest"]["ini_options"]
+    assert any(m.split(":")[0].strip() == "merge_gate" for m in pytest_config["markers"])
+    args = shlex.split(pytest_config["addopts"])
+    assert "--strict-markers" in args
+    assert args[args.index("-m") + 1] == "not merge_gate"
