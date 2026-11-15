@@ -445,6 +445,28 @@ def test_a_reminder_left_pending_by_the_old_code_stays_inert_until_its_task_runs
     assert mail.outbox == []
 
 
+@pytest.mark.django_db(transaction=True)
+def test_a_reactivated_account_gets_no_reminder_of_a_window_left_pending() -> None:
+    """The same row PENDING, the account reactivated within the same window: the
+    daily run finds the row (unique constraint) and queues nothing, so that
+    window's reminder is never sent; the next window is a new row, sent."""
+    team = make_team()
+    today = timezone.localdate()
+    item = item_of(team, due_date=today + dt.timedelta(days=10))
+    row = _reminder(item, team.student)  # J14, left PENDING by the old code
+    type(team.student).objects.filter(pk=team.student.pk).update(is_active=False)
+    type(team.student).objects.filter(pk=team.student.pk).update(is_active=True)
+    assert reminders.run(today)["queued"] == 0  # still the J14 window
+    row.refresh_from_db()
+    assert (row.status, row.attempts) == ("PENDING", 0)
+    assert mail.outbox == []
+    assert reminders.run(today + dt.timedelta(days=7))["queued"] == 1  # J3: a new row
+    assert [m.to for m in mail.outbox] == [[team.student.email]]
+    row.refresh_from_db()
+    assert row.status == "PENDING"
+    assert ReminderLog.objects.get(item=item, kind="J3").status == "SENT"
+
+
 # --------------------------------------------------------------------------- concurrency
 
 
