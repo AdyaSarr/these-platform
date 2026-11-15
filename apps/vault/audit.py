@@ -162,6 +162,10 @@ class AuditAction(StrEnum):
     MISSION_ORDER_WITHDRAWN = "MISSION_ORDER_WITHDRAWN"  # order_id
     MISSION_ORDER_INVALIDATED = "MISSION_ORDER_INVALIDATED"  # order_id, fields changed
     MISSION_OFFICIAL_ORDER_ATTACHED = "MISSION_OFFICIAL_ORDER_ATTACHED"  # document_id, version
+    EXPENSE_ADDED = "EXPENSE_ADDED"  # expense_id, category, flat_rate (never an amount)
+    EXPENSE_UPDATED = "EXPENSE_UPDATED"  # expense_id, field names
+    EXPENSE_RECEIPT_ATTACHED = "EXPENSE_RECEIPT_ATTACHED"  # expense_id, document_id
+    TRAVEL_BUDGET_SET = "TRAVEL_BUDGET_SET"  # payer, year, created (never the amount)
     TRAVEL_ACCESS_DENIED = "TRAVEL_ACCESS_DENIED"
     # Keys (M2).
     KEK_CREATED = "KEK_CREATED"

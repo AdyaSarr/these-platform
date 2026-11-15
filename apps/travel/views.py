@@ -35,6 +35,7 @@ from apps.accounts.permissions import (
     ThesisPermissionRequiredMixin,
     can,
     can_access_document,
+    roles_of,
 )
 from apps.accounts.reauth import RecentAuthRequiredMixin, authenticated_recently, reauth_response
 from apps.admin_file.models import RequiredItem
@@ -46,19 +47,31 @@ from apps.vault.errors import ReauthenticationRequiredError
 
 from . import amounts, services
 from .access import PresenceAccess
-from .choices import Destination, MissionStatus, OrderDecision, ShownKind, Side, Transport
+from .choices import (
+    Destination,
+    MissionStatus,
+    OrderDecision,
+    Payer,
+    ShownKind,
+    Side,
+    Transport,
+)
 from .forms import (
+    BudgetForm,
+    ExpenseAmountsForm,
+    ExpenseForm,
     MissionForm,
     MissionLevelForm,
     OfficialOrderForm,
     OrderDecisionForm,
     OrderRequestForm,
     PresenceForm,
+    ReceiptForm,
     RemindersForm,
     RulesForm,
     TargetForm,
 )
-from .models import ORDER_PAYERS, Mission, MissionOrder
+from .models import ORDER_PAYERS, Expense, Mission, MissionOrder
 
 # Legend of the month page, per view (access.py): a viewer never reads the name of
 # a kind they cannot see.
@@ -299,6 +312,9 @@ class RemindersView(_SettingsPost):
 CONFLICTS = frozenset(
     {
         "terminal",
+        "not_done",
+        "actual_missing",
+        "receipt_missing",
         "not_returned",
         "order_required",
         "stale",
@@ -498,6 +514,21 @@ class MissionView(_MissionMixin, View):
             "texts": {name: _shown(value) for name, value in texts.items()},
             "transports": [transports[t] for t in mission.transports],
             "official_document": _readable(user, mission.official_order_document),
+            "expenses": [
+                {
+                    "view": view,
+                    "estimated": _amount(view.estimated),
+                    "actual": _amount(view.actual),
+                }
+                for view in services.expenses_of(user, mission)
+            ],
+            "expense_form": ExpenseForm(),  # shown when can_expense
+            "amounts_form": ExpenseAmountsForm(),
+            "receipt_form": ReceiptForm(),
+            "can_expense": can(user, Action.TRAVEL_WRITE, self.thesis)
+            and mission.status not in (MissionStatus.CANCELLED, MissionStatus.REIMBURSED),
+            "can_reimburse": can(user, Action.TRAVEL_WRITE, self.thesis)
+            and mission.status == MissionStatus.DONE,
             "official_form": OfficialOrderForm()
             if writer and mission.status != MissionStatus.CANCELLED
             else None,
@@ -792,3 +823,176 @@ class OfficialOrderView(_MissionMixin, View):
             return _mission_page(self, request, mission, _status(exc), " ".join(exc.messages))
         messages.success(request, _("Official mission order stored."))
         return redirect(self._mission_url(mission))
+
+
+# --------------------------------------------------------------------------- expenses
+
+
+class AddExpenseView(_MissionMixin, View):
+    required_action = Action.TRAVEL_WRITE
+    http_method_names: Sequence[str] = ("post",)
+
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponseBase:
+        mission = self._mission("expense_add")
+        form = ExpenseForm(request.POST)
+        if not form.is_valid():
+            return _mission_page(self, request, mission, 400, _("Check the expense line."))
+        data = form.cleaned_data
+        try:
+            services.add_expense(
+                mission=mission,
+                user=_user(request),
+                category=data["category"],
+                estimated=data["estimated"],
+                actual=data["actual"],
+                flat_rate=data["flat_rate"],
+            )
+        except ValidationError as exc:
+            return _mission_page(self, request, mission, _status(exc), " ".join(exc.messages))
+        messages.success(request, _("Expense line added."))
+        return redirect(self._mission_url(mission))
+
+
+class _ExpenseMixin(_Mixin):
+    kwargs: dict[str, Any]
+
+    def _expense(self, operation: str) -> Expense:
+        return services.expense_for(
+            _user(self.request), self.thesis, self.kwargs["expense_id"], operation
+        )
+
+
+class UpdateExpenseView(_ExpenseMixin, View):
+    required_action = Action.TRAVEL_WRITE
+    http_method_names: Sequence[str] = ("post",)
+
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponseBase:
+        expense = self._expense("expense_update")
+        form = ExpenseAmountsForm(request.POST)
+        if not form.is_valid():
+            return _mission_page(self, request, expense.mission, 400, _("Check the amounts."))
+        try:
+            services.update_expense(
+                expense=expense,
+                user=_user(request),
+                estimated=form.cleaned_data["estimated"],
+                actual=form.cleaned_data["actual"],
+            )
+        except ValidationError as exc:
+            return _mission_page(
+                self, request, expense.mission, _status(exc), " ".join(exc.messages)
+            )
+        messages.success(request, _("Amounts saved."))
+        return redirect(self._url("mission", mission_id=expense.mission_id))
+
+
+class AttachReceiptView(_ExpenseMixin, View):
+    required_action = Action.TRAVEL_WRITE
+    http_method_names: Sequence[str] = ("post",)
+
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponseBase:
+        expense = self._expense("receipt_attach")
+        form = ReceiptForm(request.POST, request.FILES)
+        if not form.is_valid():
+            return _mission_page(self, request, expense.mission, 400, _("Choose a file."))
+        try:
+            services.attach_receipt(
+                expense=expense, user=_user(request), upload=form.cleaned_data["file"]
+            )
+        except ValidationError as exc:
+            return _mission_page(
+                self, request, expense.mission, _status(exc), " ".join(exc.messages)
+            )
+        messages.success(request, _("Receipt stored."))
+        return redirect(self._url("mission", mission_id=expense.mission_id))
+
+
+class MissionReimbursedView(_MissionAction):
+    done_message = gettext_lazy("Mission marked as reimbursed.")
+
+    def act(self, mission: Mission, user: User) -> None:
+        services.mark_reimbursed(mission=mission, user=user)
+
+
+# --------------------------------------------------------------------------- budgets
+
+
+class BudgetView(_Mixin, View):
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        user = _user(request)
+        raw = request.GET.get("year")
+        try:
+            year = int(raw) if raw is not None else timezone.localdate().year
+            summary = services.budget_summary(user, self.thesis, year)
+        except (ValueError, ValidationError):
+            raise Http404 from None
+        rows = [
+            {
+                "payer": Payer(line.payer).label,
+                "budget": "" if line.budget is None else amounts.display(line.budget),
+                "committed": amounts.display(line.committed),
+                "actual": amounts.display(line.actual),
+                "conference_committed": amounts.display(line.conference_committed),
+                "conference_actual": amounts.display(line.conference_actual),
+                "over": line.budget is not None and line.committed > line.budget,
+            }
+            for line in summary.values()
+        ]
+        setter_payers = [
+            p
+            for p in ("ST", "LIRMM")
+            if services.BUDGET_ROLE[p] in roles_of(user, self.thesis)
+            and can(user, Action.TRAVEL_BUDGET_SET, self.thesis)
+        ]
+        context = {
+            "thesis": self.thesis,
+            "year": year,
+            "rows": rows,
+            "years": [
+                (y, f"{self._url('budget')}?year={y}") for y in services.budget_years(self.thesis)
+            ],
+            "form": BudgetForm(initial={"year": year, "payer": setter_payers[0]})
+            if setter_payers
+            else None,
+        }
+        return render(request, "travel/budget.html", context)
+
+
+class _BudgetGuard:
+    """After the thesis guard, BEFORE the second factor: only the payer's person sets
+    its budget (a director posting an ST budget gets a 403, never a factor)."""
+
+    thesis: Any
+
+    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponseBase:
+        services.check_budget_setter(_user(request), self.thesis, request.POST.get("payer"))
+        response: HttpResponseBase = super().dispatch(request, *args, **kwargs)  # type: ignore[misc]
+        return response
+
+
+class SetBudgetView(_Mixin, _BudgetGuard, RecentAuthRequiredMixin, View):
+    required_action = Action.TRAVEL_BUDGET_SET
+    http_method_names: Sequence[str] = ("post",)
+
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponseBase:
+        form = BudgetForm(request.POST)
+        if not form.is_valid():
+            messages.error(request, _("Check the budget."))
+            return redirect(self._url("budget"))
+        data = form.cleaned_data
+        try:
+            services.set_budget(
+                thesis=self.thesis,
+                user=_user(request),
+                payer=data["payer"],
+                year=data["year"],
+                amount=data["amount"],
+                recent_mfa=authenticated_recently(request),
+            )
+        except ReauthenticationRequiredError:
+            return reauth_response(request, mfa=True)
+        except ValidationError as exc:
+            messages.error(request, " ".join(exc.messages))
+            return redirect(self._url("budget"))
+        messages.success(request, _("Budget saved."))
+        return redirect(f"{self._url('budget')}?year={data['year']}")

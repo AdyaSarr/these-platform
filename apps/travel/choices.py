@@ -102,3 +102,15 @@ class OrderRefusalReason(models.TextChoices):
     DATES_CONFLICT = "DATES_CONFLICT", _("Dates conflict")
     WRONG_PAYER = "WRONG_PAYER", _("Wrong payer")
     OTHER = "OTHER", _("Other reason")
+
+
+class ExpenseCategory(models.TextChoices):
+    TRANSPORT = "TRANSPORT", _("Transport")
+    LODGING = "LODGING", _("Lodging")
+    MEALS = "MEALS", _("Meals")
+    REGISTRATION = "REGISTRATION", _("Registration fee")
+    OTHER = "OTHER", _("Other expense")
+
+
+# A flat-rate line (no receipt needed to be reimbursed): these categories only.
+FLAT_RATE_CATEGORIES = (ExpenseCategory.MEALS.value, ExpenseCategory.OTHER.value)

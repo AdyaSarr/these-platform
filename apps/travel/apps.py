@@ -9,7 +9,8 @@ class TravelConfig(AppConfig):
     def ready(self) -> None:
         from apps.accounts.permissions import register_document_restriction
 
-        from .access import official_order_restriction
+        from .access import mission_document_restriction
 
-        # The official mission order: readable only by those who see the mission.
-        register_document_restriction(official_order_restriction)
+        # A mission's documents (official order, receipts): readable only by those
+        # who see the mission and read its level.
+        register_document_restriction(mission_document_restriction)

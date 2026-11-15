@@ -17,7 +17,9 @@ from apps.core.models import TimeStampedModel
 
 from .access import PresenceAccess, presence_access
 from .choices import (
+    FLAT_RATE_CATEGORIES,
     Destination,
+    ExpenseCategory,
     Lodging,
     MissionStatus,
     OrderDecision,
@@ -431,3 +433,92 @@ class MissionOrder(TimeStampedModel):
             mission.destination,
             mission.payer,
         )
+
+
+# --------------------------------------------------------------------------- expenses
+
+
+class Expense(TimeStampedModel):
+    """One expense line of a mission; amounts sealed at the mission's level (slots
+    travel.Expense.*). A flat-rate line (MEALS, OTHER) needs no receipt."""
+
+    Category = ExpenseCategory
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    thesis = models.ForeignKey(
+        "accounts.Thesis", on_delete=models.PROTECT, related_name="+", editable=False
+    )
+    mission = models.ForeignKey(
+        Mission, on_delete=models.PROTECT, related_name="expenses", editable=False
+    )
+    category = models.CharField(_("category"), max_length=16, choices=ExpenseCategory.choices)
+    flat_rate = models.BooleanField(_("flat rate (no receipt)"), default=False)
+
+    class Meta:
+        verbose_name = _("expense")
+        ordering: ClassVar[list[str]] = ["created_at", "pk"]
+        constraints: ClassVar[list[models.BaseConstraint]] = [
+            models.CheckConstraint(
+                condition=Q(category__in=ExpenseCategory.values)
+                & (Q(flat_rate=False) | Q(category__in=FLAT_RATE_CATEGORIES)),
+                name="travel_expense_category_flat_rate",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"expense {self.pk}"
+
+
+class ExpenseReceipt(TimeStampedModel):
+    """A receipt of an expense line: a vault document at the mission's level."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    expense = models.ForeignKey(
+        Expense, on_delete=models.PROTECT, related_name="receipts", editable=False
+    )
+    document = models.OneToOneField(
+        "vault.Document", on_delete=models.PROTECT, related_name="+", editable=False
+    )
+
+    class Meta:
+        verbose_name = _("receipt")
+        ordering: ClassVar[list[str]] = ["created_at", "pk"]
+
+    def __str__(self) -> str:
+        return f"receipt {self.pk}"
+
+
+BUDGET_LEVEL = {
+    Payer.ST.value: ConfidentialityLevel.INTERNAL_ST,
+    Payer.LIRMM.value: ConfidentialityLevel.INTERNAL_LIRMM,
+}
+
+
+class TravelBudget(TimeStampedModel):
+    """The yearly (calendar year) travel budget of one payer; amount sealed at the
+    payer's level (slot travel.TravelBudget.amount)."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    thesis = models.ForeignKey(
+        "accounts.Thesis", on_delete=models.PROTECT, related_name="+", editable=False
+    )
+    payer = models.CharField(_("payer"), max_length=8, choices=Payer.choices, editable=False)
+    year = models.PositiveSmallIntegerField(_("year"), editable=False)
+    level = models.CharField(max_length=20, choices=ConfidentialityLevel.choices, editable=False)
+
+    class Meta:
+        verbose_name = _("travel budget")
+        ordering: ClassVar[list[str]] = ["year", "payer"]
+        constraints: ClassVar[list[models.BaseConstraint]] = [
+            models.UniqueConstraint(
+                fields=["thesis", "payer", "year"], name="travel_budget_unique_year"
+            ),
+            models.CheckConstraint(
+                condition=Q(payer=Payer.ST, level=BUDGET_LEVEL[Payer.ST.value])
+                | Q(payer=Payer.LIRMM, level=BUDGET_LEVEL[Payer.LIRMM.value]),
+                name="travel_budget_payer_level",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"travel budget {self.pk}"

@@ -248,13 +248,13 @@ def test_reimbursed_needs_actual_amounts_and_receipts(
             "actual_missing",
             lambda: services.update_expense(expense=transport, user=team.student, actual="80"),
         ),
-        (
-            "receipt_missing",
-            lambda: services.attach_receipt(expense=transport, user=team.student, upload=_pdf()),
-        ),
-        (
+        (  # a flat-rate line still needs its actual amount
             "actual_missing",
             lambda: services.update_expense(expense=meals, user=team.student, actual="15"),
+        ),
+        (  # actual amounts checked on every line first, then receipts
+            "receipt_missing",
+            lambda: services.attach_receipt(expense=transport, user=team.student, upload=_pdf()),
         ),
     ):
         with pytest.raises(ValidationError) as info:

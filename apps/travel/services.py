@@ -40,8 +40,10 @@ from apps.vault.services import audit
 from . import amounts, holidays, split
 from .access import PresenceAccess, presence_access
 from .choices import (
+    FLAT_RATE_CATEGORIES,
     PRESENCE_OF_DESTINATION,
     Destination,
+    ExpenseCategory,
     Lodging,
     MissionStatus,
     OrderDecision,
@@ -53,6 +55,7 @@ from .choices import (
     Transport,
 )
 from .models import (
+    BUDGET_LEVEL,
     DEFAULT_LEVEL,
     MAX_GAP_ALERT_POINTS,
     MAX_LAB_DAYS_PER_MONTH,
@@ -61,10 +64,13 @@ from .models import (
     MAX_RECEIPT_GRACE_DAYS,
     ORDER_PAYERS,
     PAYER_LEVELS,
+    Expense,
+    ExpenseReceipt,
     Mission,
     MissionOrder,
     PresenceDay,
     TimeSplitTarget,
+    TravelBudget,
     TravelPolicy,
 )
 
@@ -889,6 +895,9 @@ def change_mission_level(
         for order in MissionOrder.objects.filter(mission=locked):
             for name in ORDER_TEXTS:
                 sealer.reseal(order, name)
+        for expense in Expense.objects.filter(mission=locked):
+            for name in EXPENSE_TEXTS:
+                sealer.reseal(expense, name)
         locked.level = level.value
         locked.save()
         audit(
@@ -898,11 +907,9 @@ def change_mission_level(
             **_from_to(previous, level.value),
         )
     # The official order follows, in the vault's own transaction (CLAUDE.md: one
-    # transaction per vault service). Meanwhile official_order_restriction keeps the
+    # transaction per vault service). Meanwhile mission_document_restriction keeps the
     # document no more open than the mission.
-    document_id = locked.official_order_document_id
-    if document_id is not None:
-        document = Document.objects.get(pk=document_id)
+    for document in _mission_documents(locked):
         if document.confidentiality != level.value:
             vault.change_level(document=document, level=level, user=user)
     return locked
@@ -1308,7 +1315,11 @@ def order_for(user: Any, thesis: Thesis, order_id: Any, operation: str) -> Missi
 
 # --------------------------------------------------------------------------- official order
 
-OFFICIAL_ORDER_TITLE = "Ordre de mission officiel"  # in clear (M2): fixed, says nothing
+# Document titles are in clear (M2) and name the download (slugified, plus OUR
+# extension; the uploaded file's name is never kept): neutral, dated by the mission's
+# departure, which its readers already see in clear.
+OFFICIAL_ORDER_TITLE = "Ordre de mission officiel {date}"
+RECEIPT_TITLE = "Justificatif {date}"
 
 
 def attach_official_order(*, mission: Mission, user: User, upload: Any) -> Document:
@@ -1324,9 +1335,8 @@ def attach_official_order(*, mission: Mission, user: User, upload: Any) -> Docum
         raise _terminal()
     level = ConfidentialityLevel(fresh.level)
     if fresh.official_order_document_id is None:
-        document = vault.store(
-            thesis=thesis, upload=upload, title=OFFICIAL_ORDER_TITLE, level=level, user=user
-        )
+        title = OFFICIAL_ORDER_TITLE.format(date=fresh.start_date.isoformat())
+        document = vault.store(thesis=thesis, upload=upload, title=title, level=level, user=user)
     else:
         document = Document.objects.get(pk=fresh.official_order_document_id)
         vault.add_version(document=document, upload=upload, user=user)
@@ -1352,3 +1362,386 @@ def official_order_missing(mission: Mission) -> bool:
     """A mission paid by ST or the LIRMM whose official order is not ticked as
     obtained: a warning when it is marked done, never a refusal."""
     return mission.payer in ORDER_PAYERS and not mission.official_order_obtained
+
+
+def _mission_documents(mission: Mission) -> list[Document]:
+    """Every vault document of a mission: its official order and its receipts."""
+    ids = list(
+        ExpenseReceipt.objects.filter(expense__mission=mission).values_list(
+            "document_id", flat=True
+        )
+    )
+    if mission.official_order_document_id is not None:
+        ids.append(mission.official_order_document_id)
+    return list(Document.objects.filter(pk__in=ids).order_by("created_at"))
+
+
+# =========================================================================== expenses
+
+EXPENSE_TEXTS = ("estimated_amount", "actual_amount")
+_NO_EXPENSE = (MissionStatus.CANCELLED, MissionStatus.REIMBURSED)
+
+
+def _amount_or_none(raw: Any, code: str) -> int | None:
+    """ "" -> None (no amount); else strict euros (amounts.parse)."""
+    if raw is None or (isinstance(raw, str) and raw.strip() == ""):
+        return None
+    try:
+        return amounts.parse(raw)
+    except (TypeError, ValueError):
+        raise ValidationError(_("An amount in euros, such as 123,45."), code=code) from None
+
+
+def _check_flat_rate(category: str, flat_rate: Any) -> None:
+    if type(flat_rate) is not bool:
+        raise ValidationError(_("Yes or no."), code="flat_rate")
+    if flat_rate and category not in FLAT_RATE_CATEGORIES:
+        raise ValidationError(_("A flat rate only for meals or other expenses."), code="flat_rate")
+
+
+def _seal_amount(sealer: Any, obj: Any, name: str, cents: int | None) -> None:
+    if cents is None:
+        sealer.erase(obj, name)
+    else:
+        sealer.seal(obj, name, amounts.canonical(cents))
+
+
+def add_expense(
+    *,
+    mission: Mission,
+    user: User,
+    category: str,
+    estimated: str = "",
+    actual: str = "",
+    flat_rate: bool = False,
+) -> Expense:
+    thesis = _fresh(mission.thesis)
+    _require(user, Action.TRAVEL_WRITE, thesis, "expense_add")
+    _check_open(thesis)
+    fresh = Mission.objects.get(pk=mission.pk)
+    if fresh.status in _NO_EXPENSE:
+        raise _terminal()
+    if category not in ExpenseCategory.values:
+        raise ValidationError(_("Unknown category."), code="category")
+    _check_flat_rate(category, flat_rate)
+    cents = {
+        "estimated_amount": _amount_or_none(estimated, "estimated"),
+        "actual_amount": _amount_or_none(actual, "actual"),
+    }
+    level = ConfidentialityLevel(fresh.level)
+    with vault.sealing(user=user, thesis=thesis, level=level, action=Action.TRAVEL_WRITE) as sealer:
+        locked = _locked_mission(fresh)
+        if locked.status in _NO_EXPENSE or locked.level != fresh.level:
+            raise ValidationError(_("The mission changed meanwhile: try again."), code="stale")
+        expense = Expense(
+            thesis=locked.thesis,
+            mission=locked,
+            category=category,
+            flat_rate=flat_rate,
+            created_by=user,
+        )
+        expense.save(force_insert=True)
+        for name, value in cents.items():
+            if value is not None:
+                sealer.seal(expense, name, amounts.canonical(value))
+        audit(
+            AuditAction.EXPENSE_ADDED,
+            actor=user,
+            obj=expense,
+            thesis=locked.thesis,
+            expense_id=str(expense.pk),
+            category=category,
+            flat_rate=flat_rate,
+        )
+    return expense
+
+
+@dataclass(frozen=True)
+class ExpenseView:
+    expense: Expense
+    estimated: Any  # cents, vault.RESTRICTED, or None
+    actual: Any
+    receipts: list[Document]  # those the user may read
+
+
+def _open_amounts(user: Any, thesis: Thesis, expenses: list[Expense]) -> dict[Any, Any]:
+    opened = vault.open_texts(
+        user, thesis, [(e, n) for e in expenses for n in EXPENSE_TEXTS], action=Action.TRAVEL_READ
+    )
+    return {
+        key: amounts.from_canonical(value) if isinstance(value, str) else value
+        for key, value in opened.items()
+    }
+
+
+def expenses_of(user: Any, mission: Mission) -> list[ExpenseView]:
+    from apps.accounts.permissions import can_access_document
+
+    thesis = _fresh(mission.thesis)
+    visible = mission_for(user, thesis, mission.pk, "expense_read")
+    expenses = list(Expense.objects.filter(mission=visible).prefetch_related("receipts__document"))
+    opened = _open_amounts(user, thesis, expenses)
+    return [
+        ExpenseView(
+            expense=e,
+            estimated=opened.get((e.pk, "estimated_amount")),
+            actual=opened.get((e.pk, "actual_amount")),
+            receipts=[
+                r.document for r in e.receipts.all() if can_access_document(user, r.document)
+            ],
+        )
+        for e in expenses
+    ]
+
+
+def expense_for(user: Any, thesis: Thesis, expense_id: Any, operation: str) -> Expense:
+    """An expense of ``thesis`` whose mission ``user`` sees; refused like an unknown one."""
+    _require_reader(user, thesis, operation)
+    try:
+        expense = (
+            Expense.objects.filter(
+                pk=expense_id, thesis=thesis, mission__in=Mission.objects.visible_to(user, thesis)
+            )
+            .select_related("mission")
+            .first()
+        )
+    except (ValueError, ValidationError):
+        expense = None
+    if expense is None:
+        raise _deny(user, operation, "unknown_expense", thesis=thesis)
+    return expense
+
+
+def update_expense(
+    *,
+    expense: Expense,
+    user: User,
+    estimated: str = _UNSET,
+    actual: str = _UNSET,
+    flat_rate: bool = _UNSET,
+) -> list[str]:
+    thesis = _fresh(expense.thesis)
+    _require(user, Action.TRAVEL_WRITE, thesis, "expense_update")
+    _check_open(thesis)
+    fresh = Expense.objects.select_related("mission").get(pk=expense.pk)
+    if fresh.mission.status in _NO_EXPENSE:
+        raise _terminal()
+    current = _open_amounts(user, thesis, [fresh])
+    wanted: dict[str, int | None] = {}
+    if estimated is not _UNSET:
+        wanted["estimated_amount"] = _amount_or_none(estimated, "estimated")
+    if actual is not _UNSET:
+        wanted["actual_amount"] = _amount_or_none(actual, "actual")
+    if flat_rate is not _UNSET:
+        _check_flat_rate(fresh.category, flat_rate)
+    changed = sorted(
+        [n.removesuffix("_amount") for n, v in wanted.items() if current.get((fresh.pk, n)) != v]
+        + (["flat_rate"] if flat_rate is not _UNSET and flat_rate != fresh.flat_rate else [])
+    )
+    if not changed:
+        return []
+    level = ConfidentialityLevel(fresh.mission.level)
+    with vault.sealing(user=user, thesis=thesis, level=level, action=Action.TRAVEL_WRITE) as sealer:
+        locked_mission = _locked_mission(fresh.mission)
+        if locked_mission.status in _NO_EXPENSE or locked_mission.level != level.value:
+            raise ValidationError(_("The mission changed meanwhile: try again."), code="stale")
+        locked = Expense.objects.select_for_update().get(pk=fresh.pk)
+        for name, value in wanted.items():
+            if name.removesuffix("_amount") in changed:
+                _seal_amount(sealer, locked, name, value)
+        if "flat_rate" in changed:
+            locked.flat_rate = flat_rate
+            locked.save()
+        audit(
+            AuditAction.EXPENSE_UPDATED,
+            actor=user,
+            obj=locked,
+            thesis=locked_mission.thesis,
+            expense_id=str(locked.pk),
+            fields=changed,
+        )
+    return changed
+
+
+def attach_receipt(*, expense: Expense, user: User, upload: Any) -> Document:
+    """A receipt in the vault at the mission's level, under a neutral title; stored in
+    the vault's own transaction, then linked in another."""
+    thesis = _fresh(expense.thesis)
+    _require(user, Action.TRAVEL_WRITE, thesis, "receipt_attach")
+    _check_open(thesis)
+    fresh = Expense.objects.select_related("mission").get(pk=expense.pk)
+    if fresh.mission.status in _NO_EXPENSE:
+        raise _terminal()
+    level = ConfidentialityLevel(fresh.mission.level)
+    title = RECEIPT_TITLE.format(date=fresh.mission.start_date.isoformat())
+    document = vault.store(thesis=thesis, upload=upload, title=title, level=level, user=user)
+    with transaction.atomic():
+        _locked_mission(fresh.mission)
+        ExpenseReceipt.objects.create(expense=fresh, document=document, created_by=user)
+        audit(
+            AuditAction.EXPENSE_RECEIPT_ATTACHED,
+            actor=user,
+            obj=fresh,
+            thesis=thesis,
+            expense_id=str(fresh.pk),
+            document_id=str(document.pk),
+        )
+    return document
+
+
+def mark_reimbursed(*, mission: Mission, user: User) -> Mission:
+    """DONE -> REIMBURSED: every line has an actual amount, and a receipt unless it
+    is flat-rate."""
+    thesis = _fresh(mission.thesis)
+    _require(user, Action.TRAVEL_WRITE, thesis, "mission_reimbursed")
+    _check_open(thesis)
+    fresh = Mission.objects.get(pk=mission.pk)
+    if fresh.status != MissionStatus.DONE:
+        raise ValidationError(_("Only a mission done can be reimbursed."), code="not_done")
+    expenses = list(Expense.objects.filter(mission=fresh).prefetch_related("receipts"))
+    opened = _open_amounts(user, thesis, expenses)
+    if any(opened.get((e.pk, "actual_amount")) is None for e in expenses):
+        raise ValidationError(
+            _("Every expense line needs its actual amount."), code="actual_missing"
+        )
+    if any(not e.flat_rate and not e.receipts.all() for e in expenses):
+        raise ValidationError(
+            _("Every expense line needs a receipt, unless it is a flat rate."),
+            code="receipt_missing",
+        )
+    with transaction.atomic():
+        locked = _locked_mission(fresh)
+        if locked.status != MissionStatus.DONE:
+            raise ValidationError(_("The mission changed meanwhile: try again."), code="stale")
+        _set_status(locked, user, MissionStatus.REIMBURSED)
+    return locked
+
+
+# =========================================================================== budgets
+
+BUDGET_ROLE = DECIDER_ROLE  # the payer's person: tutor for ST, director for the LIRMM
+_NOT_COMMITTED = (MissionStatus.CANCELLED, MissionStatus.ORDER_REFUSED)
+
+
+def budget_years(thesis: Thesis) -> range:
+    low, high = bounds(thesis)
+    return range(low.year, high.year + 1)
+
+
+def set_budget(
+    *, thesis: Thesis, user: User, payer: str, year: int, amount: str, recent_mfa: bool
+) -> TravelBudget:
+    """The ST budget is the tutor's, the LIRMM budget the director's; second factor
+    after the rights; journaled without the amount."""
+    _require(user, Action.TRAVEL_BUDGET_SET, thesis, "budget_set")
+    check_budget_setter(user, thesis, payer)
+    _require_mfa(recent_mfa)
+    fresh = _fresh(thesis)
+    if type(year) is not int or year not in budget_years(fresh):
+        raise ValidationError(_("This year is outside the thesis."), code="year")
+    cents = _amount_or_none(amount, "amount")
+    if cents is None:
+        raise ValidationError(_("An amount in euros, such as 123,45."), code="amount")
+    level = BUDGET_LEVEL[payer]
+    with vault.sealing(
+        user=user, thesis=thesis, level=level, action=Action.TRAVEL_BUDGET_SET
+    ) as sealer:
+        locked = _lock_thesis(thesis.pk)
+        budget, created = TravelBudget.objects.select_for_update().get_or_create(
+            thesis=locked,
+            payer=payer,
+            year=year,
+            defaults={"level": level.value, "created_by": user},
+        )
+        sealer.seal(budget, "amount", amounts.canonical(cents))
+        audit(
+            AuditAction.TRAVEL_BUDGET_SET,
+            actor=user,
+            obj=budget,
+            thesis=locked,
+            payer=payer,
+            year=year,
+            created=created,
+        )
+    return budget
+
+
+def check_budget_setter(user: Any, thesis: Thesis, payer: Any) -> None:
+    """``user`` sets the budget of ``payer``: refused (journaled) otherwise. Also
+    called by the view BEFORE the second factor."""
+    if payer not in BUDGET_ROLE:
+        raise _deny(user, "budget_set", "unknown_payer", thesis=thesis)
+    if BUDGET_ROLE[payer] not in roles_of(user, thesis) or not can(
+        user, Action.TRAVEL_BUDGET_SET, thesis
+    ):
+        raise _deny(user, "budget_set", "wrong_payer", thesis=thesis)
+
+
+@dataclass(frozen=True)
+class BudgetLine:
+    payer: str
+    year: int
+    budget: int | None
+    committed: int
+    actual: int
+    conference_committed: int
+    conference_actual: int
+
+
+def budget_payers(user: Any, thesis: Thesis) -> list[str]:
+    """The payers whose budget ``user`` sees: the student both, the tutor ST, the
+    director the LIRMM. Never a co-supervisor: the LIRMM total adds missions they
+    do not see (conferences, other places)."""
+    roles = roles_of(user, thesis)
+    if not can(user, Action.TRAVEL_READ, thesis):
+        return []
+    if Role.PHD_STUDENT in roles:
+        return list(BUDGET_ROLE)
+    return [payer for payer, role in BUDGET_ROLE.items() if role in roles]
+
+
+def budget_summary(user: Any, thesis: Thesis, year: int) -> dict[str, BudgetLine]:
+    payers = budget_payers(user, thesis)
+    if not payers:
+        raise _deny(user, "budget_read", "missing_right", thesis=thesis)
+    fresh = _fresh(thesis)
+    if type(year) is not int or year not in budget_years(fresh):
+        raise ValidationError(_("This year is outside the thesis."), code="year")
+    budgets = {b.payer: b for b in TravelBudget.objects.filter(thesis=fresh, year=year)}
+    opened_budgets = vault.open_texts(
+        user, fresh, [(b, "amount") for b in budgets.values()], action=Action.TRAVEL_READ
+    )
+    expenses = list(
+        Expense.objects.filter(
+            thesis=fresh,
+            mission__payer__in=payers,
+            mission__start_date__year=year,
+        )
+        .exclude(mission__status__in=_NOT_COMMITTED)
+        .select_related("mission")
+    )
+    opened = _open_amounts(user, fresh, expenses)
+    out: dict[str, BudgetLine] = {}
+    for payer in payers:
+        sums = {"committed": 0, "actual": 0, "conference_committed": 0, "conference_actual": 0}
+        for e in (e for e in expenses if e.mission.payer == payer):
+            estimated = opened.get((e.pk, "estimated_amount"))
+            actual = opened.get((e.pk, "actual_amount"))
+            # The payer's person reads every level a mission of this payer may have.
+            if estimated is vault.RESTRICTED or actual is vault.RESTRICTED:
+                raise _deny(user, "budget_read", "unreadable_level", thesis=fresh)
+            conference = e.mission.destination == Destination.CONFERENCE
+            sums["committed"] += estimated or 0
+            sums["actual"] += actual or 0
+            if conference:
+                sums["conference_committed"] += estimated or 0
+                sums["conference_actual"] += actual or 0
+        budget = budgets.get(payer)
+        raw = opened_budgets.get((budget.pk, "amount")) if budget else None
+        out[payer] = BudgetLine(
+            payer=payer,
+            year=year,
+            budget=amounts.from_canonical(raw) if isinstance(raw, str) else None,
+            **sums,
+        )
+    return out

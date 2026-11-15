@@ -12,6 +12,7 @@ from apps.core.confidentiality import ConfidentialityLevel
 
 from .choices import (
     Destination,
+    ExpenseCategory,
     Lodging,
     OrderDecision,
     OrderRefusalReason,
@@ -199,3 +200,37 @@ class OfficialOrderForm(forms.Form):
         label=_("Official mission order"),
         help_text=_("Stored encrypted in the vault, at the mission's level."),
     )
+
+
+RECEIPT_HELP = _(
+    "The document is encrypted at the mission's level. Avoid leaving unrelated information "
+    "in it (home address, other expenses)."
+)
+
+
+class ExpenseForm(forms.Form):
+    category = forms.ChoiceField(label=_("Category"), choices=ExpenseCategory.choices)
+    estimated = forms.CharField(label=_("Estimated (euros)"), required=False, max_length=20)
+    actual = forms.CharField(label=_("Actual (euros)"), required=False, max_length=20)
+    flat_rate = forms.BooleanField(
+        label=_("Flat rate (no receipt)"),
+        required=False,
+        help_text=_("Meals or other expenses only."),
+    )
+
+
+class ExpenseAmountsForm(forms.Form):
+    estimated = forms.CharField(label=_("Estimated (euros)"), required=False, max_length=20)
+    actual = forms.CharField(label=_("Actual (euros)"), required=False, max_length=20)
+
+
+class ReceiptForm(forms.Form):
+    file = forms.FileField(label=_("Receipt"), help_text=RECEIPT_HELP)
+
+
+class BudgetForm(forms.Form):
+    payer = forms.ChoiceField(
+        label=_("Payer"), choices=[(p, Payer(p).label) for p in ("ST", "LIRMM")]
+    )
+    year = forms.IntegerField(label=_("Year"), min_value=2000, max_value=2100)
+    amount = forms.CharField(label=_("Budget (euros)"), max_length=20)

@@ -50,6 +50,30 @@
   <button type="submit">{% translate "Record the decision" %}</button>
   <span class="muted">{% translate "Asks for your second factor." %}</span></form>
 {% endif %}
+<h2>{% translate "Expenses" %}</h2>
+{% if expenses %}
+<table class="table">
+  <thead><tr><th scope="col">{% translate "Category" %}</th><th scope="col">{% translate "Estimated" %}</th><th scope="col">{% translate "Actual" %}</th><th scope="col">{% translate "Receipts" %}</th>{% if can_expense %}<th scope="col"></th>{% endif %}</tr></thead>
+  <tbody>{% for row in expenses %}<tr>
+    <td>{{ row.view.expense.get_category_display }}{% if row.view.expense.flat_rate %} ({% translate "flat rate" %}){% endif %}</td>
+    <td>{% if row.estimated.restricted %}<span class="restricted">{% translate "Restricted content" %}</span>{% else %}{{ row.estimated.text|default:"—" }}{% endif %}</td>
+    <td>{% if row.actual.restricted %}<span class="restricted">{% translate "Restricted content" %}</span>{% else %}{{ row.actual.text|default:"—" }}{% endif %}</td>
+    <td>{% for document in row.view.receipts %}<a href="{% url 'vault:document' thesis_id=thesis.pk document_id=document.pk %}">{% translate "receipt" %} {{ forloop.counter }}</a>{% if not forloop.last %}, {% endif %}{% empty %}{% if row.view.expense.flat_rate %}<span class="muted">{% translate "none needed" %}</span>{% else %}—{% endif %}{% endfor %}</td>
+    {% if can_expense %}<td>
+      <form class="actions" method="post" action="{% url 'travel:update_expense' thesis_id=thesis.pk expense_id=row.view.expense.pk %}">{% csrf_token %}{% with form=amounts_form %}{{ form.estimated }} {{ form.actual }}{% endwith %}<button type="submit">{% translate "Save" %}</button></form>
+      <form class="stack" method="post" enctype="multipart/form-data" action="{% url 'travel:attach_receipt' thesis_id=thesis.pk expense_id=row.view.expense.pk %}">{% csrf_token %}{% with form=receipt_form %}{% include "conferences/_form.html" %}{% endwith %}<button type="submit">{% translate "Store the receipt" %}</button></form>
+    </td>{% endif %}
+  </tr>{% endfor %}</tbody>
+</table>
+{% else %}<p class="muted">{% translate "No expense line yet." %}</p>{% endif %}
+{% if can_expense %}
+<form class="stack" method="post" action="{% url 'travel:add_expense' thesis_id=thesis.pk mission_id=mission.pk %}">{% csrf_token %}{% with form=expense_form %}{% include "conferences/_form.html" %}{% endwith %}
+  <button type="submit">{% translate "Add the line" %}</button></form>
+{% endif %}
+{% if can_reimburse %}
+<form method="post" action="{% url 'travel:mission_reimbursed' thesis_id=thesis.pk mission_id=mission.pk %}">{% csrf_token %}<button type="submit">{% translate "Mark as reimbursed" %}</button>
+  <span class="muted">{% translate "Every line needs its actual amount, and a receipt unless it is a flat rate." %}</span></form>
+{% endif %}
 {% if official_form %}
 <form class="stack" method="post" enctype="multipart/form-data" action="{% url 'travel:official_order' thesis_id=thesis.pk mission_id=mission.pk %}">{% csrf_token %}{% with form=official_form %}{% include "conferences/_form.html" %}{% endwith %}
   <button type="submit">{% translate "Store the official mission order" %}</button></form>
