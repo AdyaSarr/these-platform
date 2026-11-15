@@ -1,0 +1,35 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% translate "Mission" %}{% endblock %}
+{% block content %}
+{% include "travel/_nav.html" %}
+<h1>{% translate "Mission" %} — {{ mission.get_destination_display }}</h1>
+{% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
+<dl class="stats">
+  <div><dt>{% translate "Dates" %}</dt><dd>{{ mission.start_date|date:"d/m/Y" }} – {{ mission.end_date|date:"d/m/Y" }}</dd></div>
+  <div><dt>{% translate "Status" %}</dt><dd>{{ mission.get_status_display }}</dd></div>
+  <div><dt>{% translate "Paid by" %}</dt><dd>{{ mission.get_payer_display }}</dd></div>
+  <div><dt>{% translate "Confidentiality" %}</dt><dd>{{ mission.get_level_display }}</dd></div>
+</dl>
+<ul>
+  {% if mission.destination == "OTHER" %}<li>{% translate "Place:" %} {% include "conferences/_text.html" with value=texts.destination_detail %}</li>{% endif %}
+  {% if mission.edition %}<li>{% translate "Conference:" %} {{ mission.edition.venue.acronym }} {{ mission.edition.year }}{% if mission.edition.location %}, {{ mission.edition.location }}{% endif %}</li>{% endif %}
+  <li>{% translate "Transport:" %} {{ transports|join:", " }}</li>
+  <li>{% translate "Lodging:" %} {{ mission.get_lodging_display }}{% if texts.lodging_note.text or texts.lodging_note.restricted %} — {% include "conferences/_text.html" with value=texts.lodging_note %}{% endif %}</li>
+  <li>{% translate "Tickets booked:" %} {{ mission.tickets_booked|yesno:_("yes,no") }} · {% translate "Lodging booked:" %} {{ mission.lodging_booked|yesno:_("yes,no") }}</li>
+  {% if zrr %}<li>{% translate "ZRR access (administrative file):" %} {{ zrr.get_status_display }}</li>{% endif %}
+  {% if meeting %}<li><a href="{% url 'meetings:detail' thesis_id=thesis.pk meeting_id=meeting.pk %}">{% translate "Linked meeting" %}</a> ({{ meeting.get_kind_display }}, {{ meeting.starts_at|date:"d/m/Y" }})</li>{% endif %}
+  {% if submission_id %}<li><a href="{% url 'conferences:submission' thesis_id=thesis.pk submission_id=submission_id %}">{% translate "Linked submission" %}</a></li>{% endif %}
+</ul>
+<h2>{% translate "Purpose" %}</h2>
+<p>{% if texts.purpose.text or texts.purpose.restricted %}{% include "conferences/_text.html" with value=texts.purpose %}{% else %}<span class="muted">—</span>{% endif %}</p>
+{% if writer %}
+<p class="actions"><a href="{% url 'travel:edit_mission' thesis_id=thesis.pk mission_id=mission.pk %}">{% translate "Edit" %}</a>
+  <form method="post" action="{% url 'travel:mission_done' thesis_id=thesis.pk mission_id=mission.pk %}">{% csrf_token %}<button type="submit">{% translate "Mark as done" %}</button></form>
+  <form method="post" action="{% url 'travel:cancel_mission' thesis_id=thesis.pk mission_id=mission.pk %}">{% csrf_token %}<button type="submit" class="danger">{% translate "Cancel the mission" %}</button></form></p>
+{% endif %}
+{% if level_form %}
+<form class="stack" method="post" action="{% url 'travel:mission_level' thesis_id=thesis.pk mission_id=mission.pk %}">{% csrf_token %}{% with form=level_form %}{% include "conferences/_form.html" %}{% endwith %}
+  <button type="submit">{% translate "Change the confidentiality" %}</button>
+  <span class="muted">{% translate "Asks for your second factor." %}</span></form>
+{% endif %}
+{% endblock %}

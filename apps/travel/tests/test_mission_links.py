@@ -78,7 +78,8 @@ def _body(response: Any) -> str:
 @pytest.mark.parametrize("kind", KINDS)
 def test_a_readable_object_of_the_thesis_is_linked(team: SimpleNamespace, kind: str) -> None:
     obj = _object(team, kind)
-    assert services.link_for(team.student, team.thesis, kind, str(obj.pk)).pk == obj.pk
+    linked = services.link_for(team.student, team.thesis, kind, str(obj.pk))
+    assert linked is not None and linked.pk == obj.pk
     assert _denials() == []
 
 

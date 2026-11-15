@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-15 15:00+0100\n"
+"POT-Creation-Date: 2026-11-15 15:18+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -132,7 +132,7 @@ msgstr "Externe"
 msgid "name"
 msgstr "nom"
 
-#: apps/accounts/models.py:84 apps/travel/models.py:47
+#: apps/accounts/models.py:84 apps/travel/models.py:62
 msgid "kind"
 msgstr "type"
 
@@ -183,7 +183,7 @@ msgstr "date de fin prévue"
 #: apps/accounts/models.py:109 apps/admin_file/models.py:137
 #: apps/conferences/models.py:246 apps/meetings/models.py:105
 #: apps/meetings/models.py:284 apps/objectives/models.py:133
-#: apps/objectives/models.py:237
+#: apps/objectives/models.py:237 apps/travel/models.py:238
 msgid "status"
 msgstr "statut"
 
@@ -537,13 +537,15 @@ msgstr "Ou un document existant"
 #: apps/admin_file/forms.py:41 apps/conferences/forms.py:148
 #: apps/conferences/forms.py:179 apps/meetings/forms.py:100
 #: apps/meetings/forms.py:133 apps/objectives/forms.py:60
-#: apps/objectives/forms.py:97 apps/vault/forms.py:34 apps/vault/forms.py:47
+#: apps/objectives/forms.py:97 apps/travel/forms.py:101
+#: apps/travel/forms.py:150 apps/vault/forms.py:34 apps/vault/forms.py:47
 #: templates/conferences/submission.html:11
 #: templates/conferences/submission.html:118
 #: templates/conferences/submissions.html:9 templates/meetings/detail.html:12
 #: templates/meetings/detail.html:181 templates/meetings/list.html:27
 #: templates/objectives/detail.html:13 templates/objectives/detail.html:76
-#: templates/vault/document_detail.html:6 templates/vault/document_list.html:9
+#: templates/travel/mission.html:11 templates/vault/document_detail.html:6
+#: templates/vault/document_list.html:9
 msgid "Confidentiality"
 msgstr "Confidentialité"
 
@@ -1004,7 +1006,7 @@ msgid "Year"
 msgstr "Année"
 
 #: apps/conferences/forms.py:100 apps/meetings/forms.py:88
-#: templates/meetings/list.html:27
+#: apps/travel/forms.py:93 templates/meetings/list.html:27
 msgid "Place"
 msgstr "Lieu"
 
@@ -1135,7 +1137,8 @@ msgstr "Nouvelle édition de conférence ou revue"
 msgid "ST review period (days)"
 msgstr "Délai de relecture ST (jours)"
 
-#: apps/conferences/models.py:57 apps/travel/choices.py:14
+#: apps/conferences/models.py:57 apps/travel/choices.py:15
+#: apps/travel/choices.py:41 apps/travel/forms.py:98
 msgid "Conference"
 msgstr "Conférence"
 
@@ -1239,7 +1242,7 @@ msgstr "Publié"
 
 #: apps/conferences/models.py:240 apps/meetings/models.py:99
 #: apps/objectives/models.py:137 apps/objectives/models.py:236
-#: apps/vault/models.py:221
+#: apps/travel/models.py:235 apps/vault/models.py:221
 msgid "confidentiality"
 msgstr "confidentialité"
 
@@ -1340,12 +1343,12 @@ msgid "conference notification"
 msgstr "notification de conférence"
 
 #: apps/conferences/services.py:112 apps/meetings/services.py:105
-#: apps/objectives/services.py:153
+#: apps/objectives/services.py:153 apps/travel/services.py:617
 msgid "This text is invalid."
 msgstr "Ce texte n'est pas valide."
 
 #: apps/conferences/services.py:115 apps/meetings/services.py:108
-#: apps/objectives/services.py:156
+#: apps/objectives/services.py:156 apps/travel/services.py:620
 msgid "The text contains a control character."
 msgstr "Le texte contient un caractère de contrôle."
 
@@ -1355,7 +1358,7 @@ msgstr "Le texte contient un caractère de contrôle."
 msgid "Between %(min)d and %(max)d characters."
 msgstr "Entre %(min)d et %(max)d caractères."
 
-#: apps/conferences/services.py:127
+#: apps/conferences/services.py:127 apps/travel/services.py:626
 msgid "One line only."
 msgstr "Une seule ligne."
 
@@ -1364,6 +1367,7 @@ msgid "The address must start with https://."
 msgstr "L'adresse doit commencer par https://."
 
 #: apps/conferences/services.py:143 apps/meetings/services.py:135
+#: apps/travel/services.py:632
 msgid "Unknown confidentiality level."
 msgstr "Niveau de confidentialité inconnu."
 
@@ -1434,8 +1438,8 @@ msgstr "Cette édition existe déjà."
 msgid "This deadline was cancelled."
 msgstr "Cette échéance a été annulée."
 
-#: apps/conferences/services.py:472 apps/travel/services.py:468
-#: apps/travel/services.py:489 apps/travel/services.py:496
+#: apps/conferences/services.py:472 apps/travel/services.py:510
+#: apps/travel/services.py:531 apps/travel/services.py:538
 #, python-format
 msgid "Between 0 and %(max)d days."
 msgstr "Entre 0 et %(max)d jours."
@@ -1592,7 +1596,7 @@ msgid "Preprint recorded."
 msgstr "Prépublication enregistrée."
 
 #: apps/conferences/views.py:738 apps/meetings/views.py:494
-#: apps/objectives/views.py:413
+#: apps/objectives/views.py:413 apps/travel/views.py:528
 msgid "Confidentiality changed."
 msgstr "Confidentialité modifiée."
 
@@ -1743,7 +1747,8 @@ msgstr "Personne inconnue."
 #: apps/meetings/forms.py:201 apps/objectives/forms.py:120
 #: templates/conferences/submission.html:88
 #: templates/conferences/submissions.html:9 templates/meetings/detail.html:138
-#: templates/objectives/dashboard.html:74
+#: templates/objectives/dashboard.html:74 templates/travel/mission.html:9
+#: templates/travel/missions.html:9
 msgid "Status"
 msgstr "Statut"
 
@@ -1751,11 +1756,11 @@ msgstr "Statut"
 msgid "All"
 msgstr "Tous"
 
-#: apps/meetings/forms.py:216 apps/travel/forms.py:31
+#: apps/meetings/forms.py:216 apps/travel/forms.py:33
 msgid "From"
 msgstr "Du"
 
-#: apps/meetings/forms.py:217 apps/travel/forms.py:32
+#: apps/meetings/forms.py:217 apps/travel/forms.py:34
 msgid "To"
 msgstr "Au"
 
@@ -1799,11 +1804,13 @@ msgstr "Séminaire d'équipe"
 msgid "ST meeting"
 msgstr "Réunion ST"
 
-#: apps/meetings/models.py:68 apps/travel/choices.py:11
+#: apps/meetings/models.py:68 apps/travel/choices.py:12
+#: apps/travel/choices.py:40
 msgid "ST Rousset"
 msgstr "ST Rousset"
 
-#: apps/meetings/models.py:69 apps/travel/choices.py:12
+#: apps/meetings/models.py:69 apps/travel/choices.py:13
+#: apps/travel/choices.py:39
 msgid "LIRMM Montpellier"
 msgstr "LIRMM Montpellier"
 
@@ -1811,7 +1818,7 @@ msgstr "LIRMM Montpellier"
 msgid "Video call"
 msgstr "Visio"
 
-#: apps/meetings/models.py:71
+#: apps/meetings/models.py:71 apps/travel/choices.py:42
 msgid "Other place"
 msgstr "Autre lieu"
 
@@ -2110,7 +2117,7 @@ msgstr ""
 "Obligatoire : cet objectif est approuvé. Le motif est conservé avec la "
 "modification et montré au directeur."
 
-#: apps/objectives/forms.py:40 apps/travel/forms.py:60 apps/travel/models.py:73
+#: apps/objectives/forms.py:40 apps/travel/forms.py:62 apps/travel/models.py:88
 #: templates/travel/settings.html:23
 msgid "CIFRE year"
 msgstr "Année CIFRE"
@@ -2377,177 +2384,467 @@ msgstr "%(count)d objectif(s) approuvé(s)."
 msgid "Progress recorded."
 msgstr "Avancement enregistré."
 
-#: apps/travel/choices.py:13
+#: apps/travel/choices.py:14
 msgid "Remote work"
 msgstr "Télétravail"
 
-#: apps/travel/choices.py:15
+#: apps/travel/choices.py:16
 msgid "Leave"
 msgstr "Congé"
 
-#: apps/travel/choices.py:21
+#: apps/travel/choices.py:22 apps/travel/choices.py:46
 msgid "ST"
 msgstr "ST"
 
-#: apps/travel/choices.py:22
+#: apps/travel/choices.py:23
 msgid "Laboratory"
 msgstr "Laboratoire"
 
-#: apps/travel/choices.py:34
+#: apps/travel/choices.py:35
 msgid "Unavailable"
 msgstr "Indisponible"
 
-#: apps/travel/forms.py:34 templates/travel/split.html:20
+#: apps/travel/choices.py:47
+msgid "LIRMM"
+msgstr "LIRMM"
+
+#: apps/travel/choices.py:48
+msgid "Other body"
+msgstr "Autre organisme"
+
+#: apps/travel/choices.py:54
+msgid "Train"
+msgstr "Train"
+
+#: apps/travel/choices.py:55
+msgid "Coach"
+msgstr "Car"
+
+#: apps/travel/choices.py:56
+msgid "Plane"
+msgstr "Avion"
+
+#: apps/travel/choices.py:57
+msgid "Bike"
+msgstr "Vélo"
+
+#: apps/travel/choices.py:58
+msgid "Car sharing (passenger)"
+msgstr "Covoiturage (passager)"
+
+#: apps/travel/choices.py:59
+msgid "Urban transit"
+msgstr "Transports en commun"
+
+#: apps/travel/choices.py:63
+msgid "None"
+msgstr "Aucun"
+
+#: apps/travel/choices.py:64
+msgid "Hotel"
+msgstr "Hôtel"
+
+#: apps/travel/choices.py:65
+msgid "Guest house"
+msgstr "Maison d'hôtes ou résidence"
+
+#: apps/travel/choices.py:66
+msgid "Staying with someone"
+msgstr "Chez quelqu'un"
+
+#: apps/travel/choices.py:67
+msgid "Other lodging"
+msgstr "Autre hébergement"
+
+#: apps/travel/choices.py:71
+msgctxt "mission status"
+msgid "Planned"
+msgstr "Prévue"
+
+#: apps/travel/choices.py:72
+msgctxt "mission status"
+msgid "Mission order requested"
+msgstr "Ordre de mission demandé"
+
+#: apps/travel/choices.py:73
+msgctxt "mission status"
+msgid "Mission order granted"
+msgstr "Ordre de mission accordé"
+
+#: apps/travel/choices.py:74
+msgctxt "mission status"
+msgid "Mission order refused"
+msgstr "Ordre de mission refusé"
+
+#: apps/travel/choices.py:75
+msgctxt "mission status"
+msgid "Done"
+msgstr "Effectuée"
+
+#: apps/travel/choices.py:76
+msgctxt "mission status"
+msgid "Reimbursed"
+msgstr "Remboursée"
+
+#: apps/travel/choices.py:77
+msgctxt "mission status"
+msgid "Cancelled"
+msgstr "Annulée"
+
+#: apps/travel/forms.py:36 templates/travel/split.html:20
 msgid "Kind"
 msgstr "Type"
 
-#: apps/travel/forms.py:35
+#: apps/travel/forms.py:37
 msgid "— clear —"
 msgstr "— effacer —"
 
-#: apps/travel/forms.py:39
+#: apps/travel/forms.py:41
 msgid "Also weekends and public holidays"
 msgstr "Aussi les week-ends et jours fériés"
 
-#: apps/travel/forms.py:44
+#: apps/travel/forms.py:46
 msgid "Remote work counts for"
 msgstr "Le télétravail compte pour"
 
-#: apps/travel/forms.py:45
+#: apps/travel/forms.py:47
 msgid "Conferences count for"
 msgstr "Les conférences comptent pour"
 
-#: apps/travel/forms.py:46 apps/travel/models.py:111
+#: apps/travel/forms.py:48 apps/travel/models.py:126
 msgid "Whit Monday is a holiday"
 msgstr "Le lundi de Pentecôte est férié"
 
-#: apps/travel/forms.py:48
+#: apps/travel/forms.py:50
 msgid "Alert when the gap exceeds (points)"
 msgstr "Alerte si l'écart dépasse (points)"
 
-#: apps/travel/forms.py:51
+#: apps/travel/forms.py:53
 msgid "Minimum LIRMM days per month"
 msgstr "Minimum de jours au LIRMM par mois"
 
-#: apps/travel/forms.py:55
+#: apps/travel/forms.py:57
 msgid "Leave empty: no monthly rule."
 msgstr "Laisser vide : pas de règle mensuelle."
 
-#: apps/travel/forms.py:61 apps/travel/models.py:74
+#: apps/travel/forms.py:63 apps/travel/models.py:89
 msgid "ST share (percent)"
 msgstr "Part ST (%)"
 
-#: apps/travel/forms.py:66
+#: apps/travel/forms.py:68
 msgid "Mission order to request (days before departure)"
 msgstr "Ordre de mission à demander (jours avant le départ)"
 
-#: apps/travel/forms.py:71
+#: apps/travel/forms.py:73
 msgid "Receipts expected (days after return)"
 msgstr "Justificatifs attendus (jours après le retour)"
 
-#: apps/travel/models.py:46
+#: apps/travel/forms.py:80
+msgid ""
+"Never an address: neither yours nor that of someone hosting you. Sealed at "
+"the mission's level."
+msgstr ""
+"Jamais d'adresse : ni la vôtre, ni celle d'une personne qui vous héberge. "
+"Scellé au niveau de la mission."
+
+#: apps/travel/forms.py:89
+msgid "Departure"
+msgstr "Départ"
+
+#: apps/travel/forms.py:90
+msgid "Return"
+msgstr "Retour"
+
+#: apps/travel/forms.py:91 templates/travel/missions.html:9
+msgid "Destination"
+msgstr "Destination"
+
+#: apps/travel/forms.py:96
+msgid "For another place only: a town or a site, never an address."
+msgstr ""
+"Seulement pour un autre lieu : une ville ou un site, jamais une adresse."
+
+#: apps/travel/forms.py:99 templates/travel/mission.html:10
+#: templates/travel/missions.html:9
+msgid "Paid by"
+msgstr "Payé par"
+
+#: apps/travel/forms.py:104
+msgid ""
+"Paid by ST: readable by the tutor; paid by the LIRMM: readable by the "
+"director."
+msgstr ""
+"Payée par ST : lisible par le tuteur ; payée par le LIRMM : lisible par le "
+"directeur."
+
+#: apps/travel/forms.py:108
+msgid "Transport"
+msgstr "Transport"
+
+#: apps/travel/forms.py:113
+msgid "Lodging"
+msgstr "Hébergement"
+
+#: apps/travel/forms.py:115
+msgid "Lodging note"
+msgstr "Note sur l'hébergement"
+
+#: apps/travel/forms.py:122 templates/travel/mission.html:23
+msgid "Purpose"
+msgstr "Motif"
+
+#: apps/travel/forms.py:126
+msgid "Sealed at the mission's level."
+msgstr "Scellé au niveau de la mission."
+
+#: apps/travel/forms.py:128
+msgid "Tickets booked"
+msgstr "Billets réservés"
+
+#: apps/travel/forms.py:129
+msgid "Lodging booked"
+msgstr "Hébergement réservé"
+
+#: apps/travel/forms.py:131
+msgid "Fill in the presence calendar (days already filled in are kept)"
+msgstr ""
+"Remplir le calendrier de présence (les jours déjà renseignés sont gardés)"
+
+#: apps/travel/models.py:61
 msgid "day"
 msgstr "jour"
 
-#: apps/travel/models.py:52
+#: apps/travel/models.py:67
 msgid "presence day"
 msgstr "jour de présence"
 
-#: apps/travel/models.py:75
+#: apps/travel/models.py:90
 msgid "laboratory share (percent)"
 msgstr "part laboratoire (%)"
 
-#: apps/travel/models.py:78
+#: apps/travel/models.py:93
 msgid "time-split target"
 msgstr "cible de répartition du temps"
 
-#: apps/travel/models.py:106
+#: apps/travel/models.py:121
 msgid "remote work counts for"
 msgstr "le télétravail compte pour"
 
-#: apps/travel/models.py:109
+#: apps/travel/models.py:124
 msgid "conferences count for"
 msgstr "les conférences comptent pour"
 
-#: apps/travel/models.py:112
+#: apps/travel/models.py:127
 msgid "alert above (points)"
 msgstr "alerte au-delà de (points)"
 
-#: apps/travel/models.py:114
+#: apps/travel/models.py:129
 msgid "minimum LIRMM days per month"
 msgstr "minimum de jours au LIRMM par mois"
 
-#: apps/travel/models.py:118
+#: apps/travel/models.py:133
 msgid "mission order to request (days before)"
 msgstr "ordre de mission à demander (jours avant)"
 
-#: apps/travel/models.py:121
+#: apps/travel/models.py:136
 msgid "receipts expected (days after)"
 msgstr "justificatifs attendus (jours après)"
 
-#: apps/travel/models.py:134
+#: apps/travel/models.py:149
 msgid "travel policy"
 msgstr "règles des déplacements"
 
-#: apps/travel/services.py:79
+#: apps/travel/models.py:203
+msgid "departure"
+msgstr "départ"
+
+#: apps/travel/models.py:204
+msgid "return"
+msgstr "retour"
+
+#: apps/travel/models.py:205
+msgid "destination"
+msgstr "destination"
+
+#: apps/travel/models.py:212
+msgid "conference"
+msgstr "conférence"
+
+#: apps/travel/models.py:226
+msgid "transport"
+msgstr "transport"
+
+#: apps/travel/models.py:231
+msgid "lodging"
+msgstr "hébergement"
+
+#: apps/travel/models.py:233
+msgid "paid by"
+msgstr "payé par"
+
+#: apps/travel/models.py:240
+msgid "tickets booked"
+msgstr "billets réservés"
+
+#: apps/travel/models.py:241
+msgid "lodging booked"
+msgstr "hébergement réservé"
+
+#: apps/travel/models.py:246
+msgid "mission"
+msgstr "mission"
+
+#: apps/travel/services.py:104
 msgid "The thesis is finished: its travel data is frozen."
 msgstr "La thèse est terminée : ses déplacements sont figés."
 
-#: apps/travel/services.py:109
+#: apps/travel/services.py:134
 #, python-format
 msgid "The dates must be between %(first)s and %(last)s."
 msgstr "Les dates doivent être comprises entre le %(first)s et le %(last)s."
 
-#: apps/travel/services.py:156
+#: apps/travel/services.py:181
 msgid "Unknown kind of day."
 msgstr "Type de jour inconnu."
 
-#: apps/travel/services.py:158
+#: apps/travel/services.py:183
 msgid "The first day must not be after the last one."
 msgstr "Le premier jour ne peut pas être après le dernier."
 
-#: apps/travel/services.py:161
+#: apps/travel/services.py:186
 #, python-format
 msgid "At most %(n)d days at once."
 msgstr "%(n)d jours au plus à la fois."
 
-#: apps/travel/services.py:263 apps/travel/services.py:511
+#: apps/travel/services.py:305 apps/travel/services.py:553
 msgid "Unknown CIFRE year."
 msgstr "Année CIFRE inconnue."
 
-#: apps/travel/services.py:356
+#: apps/travel/services.py:398
 msgid "Unknown month."
 msgstr "Mois inconnu."
 
-#: apps/travel/services.py:358
+#: apps/travel/services.py:400
 msgid "This month is outside the thesis."
 msgstr "Ce mois est hors de la thèse."
 
-#: apps/travel/services.py:452
+#: apps/travel/services.py:494
 msgid "Unknown side."
 msgstr "Côté inconnu."
 
-#: apps/travel/services.py:454
+#: apps/travel/services.py:496 apps/travel/services.py:689
 msgid "Yes or no."
 msgstr "Oui ou non."
 
-#: apps/travel/services.py:460
+#: apps/travel/services.py:502
 #, python-format
 msgid "Between 1 and %(max)d points."
 msgstr "Entre 1 et %(max)d points."
 
-#: apps/travel/services.py:512
+#: apps/travel/services.py:554
 msgid "Between 0 and 100."
 msgstr "Entre 0 et 100."
 
-#: apps/travel/views.py:151
+#: apps/travel/services.py:623
+#, python-format
+msgid "At most %(max)d characters."
+msgstr "%(max)d caractères au plus."
+
+#: apps/travel/services.py:640
+msgid "The person who decides for this payer must be able to read the mission."
+msgstr "La personne qui décide pour ce payeur doit pouvoir lire la mission."
+
+#: apps/travel/services.py:647 apps/travel/views.py:335
+msgid "Unknown linked object."
+msgstr "Objet lié inconnu."
+
+#: apps/travel/services.py:656
+msgid "The return must not be before the departure."
+msgstr "Le retour ne peut pas précéder le départ."
+
+#: apps/travel/services.py:658
+#, python-format
+msgid "At most %(n)d days."
+msgstr "%(n)d jours au plus."
+
+#: apps/travel/services.py:661
+msgid "Unknown destination."
+msgstr "Destination inconnue."
+
+#: apps/travel/services.py:663 apps/travel/services.py:728
+msgid "Unknown payer."
+msgstr "Payeur inconnu."
+
+#: apps/travel/services.py:665
+msgid "Unknown lodging."
+msgstr "Hébergement inconnu."
+
+#: apps/travel/services.py:673
+msgid "Choose one or more means of transport."
+msgstr "Choisissez un ou plusieurs moyens de transport."
+
+#: apps/travel/services.py:676
+msgid "Name the place (a town, a site)."
+msgstr "Indiquez le lieu (une ville, un site)."
+
+#: apps/travel/services.py:679
+msgid "A place is named for another destination only."
+msgstr "Un lieu ne s'indique que pour une autre destination."
+
+#: apps/travel/services.py:683
+msgid "A conference only for a conference trip."
+msgstr "Une conférence seulement pour un déplacement en conférence."
+
+#: apps/travel/services.py:789
+msgid "This mission is closed."
+msgstr "Cette mission est close."
+
+#: apps/travel/services.py:822 apps/travel/services.py:854
+msgid "The mission changed meanwhile: try again."
+msgstr "La mission a changé entre-temps : réessayez."
+
+#: apps/travel/services.py:909
+msgid "A granted mission order is needed first."
+msgstr "Il faut d'abord un ordre de mission accordé."
+
+#: apps/travel/services.py:912
+msgid "The mission is not over yet."
+msgstr "La mission n'est pas encore terminée."
+
+#: apps/travel/views.py:165
 #, python-format
 msgid "%(n)d days updated."
 msgstr "%(n)d jours mis à jour."
 
-#: apps/travel/views.py:244
+#: apps/travel/views.py:258
 msgid "Settings saved."
 msgstr "Réglages enregistrés."
+
+#: apps/travel/views.py:346
+#, python-format
+msgid "Meeting: %(kind)s, %(when)s"
+msgstr "Réunion : %(kind)s, %(when)s"
+
+#: apps/travel/views.py:352
+#, python-format
+msgid "Submission to %(target)s"
+msgstr "Soumission à %(target)s"
+
+#: apps/travel/views.py:422
+msgid "Mission planned."
+msgstr "Mission prévue."
+
+#: apps/travel/views.py:502
+msgid "Mission saved."
+msgstr "Mission enregistrée."
+
+#: apps/travel/views.py:553
+msgid "Mission cancelled."
+msgstr "Mission annulée."
+
+#: apps/travel/views.py:560
+msgid "Mission marked as done."
+msgstr "Mission marquée comme effectuée."
 
 #: apps/vault/forms.py:14 templates/vault/upload.html:6
 msgid ""
@@ -3216,7 +3513,7 @@ msgstr "Contrat de collaboration :"
 #: templates/conferences/submission_form.html:7
 #: templates/conferences/venue.html:22 templates/conferences/venue_form.html:7
 #: templates/meetings/form.html:13 templates/objectives/form.html:18
-#: templates/travel/month.html:23
+#: templates/travel/mission_form.html:10 templates/travel/month.html:23
 msgid "Save"
 msgstr "Enregistrer"
 
@@ -3237,7 +3534,7 @@ msgid "Resubmission of an earlier submission"
 msgstr "Nouvelle soumission d'un article précédent"
 
 #: templates/conferences/submission.html:17 templates/meetings/detail.html:22
-#: templates/objectives/detail.html:29
+#: templates/objectives/detail.html:29 templates/travel/mission.html:26
 msgid "Edit"
 msgstr "Modifier"
 
@@ -3249,8 +3546,9 @@ msgstr "Pas des travaux ST : aucun accord nécessaire"
 #: templates/conferences/submission.html:73
 #: templates/conferences/submission.html:121
 #: templates/objectives/dashboard.html:94 templates/objectives/detail.html:40
-#: templates/objectives/detail.html:81 templates/travel/settings.html:18
-#: templates/travel/settings.html:29 templates/travel/settings.html:39
+#: templates/objectives/detail.html:81 templates/travel/mission.html:33
+#: templates/travel/settings.html:18 templates/travel/settings.html:29
+#: templates/travel/settings.html:39
 msgid "Asks for your second factor."
 msgstr "Demande votre second facteur."
 
@@ -3344,7 +3642,7 @@ msgid "A new ST approval is required: the earlier one is never reused."
 msgstr "Un nouvel accord ST est nécessaire : l'ancien n'est jamais repris."
 
 #: templates/conferences/submission.html:120 templates/meetings/detail.html:184
-#: templates/objectives/detail.html:80
+#: templates/objectives/detail.html:80 templates/travel/mission.html:32
 msgid "Change the confidentiality"
 msgstr "Changer la confidentialité"
 
@@ -3929,6 +4227,11 @@ msgstr "Créer l'objectif"
 msgid "Presence calendar"
 msgstr "Calendrier de présence"
 
+#: templates/travel/_nav.html:1 templates/travel/missions.html:2
+#: templates/travel/missions.html:5
+msgid "Missions"
+msgstr "Missions"
+
 #: templates/travel/_nav.html:1 templates/travel/split.html:2
 #: templates/travel/split.html:5
 msgid "ST / LIRMM time"
@@ -3938,6 +4241,81 @@ msgstr "Temps ST / LIRMM"
 #: templates/travel/settings.html:5
 msgid "Travel settings"
 msgstr "Réglages des déplacements"
+
+#: templates/travel/mission.html:2 templates/travel/mission.html:5
+msgid "Mission"
+msgstr "Mission"
+
+#: templates/travel/mission.html:8 templates/travel/missions.html:9
+msgid "Dates"
+msgstr "Dates"
+
+#: templates/travel/mission.html:14
+msgid "Place:"
+msgstr "Lieu :"
+
+#: templates/travel/mission.html:15
+msgid "Conference:"
+msgstr "Conférence :"
+
+#: templates/travel/mission.html:16
+msgid "Transport:"
+msgstr "Transport :"
+
+#: templates/travel/mission.html:17
+msgid "Lodging:"
+msgstr "Hébergement :"
+
+#: templates/travel/mission.html:18
+msgid "Tickets booked:"
+msgstr "Billets réservés :"
+
+#: templates/travel/mission.html:18
+msgid "yes,no"
+msgstr "oui,non"
+
+#: templates/travel/mission.html:18
+msgid "Lodging booked:"
+msgstr "Hébergement réservé :"
+
+#: templates/travel/mission.html:19
+msgid "ZRR access (administrative file):"
+msgstr "Accès ZRR (dossier administratif) :"
+
+#: templates/travel/mission.html:20
+msgid "Linked meeting"
+msgstr "Réunion liée"
+
+#: templates/travel/mission.html:21
+msgid "Linked submission"
+msgstr "Soumission liée"
+
+#: templates/travel/mission.html:27
+msgid "Mark as done"
+msgstr "Marquer comme effectuée"
+
+#: templates/travel/mission.html:28
+msgid "Cancel the mission"
+msgstr "Annuler la mission"
+
+#: templates/travel/mission_form.html:2 templates/travel/mission_form.html:5
+msgid "Edit the mission"
+msgstr "Modifier la mission"
+
+#: templates/travel/mission_form.html:2 templates/travel/mission_form.html:5
+#: templates/travel/missions.html:6
+msgid "Plan a mission"
+msgstr "Prévoir une mission"
+
+#: templates/travel/mission_form.html:7
+msgid "Entered by hand: the platform calls no booking or timetable service."
+msgstr ""
+"Saisie à la main : la plateforme n'interroge aucun service de réservation ni "
+"d'horaires."
+
+#: templates/travel/missions.html:17
+msgid "No mission yet."
+msgstr "Aucune mission pour l'instant."
 
 #: templates/travel/month.html:6
 msgid "Previous month"
@@ -3983,7 +4361,9 @@ msgstr "Renseigner des jours"
 msgid ""
 "Working days only unless the box is ticked. A change to a past day is "
 "recorded in the audit log."
-msgstr "Jours ouvrés seulement, sauf si la case est cochée. Toute modification d'un jour passé est inscrite au journal d'audit."
+msgstr ""
+"Jours ouvrés seulement, sauf si la case est cochée. Toute modification d'un "
+"jour passé est inscrite au journal d'audit."
 
 #: templates/travel/settings.html:7
 msgid "Counting rules"

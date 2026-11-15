@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import datetime as dt
 from collections.abc import Sequence
+from dataclasses import dataclass
 from fractions import Fraction
 from typing import Any
 
@@ -25,18 +26,31 @@ from django.urls import reverse
 from django.utils import formats, timezone
 from django.utils.dates import WEEKDAYS_ABBR
 from django.utils.translation import gettext as _
+from django.utils.translation import gettext_lazy
 from django.views import View
 
 from apps.accounts.models import User
 from apps.accounts.permissions import Action, ThesisPermissionRequiredMixin, can
 from apps.accounts.reauth import RecentAuthRequiredMixin, authenticated_recently, reauth_response
+from apps.admin_file.models import RequiredItem
+from apps.conferences.models import Edition
+from apps.core.confidentiality import ConfidentialityLevel
 from apps.objectives.years import year_count
+from apps.vault import services as vault
 from apps.vault.errors import ReauthenticationRequiredError
 
 from . import services
 from .access import PresenceAccess
-from .choices import ShownKind, Side
-from .forms import PresenceForm, RemindersForm, RulesForm, TargetForm
+from .choices import Destination, ShownKind, Side, Transport
+from .forms import (
+    MissionForm,
+    MissionLevelForm,
+    PresenceForm,
+    RemindersForm,
+    RulesForm,
+    TargetForm,
+)
+from .models import Mission
 
 # Legend of the month page, per view (access.py): a viewer never reads the name of
 # a kind they cannot see.
@@ -270,3 +284,303 @@ class RemindersView(_SettingsPost):
 
     def save(self, user: User, data: dict[str, Any], recent_mfa: bool) -> None:
         services.set_reminders(thesis=self.thesis, user=user, recent_mfa=recent_mfa, **data)
+
+
+# --------------------------------------------------------------------------- missions
+
+CONFLICTS = frozenset({"terminal", "not_returned", "order_required", "stale", "frozen"})
+
+
+def _status(exc: ValidationError) -> int:
+    return 409 if getattr(exc, "code", None) in CONFLICTS else 400
+
+
+@dataclass(frozen=True)
+class Shown:
+    text: str
+    restricted: bool
+
+
+def _shown(value: Any) -> Shown:
+    if value is vault.RESTRICTED:
+        return Shown(text="", restricted=True)
+    return Shown(text=str(value or ""), restricted=False)
+
+
+def _editions(thesis: Any) -> list[tuple[str, str]]:
+    rows = Edition.objects.filter(thesis=thesis).select_related("venue").order_by("-year")
+    return [(str(e.pk), f"{e.venue.acronym} {e.year}") for e in rows]
+
+
+class _MissionMixin(_Mixin):
+    kwargs: dict[str, Any]
+
+    def _mission(self, operation: str) -> Mission:
+        return services.mission_for(
+            _user(self.request), self.thesis, self.kwargs["mission_id"], operation
+        )
+
+    def _mission_url(self, mission: Mission, name: str = "mission") -> str:
+        return self._url(name, mission_id=mission.pk)
+
+
+class RefusedLinkError(ValidationError):
+    """A link id refused by services.link_for; ``data`` is the POST without it, to
+    render the form again without echoing a refused id."""
+
+    def __init__(self, data: Any) -> None:
+        super().__init__(_("Unknown linked object."), code="unknown_link")
+        self.data = data
+
+
+def _links(user: User, thesis: Any, data: dict[str, Any], posted: Any) -> dict[str, Any]:
+    """Form ids -> objects (services.link_for). Any refused id, whatever the case,
+    is the same 400 with the same message and the same page."""
+    out: dict[str, Any] = {}
+    refused = []
+    for kind in ("edition", "meeting", "submission"):
+        raw = data.get(kind) or ""
+        out[kind] = services.link_for(user, thesis, kind, raw)
+        if raw and out[kind] is None:
+            refused.append(kind)
+    if refused:
+        cleaned = posted.copy()
+        for kind in refused:
+            cleaned[kind] = ""
+        raise RefusedLinkError(cleaned)
+    return out
+
+
+def _link_labels(meeting: Any, submission: Any) -> list[str]:
+    """What the form says of its links: never a title (sealed), only what M5 and M6
+    show in clear (a meeting's kind and date, a submission's conference)."""
+    labels = []
+    if meeting is not None:
+        when = timezone.localtime(meeting.starts_at).strftime("%d/%m/%Y")
+        labels.append(
+            _("Meeting: %(kind)s, %(when)s") % {"kind": meeting.get_kind_display(), "when": when}
+        )
+    if submission is not None:
+        target = submission.venue.acronym + (
+            f" {submission.edition.year}" if submission.edition else ""
+        )
+        labels.append(_("Submission to %(target)s") % {"target": target})
+    return labels
+
+
+class MissionsView(_Mixin, View):
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        user = _user(request)
+        missions = services.mission_list(user, self.thesis)
+        context = {
+            "thesis": self.thesis,
+            "missions": missions,
+            "can_plan": can(user, Action.TRAVEL_WRITE, self.thesis),
+        }
+        return render(request, "travel/missions.html", context)
+
+
+class NewMissionView(_Mixin, View):
+    required_action = Action.TRAVEL_WRITE
+
+    def _page(
+        self, form: MissionForm, status: int = 200, error: str = "", links: list[str] | None = None
+    ) -> HttpResponse:
+        context = {
+            "thesis": self.thesis,
+            "form": form,
+            "mission": None,
+            "error": error,
+            "links": links or [],
+        }
+        return render(self.request, "travel/mission_form.html", context, status=status)
+
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        user = _user(request)
+        initial: dict[str, Any] = {"payer": "ST", "level": "INTERNAL_ST"}
+        found = {
+            kind: services.link_for(user, self.thesis, kind, request.GET.get(kind, ""))
+            for kind in ("meeting", "submission")
+        }
+        for kind, obj in found.items():
+            if obj is not None:  # a refused id leaves the form as if none was given
+                initial[kind] = str(obj.pk)
+        form = MissionForm(initial=initial, editions=_editions(self.thesis), editing=False)
+        return self._page(form, links=_link_labels(found["meeting"], found["submission"]))
+
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponseBase:
+        form = MissionForm(request.POST, editions=_editions(self.thesis), editing=False)
+        if not form.is_valid():
+            return self._page(form, status=400)
+        data = form.cleaned_data
+        try:
+            mission = services.create_mission(
+                thesis=self.thesis,
+                user=_user(request),
+                start_date=data["start_date"],
+                end_date=data["end_date"],
+                destination=data["destination"],
+                payer=data["payer"],
+                level=ConfidentialityLevel(data["level"]),
+                transports=data["transports"],
+                lodging=data["lodging"],
+                destination_detail=data["destination_detail"],
+                purpose=data["purpose"],
+                lodging_note=data["lodging_note"],
+                tickets_booked=data["tickets_booked"],
+                lodging_booked=data["lodging_booked"],
+                fill_presence=data["fill_presence"],
+                **_links(_user(request), self.thesis, data, request.POST),
+            )
+        except RefusedLinkError as exc:
+            form = MissionForm(exc.data, editions=_editions(self.thesis), editing=False)
+            form.is_valid()
+            return self._page(form, status=400, error=" ".join(exc.messages))
+        except ValidationError as exc:
+            return self._page(form, status=_status(exc), error=" ".join(exc.messages))
+        messages.success(request, _("Mission planned."))
+        return redirect(self._url("mission", mission_id=mission.pk))
+
+
+class MissionView(_MissionMixin, View):
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        return self._page(self._mission("mission_read"))
+
+    def _page(self, mission: Mission, status: int = 200, error: str = "") -> HttpResponse:
+        user = _user(self.request)
+        texts = services.mission_texts(user, mission)
+        writer = can(user, Action.TRAVEL_WRITE, self.thesis)
+        zrr = None
+        if mission.destination == Destination.LIRMM and can(
+            user, Action.ADMIN_FILE_READ, self.thesis
+        ):
+            zrr = RequiredItem.objects.filter(thesis=self.thesis, code="fsd_zrr_clearance").first()
+        meeting = (
+            mission.meeting
+            if mission.meeting_id and can(user, Action.MEETING_READ, self.thesis)
+            else None
+        )
+        submission_id = (
+            mission.submission_id
+            if mission.submission_id and can(user, Action.SUBMISSION_READ, self.thesis)
+            else None
+        )
+        transports = dict(Transport.choices)
+        context = {
+            "thesis": self.thesis,
+            "mission": mission,
+            "texts": {name: _shown(value) for name, value in texts.items()},
+            "transports": [transports[t] for t in mission.transports],
+            "meeting": meeting,
+            "submission_id": submission_id,
+            "zrr": zrr,
+            "writer": writer and not mission.is_closed,
+            "level_form": MissionLevelForm(initial={"level": mission.level}) if writer else None,
+            "error": error,
+        }
+        return render(self.request, "travel/mission.html", context, status=status)
+
+
+class EditMissionView(_MissionMixin, View):
+    required_action = Action.TRAVEL_WRITE
+
+    def _page(
+        self, mission: Mission, form: MissionForm, status: int = 200, error: str = ""
+    ) -> HttpResponse:
+        context = {"thesis": self.thesis, "form": form, "mission": mission, "error": error}
+        return render(self.request, "travel/mission_form.html", context, status=status)
+
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        mission = self._mission("mission_update")
+        texts = services.mission_texts(_user(request), mission)
+        initial = {
+            **{name: getattr(mission, name) for name in services.MISSION_FIELDS},
+            **{name: str(value) for name, value in texts.items()},
+            "edition": str(mission.edition_id or ""),
+            "meeting": str(mission.meeting_id or ""),
+            "submission": str(mission.submission_id or ""),
+        }
+        form = MissionForm(initial=initial, editions=_editions(self.thesis), editing=True)
+        return self._page(mission, form)
+
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponseBase:
+        mission = self._mission("mission_update")
+        form = MissionForm(request.POST, editions=_editions(self.thesis), editing=True)
+        if not form.is_valid():
+            return self._page(mission, form, status=400)
+        data = form.cleaned_data
+        try:
+            changes = {
+                **{name: data[name] for name in services.MISSION_FIELDS if name in data},
+                **{name: data[name] for name in services.MISSION_TEXTS},
+                **_links(_user(request), self.thesis, data, request.POST),
+            }
+            services.update_mission(mission=mission, user=_user(request), changes=changes)
+        except RefusedLinkError as exc:
+            form = MissionForm(exc.data, editions=_editions(self.thesis), editing=True)
+            form.is_valid()
+            return self._page(mission, form, status=400, error=" ".join(exc.messages))
+        except ValidationError as exc:
+            return self._page(mission, form, status=_status(exc), error=" ".join(exc.messages))
+        messages.success(request, _("Mission saved."))
+        return redirect(self._mission_url(mission))
+
+
+class MissionLevelView(_MissionMixin, RecentAuthRequiredMixin, View):
+    required_action = Action.TRAVEL_WRITE
+    http_method_names: Sequence[str] = ("post",)
+
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponseBase:
+        mission = self._mission("mission_level")
+        form = MissionLevelForm(request.POST)
+        page = MissionView()
+        page.request, page.thesis, page.kwargs = request, self.thesis, self.kwargs
+        if not form.is_valid():
+            return page._page(mission, status=400)
+        try:
+            services.change_mission_level(
+                mission=mission,
+                user=_user(request),
+                level=ConfidentialityLevel(form.cleaned_data["level"]),
+                recent_mfa=authenticated_recently(request),
+            )
+        except ReauthenticationRequiredError:
+            return reauth_response(request, mfa=True)
+        except ValidationError as exc:
+            return page._page(mission, status=_status(exc), error=" ".join(exc.messages))
+        messages.success(request, _("Confidentiality changed."))
+        return redirect(self._mission_url(mission))
+
+
+class _MissionAction(_MissionMixin, View):
+    required_action = Action.TRAVEL_WRITE
+    http_method_names: Sequence[str] = ("post",)
+    done_message: Any = ""
+
+    def act(self, mission: Mission, user: User) -> None:
+        raise NotImplementedError
+
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponseBase:
+        mission = self._mission("mission_status")
+        try:
+            self.act(mission, _user(request))
+        except ValidationError as exc:
+            page = MissionView()
+            page.request, page.thesis, page.kwargs = request, self.thesis, self.kwargs
+            return page._page(mission, status=_status(exc), error=" ".join(exc.messages))
+        messages.success(request, self.done_message)
+        return redirect(self._mission_url(mission))
+
+
+class CancelMissionView(_MissionAction):
+    done_message = gettext_lazy("Mission cancelled.")
+
+    def act(self, mission: Mission, user: User) -> None:
+        services.cancel_mission(mission=mission, user=user)
+
+
+class MissionDoneView(_MissionAction):
+    done_message = gettext_lazy("Mission marked as done.")
+
+    def act(self, mission: Mission, user: User) -> None:
+        services.mark_done(mission=mission, user=user)

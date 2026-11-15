@@ -10,6 +10,9 @@ from __future__ import annotations
 
 import calendar
 import datetime as dt
+import unicodedata
+import uuid
+from collections.abc import Mapping
 from dataclasses import dataclass, field
 from fractions import Fraction
 from typing import Any
@@ -21,20 +24,39 @@ from django.utils.translation import gettext as _
 
 from apps.accounts.models import Thesis, User
 from apps.accounts.permissions import Action, can
+from apps.conferences.models import Edition, Submission
+from apps.core.confidentiality import ConfidentialityLevel
+from apps.meetings.models import Meeting
 from apps.meetings.timing import meeting_bounds
 from apps.objectives.years import cifre_bounds, cifre_year_of, year_count
+from apps.vault import formats
+from apps.vault import services as vault
 from apps.vault.audit import AuditAction
 from apps.vault.errors import ReauthenticationRequiredError
 from apps.vault.services import audit
 
 from . import holidays, split
 from .access import PresenceAccess, presence_access
-from .choices import PresenceKind, ShownKind, Side
+from .choices import (
+    PRESENCE_OF_DESTINATION,
+    Destination,
+    Lodging,
+    MissionStatus,
+    Payer,
+    PresenceKind,
+    ShownKind,
+    Side,
+    Transport,
+)
 from .models import (
+    DEFAULT_LEVEL,
     MAX_GAP_ALERT_POINTS,
     MAX_LAB_DAYS_PER_MONTH,
+    MAX_MISSION_DAYS,
     MAX_ORDER_LEAD_DAYS,
     MAX_RECEIPT_GRACE_DAYS,
+    PAYER_LEVELS,
+    Mission,
     PresenceDay,
     TimeSplitTarget,
     TravelPolicy,
@@ -53,7 +75,9 @@ def _from_to(previous: Any, new: Any) -> dict[str, Any]:
     return {"from": previous, "to": new}
 
 
-def _deny(user: Any, operation: str, reason: str, *, thesis: Thesis) -> PermissionDenied:
+def _deny(
+    user: Any, operation: str, reason: str, *, thesis: Thesis, **details: Any
+) -> PermissionDenied:
     with transaction.atomic():
         audit(
             AuditAction.TRAVEL_ACCESS_DENIED,
@@ -61,6 +85,7 @@ def _deny(user: Any, operation: str, reason: str, *, thesis: Thesis) -> Permissi
             thesis=thesis,
             operation=operation,
             reason=reason,
+            **details,
         )
     return PermissionDenied()
 
@@ -161,7 +186,6 @@ def set_presence(
             _("At most %(n)d days at once.") % {"n": MAX_RANGE_DAYS}, code="too_long"
         )
     _check_in_bounds(_fresh(thesis), first, last)
-    today = timezone.localdate()
     with transaction.atomic():
         locked = _lock_thesis(thesis.pk)
         if include_non_working:
@@ -169,42 +193,60 @@ def set_presence(
         else:
             whit = policy_of(locked).whit_monday_holiday
             days = holidays.working_days(first, last, whit_monday=whit)
-        existing = {
-            row.day: row
-            for row in PresenceDay.objects.select_for_update().filter(thesis=locked, day__in=days)
-        }
-        now = timezone.now()
-        created: list[PresenceDay] = []
-        updated: list[PresenceDay] = []
-        deleted: list[Any] = []
-        corrections: list[tuple[dt.date, str | None]] = []
-        for day in days:
-            row = existing.get(day)
-            old = row.kind if row is not None else None
-            if old == kind:
-                continue
-            if kind is None:
-                if row is not None:
-                    deleted.append(row.pk)
-            elif row is None:
-                created.append(PresenceDay(thesis=locked, day=day, kind=kind, created_by=user))
-            else:
-                row.kind, row.updated_at = kind, now
-                updated.append(row)
-            if day < today:
-                corrections.append((day, old))
-        PresenceDay.objects.bulk_create(created)
-        PresenceDay.objects.bulk_update(updated, ["kind", "updated_at"])
-        PresenceDay.objects.filter(pk__in=deleted).delete()
-        for day, old in corrections:
-            audit(
-                AuditAction.PRESENCE_CORRECTED,
-                actor=user,
-                thesis=locked,
-                day=day.isoformat(),
-                **_from_to(old, kind),
-            )
-    return len(created) + len(updated) + len(deleted)
+        changed, corrections = _write_presence(locked, user, days, kind, overwrite=True)
+        _audit_corrections(locked, user, corrections)
+    return changed
+
+
+Correction = tuple[dt.date, str | None, str | None]  # day, from, to
+
+
+def _write_presence(
+    locked: Thesis, user: User, days: list[dt.date], kind: str | None, *, overwrite: bool
+) -> tuple[int, list[Correction]]:
+    """Inside the caller's transaction (thesis row locked): set ``days`` to ``kind``
+    (None clears), keeping days already filled in unless ``overwrite``. Returns the
+    count changed and the past days changed, to be journaled LAST by the caller."""
+    today = timezone.localdate()
+    existing = {
+        row.day: row
+        for row in PresenceDay.objects.select_for_update().filter(thesis=locked, day__in=days)
+    }
+    now = timezone.now()
+    created: list[PresenceDay] = []
+    updated: list[PresenceDay] = []
+    deleted: list[Any] = []
+    corrections: list[Correction] = []
+    for day in days:
+        row = existing.get(day)
+        old = row.kind if row is not None else None
+        if old == kind or (row is not None and not overwrite):
+            continue
+        if kind is None:
+            if row is not None:
+                deleted.append(row.pk)
+        elif row is None:
+            created.append(PresenceDay(thesis=locked, day=day, kind=kind, created_by=user))
+        else:
+            row.kind, row.updated_at = kind, now
+            updated.append(row)
+        if day < today:
+            corrections.append((day, old, kind))
+    PresenceDay.objects.bulk_create(created)
+    PresenceDay.objects.bulk_update(updated, ["kind", "updated_at"])
+    PresenceDay.objects.filter(pk__in=deleted).delete()
+    return len(created) + len(updated) + len(deleted), corrections
+
+
+def _audit_corrections(locked: Thesis, user: User, corrections: list[Correction]) -> None:
+    for day, old, new in corrections:
+        audit(
+            AuditAction.PRESENCE_CORRECTED,
+            actor=user,
+            thesis=locked,
+            day=day.isoformat(),
+            **_from_to(old, new),
+        )
 
 
 def _shown(kind: str, access: PresenceAccess) -> str:
@@ -540,3 +582,401 @@ def targets_of(thesis: Thesis) -> dict[int, int]:
     return dict(
         TimeSplitTarget.objects.filter(thesis=thesis).values_list("cifre_year", "st_percent")
     )
+
+
+# =========================================================================== missions
+
+MISSION_TEXTS = ("destination_detail", "purpose", "lodging_note")
+TEXT_LIMITS = {"destination_detail": 200, "purpose": 2000, "lodging_note": 500}
+ONE_LINE = frozenset({"destination_detail"})
+MISSION_FIELDS = (
+    "start_date",
+    "end_date",
+    "destination",
+    "payer",
+    "transports",
+    "lodging",
+    "edition",
+    "meeting",
+    "submission",
+    "tickets_booked",
+    "lodging_booked",
+)
+_ALLOWED_CONTROLS = frozenset("\n\t")
+_OPEN_MISSION = (
+    MissionStatus.PLANNED,
+    MissionStatus.ORDER_REQUESTED,
+    MissionStatus.ORDER_GRANTED,
+    MissionStatus.ORDER_REFUSED,
+)
+
+
+def _clean_text(value: Any, name: str) -> str:
+    """NFC, CRLF -> LF, stripped; no control character but newline and tab; bounded."""
+    if not isinstance(value, str):
+        raise ValidationError(_("This text is invalid."), code=name)
+    text = unicodedata.normalize("NFC", value.replace("\r\n", "\n")).strip()
+    if any(unicodedata.category(c) == "Cc" and c not in _ALLOWED_CONTROLS for c in text):
+        raise ValidationError(_("The text contains a control character."), code=name)
+    if len(text) > TEXT_LIMITS[name] or len(text.encode()) > formats.MAX_TEXT_BYTES:
+        raise ValidationError(
+            _("At most %(max)d characters.") % {"max": TEXT_LIMITS[name]}, code=name
+        )
+    if name in ONE_LINE and ("\n" in text or "\t" in text):
+        raise ValidationError(_("One line only."), code=name)
+    return text
+
+
+def _clean_level(level: Any) -> ConfidentialityLevel:
+    if not isinstance(level, ConfidentialityLevel):
+        raise ValidationError(_("Unknown confidentiality level."), code="level")
+    return level
+
+
+def _check_payer_level(payer: str, level: ConfidentialityLevel) -> None:
+    allowed = PAYER_LEVELS.get(Payer(payer))
+    if allowed is not None and level.value not in allowed:
+        raise ValidationError(
+            _("The person who decides for this payer must be able to read the mission."),
+            code="payer_level",
+        )
+
+
+def _same_thesis(obj: Any, thesis: Thesis, code: str) -> None:
+    if obj is not None and getattr(obj, "thesis_id", None) != thesis.pk:
+        raise ValidationError(_("Unknown linked object."), code=code)
+
+
+def _check_mission(thesis: Thesis, values: dict[str, Any]) -> None:
+    """Every field of a mission, as it will be stored (``values`` complete)."""
+    start, end = values["start_date"], values["end_date"]
+    holidays.require_date(start, "start_date")
+    holidays.require_date(end, "end_date")
+    if start > end:
+        raise ValidationError(_("The return must not be before the departure."), code="range")
+    if (end - start).days + 1 > MAX_MISSION_DAYS:
+        raise ValidationError(_("At most %(n)d days.") % {"n": MAX_MISSION_DAYS}, code="too_long")
+    _check_in_bounds(thesis, start, end)
+    if values["destination"] not in Destination.values:
+        raise ValidationError(_("Unknown destination."), code="destination")
+    if values["payer"] not in Payer.values:
+        raise ValidationError(_("Unknown payer."), code="payer")
+    if values["lodging"] not in Lodging.values:
+        raise ValidationError(_("Unknown lodging."), code="lodging")
+    transports = values["transports"]
+    if (
+        not isinstance(transports, list | tuple)
+        or not transports
+        or any(t not in Transport.values for t in transports)
+        or len(set(transports)) != len(transports)
+    ):
+        raise ValidationError(_("Choose one or more means of transport."), code="transports")
+    other = values["destination"] == Destination.OTHER
+    if other and not values["destination_detail"]:
+        raise ValidationError(_("Name the place (a town, a site)."), code="destination_detail")
+    if not other and values["destination_detail"]:
+        raise ValidationError(
+            _("A place is named for another destination only."), code="destination_detail"
+        )
+    edition = values["edition"]
+    if edition is not None and values["destination"] != Destination.CONFERENCE:
+        raise ValidationError(_("A conference only for a conference trip."), code="edition")
+    _same_thesis(edition, thesis, "edition")
+    _same_thesis(values["meeting"], thesis, "meeting")
+    _same_thesis(values["submission"], thesis, "submission")
+    for name in ("tickets_booked", "lodging_booked"):
+        if type(values[name]) is not bool:
+            raise ValidationError(_("Yes or no."), code=name)
+
+
+def _check_open(thesis: Thesis) -> None:
+    if _fresh(thesis).status not in OPEN_THESIS:
+        raise _frozen()
+
+
+def _mission_days(locked: Thesis, mission: Mission) -> list[dt.date]:
+    whit = policy_of(locked).whit_monday_holiday
+    return holidays.working_days(mission.start_date, mission.end_date, whit_monday=whit)
+
+
+def create_mission(
+    *,
+    thesis: Thesis,
+    user: User,
+    start_date: dt.date,
+    end_date: dt.date,
+    destination: str,
+    payer: str,
+    level: ConfidentialityLevel | None = None,
+    transports: list[str] | tuple[str, ...] = (Transport.TRAIN.value,),
+    lodging: str = Lodging.NONE.value,
+    destination_detail: str = "",
+    purpose: str = "",
+    lodging_note: str = "",
+    edition: Any = None,
+    meeting: Any = None,
+    submission: Any = None,
+    tickets_booked: bool = False,
+    lodging_booked: bool = False,
+    fill_presence: bool = True,
+) -> Mission:
+    """A mission of the student; ``fill_presence`` fills its working days in the
+    calendar (the kind of its destination), never over a day already filled in."""
+    _require(user, Action.TRAVEL_WRITE, thesis, "mission_create")
+    _check_open(thesis)
+    if payer not in Payer.values:
+        raise ValidationError(_("Unknown payer."), code="payer")
+    level = DEFAULT_LEVEL[Payer(payer)] if level is None else _clean_level(level)
+    texts = {
+        "destination_detail": _clean_text(destination_detail, "destination_detail"),
+        "purpose": _clean_text(purpose, "purpose"),
+        "lodging_note": _clean_text(lodging_note, "lodging_note"),
+    }
+    values: dict[str, Any] = {
+        "start_date": start_date,
+        "end_date": end_date,
+        "destination": destination,
+        "payer": payer,
+        "transports": list(transports) if isinstance(transports, list | tuple) else transports,
+        "lodging": lodging,
+        "edition": edition,
+        "meeting": meeting,
+        "submission": submission,
+        "tickets_booked": tickets_booked,
+        "lodging_booked": lodging_booked,
+        **texts,
+    }
+    _check_mission(_fresh(thesis), values)
+    _check_payer_level(payer, level)
+    with vault.sealing(user=user, thesis=thesis, level=level, action=Action.TRAVEL_WRITE) as sealer:
+        locked = _lock_thesis(thesis.pk)
+        mission = Mission(
+            thesis=locked,
+            level=level.value,
+            created_by=user,
+            **{name: values[name] for name in MISSION_FIELDS},
+        )
+        mission.save(force_insert=True)
+        for name, text in texts.items():
+            if text:
+                sealer.seal(mission, name, text)
+        corrections: list[Correction] = []
+        kind = PRESENCE_OF_DESTINATION.get(Destination(destination))
+        if fill_presence and kind is not None:
+            _changed, corrections = _write_presence(
+                locked, user, _mission_days(locked, mission), kind.value, overwrite=False
+            )
+        audit(
+            AuditAction.MISSION_CREATED,
+            actor=user,
+            obj=mission,
+            destination=mission.destination,
+            payer=mission.payer,
+            level=mission.level,
+            start_date=mission.start_date.isoformat(),
+            end_date=mission.end_date.isoformat(),
+        )
+        _audit_corrections(locked, user, corrections)
+    return mission
+
+
+def _locked_mission(mission: Mission) -> Mission:
+    _lock_thesis(mission.thesis_id)
+    return Mission.objects.select_for_update().get(pk=mission.pk)
+
+
+def _terminal() -> ValidationError:
+    return ValidationError(_("This mission is closed."), code="terminal")
+
+
+def update_mission(*, mission: Mission, user: User, changes: Mapping[str, Any]) -> list[str]:
+    """Fields and texts of an open mission (not its level, nor its status)."""
+    unknown = sorted(set(changes) - {*MISSION_FIELDS, *MISSION_TEXTS})
+    if unknown:
+        raise ValueError(f"{unknown} cannot be changed here")
+    thesis = _fresh(mission.thesis)
+    _require(user, Action.TRAVEL_WRITE, thesis, "mission_update")
+    _check_open(thesis)
+    fresh = Mission.objects.get(pk=mission.pk)
+    if fresh.is_closed:
+        raise _terminal()
+    current_texts = mission_texts(user, fresh)
+    texts = {n: _clean_text(changes[n], n) for n in MISSION_TEXTS if n in changes}
+    values: dict[str, Any] = {name: getattr(fresh, name) for name in MISSION_FIELDS}
+    values.update({k: v for k, v in changes.items() if k in MISSION_FIELDS})
+    if isinstance(values["transports"], tuple):
+        values["transports"] = list(values["transports"])
+    merged_texts = {**{n: str(current_texts[n]) for n in MISSION_TEXTS}, **texts}
+    _check_mission(thesis, {**values, **merged_texts})
+    level = ConfidentialityLevel(fresh.level)
+    _check_payer_level(values["payer"], level)
+    changed = sorted(
+        [n for n in MISSION_FIELDS if values[n] != getattr(fresh, n)]
+        + [n for n, t in texts.items() if t != current_texts[n]]
+    )
+    if not changed:
+        return []
+    with vault.sealing(user=user, thesis=thesis, level=level, action=Action.TRAVEL_WRITE) as sealer:
+        locked = _locked_mission(fresh)
+        if locked.status != fresh.status or locked.level != fresh.level:
+            raise ValidationError(_("The mission changed meanwhile: try again."), code="stale")
+        for name in MISSION_FIELDS:
+            setattr(locked, name, values[name])
+        locked.save()
+        for name, text in texts.items():
+            if text == current_texts[name]:
+                continue
+            if text:
+                sealer.seal(locked, name, text)
+            else:
+                sealer.erase(locked, name)
+        audit(AuditAction.MISSION_UPDATED, actor=user, obj=locked, fields=changed)
+    return changed
+
+
+def change_mission_level(
+    *, mission: Mission, user: User, level: ConfidentialityLevel, recent_mfa: bool
+) -> Mission:
+    """Move the mission's texts to ``level`` (second factor)."""
+    thesis = _fresh(mission.thesis)
+    _require(user, Action.TRAVEL_WRITE, thesis, "mission_level")
+    _require_mfa(recent_mfa)
+    level = _clean_level(level)
+    _check_open(thesis)
+    fresh = Mission.objects.get(pk=mission.pk)
+    _check_payer_level(fresh.payer, level)
+    previous = fresh.level
+    if level.value == previous:
+        return fresh
+    with vault.sealing(user=user, thesis=thesis, level=level, action=Action.TRAVEL_WRITE) as sealer:
+        locked = _locked_mission(fresh)
+        if locked.level != previous or locked.payer != fresh.payer:
+            raise ValidationError(_("The mission changed meanwhile: try again."), code="stale")
+        for name in MISSION_TEXTS:
+            sealer.reseal(locked, name)
+        locked.level = level.value
+        locked.save()
+        audit(
+            AuditAction.MISSION_LEVEL_CHANGED,
+            actor=user,
+            obj=locked,
+            **_from_to(previous, level.value),
+        )
+    return locked
+
+
+def _set_status(mission: Mission, user: User, target: MissionStatus) -> None:
+    previous = mission.status
+    mission.status = target.value
+    mission.save()
+    audit(
+        AuditAction.MISSION_STATUS_CHANGED,
+        actor=user,
+        obj=mission,
+        **_from_to(previous, target.value),
+    )
+
+
+def cancel_mission(*, mission: Mission, user: User) -> Mission:
+    thesis = _fresh(mission.thesis)
+    _require(user, Action.TRAVEL_WRITE, thesis, "mission_cancel")
+    _check_open(thesis)
+    with transaction.atomic():
+        locked = _locked_mission(mission)
+        if locked.status not in _OPEN_MISSION:
+            raise _terminal()
+        _set_status(locked, user, MissionStatus.CANCELLED)
+    return locked
+
+
+def order_covers(mission: Mission) -> bool:
+    """Whether a granted mission order covers the mission as it is now (step 4)."""
+    return False
+
+
+def mark_done(*, mission: Mission, user: User) -> Mission:
+    """Back from the mission: after its return date (Paris); a mission paid by ST or
+    the LIRMM needs a granted mission order that still covers it."""
+    thesis = _fresh(mission.thesis)
+    _require(user, Action.TRAVEL_WRITE, thesis, "mission_done")
+    _check_open(thesis)
+    with transaction.atomic():
+        locked = _locked_mission(mission)
+        if locked.status not in _OPEN_MISSION:
+            raise _terminal()
+        if locked.payer != Payer.OTHER and not order_covers(locked):
+            raise ValidationError(
+                _("A granted mission order is needed first."), code="order_required"
+            )
+        if locked.end_date > timezone.localdate():
+            raise ValidationError(_("The mission is not over yet."), code="not_returned")
+        _set_status(locked, user, MissionStatus.DONE)
+    return locked
+
+
+# --------------------------------------------------------------------------- reading
+
+
+def mission_list(user: Any, thesis: Thesis) -> list[Mission]:
+    _require_reader(user, thesis, "mission_list")
+    return list(Mission.objects.visible_to(user, thesis).select_related("edition__venue"))
+
+
+def mission_for(user: Any, thesis: Thesis, mission_id: Any, operation: str) -> Mission:
+    """The mission of ``thesis`` if ``user`` may see it. A hidden mission (a
+    co-supervisor and a mission elsewhere) is refused exactly like an unknown one."""
+    _require_reader(user, thesis, operation)
+    try:
+        mission = (
+            Mission.objects.visible_to(user, thesis)
+            .select_related("edition__venue")
+            .filter(pk=mission_id)
+            .first()
+        )
+    except (ValueError, ValidationError):
+        mission = None
+    if mission is None:
+        raise _deny(user, operation, "unknown_mission", thesis=thesis)
+    return mission
+
+
+def mission_texts(user: Any, mission: Mission) -> dict[str, Any]:
+    """{name: text or vault.RESTRICTED} ("" when none) of a mission ``user`` sees."""
+    thesis = _fresh(mission.thesis)
+    visible = mission_for(user, thesis, mission.pk, "mission_texts")
+    opened = vault.open_texts(
+        user, thesis, [(visible, n) for n in MISSION_TEXTS], action=Action.TRAVEL_READ
+    )
+    return {n: opened.get((visible.pk, n), "") for n in MISSION_TEXTS}
+
+
+# --------------------------------------------------------------------------- links
+
+# What a mission may link, and the right that reads it.
+LINKS: Mapping[str, tuple[type[Any], Action]] = {
+    "meeting": (Meeting, Action.MEETING_READ),
+    "submission": (Submission, Action.SUBMISSION_READ),
+    "edition": (Edition, Action.CONFERENCE_READ),
+}
+
+
+def link_for(user: Any, thesis: Thesis, kind: str, raw: Any) -> Any | None:
+    """The object of ``thesis`` named by ``raw`` (a meeting, a submission, an
+    edition) if ``user`` may read it; None otherwise. A malformed id, an unknown
+    one, one of another thesis and an object ``user`` may not read are refused
+    ALIKE: the same None, the same journal entry (reason unknown_link and the kind,
+    nothing about which case). An empty ``raw`` is no link: None, no entry."""
+    model, action = LINKS[kind]
+    if raw in (None, ""):
+        return None
+    found = None
+    try:
+        uuid.UUID(str(raw))
+    except ValueError:
+        pass
+    else:
+        found = model.objects.filter(pk=str(raw), thesis=thesis).first()
+    if found is None or not can(user, action, thesis):
+        _deny(user, "mission_link", "unknown_link", thesis=thesis, kind=kind)
+        return None
+    return found

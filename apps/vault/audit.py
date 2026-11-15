@@ -152,6 +152,10 @@ class AuditAction(StrEnum):
     TRAVEL_RULES_CHANGED = "TRAVEL_RULES_CHANGED"  # changes: {field: {from, to}}
     TRAVEL_TARGET_CHANGED = "TRAVEL_TARGET_CHANGED"  # cifre_year, from, to (ST percent)
     TRAVEL_REMINDERS_CHANGED = "TRAVEL_REMINDERS_CHANGED"  # changes: {field: {from, to}}
+    MISSION_CREATED = "MISSION_CREATED"  # destination, payer, level, dates
+    MISSION_UPDATED = "MISSION_UPDATED"  # field names
+    MISSION_LEVEL_CHANGED = "MISSION_LEVEL_CHANGED"  # from, to
+    MISSION_STATUS_CHANGED = "MISSION_STATUS_CHANGED"  # from, to
     TRAVEL_ACCESS_DENIED = "TRAVEL_ACCESS_DENIED"
     # Keys (M2).
     KEK_CREATED = "KEK_CREATED"
