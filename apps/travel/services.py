@@ -22,8 +22,9 @@ from django.db import transaction
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
-from apps.accounts.models import Thesis, User
-from apps.accounts.permissions import Action, can
+from apps.accounts.models import Membership, Thesis, User
+from apps.accounts.permissions import Action, can, can_access_level, roles_of
+from apps.accounts.roles import Role
 from apps.conferences.models import Edition, Submission
 from apps.core.confidentiality import ConfidentialityLevel
 from apps.meetings.models import Meeting
@@ -35,13 +36,15 @@ from apps.vault.audit import AuditAction
 from apps.vault.errors import ReauthenticationRequiredError
 from apps.vault.services import audit
 
-from . import holidays, split
+from . import amounts, holidays, split
 from .access import PresenceAccess, presence_access
 from .choices import (
     PRESENCE_OF_DESTINATION,
     Destination,
     Lodging,
     MissionStatus,
+    OrderDecision,
+    OrderRefusalReason,
     Payer,
     PresenceKind,
     ShownKind,
@@ -55,8 +58,10 @@ from .models import (
     MAX_MISSION_DAYS,
     MAX_ORDER_LEAD_DAYS,
     MAX_RECEIPT_GRACE_DAYS,
+    ORDER_PAYERS,
     PAYER_LEVELS,
     Mission,
+    MissionOrder,
     PresenceDay,
     TimeSplitTarget,
     TravelPolicy,
@@ -587,7 +592,7 @@ def targets_of(thesis: Thesis) -> dict[int, int]:
 # =========================================================================== missions
 
 MISSION_TEXTS = ("destination_detail", "purpose", "lodging_note")
-TEXT_LIMITS = {"destination_detail": 200, "purpose": 2000, "lodging_note": 500}
+TEXT_LIMITS = {"destination_detail": 200, "purpose": 2000, "lodging_note": 500, "comment": 2000}
 ONE_LINE = frozenset({"destination_detail"})
 MISSION_FIELDS = (
     "start_date",
@@ -806,6 +811,16 @@ def update_mission(*, mission: Mission, user: User, changes: Mapping[str, Any]) 
     values.update({k: v for k, v in changes.items() if k in MISSION_FIELDS})
     if isinstance(values["transports"], tuple):
         values["transports"] = list(values["transports"])
+    frozen = sorted(n for n in ORDER_SNAPSHOT_FIELDS if values[n] != getattr(fresh, n))
+    if frozen and fresh.status == MissionStatus.ORDER_REQUESTED:
+        # Before any other check: whatever the new values, the order is pending.
+        raise ValidationError(
+            _(
+                "A mission order is pending: withdraw it before changing the dates, the "
+                "destination or the payer."
+            ),
+            code="order_pending",
+        )
     merged_texts = {**{n: str(current_texts[n]) for n in MISSION_TEXTS}, **texts}
     _check_mission(thesis, {**values, **merged_texts})
     level = ConfidentialityLevel(fresh.level)
@@ -822,6 +837,10 @@ def update_mission(*, mission: Mission, user: User, changes: Mapping[str, Any]) 
             raise ValidationError(_("The mission changed meanwhile: try again."), code="stale")
         for name in MISSION_FIELDS:
             setattr(locked, name, values[name])
+        invalidated = None
+        if frozen and locked.status == MissionStatus.ORDER_GRANTED:
+            invalidated = _granted_order(locked)
+            locked.status = MissionStatus.PLANNED.value
         locked.save()
         for name, text in texts.items():
             if text == current_texts[name]:
@@ -831,6 +850,15 @@ def update_mission(*, mission: Mission, user: User, changes: Mapping[str, Any]) 
             else:
                 sealer.erase(locked, name)
         audit(AuditAction.MISSION_UPDATED, actor=user, obj=locked, fields=changed)
+        if invalidated is not None:
+            audit(
+                AuditAction.MISSION_ORDER_INVALIDATED,
+                actor=user,
+                obj=invalidated,
+                thesis=locked.thesis,
+                order_id=str(invalidated.pk),
+                fields=frozen,
+            )
     return changed
 
 
@@ -854,6 +882,9 @@ def change_mission_level(
             raise ValidationError(_("The mission changed meanwhile: try again."), code="stale")
         for name in MISSION_TEXTS:
             sealer.reseal(locked, name)
+        for order in MissionOrder.objects.filter(mission=locked):
+            for name in ORDER_TEXTS:
+                sealer.reseal(order, name)
         locked.level = level.value
         locked.save()
         audit(
@@ -885,13 +916,47 @@ def cancel_mission(*, mission: Mission, user: User) -> Mission:
         locked = _locked_mission(mission)
         if locked.status not in _OPEN_MISSION:
             raise _terminal()
-        _set_status(locked, user, MissionStatus.CANCELLED)
+        pending = (
+            MissionOrder.objects.select_for_update()
+            .filter(mission=locked, decision=OrderDecision.PENDING)
+            .first()
+        )
+        if pending is not None:
+            _withdraw(pending)
+        locked.status, previous = MissionStatus.CANCELLED.value, locked.status
+        locked.save()
+        if pending is not None:
+            audit(
+                AuditAction.MISSION_ORDER_WITHDRAWN,
+                actor=user,
+                obj=pending,
+                thesis=locked.thesis,
+                order_id=str(pending.pk),
+            )
+        audit(
+            AuditAction.MISSION_STATUS_CHANGED,
+            actor=user,
+            obj=locked,
+            **_from_to(previous, MissionStatus.CANCELLED.value),
+        )
     return locked
 
 
+def _granted_order(mission: Mission) -> MissionOrder | None:
+    return (
+        MissionOrder.objects.filter(mission=mission, decision=OrderDecision.GRANTED)
+        .order_by("-decided_at", "-pk")
+        .first()
+    )
+
+
 def order_covers(mission: Mission) -> bool:
-    """Whether a granted mission order covers the mission as it is now (step 4)."""
-    return False
+    """Whether a granted mission order covers the mission as it is now: its latest
+    grant, whose snapshot (dates, destination, payer) still matches."""
+    if mission.status != MissionStatus.ORDER_GRANTED:
+        return False
+    order = _granted_order(mission)
+    return order is not None and order.snapshot_matches(mission)
 
 
 def mark_done(*, mission: Mission, user: User) -> Mission:
@@ -980,3 +1045,248 @@ def link_for(user: Any, thesis: Thesis, kind: str, raw: Any) -> Any | None:
         _deny(user, "mission_link", "unknown_link", thesis=thesis, kind=kind)
         return None
     return found
+
+
+# =========================================================================== orders
+
+ORDER_TEXTS = ("comment", "estimated_total")
+ORDER_SNAPSHOT_FIELDS = ("start_date", "end_date", "destination", "payer")
+DECIDER_ROLE = {Payer.ST.value: Role.INDUSTRIAL_TUTOR, Payer.LIRMM.value: Role.DIRECTOR}
+
+
+def _deciders(thesis: Thesis, payer: str, level: ConfidentialityLevel) -> list[User]:
+    """Active members who would decide an order of ``payer`` and read ``level``."""
+    role = DECIDER_ROLE[payer]
+    users = User.objects.filter(
+        pk__in=Membership.objects.active()
+        .filter(thesis=thesis, role=role)
+        .values_list("user_id", flat=True),
+        is_active=True,
+    )
+    return [
+        u
+        for u in users
+        if can(u, Action.VALIDATE_MISSION_ORDER, thesis) and can_access_level(u, thesis, level)
+    ]
+
+
+def _withdraw(order: MissionOrder) -> None:
+    order.decision = OrderDecision.WITHDRAWN.value
+    order.decided_at = timezone.now()
+    order.save()
+
+
+def _decided() -> ValidationError:
+    return ValidationError(_("This mission order is already decided."), code="decided")
+
+
+def request_order(*, mission: Mission, user: User, estimated_total: str) -> MissionOrder:
+    """The student asks the payer's person for a mission order; the estimate is
+    sealed at the mission's level, the dates, destination and payer are frozen."""
+    thesis = _fresh(mission.thesis)
+    _require(user, Action.TRAVEL_WRITE, thesis, "order_request")
+    _check_open(thesis)
+    fresh = Mission.objects.get(pk=mission.pk)
+    if fresh.payer not in ORDER_PAYERS:
+        raise ValidationError(_("No mission order for another body."), code="no_order")
+    if fresh.status == MissionStatus.ORDER_REQUESTED:
+        raise ValidationError(_("A mission order is already pending."), code="already_pending")
+    if fresh.status not in (MissionStatus.PLANNED, MissionStatus.ORDER_REFUSED):
+        raise _terminal()
+    try:
+        cents = amounts.parse(estimated_total)
+    except (TypeError, ValueError):
+        raise ValidationError(_("An amount in euros, such as 123,45."), code="amount") from None
+    level = ConfidentialityLevel(fresh.level)
+    if not _deciders(thesis, fresh.payer, level):
+        raise ValidationError(
+            _("Nobody active can decide for this payer and read the mission."), code="no_decider"
+        )
+    with vault.sealing(user=user, thesis=thesis, level=level, action=Action.TRAVEL_WRITE) as sealer:
+        locked = _locked_mission(fresh)
+        if locked.status not in (MissionStatus.PLANNED, MissionStatus.ORDER_REFUSED):
+            raise ValidationError(_("A mission order is already pending."), code="already_pending")
+        if locked.level != fresh.level or locked.payer != fresh.payer:
+            raise ValidationError(_("The mission changed meanwhile: try again."), code="stale")
+        order = MissionOrder(
+            thesis=locked.thesis,
+            mission=locked,
+            requested_by=user,
+            payer=locked.payer,
+            snapshot_start=locked.start_date,
+            snapshot_end=locked.end_date,
+            snapshot_destination=locked.destination,
+            created_by=user,
+        )
+        order.save(force_insert=True)
+        sealer.seal(order, "estimated_total", amounts.canonical(cents))
+        locked.status = MissionStatus.ORDER_REQUESTED.value
+        locked.save()
+        audit(
+            AuditAction.MISSION_ORDER_REQUESTED,
+            actor=user,
+            obj=order,
+            thesis=locked.thesis,
+            order_id=str(order.pk),
+            payer=order.payer,
+            start_date=order.snapshot_start.isoformat(),
+            end_date=order.snapshot_end.isoformat(),
+        )
+    return order
+
+
+def withdraw_order(*, order: MissionOrder, user: User) -> MissionOrder:
+    thesis = _fresh(order.thesis)
+    _require(user, Action.TRAVEL_WRITE, thesis, "order_withdraw")
+    _check_open(thesis)
+    with transaction.atomic():
+        _lock_thesis(thesis.pk)
+        locked = MissionOrder.objects.select_for_update().get(pk=order.pk)
+        if locked.decision != OrderDecision.PENDING:
+            raise _decided()
+        mission = Mission.objects.select_for_update().get(pk=locked.mission_id)
+        _withdraw(locked)
+        mission.status = MissionStatus.PLANNED.value
+        mission.save()
+        audit(
+            AuditAction.MISSION_ORDER_WITHDRAWN,
+            actor=user,
+            obj=locked,
+            thesis=mission.thesis,
+            order_id=str(locked.pk),
+        )
+    return locked
+
+
+def check_decider(user: Any, order: MissionOrder) -> MissionOrder:
+    """``user`` decides this order: VALIDATE_MISSION_ORDER, the payer's role (tutor
+    for ST, director for the LIRMM) and read access to the mission's level. Refused
+    (journaled) otherwise. Also called by the view BEFORE the second factor."""
+    thesis = _fresh(order.thesis)
+    _require(user, Action.VALIDATE_MISSION_ORDER, thesis, "order_decide")
+    fresh = MissionOrder.objects.select_related("mission").get(pk=order.pk)
+    if DECIDER_ROLE[fresh.payer] not in roles_of(user, thesis):
+        raise _deny(user, "order_decide", "wrong_payer", thesis=thesis)
+    if not can_access_level(user, thesis, ConfidentialityLevel(fresh.mission.level)):
+        raise _deny(user, "order_decide", "unreadable_level", thesis=thesis)
+    return fresh
+
+
+def decide_order(
+    *,
+    order: MissionOrder,
+    user: User,
+    decision: str,
+    recent_mfa: bool,
+    reason: str = "",
+    comment: str = "",
+) -> MissionOrder:
+    """The payer's person (tutor for ST, director for the LIRMM), who reads the
+    mission, grants or refuses (a reason from the closed list); second factor asked
+    AFTER the rights. A decided order is never decided again."""
+    thesis = _fresh(order.thesis)
+    fresh = check_decider(user, order)
+    level = ConfidentialityLevel(fresh.mission.level)
+    _require_mfa(recent_mfa)
+    _check_open(thesis)
+    if decision not in (OrderDecision.GRANTED, OrderDecision.REFUSED):
+        raise ValidationError(_("Grant or refuse."), code="decision")
+    if decision == OrderDecision.REFUSED and reason not in OrderRefusalReason.values:
+        raise ValidationError(_("Choose a reason for the refusal."), code="reason")
+    if decision == OrderDecision.GRANTED and reason:
+        raise ValidationError(_("A grant has no reason."), code="reason")
+    text = _clean_text(comment, "comment")
+    if fresh.decision != OrderDecision.PENDING:
+        raise _decided()
+    with vault.sealing(
+        user=user, thesis=thesis, level=level, action=Action.VALIDATE_MISSION_ORDER
+    ) as sealer:
+        _lock_thesis(thesis.pk)
+        locked = MissionOrder.objects.select_for_update().get(pk=fresh.pk)
+        if locked.decision != OrderDecision.PENDING:
+            raise _decided()
+        mission = Mission.objects.select_for_update().get(pk=locked.mission_id)
+        if mission.level != level.value:
+            raise ValidationError(_("The mission changed meanwhile: try again."), code="stale")
+        locked.decision = decision
+        locked.reason = reason if decision == OrderDecision.REFUSED else ""
+        locked.decided_by = user
+        locked.decided_at = timezone.now()
+        locked.save()
+        if text:
+            sealer.seal(locked, "comment", text)
+        granted = decision == OrderDecision.GRANTED
+        mission.status = (
+            MissionStatus.ORDER_GRANTED if granted else MissionStatus.ORDER_REFUSED
+        ).value
+        mission.save()
+        details: dict[str, Any] = {"order_id": str(locked.pk), "payer": locked.payer}
+        if not granted:
+            details["reason"] = locked.reason
+        audit(
+            AuditAction.MISSION_ORDER_GRANTED if granted else AuditAction.MISSION_ORDER_REFUSED,
+            actor=user,
+            obj=locked,
+            thesis=mission.thesis,
+            **details,
+        )
+    return locked
+
+
+@dataclass(frozen=True)
+class OrderView:
+    order: MissionOrder
+    estimate: Any  # cents, vault.RESTRICTED, or None
+    comment: Any  # str, vault.RESTRICTED, or ""
+
+
+def orders_of(user: Any, mission: Mission) -> list[OrderView]:
+    """The orders of a mission ``user`` sees, texts opened as their level allows."""
+    thesis = _fresh(mission.thesis)
+    visible = mission_for(user, thesis, mission.pk, "order_read")
+    orders = list(
+        MissionOrder.objects.filter(mission=visible).select_related("decided_by", "requested_by")
+    )
+    opened = vault.open_texts(
+        user, thesis, [(o, n) for o in orders for n in ORDER_TEXTS], action=Action.TRAVEL_READ
+    )
+    out = []
+    for o in orders:
+        raw = opened.get((o.pk, "estimated_total"))
+        estimate = amounts.from_canonical(raw) if isinstance(raw, str) else raw
+        out.append(OrderView(order=o, estimate=estimate, comment=opened.get((o.pk, "comment"), "")))
+    return out
+
+
+def pending_orders_for(user: Any, thesis: Thesis) -> list[MissionOrder]:
+    """The pending orders ``user`` decides (tutor: ST; director: LIRMM)."""
+    if not can(user, Action.VALIDATE_MISSION_ORDER, thesis):
+        return []
+    roles = roles_of(user, thesis)
+    payers = [payer for payer, role in DECIDER_ROLE.items() if role in roles]
+    return list(
+        MissionOrder.objects.filter(thesis=thesis, decision=OrderDecision.PENDING, payer__in=payers)
+        .select_related("mission")
+        .order_by("snapshot_start", "pk")
+    )
+
+
+def order_for(user: Any, thesis: Thesis, order_id: Any, operation: str) -> MissionOrder:
+    """An order of ``thesis`` whose mission ``user`` sees; refused like an unknown
+    one otherwise."""
+    _require_reader(user, thesis, operation)
+    try:
+        order = (
+            MissionOrder.objects.filter(
+                pk=order_id,
+                thesis=thesis,
+                mission__in=Mission.objects.visible_to(user, thesis),
+            )
+            .select_related("mission")
+            .first()
+        )
+    except (ValueError, ValidationError):
+        order = None
+    if order is None:
+        raise _deny(user, operation, "unknown_order", thesis=thesis)
+    return order

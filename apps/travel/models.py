@@ -4,8 +4,9 @@ travel policy of a thesis and its missions. See docs/modules/M07-deplacements.md
 from __future__ import annotations
 
 import uuid
-from typing import Any, ClassVar
+from typing import Any, ClassVar, TypeVar
 
+from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import F, Q
@@ -15,7 +16,17 @@ from apps.core.confidentiality import ConfidentialityLevel
 from apps.core.models import TimeStampedModel
 
 from .access import PresenceAccess, presence_access
-from .choices import Destination, Lodging, MissionStatus, Payer, PresenceKind, Side, Transport
+from .choices import (
+    Destination,
+    Lodging,
+    MissionStatus,
+    OrderDecision,
+    OrderRefusalReason,
+    Payer,
+    PresenceKind,
+    Side,
+    Transport,
+)
 
 MAX_GAP_ALERT_POINTS = 50
 MAX_LAB_DAYS_PER_MONTH = 23  # working days of the longest month
@@ -286,4 +297,124 @@ class Mission(TimeStampedModel):
             MissionStatus.DONE,
             MissionStatus.REIMBURSED,
             MissionStatus.CANCELLED,
+        )
+
+
+# --------------------------------------------------------------------------- orders
+
+
+class HistoryError(Exception):
+    """A decided mission order is never modified or deleted."""
+
+
+_M = TypeVar("_M", bound=models.Model)
+
+
+class _HistoryQuerySet(models.QuerySet[_M]):
+    def update(self, **kwargs: Any) -> int:
+        raise HistoryError("a history is never updated in bulk")
+
+    def delete(self) -> tuple[int, dict[str, int]]:
+        raise HistoryError("a history is never deleted")
+
+    def bulk_update(self, *args: Any, **kwargs: Any) -> int:
+        raise HistoryError("a history is never updated in bulk")
+
+
+ORDER_PAYERS = (Payer.ST.value, Payer.LIRMM.value)  # another body: no order here
+_DECIDED = ("GRANTED", "REFUSED")
+
+
+class MissionOrder(TimeStampedModel):
+    """A request of a mission order, decided once by the payer's person (granted,
+    refused) or withdrawn by the student; decided = history. Its snapshot is what
+    was granted: dates, destination, payer. Texts (comment, estimate) are sealed at
+    the mission's level (slots travel.MissionOrder.*)."""
+
+    Decision = OrderDecision
+    Reason = OrderRefusalReason
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    thesis = models.ForeignKey(
+        "accounts.Thesis", on_delete=models.PROTECT, related_name="+", editable=False
+    )
+    mission = models.ForeignKey(
+        Mission, on_delete=models.PROTECT, related_name="orders", editable=False
+    )
+    requested_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+", editable=False
+    )
+    payer = models.CharField(max_length=8, choices=Payer.choices, editable=False)
+    snapshot_start = models.DateField(editable=False)
+    snapshot_end = models.DateField(editable=False)
+    snapshot_destination = models.CharField(
+        max_length=16, choices=Destination.choices, editable=False
+    )
+    decision = models.CharField(
+        _("decision"), max_length=12, choices=OrderDecision.choices, default=OrderDecision.PENDING
+    )
+    reason = models.CharField(
+        _("reason"), max_length=24, choices=OrderRefusalReason.choices, blank=True, default=""
+    )
+    decided_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True, blank=True, related_name="+"
+    )
+    decided_at = models.DateTimeField(null=True, blank=True)
+
+    objects = _HistoryQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = _("mission order")
+        ordering: ClassVar[list[str]] = ["created_at", "pk"]
+        constraints: ClassVar[list[models.BaseConstraint]] = [
+            models.CheckConstraint(
+                condition=Q(decision__in=OrderDecision.values)
+                & Q(payer__in=ORDER_PAYERS)
+                & Q(snapshot_destination__in=Destination.values)
+                & (Q(reason="") | Q(reason__in=OrderRefusalReason.values)),
+                name="travel_order_choices",
+            ),
+            models.UniqueConstraint(
+                fields=["mission"], condition=Q(decision="PENDING"), name="travel_order_one_pending"
+            ),
+            models.CheckConstraint(
+                condition=(Q(decision="PENDING") & Q(decided_at__isnull=True))
+                | (~Q(decision="PENDING") & Q(decided_at__isnull=False)),
+                name="travel_order_decided_at",
+            ),
+            models.CheckConstraint(
+                condition=(Q(decision__in=_DECIDED) & Q(decided_by__isnull=False))
+                | (~Q(decision__in=_DECIDED) & Q(decided_by__isnull=True)),
+                name="travel_order_decided_by",
+            ),
+            models.CheckConstraint(
+                condition=Q(decided_by__isnull=True) | ~Q(decided_by=F("requested_by")),
+                name="travel_order_not_by_requester",
+            ),
+            models.CheckConstraint(
+                condition=(Q(decision="REFUSED") & ~Q(reason=""))
+                | (~Q(decision="REFUSED") & Q(reason="")),
+                name="travel_order_reason_iff_refused",
+            ),
+        ]
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        if not self._state.adding:
+            stored = MissionOrder.objects.filter(pk=self.pk).values_list("decision", flat=True)
+            if stored.first() != OrderDecision.PENDING:
+                raise HistoryError("a decided mission order is never modified")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args: Any, **kwargs: Any) -> tuple[int, dict[str, int]]:
+        raise HistoryError("a mission order is never deleted")
+
+    def __str__(self) -> str:
+        return f"mission order {self.pk}"
+
+    def snapshot_matches(self, mission: Mission) -> bool:
+        return (self.snapshot_start, self.snapshot_end, self.snapshot_destination, self.payer) == (
+            mission.start_date,
+            mission.end_date,
+            mission.destination,
+            mission.payer,
         )

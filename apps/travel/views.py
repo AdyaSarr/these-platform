@@ -39,18 +39,20 @@ from apps.objectives.years import year_count
 from apps.vault import services as vault
 from apps.vault.errors import ReauthenticationRequiredError
 
-from . import services
+from . import amounts, services
 from .access import PresenceAccess
-from .choices import Destination, ShownKind, Side, Transport
+from .choices import Destination, MissionStatus, OrderDecision, ShownKind, Side, Transport
 from .forms import (
     MissionForm,
     MissionLevelForm,
+    OrderDecisionForm,
+    OrderRequestForm,
     PresenceForm,
     RemindersForm,
     RulesForm,
     TargetForm,
 )
-from .models import Mission
+from .models import ORDER_PAYERS, Mission, MissionOrder
 
 # Legend of the month page, per view (access.py): a viewer never reads the name of
 # a kind they cannot see.
@@ -288,7 +290,20 @@ class RemindersView(_SettingsPost):
 
 # --------------------------------------------------------------------------- missions
 
-CONFLICTS = frozenset({"terminal", "not_returned", "order_required", "stale", "frozen"})
+CONFLICTS = frozenset(
+    {
+        "terminal",
+        "not_returned",
+        "order_required",
+        "stale",
+        "frozen",
+        "already_pending",
+        "decided",
+        "order_pending",
+        "no_decider",
+        "no_order",
+    }
+)
 
 
 def _status(exc: ValidationError) -> int:
@@ -476,6 +491,27 @@ class MissionView(_MissionMixin, View):
             "zrr": zrr,
             "writer": writer and not mission.is_closed,
             "level_form": MissionLevelForm(initial={"level": mission.level}) if writer else None,
+            "orders": [
+                {
+                    "order": view.order,
+                    "estimate": _amount(view.estimate),
+                    "comment": _shown(view.comment),
+                }
+                for view in services.orders_of(user, mission)
+            ],
+            "request_form": OrderRequestForm()
+            if writer
+            and mission.payer in ORDER_PAYERS
+            and mission.status in (MissionStatus.PLANNED, MissionStatus.ORDER_REFUSED)
+            else None,
+            "pending": next(
+                (o for o in mission.orders.all() if o.decision == OrderDecision.PENDING), None
+            ),
+            "decision_form": OrderDecisionForm()
+            if any(
+                o.mission_id == mission.pk for o in services.pending_orders_for(user, self.thesis)
+            )
+            else None,
             "error": error,
         }
         return render(self.request, "travel/mission.html", context, status=status)
@@ -584,3 +620,124 @@ class MissionDoneView(_MissionAction):
 
     def act(self, mission: Mission, user: User) -> None:
         services.mark_done(mission=mission, user=user)
+
+
+# --------------------------------------------------------------------------- orders
+
+
+@dataclass(frozen=True)
+class ShownAmount:
+    text: str
+    restricted: bool
+
+
+def _amount(value: Any) -> ShownAmount:
+    if value is vault.RESTRICTED:
+        return ShownAmount(text="", restricted=True)
+    return ShownAmount(text="" if value is None else amounts.display(value), restricted=False)
+
+
+def _mission_page(
+    view: View, request: HttpRequest, mission: Mission, status: int, error: str
+) -> HttpResponse:
+    page = MissionView()
+    page.request, page.thesis, page.kwargs = request, view.thesis, view.kwargs  # type: ignore[attr-defined]
+    return page._page(mission, status=status, error=error)
+
+
+class OrdersView(_Mixin, View):
+    """The decider's queue: the pending orders this user decides."""
+
+    required_action = Action.VALIDATE_MISSION_ORDER
+
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        orders = services.pending_orders_for(_user(request), self.thesis)
+        return render(request, "travel/orders.html", {"thesis": self.thesis, "orders": orders})
+
+
+class RequestOrderView(_MissionMixin, View):
+    required_action = Action.TRAVEL_WRITE
+    http_method_names: Sequence[str] = ("post",)
+
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponseBase:
+        mission = self._mission("order_request")
+        form = OrderRequestForm(request.POST)
+        if not form.is_valid():
+            return _mission_page(
+                self, request, mission, 400, _("An amount in euros, such as 123,45.")
+            )
+        try:
+            services.request_order(
+                mission=mission,
+                user=_user(request),
+                estimated_total=form.cleaned_data["estimated_total"],
+            )
+        except ValidationError as exc:
+            return _mission_page(self, request, mission, _status(exc), " ".join(exc.messages))
+        messages.success(request, _("Mission order requested."))
+        return redirect(self._mission_url(mission))
+
+
+class _OrderMixin(_Mixin):
+    kwargs: dict[str, Any]
+
+    def _order(self, operation: str) -> MissionOrder:
+        return services.order_for(
+            _user(self.request), self.thesis, self.kwargs["order_id"], operation
+        )
+
+
+class WithdrawOrderView(_OrderMixin, View):
+    required_action = Action.TRAVEL_WRITE
+    http_method_names: Sequence[str] = ("post",)
+
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponseBase:
+        order = self._order("order_withdraw")
+        try:
+            services.withdraw_order(order=order, user=_user(request))
+        except ValidationError as exc:
+            return _mission_page(self, request, order.mission, _status(exc), " ".join(exc.messages))
+        messages.success(request, _("Mission order withdrawn."))
+        return redirect(self._url("mission", mission_id=order.mission_id))
+
+
+class _DeciderGuard:
+    """Placed AFTER the thesis guard (which sets self.thesis) and BEFORE the second
+    factor: only the payer's person who reads the mission goes on (a director on an
+    ST order gets a 403, never a request for a second factor)."""
+
+    request: HttpRequest
+    kwargs: dict[str, Any]
+
+    def dispatch(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponseBase:
+        self.kwargs = kwargs
+        services.check_decider(_user(request), self._order("order_decide"))  # type: ignore[attr-defined]
+        response: HttpResponseBase = super().dispatch(request, *args, **kwargs)  # type: ignore[misc]
+        return response
+
+
+class DecideOrderView(_OrderMixin, _DeciderGuard, RecentAuthRequiredMixin, View):
+    required_action = Action.VALIDATE_MISSION_ORDER
+    http_method_names: Sequence[str] = ("post",)
+
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponseBase:
+        order = self._order("order_decide")
+        form = OrderDecisionForm(request.POST)
+        if not form.is_valid():
+            return _mission_page(self, request, order.mission, 400, _("Grant or refuse."))
+        data = form.cleaned_data
+        try:
+            services.decide_order(
+                order=order,
+                user=_user(request),
+                decision=data["decision"],
+                reason=data["reason"],
+                comment=data["comment"],
+                recent_mfa=authenticated_recently(request),
+            )
+        except ReauthenticationRequiredError:
+            return reauth_response(request, mfa=True)
+        except ValidationError as exc:
+            return _mission_page(self, request, order.mission, _status(exc), " ".join(exc.messages))
+        messages.success(request, _("Decision recorded."))
+        return redirect(self._url("mission", mission_id=order.mission_id))

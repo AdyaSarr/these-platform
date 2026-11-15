@@ -22,6 +22,32 @@
 </ul>
 <h2>{% translate "Purpose" %}</h2>
 <p>{% if texts.purpose.text or texts.purpose.restricted %}{% include "conferences/_text.html" with value=texts.purpose %}{% else %}<span class="muted">—</span>{% endif %}</p>
+<h2>{% translate "Mission order" %}</h2>
+{% if orders %}
+<table class="table">
+  <thead><tr><th scope="col">{% translate "Requested on" %}</th><th scope="col">{% translate "Estimate" %}</th><th scope="col">{% translate "Decision" %}</th><th scope="col">{% translate "Comment" %}</th></tr></thead>
+  <tbody>{% for row in orders %}<tr>
+    <td>{{ row.order.created_at|date:"d/m/Y" }}</td>
+    <td>{% if row.estimate.restricted %}<span class="restricted">{% translate "Restricted content" %}</span>{% else %}{{ row.estimate.text }}{% endif %}</td>
+    <td class="status">{{ row.order.get_decision_display }}{% if row.order.reason %} — {{ row.order.get_reason_display }}{% endif %}{% if row.order.decided_by %} ({{ row.order.decided_by.get_full_name|default:row.order.decided_by.email }}, {{ row.order.decided_at|date:"d/m/Y" }}){% endif %}</td>
+    <td>{% include "conferences/_text.html" with value=row.comment %}</td>
+  </tr>{% endfor %}</tbody>
+</table>
+{% elif mission.payer == "OTHER" %}<p class="muted">{% translate "Paid by another body: no mission order in the platform." %}</p>
+{% else %}<p class="muted">{% translate "No mission order requested yet." %}</p>{% endif %}
+{% if request_form %}
+<form class="stack" method="post" action="{% url 'travel:request_order' thesis_id=thesis.pk mission_id=mission.pk %}">{% csrf_token %}{% with form=request_form %}{% include "conferences/_form.html" %}{% endwith %}
+  <button type="submit">{% translate "Request the mission order" %}</button>
+  <span class="muted">{% translate "The dates, the destination and the payer are then frozen until the decision." %}</span></form>
+{% endif %}
+{% if pending and writer %}
+<form method="post" action="{% url 'travel:withdraw_order' thesis_id=thesis.pk order_id=pending.pk %}">{% csrf_token %}<button type="submit">{% translate "Withdraw the request" %}</button></form>
+{% endif %}
+{% if decision_form and pending %}
+<form class="stack" method="post" action="{% url 'travel:decide_order' thesis_id=thesis.pk order_id=pending.pk %}">{% csrf_token %}{% with form=decision_form %}{% include "conferences/_form.html" %}{% endwith %}
+  <button type="submit">{% translate "Record the decision" %}</button>
+  <span class="muted">{% translate "Asks for your second factor." %}</span></form>
+{% endif %}
 {% if writer %}
 <p class="actions"><a href="{% url 'travel:edit_mission' thesis_id=thesis.pk mission_id=mission.pk %}">{% translate "Edit" %}</a>
   <form method="post" action="{% url 'travel:mission_done' thesis_id=thesis.pk mission_id=mission.pk %}">{% csrf_token %}<button type="submit">{% translate "Mark as done" %}</button></form>

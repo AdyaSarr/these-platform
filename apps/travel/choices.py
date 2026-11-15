@@ -83,3 +83,19 @@ PRESENCE_OF_DESTINATION = {
     Destination.ROUSSET: PresenceKind.ROUSSET,
     Destination.CONFERENCE: PresenceKind.CONFERENCE,
 }
+
+
+class OrderDecision(models.TextChoices):
+    PENDING = "PENDING", pgettext_lazy("mission order", "Pending")
+    GRANTED = "GRANTED", pgettext_lazy("mission order", "Granted")
+    REFUSED = "REFUSED", pgettext_lazy("mission order", "Refused")
+    WITHDRAWN = "WITHDRAWN", pgettext_lazy("mission order", "Withdrawn")
+
+
+class OrderRefusalReason(models.TextChoices):
+    BUDGET_EXHAUSTED = "BUDGET_EXHAUSTED", _("Budget exhausted")
+    NOT_JUSTIFIED = "NOT_JUSTIFIED", _("Not justified")
+    MISSING_INFORMATION = "MISSING_INFORMATION", _("Missing information")
+    DATES_CONFLICT = "DATES_CONFLICT", _("Dates conflict")
+    WRONG_PAYER = "WRONG_PAYER", _("Wrong payer")
+    OTHER = "OTHER", _("Other reason")

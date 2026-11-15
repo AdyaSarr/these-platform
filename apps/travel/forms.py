@@ -10,7 +10,16 @@ from django.utils.translation import gettext_lazy as _
 
 from apps.core.confidentiality import ConfidentialityLevel
 
-from .choices import Destination, Lodging, Payer, PresenceKind, Side, Transport
+from .choices import (
+    Destination,
+    Lodging,
+    OrderDecision,
+    OrderRefusalReason,
+    Payer,
+    PresenceKind,
+    Side,
+    Transport,
+)
 from .models import (
     MAX_GAP_ALERT_POINTS,
     MAX_LAB_DAYS_PER_MONTH,
@@ -148,3 +157,33 @@ class MissionForm(forms.Form):
 
 class MissionLevelForm(forms.Form):
     level = forms.ChoiceField(label=_("Confidentiality"), choices=ConfidentialityLevel.choices)
+
+
+class OrderRequestForm(forms.Form):
+    estimated_total = forms.CharField(
+        label=_("Estimated total (euros)"),
+        max_length=20,
+        help_text=_("Sealed at the mission's level. For example 312,40."),
+    )
+
+
+class OrderDecisionForm(forms.Form):
+    decision = forms.ChoiceField(
+        label=_("Decision"),
+        choices=[
+            (OrderDecision.GRANTED.value, OrderDecision.GRANTED.label),
+            (OrderDecision.REFUSED.value, OrderDecision.REFUSED.label),
+        ],
+    )
+    reason = forms.ChoiceField(
+        label=_("Reason of a refusal"),
+        choices=[("", "—"), *OrderRefusalReason.choices],
+        required=False,
+    )
+    comment = forms.CharField(
+        label=_("Comment"),
+        required=False,
+        max_length=2000,
+        widget=forms.Textarea(attrs={"rows": 3}),
+        help_text=_("Sealed at the mission's level; never in the e-mails."),
+    )

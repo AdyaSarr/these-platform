@@ -99,9 +99,11 @@ def _world(team: SimpleNamespace, pattern: str) -> None:
             services.set_presence(
                 thesis=team.thesis, user=team.student, first=past, last=past, kind=kind
             )
-    # Missions elsewhere: removed (a test shortcut, the platform never deletes one),
-    # then the pattern's own.
-    Mission.objects.filter(thesis=team.thesis).exclude(destination="LIRMM").delete()
+    # Missions elsewhere: the previous world's are cancelled (never deleted: an order
+    # protects its mission, an order is history), then the pattern's own are planned.
+    for old in Mission.objects.filter(thesis=team.thesis).exclude(destination="LIRMM"):
+        if old.status not in ("CANCELLED", "DONE", "REIMBURSED"):
+            services.cancel_mission(mission=old, user=team.student)
     elsewhere: list[dict[str, Any]] = {
         "a": [
             {"destination": "ROUSSET", "payer": "ST", "start_date": D(2027, 1, 11)},

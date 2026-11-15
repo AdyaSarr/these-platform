@@ -10,7 +10,8 @@ from . import views
 
 app_name = "travel"
 
-M = "missions/<uuid:mission_id>/"
+MISSION = "missions/<uuid:mission_id>/"
+ORDER = "orders/<uuid:order_id>/"
 
 urlpatterns = [
     path("", views.CalendarView.as_view(), name="calendar"),
@@ -23,9 +24,13 @@ urlpatterns = [
     path("settings/reminders/", views.RemindersView.as_view(), name="reminders"),
     path("missions/", views.MissionsView.as_view(), name="missions"),
     path("missions/new/", views.NewMissionView.as_view(), name="new_mission"),
-    path(M, views.MissionView.as_view(), name="mission"),
-    path(M + "edit/", views.EditMissionView.as_view(), name="edit_mission"),
-    path(M + "level/", views.MissionLevelView.as_view(), name="mission_level"),
-    path(M + "cancel/", views.CancelMissionView.as_view(), name="cancel_mission"),
-    path(M + "done/", views.MissionDoneView.as_view(), name="mission_done"),
+    path(MISSION, views.MissionView.as_view(), name="mission"),
+    path(MISSION + "edit/", views.EditMissionView.as_view(), name="edit_mission"),
+    path(MISSION + "level/", views.MissionLevelView.as_view(), name="mission_level"),
+    path(MISSION + "cancel/", views.CancelMissionView.as_view(), name="cancel_mission"),
+    path(MISSION + "done/", views.MissionDoneView.as_view(), name="mission_done"),
+    path(MISSION + "order/", views.RequestOrderView.as_view(), name="request_order"),
+    path("orders/", views.OrdersView.as_view(), name="orders"),
+    path(ORDER + "decide/", views.DecideOrderView.as_view(), name="decide_order"),
+    path(ORDER + "withdraw/", views.WithdrawOrderView.as_view(), name="withdraw_order"),
 ]

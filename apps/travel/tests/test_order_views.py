@@ -57,6 +57,7 @@ def test_decide_view_checks_rights_before_the_second_factor() -> None:
     mro = views.DecideOrderView.__mro__
     assert (
         mro.index(ThesisPermissionRequiredMixin)
+        < mro.index(views._DeciderGuard)  # the payer's person, after self.thesis is set
         < mro.index(RecentAuthRequiredMixin)
         < mro.index(View)
     )
