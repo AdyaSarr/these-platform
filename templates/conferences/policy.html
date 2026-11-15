@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% translate "ST review period" %}{% endblock %}
+{% block content %}
+<p><a href="{% url 'conferences:deadlines' thesis_id=thesis.pk %}">{% translate "Conferences" %}</a></p>
+<h1>{% translate "ST review period" %}</h1>
+{% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
+<p>{% blocktranslate with days=days %}ST's approval is to be requested {{ days }} days before the paper deadline (dates in Paris).{% endblocktranslate %}</p>
+<p class="muted">{% translate "The collaboration contract (administrative file) sets this period; requests already made keep the period they were made with." %}
+  {% if contract %}{% translate "Collaboration contract:" %} {{ contract.get_status_display }}.{% endif %}</p>
+{% if form %}
+  <form class="stack" method="post" action="{% url 'conferences:policy_edit' thesis_id=thesis.pk %}">{% csrf_token %}{% include "conferences/_form.html" %}
+    <button type="submit">{% translate "Save" %}</button>
+    <span class="muted">{% translate "Asks for your second factor. The PhD student is told." %}</span></form>
+{% endif %}
+{% endblock %}

@@ -1,4 +1,4 @@
-{% extends "base.html" %}{% load i18n meetings_tags %}
+{% extends "base.html" %}{% load i18n meetings_tags conferences_tags %}
 {% block title %}{% translate "Objective" %}{% endblock %}
 {% block content %}
 <p><a href="{% url 'objectives:dashboard' thesis_id=thesis.pk %}?year={{ objective.year.number }}">{% translate "Objectives" %}</a></p>
@@ -59,6 +59,8 @@
 </section>
 
 {% linked_actions objective %}
+
+{% linked_submissions objective %}
 
 {% if can_comment %}
 <section aria-labelledby="comments-title">

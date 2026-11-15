@@ -1,0 +1,1 @@
+{% load i18n %}{# d = services.DeadlineDisplay: Paris time first, then the original zone. #}{{ d.paris.0|date:"SHORT_DATE_FORMAT" }} {{ d.paris.1|time:"H:i" }} ({% translate "Paris" %}) — <span class="muted">{{ d.local.0|date:"SHORT_DATE_FORMAT" }} {{ d.local.1|time:"H:i" }} {{ d.tz_name }}</span>

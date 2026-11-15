@@ -1,0 +1,8 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% if submission %}{% translate "Edit the submission" %}{% else %}{% translate "New submission" %}{% endif %}{% endblock %}
+{% block content %}
+<h1>{% if submission %}{% translate "Edit the submission" %}{% else %}{% translate "New submission" %}{% endif %}</h1>
+<p><a href="{% if submission %}{% url 'conferences:submission' thesis_id=thesis.pk submission_id=submission.pk %}{% else %}{% url 'conferences:submissions' thesis_id=thesis.pk %}{% endif %}">{% translate "Back" %}</a></p>
+<form class="stack" method="post">{% csrf_token %}{% include "conferences/_form.html" %}
+  <button type="submit">{% translate "Save" %}</button></form>
+{% endblock %}

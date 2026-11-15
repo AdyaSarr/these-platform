@@ -1,0 +1,23 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% translate "Edition" %}{% endblock %}
+{% block content %}
+<p><a href="{% url 'conferences:venue' thesis_id=thesis.pk venue_id=edition.venue_id %}">{{ edition.venue.acronym }}</a></p>
+<h1>{{ edition.venue.acronym }} {{ edition.year }}</h1>
+<p class="muted">{% if edition.location %}{{ edition.location }}{% endif %}{% if edition.event_start %} · {{ edition.event_start|date:"SHORT_DATE_FORMAT" }}{% if edition.event_end %} – {{ edition.event_end|date:"SHORT_DATE_FORMAT" }}{% endif %}{% endif %}</p>
+<section aria-labelledby="deadlines-title">
+  <h2 id="deadlines-title">{% translate "Deadlines" %}</h2>
+  {% if deadlines %}
+  <ul>
+    {% for d in deadlines %}
+      <li>{{ d.deadline.get_kind_display }} : {% include "conferences/_deadline.html" %}
+        {% if d.deadline.cancelled_at %}<span class="mark">{% translate "cancelled" %}</span>
+        {% elif can_write %}<form method="post" action="{% url 'conferences:cancel_deadline' thesis_id=thesis.pk deadline_id=d.deadline.pk %}">{% csrf_token %}<button type="submit">{% translate "Cancel" %}</button></form>{% endif %}</li>
+    {% endfor %}
+  </ul>
+  {% else %}<p class="muted">{% translate "No deadline yet." %}</p>{% endif %}
+  {% if deadline_form %}
+    <form class="stack" method="post">{% csrf_token %}{% include "conferences/_form.html" with form=deadline_form %}
+      <button type="submit">{% translate "Add the deadline" %}</button></form>
+  {% endif %}
+</section>
+{% endblock %}

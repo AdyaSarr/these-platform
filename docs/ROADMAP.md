@@ -12,7 +12,7 @@ critères d'acceptation de la fiche tous validés.
 | [x] | M4 — Objectifs et indicateurs | `modules/M04-objectifs.md` | M1 | janv. 2027 |
 | [x] | M5a — Réunions entre membres internes | `modules/M05-reunions.md` | M2, M4 | févr. 2027 |
 | [ ] | M5b — Invités, CSI, partie confidentielle de l'entretien CSI | `modules/M05-reunions.md` | M5a | févr. 2027 |
-| [ ] | M6 — Conférences et deadlines | `modules/M06-conferences.md` | M1 | févr. 2027 |
+| [x] | M6 — Conférences et soumissions | `modules/M06-conferences.md` | M1 | févr. 2027 |
 | | **MVP — mise en service avec les encadrants** | | M0–M6 | **mars 2027** |
 | [ ] | M7 — Déplacements et temps ST / LIRMM | `modules/M07-deplacements.md` | M1 | printemps 2027 |
 | [ ] | M8 — Rapports CSI et ANRT | `modules/M08-rapports.md` | M4, M5, M9 | avant mars 2028 |
@@ -27,6 +27,11 @@ Avant toute mise en production : checklist de `docs/DEPLOYMENT.md` entièrement 
 ## Plus tard
 
 Idées validées, sans module ni date pour l'instant.
+
+- **Synchronisation des échéances de conférences** (retirée de M6 le 2026-11-14) :
+  flux iCal IACR, données `sec-deadlines`. Appel réseau sortant avec délai et taille
+  max, validation stricte, jamais de YAML ; une saisie manuelle n'est jamais écrasée.
+  À décider avec l'hébergement validé (sortie réseau du serveur).
 
 - **Flux iCal personnel à jeton révocable** (après M5a ; retiré de M5 le
   2026-11-14) : URL secrète par utilisateur, ne contenant que type, date et lieu

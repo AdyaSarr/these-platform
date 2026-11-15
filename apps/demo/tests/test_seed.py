@@ -38,7 +38,7 @@ pytestmark = [pytest.mark.django_db(transaction=True), pytest.mark.without_vault
 SITE_ORIGIN = "http://testserver"
 # Fields that are in the future by design (end of a validity), or a planned
 # instant (a meeting's start, typed by a person), not a creation time.
-FUTURE_BY_DESIGN = {"expires_at", "active_until", "starts_at"}
+FUTURE_BY_DESIGN = {"expires_at", "active_until", "starts_at", "due_at"}
 
 
 @pytest.fixture
@@ -216,6 +216,27 @@ def test_meetings_past_and_upcoming(demo: scenario.SeedResult) -> None:
     # The tutor's meeting is INTERNAL_ST: the director sees it, its texts restricted.
     tutor_meeting = past.get(kind=Meeting.Kind.ST_TUTOR)
     assert meetings.meeting_detail(director, tutor_meeting).texts["title"] is RESTRICTED
+
+
+def test_conferences_and_submissions(demo: scenario.SeedResult) -> None:
+    from apps.conferences.models import Deadline, StApproval, Submission, Venue
+
+    thesis = _thesis()
+    statuses = sorted(Submission.objects.filter(thesis=thesis).values_list("status", flat=True))
+    assert statuses == ["ACCEPTED", "REJECTED", "ST_REQUESTED"]
+    pending = StApproval.objects.filter(thesis=thesis, decision="PENDING")
+    assert pending.count() == 1 and pending.get().request_due is not None
+    rejected = Submission.objects.get(thesis=thesis, status="REJECTED")
+    decisions = list(rejected.approvals.order_by("created_at").values_list("decision", "reason"))
+    assert decisions == [("REFUSED", "CHANGES_REQUESTED"), ("GRANTED", "")]
+    zones = set(Deadline.objects.filter(thesis=thesis).values_list("tz_name", flat=True))
+    assert {"AoE", "America/Los_Angeles"} <= zones
+    real = {"TCHES", "CHES", "CASCADE", "PQCRYPTO", "RWC", "EUROCRYPT", "CRYPTO", "ASIACRYPT",
+            "PKC", "ACNS", "DATE", "C2", "COSADE", "CARDIS"}  # fmt: skip
+    venues = Venue.objects.filter(thesis=thesis)
+    assert venues.count() == 4
+    assert not {v.acronym.upper() for v in venues} & real
+    assert all(v.url.endswith(".example.org/") for v in venues)
 
 
 # --------------------------------------------------------------------------- accounts

@@ -59,6 +59,11 @@ class Action(StrEnum):
     MEETING_READ = "MEETING_READ"
     MEETING_WRITE = "MEETING_WRITE"
     MEETING_ACKNOWLEDGE = "MEETING_ACKNOWLEDGE"  # read / approve minutes (attendees only)
+    # Conferences and submissions (M6). ST approval decisions: VALIDATE_PUBLICATION.
+    CONFERENCE_READ = "CONFERENCE_READ"
+    CONFERENCE_WRITE = "CONFERENCE_WRITE"
+    SUBMISSION_READ = "SUBMISSION_READ"
+    SUBMISSION_WRITE = "SUBMISSION_WRITE"
     # Documents (M2); also subject to can_access_level().
     DOCUMENT_READ = "DOCUMENT_READ"
     DOCUMENT_WRITE = "DOCUMENT_WRITE"
@@ -91,6 +96,8 @@ ROLE_ACTIONS: Mapping[Role, frozenset[Action]] = MappingProxyType(
                 _A.INVITE_MEMBER, _A.CHANGE_ROLE, _A.REMOVE_MEMBER, _A.EXTEND_MEMBERSHIP,
                 _A.OBJECTIVE_READ, _A.OBJECTIVE_WRITE, _A.OBJECTIVE_COMMENT,  # écrire
                 _A.MEETING_READ, _A.MEETING_WRITE, _A.MEETING_ACKNOWLEDGE,  # écrire
+                _A.CONFERENCE_READ, _A.CONFERENCE_WRITE,                # M6
+                _A.SUBMISSION_READ, _A.SUBMISSION_WRITE,                # M6
                 _A.DOCUMENT_READ, _A.DOCUMENT_WRITE, _A.DOCUMENT_COMMENT,  # écrire
                 _A.DOCUMENT_GRANT,                                      # + liste explicite
                 _A.ADMIN_FILE_READ, _A.ADMIN_FILE_WRITE, _A.CIFRE_FILE_READ,  # écrire
@@ -101,6 +108,7 @@ ROLE_ACTIONS: Mapping[Role, frozenset[Action]] = MappingProxyType(
                 _A.VIEW_THESIS, _A.VIEW_TEAM,
                 _A.OBJECTIVE_READ, _A.OBJECTIVE_COMMENT,                # commenter
                 _A.MEETING_READ, _A.MEETING_WRITE, _A.MEETING_ACKNOWLEDGE,  # écrire
+                _A.CONFERENCE_READ, _A.CONFERENCE_WRITE, _A.SUBMISSION_READ,  # M6
                 _A.DOCUMENT_READ, _A.DOCUMENT_COMMENT,                  # lire, commenter
                 _A.ADMIN_FILE_READ, _A.CIFRE_FILE_READ,                 # lire
                 _A.VALIDATE_OBJECTIVES, _A.VALIDATE_CSI, _A.VALIDATE_ANRT,  # objectifs, CSI, ANRT
@@ -111,6 +119,7 @@ ROLE_ACTIONS: Mapping[Role, frozenset[Action]] = MappingProxyType(
                 _A.VIEW_THESIS, _A.VIEW_TEAM,
                 _A.OBJECTIVE_READ, _A.OBJECTIVE_COMMENT,                # commenter
                 _A.MEETING_READ, _A.MEETING_WRITE, _A.MEETING_ACKNOWLEDGE,  # écrire
+                _A.CONFERENCE_READ, _A.CONFERENCE_WRITE, _A.SUBMISSION_READ,  # M6
                 _A.DOCUMENT_READ, _A.DOCUMENT_COMMENT,                  # lire, commenter
             }                                                       # admin : —
         ),
@@ -119,6 +128,7 @@ ROLE_ACTIONS: Mapping[Role, frozenset[Action]] = MappingProxyType(
                 _A.VIEW_THESIS, _A.VIEW_TEAM,
                 _A.OBJECTIVE_READ, _A.OBJECTIVE_COMMENT,                # commenter
                 _A.MEETING_READ, _A.MEETING_WRITE, _A.MEETING_ACKNOWLEDGE,  # écrire
+                _A.CONFERENCE_READ, _A.CONFERENCE_WRITE, _A.SUBMISSION_READ,  # M6
                 _A.DOCUMENT_READ, _A.DOCUMENT_COMMENT,                  # lire, commenter
                 _A.CIFRE_FILE_READ,                                     # partie CIFRE
                 _A.VALIDATE_ANRT, _A.VALIDATE_PUBLICATION,              # ANRT, publications

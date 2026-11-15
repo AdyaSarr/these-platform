@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-14 22:05+0100\n"
+"POT-Creation-Date: 2026-11-15 00:00+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -128,7 +128,7 @@ msgstr "Université"
 msgid "External"
 msgstr "Externe"
 
-#: apps/accounts/models.py:83
+#: apps/accounts/models.py:83 apps/conferences/models.py:71
 msgid "name"
 msgstr "nom"
 
@@ -181,8 +181,9 @@ msgid "planned end date"
 msgstr "date de fin prévue"
 
 #: apps/accounts/models.py:109 apps/admin_file/models.py:137
-#: apps/meetings/models.py:105 apps/meetings/models.py:284
-#: apps/objectives/models.py:133 apps/objectives/models.py:237
+#: apps/conferences/models.py:246 apps/meetings/models.py:105
+#: apps/meetings/models.py:284 apps/objectives/models.py:133
+#: apps/objectives/models.py:237
 msgid "status"
 msgstr "statut"
 
@@ -220,12 +221,14 @@ msgid "Queued"
 msgstr "En file d'attente"
 
 #: apps/accounts/models.py:223 apps/admin_file/models.py:286
-#: apps/meetings/models.py:343 apps/objectives/models.py:356
+#: apps/conferences/models.py:520 apps/meetings/models.py:343
+#: apps/objectives/models.py:356
 msgid "Sent"
 msgstr "Envoyé"
 
 #: apps/accounts/models.py:224 apps/admin_file/models.py:287
-#: apps/meetings/models.py:344 apps/objectives/models.py:357
+#: apps/conferences/models.py:521 apps/meetings/models.py:344
+#: apps/objectives/models.py:357
 msgid "Failed"
 msgstr "Échec"
 
@@ -250,6 +253,7 @@ msgid "Expired"
 msgstr "Expirée"
 
 #: apps/accounts/models.py:232 apps/admin_file/models.py:386
+#: apps/conferences/models.py:205
 msgid "Accepted"
 msgstr "Acceptée"
 
@@ -406,12 +410,18 @@ msgstr "Objectifs"
 msgid "Meetings"
 msgstr "Réunions"
 
-#: apps/accounts/views.py:54 templates/vault/document_list.html:2
-#: templates/vault/document_list.html:4
+#: apps/accounts/views.py:54 templates/conferences/deadlines.html:2
+#: templates/conferences/deadlines.html:4 templates/conferences/policy.html:4
+#: templates/conferences/submissions.html:5 templates/conferences/venue.html:4
+msgid "Conferences"
+msgstr "Conférences"
+
+#: apps/accounts/views.py:61 templates/conferences/submission.html:42
+#: templates/vault/document_list.html:2 templates/vault/document_list.html:4
 msgid "Documents"
 msgstr "Documents"
 
-#: apps/accounts/views.py:63 apps/admin_file/services.py:278
+#: apps/accounts/views.py:70 apps/admin_file/services.py:278
 #: templates/admin_file/file.html:2 templates/admin_file/file.html:4
 #: templates/admin_file/item_page.html:4 templates/admin_file/new_item.html:5
 msgid "Administrative file"
@@ -524,13 +534,16 @@ msgstr "Nouveau fichier"
 msgid "Or an existing document"
 msgstr "Ou un document existant"
 
-#: apps/admin_file/forms.py:41 apps/meetings/forms.py:100
+#: apps/admin_file/forms.py:41 apps/conferences/forms.py:148
+#: apps/conferences/forms.py:179 apps/meetings/forms.py:100
 #: apps/meetings/forms.py:133 apps/objectives/forms.py:60
 #: apps/objectives/forms.py:97 apps/vault/forms.py:34 apps/vault/forms.py:47
-#: templates/meetings/detail.html:12 templates/meetings/detail.html:181
-#: templates/meetings/list.html:27 templates/objectives/detail.html:13
-#: templates/objectives/detail.html:74 templates/vault/document_detail.html:6
-#: templates/vault/document_list.html:9
+#: templates/conferences/submission.html:11
+#: templates/conferences/submission.html:118
+#: templates/conferences/submissions.html:9 templates/meetings/detail.html:12
+#: templates/meetings/detail.html:181 templates/meetings/list.html:27
+#: templates/objectives/detail.html:13 templates/objectives/detail.html:76
+#: templates/vault/document_detail.html:6 templates/vault/document_list.html:9
 msgid "Confidentiality"
 msgstr "Confidentialité"
 
@@ -544,7 +557,9 @@ msgid "Reason"
 msgstr "Motif"
 
 #: apps/admin_file/forms.py:71 apps/admin_file/forms.py:101
-#: apps/objectives/forms.py:141 templates/objectives/_comments.html:19
+#: apps/conferences/forms.py:243 apps/objectives/forms.py:141
+#: templates/conferences/submission.html:67
+#: templates/objectives/_comments.html:19
 msgid "Comment"
 msgstr "Commentaire"
 
@@ -600,7 +615,7 @@ msgstr "Académique"
 msgid "To do"
 msgstr "À faire"
 
-#: apps/admin_file/models.py:54
+#: apps/admin_file/models.py:54 apps/conferences/models.py:204
 msgid "Submitted"
 msgstr "Déposée"
 
@@ -608,7 +623,7 @@ msgstr "Déposée"
 msgid "Validated"
 msgstr "Validée"
 
-#: apps/admin_file/models.py:56
+#: apps/admin_file/models.py:56 apps/conferences/models.py:206
 msgid "Rejected"
 msgstr "Refusée"
 
@@ -629,6 +644,7 @@ msgid "Amendment"
 msgstr "Avenant"
 
 #: apps/admin_file/models.py:67 apps/admin_file/models.py:80
+#: apps/conferences/models.py:353 apps/conferences/models.py:451
 #: apps/meetings/models.py:64 apps/objectives/models.py:93
 msgid "Other"
 msgstr "Autre"
@@ -707,6 +723,7 @@ msgid "Overdue"
 msgstr "En retard"
 
 #: apps/admin_file/models.py:285 apps/admin_file/models.py:385
+#: apps/conferences/models.py:342 apps/conferences/models.py:519
 #: apps/meetings/models.py:342 apps/objectives/models.py:355
 msgid "Pending"
 msgstr "En attente"
@@ -727,11 +744,12 @@ msgstr "réouverture"
 msgid "reopenings"
 msgstr "réouvertures"
 
-#: apps/admin_file/models.py:387
+#: apps/admin_file/models.py:387 apps/conferences/models.py:344
 msgid "Refused"
 msgstr "Refusée"
 
-#: apps/admin_file/models.py:388
+#: apps/admin_file/models.py:388 apps/conferences/models.py:207
+#: apps/conferences/models.py:345
 msgid "Withdrawn"
 msgstr "Retirée"
 
@@ -844,7 +862,7 @@ msgstr "L'échéance ne peut pas dépasser la fin prévue de la thèse."
 msgid "A mandatory item of the catalogue keeps a due date."
 msgstr "Une pièce obligatoire du catalogue garde une échéance."
 
-#: apps/admin_file/services.py:926
+#: apps/admin_file/services.py:926 apps/conferences/services.py:1049
 msgid "No industrial tutor in the team: invite them first."
 msgstr ""
 "Aucun·e tuteur·rice industriel·le dans l'équipe : invitez-le·la d'abord."
@@ -897,8 +915,8 @@ msgstr ""
 msgid "The item has changed, reload the page."
 msgstr "La pièce a changé, rechargez la page."
 
-#: apps/admin_file/views.py:220 apps/meetings/views.py:454
-#: apps/objectives/views.py:344
+#: apps/admin_file/views.py:220 apps/conferences/views.py:608
+#: apps/meetings/views.py:454 apps/objectives/views.py:344
 msgid "Saved."
 msgstr "Enregistré."
 
@@ -946,6 +964,649 @@ msgstr "Pièce rouverte."
 msgid "Item added."
 msgstr "Pièce ajoutée."
 
+#: apps/conferences/forms.py:33
+msgid ""
+"Public information, stored in clear text: never a title or a detail of your "
+"work."
+msgstr ""
+"Information publique, stockée en clair : jamais un titre ni un détail de vos "
+"travaux."
+
+#: apps/conferences/forms.py:35
+msgid "Sealed at the submission's level."
+msgstr "Scellé au niveau de la soumission."
+
+#: apps/conferences/forms.py:88
+msgid "Unknown target."
+msgstr "Cible inconnue."
+
+#: apps/conferences/forms.py:92 apps/conferences/forms.py:106
+#: apps/meetings/forms.py:69 apps/meetings/forms.py:214
+#: templates/conferences/deadlines.html:14 templates/meetings/list.html:17
+#: templates/meetings/list.html:27 templates/vault/document_detail.html:10
+msgid "Type"
+msgstr "Type"
+
+#: apps/conferences/forms.py:93
+msgid "Acronym"
+msgstr "Sigle"
+
+#: apps/conferences/forms.py:94 templates/accounts/team.html:11
+msgid "Name"
+msgstr "Nom"
+
+#: apps/conferences/forms.py:95
+msgid "Website (https)"
+msgstr "Site web (https)"
+
+#: apps/conferences/forms.py:99
+msgid "Year"
+msgstr "Année"
+
+#: apps/conferences/forms.py:100 apps/meetings/forms.py:88
+#: templates/meetings/list.html:27
+msgid "Place"
+msgstr "Lieu"
+
+#: apps/conferences/forms.py:101
+msgid "First day"
+msgstr "Premier jour"
+
+#: apps/conferences/forms.py:102
+msgid "Last day"
+msgstr "Dernier jour"
+
+#: apps/conferences/forms.py:107
+msgid "Date (in the deadline's time zone)"
+msgstr "Date (dans le fuseau de l'échéance)"
+
+#: apps/conferences/forms.py:109
+msgid "Time (in the deadline's time zone)"
+msgstr "Heure (dans le fuseau de l'échéance)"
+
+#: apps/conferences/forms.py:115
+msgid "Time zone"
+msgstr "Fuseau horaire"
+
+#: apps/conferences/forms.py:118
+msgid "AoE: Anywhere on Earth (UTC-12), as most calls for papers say."
+msgstr ""
+"AoE : Anywhere on Earth (UTC-12), comme la plupart des appels à soumission."
+
+#: apps/conferences/forms.py:125
+msgid "Conference edition or journal"
+msgstr "Édition de conférence ou revue"
+
+#: apps/conferences/forms.py:126 apps/meetings/forms.py:77
+#: apps/objectives/forms.py:41 apps/vault/forms.py:33
+#: templates/conferences/submissions.html:9 templates/meetings/list.html:27
+#: templates/objectives/dashboard.html:74 templates/vault/document_list.html:9
+msgid "Title"
+msgstr "Titre"
+
+#: apps/conferences/forms.py:128 apps/conferences/models.py:131
+#: templates/conferences/submission.html:28
+msgid "Abstract"
+msgstr "Résumé"
+
+#: apps/conferences/forms.py:131 templates/conferences/submission.html:31
+msgid "External co-authors"
+msgstr "Co-auteurs externes"
+
+#: apps/conferences/forms.py:135
+msgid "Names only, one per line."
+msgstr "Noms seulement, un par ligne."
+
+#: apps/conferences/forms.py:138 templates/conferences/submission.html:32
+msgid "Notes"
+msgstr "Notes"
+
+#: apps/conferences/forms.py:140 apps/meetings/forms.py:174
+msgid "Linked objective"
+msgstr "Objectif lié"
+
+#: apps/conferences/forms.py:142 templates/conferences/submission.html:30
+msgid "Internal co-authors"
+msgstr "Co-auteurs internes"
+
+#: apps/conferences/forms.py:145
+msgid "Each co-author must be able to read the chosen level."
+msgstr "Chaque co-auteur doit pouvoir lire le niveau choisi."
+
+#: apps/conferences/forms.py:150
+msgid ""
+"ST work (the default) must be readable by the industrial tutor: Public, "
+"Internal ST or Confidential."
+msgstr ""
+"Des travaux ST (par défaut) doivent être lisibles par le tuteur industriel : "
+"Public, Interne ST ou Confidentiel."
+
+#: apps/conferences/forms.py:187 apps/meetings/forms.py:205
+msgid "Document of the vault"
+msgstr "Document du coffre"
+
+#: apps/conferences/forms.py:195 templates/vault/document_detail.html:10
+#: templates/vault/document_list.html:9
+msgid "Version"
+msgstr "Version"
+
+#: apps/conferences/forms.py:213
+msgid "For"
+msgstr "Pour"
+
+#: apps/conferences/forms.py:218
+msgid "New status"
+msgstr "Nouveau statut"
+
+#: apps/conferences/forms.py:228
+msgid "Platform"
+msgstr "Plateforme"
+
+#: apps/conferences/forms.py:229
+msgid "Posted on"
+msgstr "Déposée le"
+
+#: apps/conferences/forms.py:231
+msgid "Public address (https)"
+msgstr "Adresse publique (https)"
+
+#: apps/conferences/forms.py:237 apps/meetings/forms.py:166
+#: templates/meetings/register.html:12
+msgid "Decision"
+msgstr "Décision"
+
+#: apps/conferences/forms.py:237
+msgid "Grant"
+msgstr "Accorder"
+
+#: apps/conferences/forms.py:237
+msgid "Refuse"
+msgstr "Refuser"
+
+#: apps/conferences/forms.py:240
+msgid "Reason of a refusal"
+msgstr "Motif d'un refus"
+
+#: apps/conferences/forms.py:252
+msgid "New conference edition or journal"
+msgstr "Nouvelle édition de conférence ou revue"
+
+#: apps/conferences/forms.py:265 apps/conferences/models.py:182
+msgid "ST review period (days)"
+msgstr "Délai de relecture ST (jours)"
+
+#: apps/conferences/models.py:57
+msgid "Conference"
+msgstr "Conférence"
+
+#: apps/conferences/models.py:58
+msgid "Workshop"
+msgstr "Atelier"
+
+#: apps/conferences/models.py:59
+msgid "Journal"
+msgstr "Revue"
+
+#: apps/conferences/models.py:69 apps/conferences/models.py:152
+#: apps/meetings/models.py:91 apps/vault/models.py:272
+msgid "type"
+msgstr "type"
+
+#: apps/conferences/models.py:70
+msgid "acronym"
+msgstr "sigle"
+
+#: apps/conferences/models.py:72
+msgid "website"
+msgstr "site web"
+
+#: apps/conferences/models.py:75
+msgid "venue"
+msgstr "conférence ou revue"
+
+#: apps/conferences/models.py:105 apps/objectives/models.py:54
+#: apps/objectives/models.py:127
+msgid "year"
+msgstr "année"
+
+#: apps/conferences/models.py:106 apps/meetings/models.py:97
+msgid "place"
+msgstr "lieu"
+
+#: apps/conferences/models.py:107
+msgid "first day"
+msgstr "premier jour"
+
+#: apps/conferences/models.py:108
+msgid "last day"
+msgstr "dernier jour"
+
+#: apps/conferences/models.py:111
+msgid "edition"
+msgstr "édition"
+
+#: apps/conferences/models.py:132
+msgid "Paper"
+msgstr "Article"
+
+#: apps/conferences/models.py:133
+msgid "Rebuttal"
+msgstr "Réponse aux relecteurs"
+
+#: apps/conferences/models.py:134
+msgid "Notification"
+msgstr "Notification"
+
+#: apps/conferences/models.py:135 apps/conferences/models.py:337
+msgid "Final version"
+msgstr "Version finale"
+
+#: apps/conferences/models.py:136
+msgid "Registration"
+msgstr "Inscription"
+
+#: apps/conferences/models.py:153
+msgid "due (UTC)"
+msgstr "échéance (UTC)"
+
+#: apps/conferences/models.py:154
+msgid "time zone"
+msgstr "fuseau horaire"
+
+#: apps/conferences/models.py:158
+msgid "deadline"
+msgstr "échéance"
+
+#: apps/conferences/models.py:185
+msgid "publication policy"
+msgstr "règle de publication"
+
+#: apps/conferences/models.py:201
+msgid "In preparation"
+msgstr "En préparation"
+
+#: apps/conferences/models.py:202 apps/conferences/models.py:505
+msgid "ST approval requested"
+msgstr "Accord ST demandé"
+
+#: apps/conferences/models.py:203
+msgid "ST approval granted"
+msgstr "Accord ST obtenu"
+
+#: apps/conferences/models.py:208
+msgid "Published"
+msgstr "Publié"
+
+#: apps/conferences/models.py:240 apps/meetings/models.py:99
+#: apps/objectives/models.py:137 apps/objectives/models.py:236
+#: apps/vault/models.py:221
+msgid "confidentiality"
+msgstr "confidentialité"
+
+#: apps/conferences/models.py:248
+msgid "concerns ST work"
+msgstr "concerne des travaux ST"
+
+#: apps/conferences/models.py:262
+msgid "submission"
+msgstr "soumission"
+
+#: apps/conferences/models.py:302
+msgid "internal co-author"
+msgstr "co-auteur interne"
+
+#: apps/conferences/models.py:321
+msgid "submission document"
+msgstr "document de la soumission"
+
+#: apps/conferences/models.py:336 templates/conferences/submission.html:2
+msgid "Submission"
+msgstr "Soumission"
+
+#: apps/conferences/models.py:338
+msgid "Preprint"
+msgstr "Prépublication"
+
+#: apps/conferences/models.py:343
+msgid "Granted"
+msgstr "Accordé"
+
+#: apps/conferences/models.py:349
+msgid "A patent must be filed first"
+msgstr "Un brevet doit d'abord être déposé"
+
+#: apps/conferences/models.py:350
+msgid "Confidential information"
+msgstr "Information confidentielle"
+
+#: apps/conferences/models.py:351
+msgid "ST results not cleared"
+msgstr "Résultats ST non libérés"
+
+#: apps/conferences/models.py:352
+msgid "Changes requested"
+msgstr "Modifications demandées"
+
+#: apps/conferences/models.py:395 templates/conferences/submission.html:59
+msgid "ST publication approval"
+msgstr "Accord de publication ST"
+
+#: apps/conferences/models.py:448
+msgid "IACR ePrint"
+msgstr "IACR ePrint"
+
+#: apps/conferences/models.py:449
+msgid "arXiv"
+msgstr "arXiv"
+
+#: apps/conferences/models.py:450
+msgid "HAL"
+msgstr "HAL"
+
+#: apps/conferences/models.py:480
+msgid "preprint"
+msgstr "prépublication"
+
+#: apps/conferences/models.py:502
+msgid "Deadline reminder"
+msgstr "Rappel d'échéance"
+
+#: apps/conferences/models.py:503
+msgid "ST approval request due"
+msgstr "Date limite de demande d'accord ST"
+
+#: apps/conferences/models.py:504
+msgid "ST approval awaiting a decision"
+msgstr "Accord ST en attente de décision"
+
+#: apps/conferences/models.py:506
+msgid "ST approval decided"
+msgstr "Accord ST décidé"
+
+#: apps/conferences/models.py:507
+msgid "ST review period changed"
+msgstr "Délai de relecture ST modifié"
+
+#: apps/conferences/models.py:511
+msgid "Event"
+msgstr "Événement"
+
+#: apps/conferences/models.py:522 apps/meetings/models.py:345
+msgid "Not sent: no longer a member"
+msgstr "Non envoyé : ne fait plus partie de la thèse"
+
+#: apps/conferences/models.py:552
+msgid "conference notification"
+msgstr "notification de conférence"
+
+#: apps/conferences/services.py:112 apps/meetings/services.py:105
+#: apps/objectives/services.py:153
+msgid "This text is invalid."
+msgstr "Ce texte n'est pas valide."
+
+#: apps/conferences/services.py:115 apps/meetings/services.py:108
+#: apps/objectives/services.py:156
+msgid "The text contains a control character."
+msgstr "Le texte contient un caractère de contrôle."
+
+#: apps/conferences/services.py:118 apps/meetings/services.py:111
+#: apps/objectives/services.py:159
+#, python-format
+msgid "Between %(min)d and %(max)d characters."
+msgstr "Entre %(min)d et %(max)d caractères."
+
+#: apps/conferences/services.py:127
+msgid "One line only."
+msgstr "Une seule ligne."
+
+#: apps/conferences/services.py:137
+msgid "The address must start with https://."
+msgstr "L'adresse doit commencer par https://."
+
+#: apps/conferences/services.py:143 apps/meetings/services.py:135
+msgid "Unknown confidentiality level."
+msgstr "Niveau de confidentialité inconnu."
+
+#: apps/conferences/services.py:150
+msgid "A submission on ST work must be readable by the industrial tutor."
+msgstr ""
+"Une soumission sur des travaux ST doit être lisible par le tuteur industriel."
+
+#: apps/conferences/services.py:163
+msgid "A co-author must be an active member of the supervision team."
+msgstr "Un co-auteur doit être un membre actif de l'équipe d'encadrement."
+
+#: apps/conferences/services.py:168
+msgid "A co-author could not read this confidentiality level."
+msgstr "Un co-auteur ne pourrait pas lire ce niveau de confidentialité."
+
+#: apps/conferences/services.py:175
+msgid "This venue belongs to another thesis."
+msgstr "Cette conférence appartient à une autre thèse."
+
+#: apps/conferences/services.py:178 apps/conferences/services.py:347
+msgid "A journal has no edition."
+msgstr "Une revue n'a pas d'édition."
+
+#: apps/conferences/services.py:181
+msgid "Choose an edition of this conference."
+msgstr "Choisissez une édition de cette conférence."
+
+#: apps/conferences/services.py:186 apps/meetings/services.py:204
+msgid "This objective belongs to another thesis."
+msgstr "Cet objectif appartient à une autre thèse."
+
+#: apps/conferences/services.py:229
+msgid "The thesis is finished: its submissions are frozen."
+msgstr "La thèse est terminée : ses soumissions sont figées."
+
+#: apps/conferences/services.py:254
+msgid "This change of status is not possible now."
+msgstr "Ce changement de statut n'est pas possible maintenant."
+
+#: apps/conferences/services.py:271 apps/conferences/services.py:368
+msgid "Unknown type."
+msgstr "Type inconnu."
+
+#: apps/conferences/services.py:278 apps/conferences/services.py:311
+msgid "This venue already exists."
+msgstr "Cette conférence ou revue existe déjà."
+
+#: apps/conferences/services.py:319
+msgid "A year between 2000 and 2100."
+msgstr "Une année entre 2000 et 2100."
+
+#: apps/conferences/services.py:323 apps/core/timezones.py:52
+#: apps/meetings/services.py:210 apps/meetings/timing.py:61
+#: apps/objectives/services.py:176
+msgid "A date is required."
+msgstr "Une date est obligatoire."
+
+#: apps/conferences/services.py:325
+msgid "The event ends before it starts."
+msgstr "L'événement finit avant de commencer."
+
+#: apps/conferences/services.py:352
+msgid "This edition already exists."
+msgstr "Cette édition existe déjà."
+
+#: apps/conferences/services.py:398 apps/conferences/services.py:422
+msgid "This deadline was cancelled."
+msgstr "Cette échéance a été annulée."
+
+#: apps/conferences/services.py:472
+#, python-format
+msgid "Between 0 and %(max)d days."
+msgstr "Entre 0 et %(max)d jours."
+
+#: apps/conferences/services.py:781 apps/conferences/services.py:1283
+msgid "This submission is closed."
+msgstr "Cette soumission est close."
+
+#: apps/conferences/services.py:790
+msgid ""
+"ST's approval was requested for this target: submit elsewhere instead (a new "
+"submission, a new approval)."
+msgstr ""
+"L'accord de ST a été demandé pour cette cible : soumettez plutôt ailleurs "
+"(une nouvelle soumission, un nouvel accord)."
+
+#: apps/conferences/services.py:809 apps/conferences/services.py:863
+#: apps/conferences/services.py:1128 apps/conferences/services.py:1293
+msgid "The submission changed meanwhile: try again."
+msgstr "La soumission a été modifiée entre-temps : recommencez."
+
+#: apps/conferences/services.py:906
+msgid "An ST approval is pending: decide it first."
+msgstr "Un accord ST est en attente : décidez-le d'abord."
+
+#: apps/conferences/services.py:928 apps/meetings/services.py:1217
+msgid "This document is already linked."
+msgstr "Ce document est déjà lié."
+
+#: apps/conferences/services.py:950 apps/meetings/services.py:1236
+msgid "This document is no longer linked."
+msgstr "Ce document n'est plus lié."
+
+#: apps/conferences/services.py:969
+msgid "Choose a version of a document linked to this submission."
+msgstr "Choisissez une version d'un document lié à cette soumission."
+
+#: apps/conferences/services.py:987
+msgid "ST's approval of this exact version is required first."
+msgstr "L'accord de ST sur cette version exacte est d'abord nécessaire."
+
+#: apps/conferences/services.py:1038
+msgid "Unknown purpose."
+msgstr "Objet inconnu."
+
+#: apps/conferences/services.py:1042
+msgid "This submission does not concern ST work: no approval is needed."
+msgstr ""
+"Cette soumission ne concerne pas des travaux ST : aucun accord n'est "
+"nécessaire."
+
+#: apps/conferences/services.py:1054
+msgid "The industrial tutor cannot read this document: change its level first."
+msgstr ""
+"Le tuteur industriel ne peut pas lire ce document : changez d'abord son "
+"niveau."
+
+#: apps/conferences/services.py:1064
+msgid "A request is already pending."
+msgstr "Une demande est déjà en attente."
+
+#: apps/conferences/services.py:1114
+msgid "Grant or refuse."
+msgstr "Accordez ou refusez."
+
+#: apps/conferences/services.py:1116
+msgid "A refusal needs its reason."
+msgstr "Un refus a besoin de son motif."
+
+#: apps/conferences/services.py:1118
+msgid "A grant has no refusal reason."
+msgstr "Un accord n'a pas de motif de refus."
+
+#: apps/conferences/services.py:1126 apps/conferences/services.py:1168
+msgid "This request was already decided."
+msgstr "Cette demande a déjà été décidée."
+
+#: apps/conferences/services.py:1215
+msgid "The document has a newer version than the one ST approved."
+msgstr "Le document a une version plus récente que celle que ST a accordée."
+
+#: apps/conferences/services.py:1273
+msgid "Unknown platform."
+msgstr "Plateforme inconnue."
+
+#: apps/conferences/services.py:1280
+msgid "The date of a preprint is today or earlier."
+msgstr "La date d'une prépublication est aujourd'hui ou avant."
+
+#: apps/conferences/views.py:127 apps/meetings/views.py:121
+#: templates/conferences/_text.html:1 templates/meetings/_text.html:1
+#: templates/objectives/_text.html:1
+msgid "Restricted content"
+msgstr "Contenu restreint"
+
+#: apps/conferences/views.py:153 apps/meetings/forms.py:196
+msgid "Unknown objective."
+msgstr "Objectif inconnu."
+
+#: apps/conferences/views.py:229
+msgid "Venue created."
+msgstr "Conférence ou revue créée."
+
+#: apps/conferences/views.py:255
+msgid "Venue saved."
+msgstr "Conférence ou revue enregistrée."
+
+#: apps/conferences/views.py:304
+msgid "Edition created."
+msgstr "Édition créée."
+
+#: apps/conferences/views.py:325
+msgid "Deadline added."
+msgstr "Échéance ajoutée."
+
+#: apps/conferences/views.py:400
+msgid "ST review period saved."
+msgstr "Délai de relecture ST enregistré."
+
+#: apps/conferences/views.py:467
+msgid "Submission created."
+msgstr "Soumission créée."
+
+#: apps/conferences/views.py:526
+msgid "Submission saved."
+msgstr "Soumission enregistrée."
+
+#: apps/conferences/views.py:651 apps/meetings/views.py:625
+msgid "Document linked."
+msgstr "Document lié."
+
+#: apps/conferences/views.py:662 apps/meetings/views.py:636
+msgid "Document unlinked."
+msgstr "Document délié."
+
+#: apps/conferences/views.py:675
+msgid "ST approval requested."
+msgstr "Accord ST demandé."
+
+#: apps/conferences/views.py:687
+msgid "Request withdrawn."
+msgstr "Demande retirée."
+
+#: apps/conferences/views.py:698 apps/meetings/views.py:569
+msgid "Decision recorded."
+msgstr "Décision enregistrée."
+
+#: apps/conferences/views.py:716
+msgid "Status changed."
+msgstr "Statut modifié."
+
+#: apps/conferences/views.py:728
+msgid "Preprint recorded."
+msgstr "Prépublication enregistrée."
+
+#: apps/conferences/views.py:738 apps/meetings/views.py:494
+#: apps/objectives/views.py:413
+msgid "Confidentiality changed."
+msgstr "Confidentialité modifiée."
+
+#: apps/conferences/views.py:756
+msgid "This submission no longer needs ST's approval."
+msgstr "Cette soumission n'a plus besoin de l'accord de ST."
+
+#: apps/conferences/views.py:770
+msgid "This submission needs ST's approval again."
+msgstr "Cette soumission a de nouveau besoin de l'accord de ST."
+
+#: apps/conferences/views.py:778
+msgid "New submission created: ST's approval must be requested again."
+msgstr "Nouvelle soumission créée : l'accord de ST doit être redemandé."
+
 #: apps/core/confidentiality.py:12
 msgid "Public"
 msgstr "Public"
@@ -984,6 +1645,27 @@ msgctxt "abbrev. month"
 msgid "Feb."
 msgstr "févr."
 
+#: apps/core/timezones.py:34
+msgid "AoE — Anywhere on Earth (UTC-12)"
+msgstr "AoE — Anywhere on Earth (UTC-12)"
+
+#: apps/core/timezones.py:46
+msgid "Unknown time zone."
+msgstr "Fuseau horaire inconnu."
+
+#: apps/core/timezones.py:54 apps/meetings/timing.py:63
+msgid "A time in hours and minutes is required."
+msgstr "Une heure en heures et minutes est obligatoire."
+
+#: apps/core/timezones.py:61
+msgid "This time does not exist in this time zone (change to summer time)."
+msgstr "Cette heure n'existe pas dans ce fuseau (passage à l'heure d'été)."
+
+#: apps/core/timezones.py:66
+msgid "This time happens twice in this time zone (change to winter time)."
+msgstr ""
+"Cette heure a lieu deux fois dans ce fuseau (retour à l'heure d'hiver)."
+
 #: apps/meetings/forms.py:23
 msgid ""
 "Sealed at the meeting's level: readers without this level see « Restricted "
@@ -1000,12 +1682,6 @@ msgstr "Date"
 msgid "Time (Paris)"
 msgstr "Heure (Paris)"
 
-#: apps/meetings/forms.py:69 apps/meetings/forms.py:214
-#: templates/meetings/list.html:17 templates/meetings/list.html:27
-#: templates/vault/document_detail.html:10
-msgid "Type"
-msgstr "Type"
-
 #: apps/meetings/forms.py:71
 msgid "Presentation venue"
 msgstr "Cadre de la présentation"
@@ -1014,19 +1690,9 @@ msgstr "Cadre de la présentation"
 msgid "Only for a presentation."
 msgstr "Seulement pour une présentation."
 
-#: apps/meetings/forms.py:77 apps/objectives/forms.py:41 apps/vault/forms.py:33
-#: templates/meetings/list.html:27 templates/objectives/dashboard.html:74
-#: templates/vault/document_list.html:9
-msgid "Title"
-msgstr "Titre"
-
 #: apps/meetings/forms.py:80
 msgid "Duration"
 msgstr "Durée"
-
-#: apps/meetings/forms.py:88 templates/meetings/list.html:27
-msgid "Place"
-msgstr "Lieu"
 
 #: apps/meetings/forms.py:90 templates/meetings/detail.html:15
 msgid "Room or address"
@@ -1061,10 +1727,6 @@ msgstr "Compte rendu"
 msgid "For a longer text, link a document of the vault."
 msgstr "Pour un texte plus long, liez un document du coffre."
 
-#: apps/meetings/forms.py:166 templates/meetings/register.html:12
-msgid "Decision"
-msgstr "Décision"
-
 #: apps/meetings/forms.py:171
 msgid "Action"
 msgstr "Action"
@@ -1073,26 +1735,16 @@ msgstr "Action"
 msgid "Person in charge"
 msgstr "Responsable"
 
-#: apps/meetings/forms.py:174
-msgid "Linked objective"
-msgstr "Objectif lié"
-
 #: apps/meetings/forms.py:187
 msgid "Unknown person."
 msgstr "Personne inconnue."
 
-#: apps/meetings/forms.py:196
-msgid "Unknown objective."
-msgstr "Objectif inconnu."
-
 #: apps/meetings/forms.py:201 apps/objectives/forms.py:120
-#: templates/meetings/detail.html:138 templates/objectives/dashboard.html:74
+#: templates/conferences/submission.html:88
+#: templates/conferences/submissions.html:9 templates/meetings/detail.html:138
+#: templates/objectives/dashboard.html:74
 msgid "Status"
 msgstr "Statut"
-
-#: apps/meetings/forms.py:205
-msgid "Document of the vault"
-msgstr "Document du coffre"
 
 #: apps/meetings/forms.py:214 templates/meetings/list.html:19
 msgid "All"
@@ -1170,10 +1822,6 @@ msgstr "Prévue"
 msgid "Cancelled"
 msgstr "Annulée"
 
-#: apps/meetings/models.py:91 apps/vault/models.py:272
-msgid "type"
-msgstr "type"
-
 #: apps/meetings/models.py:93
 msgid "presentation venue"
 msgstr "cadre de la présentation"
@@ -1185,15 +1833,6 @@ msgstr "début"
 #: apps/meetings/models.py:96
 msgid "duration (minutes)"
 msgstr "durée (minutes)"
-
-#: apps/meetings/models.py:97
-msgid "place"
-msgstr "lieu"
-
-#: apps/meetings/models.py:99 apps/objectives/models.py:137
-#: apps/objectives/models.py:236 apps/vault/models.py:221
-msgid "confidentiality"
-msgstr "confidentialité"
 
 #: apps/meetings/models.py:121 templates/meetings/_objective_actions.html:5
 msgid "meeting"
@@ -1275,34 +1914,13 @@ msgstr "Rappel la veille"
 msgid "Overdue action"
 msgstr "Action en retard"
 
-#: apps/meetings/models.py:345
-msgid "Not sent: no longer a member"
-msgstr "Non envoyé : ne fait plus partie de la thèse"
-
 #: apps/meetings/models.py:376
 msgid "meeting notification"
 msgstr "notification de réunion"
 
-#: apps/meetings/services.py:105 apps/objectives/services.py:153
-msgid "This text is invalid."
-msgstr "Ce texte n'est pas valide."
-
-#: apps/meetings/services.py:108 apps/objectives/services.py:156
-msgid "The text contains a control character."
-msgstr "Le texte contient un caractère de contrôle."
-
-#: apps/meetings/services.py:111 apps/objectives/services.py:159
-#, python-format
-msgid "Between %(min)d and %(max)d characters."
-msgstr "Entre %(min)d et %(max)d caractères."
-
 #: apps/meetings/services.py:124
 msgid "The video link must be an https:// address."
 msgstr "Le lien de visio doit être une adresse https://."
-
-#: apps/meetings/services.py:135
-msgid "Unknown confidentiality level."
-msgstr "Niveau de confidentialité inconnu."
 
 #: apps/meetings/services.py:142
 msgid "Unknown meeting type."
@@ -1339,15 +1957,6 @@ msgstr "Un participant ne pourrait pas lire ce niveau de confidentialité."
 #: apps/meetings/services.py:196
 msgid "The person in charge must be an active member of the supervision team."
 msgstr "Le responsable doit être un membre actif de l'équipe d'encadrement."
-
-#: apps/meetings/services.py:204
-msgid "This objective belongs to another thesis."
-msgstr "Cet objectif appartient à une autre thèse."
-
-#: apps/meetings/services.py:210 apps/meetings/timing.py:61
-#: apps/objectives/services.py:176
-msgid "A date is required."
-msgstr "Une date est obligatoire."
 
 #: apps/meetings/services.py:277
 msgid "The thesis is finished: its meetings are frozen."
@@ -1417,22 +2026,10 @@ msgstr "Cette décision a déjà été retirée."
 msgid "Unknown status."
 msgstr "Statut inconnu."
 
-#: apps/meetings/services.py:1217
-msgid "This document is already linked."
-msgstr "Ce document est déjà lié."
-
-#: apps/meetings/services.py:1236
-msgid "This document is no longer linked."
-msgstr "Ce document n'est plus lié."
-
 #: apps/meetings/timing.py:52
 #, python-format
 msgid "The date must be between %(first)s and %(last)s."
 msgstr "La date doit être comprise entre le %(first)s et le %(last)s."
-
-#: apps/meetings/timing.py:63
-msgid "A time in hours and minutes is required."
-msgstr "Une heure en heures et minutes est obligatoire."
 
 #: apps/meetings/timing.py:71
 msgid ""
@@ -1447,11 +2044,6 @@ msgid ""
 msgstr ""
 "Cette heure a lieu deux fois à Paris (retour à l'heure d'hiver) : choisissez-"
 "en une autre."
-
-#: apps/meetings/views.py:121 templates/meetings/_text.html:1
-#: templates/objectives/_text.html:1
-msgid "Restricted content"
-msgstr "Contenu restreint"
 
 #: apps/meetings/views.py:330
 msgid "Meeting created."
@@ -1468,10 +2060,6 @@ msgstr "Réunion dupliquée."
 #: apps/meetings/views.py:486
 msgid "Meeting cancelled."
 msgstr "Réunion annulée."
-
-#: apps/meetings/views.py:494 apps/objectives/views.py:413
-msgid "Confidentiality changed."
-msgstr "Confidentialité modifiée."
 
 #: apps/meetings/views.py:509
 msgid "Agenda saved."
@@ -1493,10 +2081,6 @@ msgstr "Compte rendu marqué comme lu."
 msgid "Minutes approved."
 msgstr "Compte rendu approuvé."
 
-#: apps/meetings/views.py:569
-msgid "Decision recorded."
-msgstr "Décision enregistrée."
-
 #: apps/meetings/views.py:579
 msgid "Decision withdrawn."
 msgstr "Décision retirée."
@@ -1508,14 +2092,6 @@ msgstr "Action enregistrée."
 #: apps/meetings/views.py:612
 msgid "Action updated."
 msgstr "Action mise à jour."
-
-#: apps/meetings/views.py:625
-msgid "Document linked."
-msgstr "Document lié."
-
-#: apps/meetings/views.py:636
-msgid "Document unlinked."
-msgstr "Document délié."
 
 #: apps/objectives/forms.py:18
 msgid ""
@@ -1574,10 +2150,6 @@ msgstr "Note"
 #: apps/objectives/forms.py:125
 msgid "Evidence (optional)"
 msgstr "Preuve (facultative)"
-
-#: apps/objectives/models.py:54 apps/objectives/models.py:127
-msgid "year"
-msgstr "année"
 
 #: apps/objectives/models.py:55
 msgid "CIFRE year start"
@@ -2096,10 +2668,6 @@ msgstr "Se déconnecter"
 msgid "You already have an account. Sign in to accept the invitation."
 msgstr "Vous avez déjà un compte. Connectez-vous pour accepter l'invitation."
 
-#: templates/accounts/team.html:11
-msgid "Name"
-msgstr "Nom"
-
 #: templates/accounts/team.html:15
 msgid "Since"
 msgstr "Depuis"
@@ -2181,6 +2749,7 @@ msgstr "Une pièce du dossier administratif a changé sur la plateforme :"
 
 #: templates/admin_file/email/notification_body.txt:5
 #: templates/admin_file/email/reminder_body.txt:5
+#: templates/conferences/email/notification_body.txt:5
 #: templates/meetings/email/notification_body.txt:5
 #: templates/objectives/email/summary_body.txt:5
 msgid "This message contains no detail: sign in to see it."
@@ -2307,6 +2876,339 @@ msgstr "Ajouter la pièce"
 msgid "CIFRE thesis"
 msgstr "Thèse CIFRE"
 
+#: templates/conferences/_deadline.html:1
+msgid "Paris"
+msgstr "Paris"
+
+#: templates/conferences/_objective_submissions.html:7
+msgid "No submission linked to this objective."
+msgstr "Aucune soumission liée à cet objectif."
+
+#: templates/conferences/_objective_submissions_slot.html:3
+msgid "Linked submissions"
+msgstr "Soumissions liées"
+
+#: templates/conferences/_objective_submissions_slot.html:5
+msgid "Show the linked submissions"
+msgstr "Afficher les soumissions liées"
+
+#: templates/conferences/blocks/dashboard.html:6
+msgid "No upcoming deadline for a submission in progress."
+msgstr "Aucune échéance à venir pour une soumission en cours."
+
+#: templates/conferences/blocks/dashboard.html:8
+#, python-format
+msgid "ST approval to request by %(date)s (in %(counter)s day)"
+msgid_plural "ST approval to request by %(date)s (in %(counter)s days)"
+msgstr[0] "Accord ST à demander avant le %(date)s (dans %(counter)s jour)"
+msgstr[1] "Accord ST à demander avant le %(date)s (dans %(counter)s jours)"
+
+#: templates/conferences/blocks/dashboard.html:10
+#, python-format
+msgid "%(counter)s ST approval awaits your decision"
+msgid_plural "%(counter)s ST approvals await your decision"
+msgstr[0] "%(counter)s accord ST attend votre décision"
+msgstr[1] "%(counter)s accords ST attendent votre décision"
+
+#: templates/conferences/blocks/dashboard.html:11
+msgid "Open the conferences"
+msgstr "Ouvrir les conférences"
+
+#: templates/conferences/deadlines.html:5 templates/meetings/list.html:5
+#: templates/objectives/dashboard.html:5 templates/vault/document_list.html:5
+msgid "Back to the thesis"
+msgstr "Retour à la thèse"
+
+#: templates/conferences/deadlines.html:6
+#: templates/conferences/submission.html:4
+#: templates/conferences/submissions.html:2
+#: templates/conferences/submissions.html:4
+msgid "Submissions"
+msgstr "Soumissions"
+
+#: templates/conferences/deadlines.html:7
+#, python-format
+msgid "ST review period: %(days)s days"
+msgstr "Délai de relecture ST : %(days)s jours"
+
+#: templates/conferences/deadlines.html:8
+#: templates/conferences/venue_form.html:2
+#: templates/conferences/venue_form.html:4
+msgid "New venue"
+msgstr "Nouvelle conférence ou revue"
+
+#: templates/conferences/deadlines.html:11
+msgid "Upcoming deadlines"
+msgstr "Échéances à venir"
+
+#: templates/conferences/deadlines.html:14
+msgid "Deadline"
+msgstr "Échéance"
+
+#: templates/conferences/deadlines.html:14
+#: templates/conferences/submissions.html:9 templates/conferences/venue.html:2
+msgid "Venue"
+msgstr "Conférence ou revue"
+
+#: templates/conferences/deadlines.html:23
+msgid "No upcoming deadline."
+msgstr "Aucune échéance à venir."
+
+#: templates/conferences/deadlines.html:27
+msgid "Venues"
+msgstr "Conférences et revues"
+
+#: templates/conferences/deadlines.html:35
+msgid "No venue yet."
+msgstr "Aucune conférence ni revue pour l'instant."
+
+#: templates/conferences/edition.html:2
+msgid "Edition"
+msgstr "Édition"
+
+#: templates/conferences/edition.html:8
+#: templates/conferences/submission.html:36
+msgid "Deadlines"
+msgstr "Échéances"
+
+#: templates/conferences/edition.html:13 templates/meetings/detail.html:13
+#: templates/meetings/list.html:32
+msgid "cancelled"
+msgstr "annulée"
+
+#: templates/conferences/edition.html:14
+msgid "Cancel"
+msgstr "Annuler"
+
+#: templates/conferences/edition.html:17
+msgid "No deadline yet."
+msgstr "Aucune échéance pour l'instant."
+
+#: templates/conferences/edition.html:20
+msgid "Add the deadline"
+msgstr "Ajouter l'échéance"
+
+#: templates/conferences/email/notification_body.txt:1
+msgid ""
+"Something about the conferences and submissions concerns you on the platform:"
+msgstr "Une conférence ou une soumission vous concerne sur la plateforme :"
+
+#: templates/conferences/email/notification_subject.txt:1
+msgid "CIFRE thesis: a conference deadline is coming"
+msgstr "Thèse CIFRE : une échéance de conférence approche"
+
+#: templates/conferences/email/notification_subject.txt:1
+msgid "CIFRE thesis: an ST approval should be requested soon"
+msgstr "Thèse CIFRE : un accord ST est bientôt à demander"
+
+#: templates/conferences/email/notification_subject.txt:1
+msgid "CIFRE thesis: an ST publication approval awaits your decision"
+msgstr "Thèse CIFRE : un accord de publication ST attend votre décision"
+
+#: templates/conferences/email/notification_subject.txt:1
+msgid "CIFRE thesis: an ST publication approval was decided"
+msgstr "Thèse CIFRE : un accord de publication ST a été décidé"
+
+#: templates/conferences/email/notification_subject.txt:1
+msgid "CIFRE thesis: the ST review period has changed"
+msgstr "Thèse CIFRE : le délai de relecture ST a changé"
+
+#: templates/conferences/policy.html:2 templates/conferences/policy.html:5
+msgid "ST review period"
+msgstr "Délai de relecture ST"
+
+#: templates/conferences/policy.html:7
+#, python-format
+msgid ""
+"ST's approval is to be requested %(days)s days before the paper deadline "
+"(dates in Paris)."
+msgstr ""
+"L'accord de ST est à demander %(days)s jours avant l'échéance de l'article "
+"(dates à Paris)."
+
+#: templates/conferences/policy.html:8
+msgid ""
+"The collaboration contract (administrative file) sets this period; requests "
+"already made keep the period they were made with."
+msgstr ""
+"Le contrat de collaboration (dossier administratif) fixe ce délai ; les "
+"demandes déjà faites gardent le délai de leur date."
+
+#: templates/conferences/policy.html:9
+msgid "Collaboration contract:"
+msgstr "Contrat de collaboration :"
+
+#: templates/conferences/policy.html:12
+#: templates/conferences/submission_form.html:7
+#: templates/conferences/venue.html:22 templates/conferences/venue_form.html:7
+#: templates/meetings/form.html:13 templates/objectives/form.html:18
+msgid "Save"
+msgstr "Enregistrer"
+
+#: templates/conferences/policy.html:13
+msgid "Asks for your second factor. The PhD student is told."
+msgstr "Demande votre second facteur. Le doctorant est prévenu."
+
+#: templates/conferences/submission.html:12
+msgid "ST work: ST's approval required"
+msgstr "Travaux ST : accord de ST nécessaire"
+
+#: templates/conferences/submission.html:12
+msgid "Not ST work"
+msgstr "Pas des travaux ST"
+
+#: templates/conferences/submission.html:14
+msgid "Resubmission of an earlier submission"
+msgstr "Nouvelle soumission d'un article précédent"
+
+#: templates/conferences/submission.html:17 templates/meetings/detail.html:22
+#: templates/objectives/detail.html:29
+msgid "Edit"
+msgstr "Modifier"
+
+#: templates/conferences/submission.html:20
+msgid "Not ST work: no approval needed"
+msgstr "Pas des travaux ST : aucun accord nécessaire"
+
+#: templates/conferences/submission.html:21
+#: templates/conferences/submission.html:73
+#: templates/conferences/submission.html:121
+#: templates/objectives/dashboard.html:94 templates/objectives/detail.html:40
+#: templates/objectives/detail.html:81
+msgid "Asks for your second factor."
+msgstr "Demande votre second facteur."
+
+#: templates/conferences/submission.html:24
+msgid "Concerns ST work"
+msgstr "Concerne des travaux ST"
+
+#: templates/conferences/submission.html:47 templates/meetings/detail.html:164
+msgid "Unlink"
+msgstr "Délier"
+
+#: templates/conferences/submission.html:51 templates/meetings/detail.html:169
+#, python-format
+msgid "%(counter)s linked document you may not read."
+msgid_plural "%(counter)s linked documents you may not read."
+msgstr[0] "%(counter)s document lié que vous ne pouvez pas lire."
+msgstr[1] "%(counter)s documents liés que vous ne pouvez pas lire."
+
+#: templates/conferences/submission.html:54 templates/meetings/detail.html:174
+msgid "Link the document"
+msgstr "Lier le document"
+
+#: templates/conferences/submission.html:60
+msgid ""
+"Submitting, publishing the final version and posting a preprint each need "
+"ST's approval of the exact version, for ST work."
+msgstr ""
+"Soumettre, publier la version finale et déposer une prépublication exigent "
+"chacun, pour des travaux ST, l'accord de ST sur la version exacte."
+
+#: templates/conferences/submission.html:64
+msgid "Restricted document"
+msgstr "Document restreint"
+
+#: templates/conferences/submission.html:66
+#, python-format
+msgid "period %(days)s days"
+msgstr "délai %(days)s jours"
+
+#: templates/conferences/submission.html:66
+#, python-format
+msgid "to request by %(date)s"
+msgstr "à demander avant le %(date)s"
+
+#: templates/conferences/submission.html:69
+msgid "Withdraw the request"
+msgstr "Retirer la demande"
+
+#: templates/conferences/submission.html:72 templates/meetings/detail.html:123
+msgid "Record the decision"
+msgstr "Enregistrer la décision"
+
+#: templates/conferences/submission.html:79
+msgid "No request yet."
+msgstr "Aucune demande pour l'instant."
+
+#: templates/conferences/submission.html:82
+msgid "Request ST's approval"
+msgstr "Demander l'accord de ST"
+
+#: templates/conferences/submission.html:90
+msgid "Change the status"
+msgstr "Changer le statut"
+
+#: templates/conferences/submission.html:91
+msgid "Submitted and published: choose the version sent."
+msgstr "Soumis et publié : choisissez la version envoyée."
+
+#: templates/conferences/submission.html:96
+msgid "Preprints"
+msgstr "Prépublications"
+
+#: templates/conferences/submission.html:100
+msgid "No preprint."
+msgstr "Aucune prépublication."
+
+#: templates/conferences/submission.html:103
+msgid "Record the preprint"
+msgstr "Enregistrer la prépublication"
+
+#: templates/conferences/submission.html:109
+msgid "Submit elsewhere"
+msgstr "Soumettre ailleurs"
+
+#: templates/conferences/submission.html:111
+msgid "Create the new submission"
+msgstr "Créer la nouvelle soumission"
+
+#: templates/conferences/submission.html:112
+msgid "A new ST approval is required: the earlier one is never reused."
+msgstr "Un nouvel accord ST est nécessaire : l'ancien n'est jamais repris."
+
+#: templates/conferences/submission.html:120 templates/meetings/detail.html:184
+#: templates/objectives/detail.html:80
+msgid "Change the confidentiality"
+msgstr "Changer la confidentialité"
+
+#: templates/conferences/submission_form.html:2
+#: templates/conferences/submission_form.html:4
+msgid "Edit the submission"
+msgstr "Modifier la soumission"
+
+#: templates/conferences/submission_form.html:2
+#: templates/conferences/submission_form.html:4
+#: templates/conferences/submissions.html:6
+msgid "New submission"
+msgstr "Nouvelle soumission"
+
+#: templates/conferences/submission_form.html:5
+#: templates/conferences/venue_form.html:5 templates/meetings/duplicate.html:5
+#: templates/meetings/form.html:5 templates/objectives/form.html:5
+msgid "Back"
+msgstr "Retour"
+
+#: templates/conferences/submissions.html:18
+msgid "No submission."
+msgstr "Aucune soumission."
+
+#: templates/conferences/venue.html:9
+msgid "Editions"
+msgstr "Éditions"
+
+#: templates/conferences/venue.html:11
+msgid "No edition yet."
+msgstr "Aucune édition pour l'instant."
+
+#: templates/conferences/venue.html:14
+msgid "Add the edition"
+msgstr "Ajouter l'édition"
+
+#: templates/conferences/venue.html:20
+msgid "Edit the venue"
+msgstr "Modifier la conférence ou revue"
+
 #: templates/core/home.html:3 templates/core/home.html:5
 msgid "Dashboard"
 msgstr "Tableau de bord"
@@ -2365,17 +3267,9 @@ msgstr "Ouvrir les réunions"
 msgid "Meeting"
 msgstr "Réunion"
 
-#: templates/meetings/detail.html:13 templates/meetings/list.html:32
-msgid "cancelled"
-msgstr "annulée"
-
 #: templates/meetings/detail.html:20
 msgid "Add to my calendar (.ics)"
 msgstr "Ajouter à mon agenda (.ics)"
-
-#: templates/meetings/detail.html:22 templates/objectives/detail.html:29
-msgid "Edit"
-msgstr "Modifier"
 
 #: templates/meetings/detail.html:23 templates/meetings/duplicate.html:11
 msgid "Duplicate"
@@ -2480,10 +3374,6 @@ msgstr "Retirer"
 msgid "No decision."
 msgstr "Aucune décision."
 
-#: templates/meetings/detail.html:123
-msgid "Record the decision"
-msgstr "Enregistrer la décision"
-
 #: templates/meetings/detail.html:134
 msgid "linked objective"
 msgstr "objectif lié"
@@ -2504,28 +3394,9 @@ msgstr "Enregistrer l'action"
 msgid "Linked documents"
 msgstr "Documents liés"
 
-#: templates/meetings/detail.html:164
-msgid "Unlink"
-msgstr "Délier"
-
-#: templates/meetings/detail.html:169
-#, python-format
-msgid "%(counter)s linked document you may not read."
-msgid_plural "%(counter)s linked documents you may not read."
-msgstr[0] "%(counter)s document lié que vous ne pouvez pas lire."
-msgstr[1] "%(counter)s documents liés que vous ne pouvez pas lire."
-
 #: templates/meetings/detail.html:170
 msgid "No linked document."
 msgstr "Aucun document lié."
-
-#: templates/meetings/detail.html:174
-msgid "Link the document"
-msgstr "Lier le document"
-
-#: templates/meetings/detail.html:184 templates/objectives/detail.html:78
-msgid "Change the confidentiality"
-msgstr "Changer la confidentialité"
 
 #: templates/meetings/detail.html:185
 msgid ""
@@ -2538,11 +3409,6 @@ msgstr ""
 #: templates/meetings/duplicate.html:2 templates/meetings/duplicate.html:4
 msgid "Duplicate the meeting"
 msgstr "Dupliquer la réunion"
-
-#: templates/meetings/duplicate.html:5 templates/meetings/form.html:5
-#: templates/objectives/form.html:5
-msgid "Back"
-msgstr "Retour"
 
 #: templates/meetings/duplicate.html:6
 msgid ""
@@ -2591,15 +3457,6 @@ msgid "The confidentiality has its own form on the meeting's page."
 msgstr ""
 "La confidentialité se change par son propre formulaire, sur la page de la "
 "réunion."
-
-#: templates/meetings/form.html:13 templates/objectives/form.html:18
-msgid "Save"
-msgstr "Enregistrer"
-
-#: templates/meetings/list.html:5 templates/objectives/dashboard.html:5
-#: templates/vault/document_list.html:5
-msgid "Back to the thesis"
-msgstr "Retour à la thèse"
 
 #: templates/meetings/list.html:6 templates/meetings/register.html:2
 #: templates/meetings/register.html:4
@@ -2820,11 +3677,6 @@ msgid_plural "Approve the %(counter)s drafts of the year"
 msgstr[0] "Approuver le brouillon de l'année"
 msgstr[1] "Approuver les %(counter)s brouillons de l'année"
 
-#: templates/objectives/dashboard.html:94 templates/objectives/detail.html:40
-#: templates/objectives/detail.html:79
-msgid "Asks for your second factor."
-msgstr "Demande votre second facteur."
-
 #: templates/objectives/detail.html:2
 msgid "Objective"
 msgstr "Objectif"
@@ -2850,23 +3702,23 @@ msgstr "Historique"
 msgid "No change since approval."
 msgstr "Aucune modification depuis l'approbation."
 
-#: templates/objectives/detail.html:65
+#: templates/objectives/detail.html:67
 msgid "Comments of the supervision"
 msgstr "Commentaires de l'encadrement"
 
-#: templates/objectives/detail.html:67
+#: templates/objectives/detail.html:69
 msgid "Show the comments"
 msgstr "Afficher les commentaires"
 
-#: templates/objectives/detail.html:86
+#: templates/objectives/detail.html:88
 msgid "Drop this objective"
 msgstr "Abandonner cet objectif"
 
-#: templates/objectives/detail.html:90
+#: templates/objectives/detail.html:92
 msgid "A dropped objective stays visible, with its reason."
 msgstr "Un objectif abandonné reste visible, avec son motif."
 
-#: templates/objectives/detail.html:91
+#: templates/objectives/detail.html:93
 msgid "Drop"
 msgstr "Abandonner"
 
@@ -2914,10 +3766,6 @@ msgstr "Tous les documents"
 #: templates/vault/document_detail.html:8
 msgid "Versions"
 msgstr "Versions"
-
-#: templates/vault/document_detail.html:10 templates/vault/document_list.html:9
-msgid "Version"
-msgstr "Version"
 
 #: templates/vault/document_detail.html:10
 msgid "Size"

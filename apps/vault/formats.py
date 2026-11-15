@@ -140,6 +140,12 @@ TEXT_SLOTS: Mapping[str, int] = MappingProxyType(
         "meetings.Meeting.visio_link": 0x0205,
         "meetings.Decision.text": 0x0206,
         "meetings.ActionItem.title": 0x0207,
+        "conferences.Submission.title": 0x0301,
+        "conferences.Submission.abstract": 0x0302,
+        "conferences.Submission.external_authors": 0x0303,
+        "conferences.Submission.notes": 0x0304,
+        "conferences.StApproval.comment": 0x0305,
+        "conferences.Preprint.url": 0x0306,
     }
 )
 RETIRED_SLOT_CODES: frozenset[int] = frozenset()
