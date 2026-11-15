@@ -310,12 +310,11 @@ def test_a_failed_e_mail_is_sent_again_by_the_next_run(
     team: SimpleNamespace, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     mission_of(team)
-    from apps.travel import tasks as travel_tasks
 
     def broken(*args: Any, **kwargs: Any) -> None:
         raise smtplib.SMTPException("down")
 
-    monkeypatch.setattr(travel_tasks, "send_mail", broken)
+    monkeypatch.setattr("apps.core.delivery.send_mail", broken)
     reminders.run(_at(2027, 1, 20))
     (row,) = _rows()
     assert row.status == "FAILED"

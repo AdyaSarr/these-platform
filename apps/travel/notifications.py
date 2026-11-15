@@ -1,7 +1,7 @@
 """Notifications of the travel module (the meetings' and conferences' mechanism).
 
 notify() runs INSIDE the caller's transaction, before its audit(): one row per
-recipient still CONCERNED (concerned() below), queued after commit with its id only.
+recipient still CONCERNED (is_concerned() below), queued after commit with its id only.
 A row is unique per (kind, target, window, recipient): a reminder run twice, or two
 runs at once, sends nothing twice. The e-mail is a link only (CLAUDE.md rule 7).
 
@@ -18,10 +18,12 @@ from collections.abc import Iterable
 from typing import Any
 
 from django.db import IntegrityError, transaction
+from django.utils import timezone
 
 from apps.accounts.models import Membership, Thesis, User
 from apps.accounts.permissions import can_access_level, roles_of
 from apps.accounts.roles import Role
+from apps.core import delivery
 from apps.core.confidentiality import ConfidentialityLevel
 
 from .choices import NotificationKind, NotificationStatus
@@ -40,7 +42,8 @@ DECIDER_ROLE = {"ST": Role.INDUSTRIAL_TUTOR, "LIRMM": Role.DIRECTOR}
 RULES_ROLES = frozenset({Role.PHD_STUDENT, Role.DIRECTOR, Role.INDUSTRIAL_TUTOR})
 
 
-def concerned(user: Any, thesis: Thesis, kind: str, mission: Mission | None) -> bool:
+def is_concerned(user: Any, thesis: Thesis, kind: str, mission: Mission | None) -> bool:
+    """Whether ``user`` is concerned (queue time, and send time through concerned)."""
     roles = roles_of(user, thesis)
     if kind in STUDENT_KINDS:
         return Role.PHD_STUDENT in roles
@@ -53,6 +56,56 @@ def concerned(user: Any, thesis: Thesis, kind: str, mission: Mission | None) -> 
     if kind == NotificationKind.RULES_CHANGED:
         return bool(roles & RULES_ROLES)
     return False
+
+
+# --------------------------------------------------------------------------- send-time check
+# Checked by the sending task under the row's lock (apps.core.delivery): the
+# state may have changed since the row was queued.
+
+
+def concerned(row: TravelNotification) -> bool:
+    return is_concerned(row.recipient, row.thesis, row.kind, row.mission)
+
+
+def still_due(row: TravelNotification) -> bool:
+    """Whether the mission still calls for this e-mail when it is SENT (it may have
+    changed since it was queued): a cancelled mission, an approval requested or
+    decided meanwhile, a receipt deposited meanwhile -> SKIPPED, not sent."""
+    from . import services
+    from .choices import MissionStatus, OrderDecision
+    from .models import ORDER_PAYERS, MissionOrder
+
+    if row.kind == NotificationKind.RULES_CHANGED:
+        return True
+    mission = row.mission
+    if mission is None or mission.status == MissionStatus.CANCELLED:
+        return False
+    if row.kind == NotificationKind.ORDER_TO_REQUEST:
+        return (
+            mission.status in (MissionStatus.PLANNED, MissionStatus.ORDER_REFUSED)
+            and mission.payer in ORDER_PAYERS
+            and mission.start_date >= timezone.localdate()
+        )
+    if row.kind == NotificationKind.ORDER_REQUESTED:  # target = the order
+        return MissionOrder.objects.filter(
+            pk=row.target_id, decision=OrderDecision.PENDING
+        ).exists()
+    if row.kind == NotificationKind.ORDER_PENDING:
+        return MissionOrder.objects.filter(mission=mission, decision=OrderDecision.PENDING).exists()
+    if row.kind == NotificationKind.ORDER_DECIDED:
+        return True  # the decision happened; only a cancelled mission makes it moot
+    if row.kind == NotificationKind.RECEIPTS_MISSING:
+        return mission.status == MissionStatus.DONE and services.expenses_incomplete(mission)
+    return False
+
+
+def skip_reason(row: TravelNotification) -> str | None:
+    return delivery.skip_reason(
+        row, thesis_open=row.thesis.is_open, concerned=concerned, still_due=still_due
+    )
+
+
+# --------------------------------------------------------------------------- queueing
 
 
 def _queue(row: TravelNotification) -> None:
@@ -77,7 +130,7 @@ def notify(
     for user in {u.pk: u for u in recipients}.values():
         if exclude is not None and user.pk == exclude.pk:
             continue
-        if not concerned(user, thesis, kind, mission):
+        if not is_concerned(user, thesis, kind, mission):
             continue
         try:
             with transaction.atomic():

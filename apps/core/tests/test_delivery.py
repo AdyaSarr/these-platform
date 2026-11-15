@@ -181,3 +181,21 @@ def test_the_thesis_says_whether_it_is_open() -> None:
         Thesis.Status.SETUP,
         Thesis.Status.ACTIVE,
     ]
+
+
+NOTIFYING_MODULES = ("admin_file", "meetings", "conferences", "travel")
+
+
+@pytest.mark.parametrize("module", NOTIFYING_MODULES)
+def test_every_notification_task_goes_through_the_shared_delivery(module: str) -> None:
+    """Static guard: no module sends its notifications by itself, so none can skip
+    the send-time check (concerned, still_due, finished thesis)."""
+    import importlib
+    import inspect
+
+    source = inspect.getsource(importlib.import_module(f"apps.{module}.tasks"))
+    assert "deliver_once(" in source
+    assert "send_mail" not in source
+    notifications = importlib.import_module(f"apps.{module}.notifications")
+    for name in ("concerned", "still_due", "skip_reason"):
+        assert callable(getattr(notifications, name, None)), (module, name)
