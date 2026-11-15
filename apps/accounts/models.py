@@ -124,6 +124,11 @@ class Thesis(TimeStampedModel):
     def __str__(self) -> str:
         return self.title
 
+    @property
+    def is_open(self) -> bool:
+        """SETUP or ACTIVE: a DEFENDED or CLOSED thesis is frozen and sends nothing."""
+        return self.status in (self.Status.SETUP, self.Status.ACTIVE)
+
 
 def _active_period() -> TsTzRange:
     """[active_from, active_until) as a PostgreSQL range (half-open: '[)')."""

@@ -30,6 +30,7 @@ LOGGER = "apps.core.delivery"
 def _row() -> ReminderLog:
     team = make_team()
     item = item_of(team)
+    assert item.due_date is not None  # the factory always gives one
     return ReminderLog.objects.create(
         item=item, kind="J14", due_date=item.due_date, recipient=team.student
     )
@@ -78,6 +79,7 @@ def test_a_skipped_row_queued_again_is_left_alone(caplog: pytest.LogCaptureFixtu
     row = _row()
     _deliver(row, reason="not_due")
     caplog.set_level(logging.INFO, logger=LOGGER)
+    caplog.clear()
     skip_reason = mock.Mock(return_value=None)
     message = mock.Mock(return_value=("subject", "body"))
     delivery.deliver_once(

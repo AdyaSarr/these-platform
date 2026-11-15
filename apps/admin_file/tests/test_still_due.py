@@ -59,9 +59,14 @@ def log(caplog: pytest.LogCaptureFixture) -> pytest.LogCaptureFixture:
 # --------------------------------------------------------------------------- helpers
 
 
-def _reminder(item: RequiredItem, recipient: Any, *, due: dt.date | None = None) -> ReminderLog:
+def _due(item: RequiredItem) -> dt.date:
+    assert item.due_date is not None  # the factory always gives one
+    return item.due_date
+
+
+def _reminder(item: RequiredItem, recipient: Any) -> ReminderLog:
     return ReminderLog.objects.create(
-        item=item, kind="J14", due_date=due or item.due_date, recipient=recipient
+        item=item, kind="J14", due_date=_due(item), recipient=recipient
     )
 
 
@@ -123,7 +128,7 @@ def _proposal(item: RequiredItem, team: SimpleNamespace, status: str = "PENDING"
         item=item,
         proposed_by=team.student,
         from_date=item.due_date,
-        to_date=item.due_date + dt.timedelta(days=30),
+        to_date=_due(item) + dt.timedelta(days=30),
         reason_code="OTHER",
         status=status,
         created_by=team.student,
@@ -138,6 +143,7 @@ def _reopened(team: SimpleNamespace) -> tuple[RequiredItem, ItemReopening]:
         item=item, cycle=1, role=D, user=team.director, submitted_by=team.student
     )
     validated_at = item.validated_at
+    assert validated_at is not None
     put(item, S.TODO, team.student)
     RequiredItem.objects.filter(pk=item.pk).update(cycle=1)
     item.refresh_from_db()
@@ -157,13 +163,14 @@ def _one_of_each(team: SimpleNamespace) -> list[ReminderLog | ItemNotification]:
     item = item_of(team)
     reopened, reopening = _reopened(team)
     pending = _proposal(item, team)
-    accepted = _proposal(item_of(team), team, "ACCEPTED")
+    decided = item_of(team)
+    accepted = _proposal(decided, team, "ACCEPTED")
     return [
         _reminder(item, team.student),
         _note(reopened, N.REOPENED, team.director, reopening.pk),
         _note(item, N.DUE_PROPOSED, team.director, pending.pk),
-        _note(item, N.DUE_ACCEPTED, team.student, accepted.pk),
-        _note(item, N.DUE_REFUSED, team.student, accepted.pk),
+        _note(decided, N.DUE_ACCEPTED, team.student, accepted.pk),
+        _note(decided, N.DUE_REFUSED, team.student, accepted.pk),
         _note(item, N.DUE_CHANGED, team.student),
     ]
 
@@ -308,7 +315,7 @@ def test_a_reminder_to_a_validator_of_an_item_decided_or_reopened_is_skipped(
 def test_a_reminder_of_a_moved_due_date_is_skipped(team: SimpleNamespace, log: Any) -> None:
     item = item_of(team)
     row = _reminder(item, team.student)
-    RequiredItem.objects.filter(pk=item.pk).update(due_date=item.due_date + dt.timedelta(days=7))
+    RequiredItem.objects.filter(pk=item.pk).update(due_date=_due(item) + dt.timedelta(days=7))
     _skipped(row, "not_due", log)
 
 
@@ -405,7 +412,7 @@ def test_due_changed_stays_due_after_another_change(team: SimpleNamespace) -> No
     """An accomplished event stays due: each change sends its own e-mail."""
     item = item_of(team)
     row = _note(item, N.DUE_CHANGED, team.student)
-    RequiredItem.objects.filter(pk=item.pk).update(due_date=item.due_date + dt.timedelta(days=3))
+    RequiredItem.objects.filter(pk=item.pk).update(due_date=_due(item) + dt.timedelta(days=3))
     _sent(row)
 
 

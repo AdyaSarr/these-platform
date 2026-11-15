@@ -268,6 +268,10 @@ class ItemApproval(TimeStampedModel):
         return f"approval {self.pk}"
 
 
+# Spelled out (not .values): a constraint must not change when an enum does.
+_SEND_STATUSES = ["PENDING", "SENT", "FAILED", "SKIPPED"]
+
+
 class ReminderLog(TimeStampedModel):
     """One reminder e-mail: (item, kind, due date, recipient) is claimed ONCE.
 
@@ -285,6 +289,7 @@ class ReminderLog(TimeStampedModel):
         PENDING = "PENDING", _("Pending")
         SENT = "SENT", _("Sent")
         FAILED = "FAILED", _("Failed")
+        SKIPPED = "SKIPPED", _("Not sent: no longer concerned or due")
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     item = models.ForeignKey(
@@ -311,6 +316,9 @@ class ReminderLog(TimeStampedModel):
             ),
             models.CheckConstraint(
                 condition=Q(kind__in=["J14", "J3", "OVERDUE"]), name="admin_file_reminder_kind"
+            ),
+            models.CheckConstraint(
+                condition=Q(status__in=_SEND_STATUSES), name="admin_file_reminder_status"
             ),
             models.CheckConstraint(
                 condition=(Q(status="SENT") & Q(sent_at__isnull=False))
@@ -503,6 +511,9 @@ class ItemNotification(TimeStampedModel):
             ),
             models.CheckConstraint(
                 condition=Q(kind__in=_NOTIFICATION_KINDS), name="admin_file_notification_kind"
+            ),
+            models.CheckConstraint(
+                condition=Q(status__in=_SEND_STATUSES), name="admin_file_notification_status"
             ),
             models.CheckConstraint(
                 condition=(Q(status="SENT") & Q(sent_at__isnull=False))
