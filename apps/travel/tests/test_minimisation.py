@@ -120,7 +120,13 @@ def _world(team: SimpleNamespace, pattern: str) -> None:
     for fields in elsewhere:
         start: dt.date = fields["start_date"]
         mission = mission_of(
-            team, **{**fields, "end_date": start + dt.timedelta(days=2)}, purpose=pattern
+            team,
+            **{**fields, "end_date": start + dt.timedelta(days=2)},
+            purpose=pattern,
+            # Hidden missions linked to the shared meeting and submission: their M5 and
+            # M6 pages must not show them to the co-supervisor.
+            meeting=Meeting.objects.filter(thesis=team.thesis).order_by("created_at").first(),
+            submission=Submission.objects.filter(thesis=team.thesis).order_by("created_at").first(),
         )
         if pattern == "a" and mission.payer in ("ST", "LIRMM"):  # orders on hidden missions
             order = services.request_order(
@@ -197,7 +203,7 @@ def _surfaces(team: SimpleNamespace) -> list[str]:
     missions = [
         reverse(f"travel:{name}", kwargs={**kw, "mission_id": m.pk})
         for m in shared
-        for name in ("mission", "edit_mission")
+        for name in ("mission", "edit_mission", "mission_ics")
     ]
     meeting = Meeting.objects.filter(thesis=team.thesis).order_by("created_at").first()
     submission = Submission.objects.filter(thesis=team.thesis).order_by("created_at").first()
@@ -206,7 +212,14 @@ def _surfaces(team: SimpleNamespace) -> list[str]:
         f"{new}?meeting={getattr(meeting, 'pk', '')}&submission={getattr(submission, 'pk', '')}",
         f"{new}?meeting=00000000-0000-4000-8000-000000000000&submission=pas-un-identifiant",
     ]
-    return [*_plain_travel_pages(team), *months, *years, *missions, *prefills, dashboard]
+    linked = []  # the M5 and M6 pages that show a "Travel" section
+    if meeting is not None:
+        linked.append(reverse("meetings:detail", kwargs={**kw, "meeting_id": meeting.pk}))
+    if submission is not None:
+        linked.append(
+            reverse("conferences:submission", kwargs={**kw, "submission_id": submission.pk})
+        )
+    return [*_plain_travel_pages(team), *months, *years, *missions, *prefills, *linked, dashboard]
 
 
 # Pages of the student only: the co-supervisor gets a 403, the same in both worlds.
