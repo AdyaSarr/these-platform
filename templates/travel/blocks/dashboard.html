@@ -8,6 +8,6 @@
   {% if data.full and data.st_percent is not None %}<div><dt>{% translate "ST share" %}</dt><dd>{{ data.st_percent }} %</dd></div>{% endif %}
   {% if data.full and data.gap is not None %}<div><dt>{% translate "Gap to the target" %}</dt><dd>{{ data.gap }}</dd>{% if data.summary.alert %}<dd class="helptext overdue">{% translate "Above the alert threshold." %}</dd>{% endif %}</div>{% endif %}
 </dl>
-{% if data.month and data.month.rule_minimum is not None %}<p>{% blocktranslate with n=data.month.lirmm_days minimum=data.month.rule_minimum %}This month: {{ n }} days at the LIRMM (rule: {{ minimum }}).{% endblocktranslate %}</p>{% endif %}
+{% if data.rule %}<p>{% include "travel/_rule.html" with rule=data.rule %}</p>{% endif %}
 {% for b in data.budgets %}<p>{% blocktranslate with payer=b.payer committed=b.committed budget=b.budget %}Budget {{ payer }}: {{ committed }} committed of {{ budget }}{% endblocktranslate %}{% if b.over %} <span class="overdue">{% translate "above the budget" %}</span>{% endif %}</p>{% endfor %}
 <p><a href="{% url 'travel:calendar' thesis_id=thesis.pk %}">{% translate "Open the travels" %}</a></p>

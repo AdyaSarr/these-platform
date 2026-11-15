@@ -391,8 +391,7 @@ class MonthView:
     previous: tuple[int, int] | None
     next: tuple[int, int] | None
     lirmm_days: int
-    rule_minimum: int | None
-    rule_met: bool | None
+    rule: MonthRule | None
     access: PresenceAccess
 
 
@@ -444,9 +443,69 @@ def month_view(user: Any, thesis: Thesis, year: int, month: int) -> MonthView:
         previous=previous if _month_in_bounds(thesis, *previous) else None,
         next=following if _month_in_bounds(thesis, *following) else None,
         lirmm_days=lirmm,
-        rule_minimum=policy.min_lab_days_per_month,
-        rule_met=split.month_rule_met(lirmm, policy.min_lab_days_per_month),
+        rule=month_rule(user, thesis, year, month),
         access=access,
+    )
+
+
+@dataclass(frozen=True)
+class MonthRule:
+    """The monthly rule as one viewer may see it (LIRMM days only: the same figures
+    for a co-supervisor). ``met`` is None while the month runs: never "not met"
+    before its end (a Paris date)."""
+
+    minimum: int
+    done: int  # LIRMM working days filled in, up to today included
+    planned: int  # working days after today: LIRMM presence, or a mission still planned
+    finished: bool
+    met: bool | None
+
+
+# The missions whose days count as planned: planned (also another payer's, which has
+# no approval), approval requested or granted. Not refused, not cancelled; presence
+# days filled in always count, whatever mission filled them (the calendar decides).
+RULE_PLANNED_STATUSES = (
+    MissionStatus.PLANNED,
+    MissionStatus.ORDER_REQUESTED,
+    MissionStatus.ORDER_GRANTED,
+)
+
+
+def month_rule(user: Any, thesis: Thesis, year: int, month: int) -> MonthRule | None:
+    """The monthly rule of the month page AND the dashboard card (one function)."""
+    _require_reader(user, thesis, "presence_read")
+    fresh = _fresh(thesis)
+    policy = policy_of(fresh)
+    minimum = policy.min_lab_days_per_month
+    if minimum is None:
+        return None
+    first = dt.date(year, month, 1)
+    last = dt.date(year, month, calendar.monthrange(year, month)[1])
+    working = holidays.working_days(first, last, whit_monday=policy.whit_monday_holiday)
+    today = timezone.localdate()
+    lirmm = {
+        day
+        for day, kind in visible_days(user, fresh, first, last).items()
+        if kind == PresenceKind.LIRMM
+    }
+    on_mission: set[dt.date] = set()
+    missions = Mission.objects.visible_to(user, fresh).filter(
+        destination=Destination.LIRMM,
+        start_date__lte=last,
+        end_date__gte=first,
+        status__in=RULE_PLANNED_STATUSES,
+    )
+    for mission in missions:
+        on_mission |= {d for d in working if mission.start_date <= d <= mission.end_date}
+    done = sum(1 for d in working if d <= today and d in lirmm)
+    planned = sum(1 for d in working if d > today and (d in lirmm or d in on_mission))
+    finished = last < today
+    return MonthRule(
+        minimum=minimum,
+        done=done,
+        planned=planned,
+        finished=finished,
+        met=(done >= minimum) if finished else None,
     )
 
 
@@ -1857,5 +1916,6 @@ def dashboard_block(request: Any, thesis: Thesis) -> dict[str, Any]:
         "st_percent": None if summary.st_percent is None else round(float(summary.st_percent)),
         "gap": None if summary.gap is None else round(float(summary.gap), 1),
         "month": month,
+        "rule": month.rule if month else None,
         "budgets": budgets,
     }

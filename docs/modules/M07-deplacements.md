@@ -101,6 +101,12 @@ supprimé (une mission s'annule).
   jours ST / (jours ST + jours labo), en fraction exacte ; écart = |part ST − cible
   ST| en points ; alerte si l'écart **dépasse** `gap_alert_points`.
 - Règle mensuelle : nombre de jours `LIRMM` du mois ≥ `min_lab_days_per_month`.
+  Tant que le mois (date de Paris) n'est pas terminé, jamais « non respectée » :
+  « En cours : X jour(s) au LIRMM, Y prévu(s) ; règle : au moins N », X = jours
+  `LIRMM` saisis jusqu'à aujourd'hui inclus, Y = jours ouvrés futurs saisis `LIRMM`
+  ou couverts par une mission au LIRMM prévue, demandée ou accordée (pas refusée ni
+  annulée), comptés une fois ; « respectée » ou « non respectée » une fois le mois
+  terminé. Une seule fonction (`services.month_rule`) pour la vue mensuelle et la carte.
 
 ## Textes scellés (plage 0x04xx)
 

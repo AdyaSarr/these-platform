@@ -15,8 +15,8 @@
 </table>
 <p class="muted">{% translate "Legend:" %} {% for value, label in legend %}<span class="day-{{ value|lower }} legend-item">{{ label }}</span>{% if not forloop.last %} · {% endif %}{% endfor %}</p>
 <p>{% blocktranslate count n=view.lirmm_days %}{{ n }} working day at the LIRMM this month.{% plural %}{{ n }} working days at the LIRMM this month.{% endblocktranslate %}
-{% if view.rule_minimum is not None %}{% blocktranslate with n=view.rule_minimum %}Rule: at least {{ n }}.{% endblocktranslate %}
-  {% if view.rule_met %}<span class="status">{% translate "Met." %}</span>{% else %}<span class="overdue">{% translate "Not met." %}</span>{% endif %}{% endif %}</p>
+</p>
+{% if view.rule %}<p>{% include "travel/_rule.html" with rule=view.rule %}</p>{% endif %}
 {% if form %}
 <h2>{% translate "Fill in days" %}</h2>
 <form class="stack" method="post" action="{% url 'travel:presence' thesis_id=thesis.pk %}">{% csrf_token %}{% include "conferences/_form.html" %}
