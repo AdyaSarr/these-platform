@@ -1,7 +1,8 @@
 """Project-wide pytest configuration.
 
 Fails the whole run early, with an actionable message, when PostgreSQL is not
-reachable (tests run on PostgreSQL only, see docs/decisions.md).
+reachable (tests run on PostgreSQL only, see docs/decisions.md), or when another
+pytest run already uses the test database (tests/pytest_lock.py).
 """
 
 import datetime as dt
@@ -14,6 +15,8 @@ import pytest
 import time_machine
 from django.db import OperationalError, connections
 from pytest_django import DjangoDbBlocker
+
+from tests import pytest_lock
 
 DB_UNREACHABLE_MESSAGE = (
     "PostgreSQL est injoignable (DATABASE_URL). "
@@ -30,6 +33,28 @@ def pytest_terminal_summary(terminalreporter: Any, exitstatus: int, config: pyte
     seed = getattr(config.option, "randomly_seed", None)
     if isinstance(seed, int):
         terminalreporter.write_line(f"pytest-randomly: replay with --randomly-seed={seed}")
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _pytest_lock() -> Generator[None]:
+    """One run at a time per test database: an exclusive, non-blocking flock on
+    var/pytest-<digest>.lock (tests/pytest_lock.py), released at the end of the
+    session (or by the death of the process).
+    django_db_modify_db_settings depends on it: the lock is held before the test
+    database is created, whatever order pytest picks for autouse fixtures."""
+    from django.conf import settings
+
+    path = pytest_lock.path_for(settings.DATABASES["default"])
+    try:
+        fd = pytest_lock.acquire(path)
+    except pytest_lock.LockHeldError:
+        pytest.exit(pytest_lock.MESSAGE, returncode=3)
+    pytest_lock.set_session_lock(path)
+    try:
+        yield
+    finally:
+        pytest_lock.set_session_lock(None)
+        pytest_lock.release(fd)
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -55,6 +80,7 @@ def _test_clock() -> Generator[None]:
 
 @pytest.fixture(scope="session")
 def django_db_modify_db_settings(
+    _pytest_lock: None,
     django_db_modify_db_settings_parallel_suffix: None,
     django_db_blocker: DjangoDbBlocker,
 ) -> Generator[None]:
