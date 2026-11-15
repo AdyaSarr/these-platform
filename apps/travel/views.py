@@ -30,7 +30,12 @@ from django.utils.translation import gettext_lazy
 from django.views import View
 
 from apps.accounts.models import User
-from apps.accounts.permissions import Action, ThesisPermissionRequiredMixin, can
+from apps.accounts.permissions import (
+    Action,
+    ThesisPermissionRequiredMixin,
+    can,
+    can_access_document,
+)
 from apps.accounts.reauth import RecentAuthRequiredMixin, authenticated_recently, reauth_response
 from apps.admin_file.models import RequiredItem
 from apps.conferences.models import Edition
@@ -45,6 +50,7 @@ from .choices import Destination, MissionStatus, OrderDecision, ShownKind, Side,
 from .forms import (
     MissionForm,
     MissionLevelForm,
+    OfficialOrderForm,
     OrderDecisionForm,
     OrderRequestForm,
     PresenceForm,
@@ -327,6 +333,11 @@ def _editions(thesis: Any) -> list[tuple[str, str]]:
     return [(str(e.pk), f"{e.venue.acronym} {e.year}") for e in rows]
 
 
+def _readable(user: User, document: Any) -> Any:
+    """The document if ``user`` may read it (M2 rule and every module's restriction)."""
+    return document if document is not None and can_access_document(user, document) else None
+
+
 class _MissionMixin(_Mixin):
     kwargs: dict[str, Any]
 
@@ -486,6 +497,10 @@ class MissionView(_MissionMixin, View):
             "mission": mission,
             "texts": {name: _shown(value) for name, value in texts.items()},
             "transports": [transports[t] for t in mission.transports],
+            "official_document": _readable(user, mission.official_order_document),
+            "official_form": OfficialOrderForm()
+            if writer and mission.status != MissionStatus.CANCELLED
+            else None,
             "meeting": meeting,
             "submission_id": submission_id,
             "zrr": zrr,
@@ -596,15 +611,20 @@ class _MissionAction(_MissionMixin, View):
     def act(self, mission: Mission, user: User) -> None:
         raise NotImplementedError
 
+    def after(self, request: HttpRequest, mission: Mission) -> None:
+        """Messages after a successful action."""
+
     def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponseBase:
         mission = self._mission("mission_status")
         try:
             self.act(mission, _user(request))
+            mission.refresh_from_db()
         except ValidationError as exc:
             page = MissionView()
             page.request, page.thesis, page.kwargs = request, self.thesis, self.kwargs
             return page._page(mission, status=_status(exc), error=" ".join(exc.messages))
         messages.success(request, self.done_message)
+        self.after(request, mission)
         return redirect(self._mission_url(mission))
 
 
@@ -620,6 +640,16 @@ class MissionDoneView(_MissionAction):
 
     def act(self, mission: Mission, user: User) -> None:
         services.mark_done(mission=mission, user=user)
+
+    def after(self, request: HttpRequest, mission: Mission) -> None:
+        if services.official_order_missing(mission):  # a warning, never a refusal
+            messages.warning(
+                request,
+                _(
+                    "Mission marked as done, but the official mission order is not ticked "
+                    "as obtained in the checklist."
+                ),
+            )
 
 
 # --------------------------------------------------------------------------- orders
@@ -674,7 +704,7 @@ class RequestOrderView(_MissionMixin, View):
             )
         except ValidationError as exc:
             return _mission_page(self, request, mission, _status(exc), " ".join(exc.messages))
-        messages.success(request, _("Mission order requested."))
+        messages.success(request, _("Mission approval requested."))
         return redirect(self._mission_url(mission))
 
 
@@ -697,7 +727,7 @@ class WithdrawOrderView(_OrderMixin, View):
             services.withdraw_order(order=order, user=_user(request))
         except ValidationError as exc:
             return _mission_page(self, request, order.mission, _status(exc), " ".join(exc.messages))
-        messages.success(request, _("Mission order withdrawn."))
+        messages.success(request, _("Mission approval request withdrawn."))
         return redirect(self._url("mission", mission_id=order.mission_id))
 
 
@@ -741,3 +771,24 @@ class DecideOrderView(_OrderMixin, _DeciderGuard, RecentAuthRequiredMixin, View)
             return _mission_page(self, request, order.mission, _status(exc), " ".join(exc.messages))
         messages.success(request, _("Decision recorded."))
         return redirect(self._url("mission", mission_id=order.mission_id))
+
+
+class OfficialOrderView(_MissionMixin, View):
+    """The official mission order (issued outside the platform), stored in the vault."""
+
+    required_action = Action.TRAVEL_WRITE
+    http_method_names: Sequence[str] = ("post",)
+
+    def post(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponseBase:
+        mission = self._mission("official_order")
+        form = OfficialOrderForm(request.POST, request.FILES)
+        if not form.is_valid():
+            return _mission_page(self, request, mission, 400, _("Choose a file."))
+        try:
+            services.attach_official_order(
+                mission=mission, user=_user(request), upload=form.cleaned_data["file"]
+            )
+        except ValidationError as exc:
+            return _mission_page(self, request, mission, _status(exc), " ".join(exc.messages))
+        messages.success(request, _("Official mission order stored."))
+        return redirect(self._mission_url(mission))

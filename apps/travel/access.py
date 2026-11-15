@@ -44,3 +44,23 @@ def presence_access(user: Any, thesis: Thesis) -> PresenceAccess:
         (_ROLE_ACCESS.get(role, PresenceAccess.NONE) for role in roles_of(user, thesis)),
         default=PresenceAccess.NONE,
     )
+
+
+def official_order_restriction(user: Any, document: Any) -> bool:
+    """Read restriction on the official mission order of a mission (registered in
+    TravelConfig.ready()): True for a document that is no mission's official order;
+    else ``user`` must see the mission (a co-supervisor: LIRMM only) AND read the
+    mission's level, on top of the M2 rule on the document's own level. Even while a
+    level change moves the mission before its document, the document is never more
+    open than the mission."""
+    from apps.accounts.permissions import can_access_level
+    from apps.core.confidentiality import ConfidentialityLevel
+
+    from .models import Mission
+
+    mission = Mission.objects.filter(official_order_document_id=document.pk).first()
+    if mission is None:
+        return True
+    thesis = document.thesis
+    visible = Mission.objects.visible_to(user, thesis).filter(pk=mission.pk).exists()
+    return visible and can_access_level(user, thesis, ConfidentialityLevel(mission.level))

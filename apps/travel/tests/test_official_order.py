@@ -109,7 +109,7 @@ def test_the_official_document_is_stored_at_the_missions_level(team: SimpleNames
     mission = mission_of(team, payer="ST")
     document = _attach(team, mission)
     mission.refresh_from_db()
-    assert document.level == mission.level == "INTERNAL_ST"
+    assert document.confidentiality == mission.level == "INTERNAL_ST"
     assert mission.official_order_obtained is True
     assert document.thesis_id == team.thesis.pk
     events = AuditEvent.objects.filter(action="MISSION_OFFICIAL_ORDER_ATTACHED")
@@ -184,7 +184,7 @@ def test_a_level_change_moves_the_document(team: SimpleNamespace) -> None:
         mission=mission, user=team.student, level=L.CONFIDENTIAL, recent_mfa=True
     )
     document.refresh_from_db()
-    assert document.level == "CONFIDENTIAL"
+    assert document.confidentiality == "CONFIDENTIAL"
     assert can_access_document(team.director, document)
 
 
@@ -192,7 +192,7 @@ def test_a_level_change_moves_the_document(team: SimpleNamespace) -> None:
 
 
 def _granted_and_back(team: SimpleNamespace, time_machine: Any, **kw: Any) -> Mission:
-    mission = mission_of(team, **kw)
+    mission: Mission = mission_of(team, **kw)
     if mission.payer != "OTHER":
         order = services.request_order(mission=mission, user=team.student, estimated_total="10")
         decider = team.tutor if mission.payer == "ST" else team.director

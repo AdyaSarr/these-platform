@@ -18,6 +18,13 @@ documenter la répartition contractuelle du temps entre ST et le laboratoire
   `fsd_zrr_clearance`, rien n'est recopié) ; pas de voiture.
 - Minimisation des données (RGPD) : chaque rôle ne voit que les types de jours dont
   il a besoin (voir « Droits »).
+- **Accord de mission, pas ordre de mission** (2026-11-15, après l'étape 4) :
+  l'ordre de mission officiel est émis hors plateforme (outil RH et frais de ST,
+  gestionnaire du LIRMM) ; la plateforme suit l'accord de l'encadrant. L'interface
+  dit « Accord de mission » et rappelle que cet accord ne remplace pas l'ordre
+  officiel ; la liste de préparation a « Ordre de mission officiel obtenu » et le
+  document officiel, déposé dans le coffre au niveau de la mission. Les noms internes
+  (`MissionOrder`, statuts `ORDER_*`, slots 0x0404 et 0x0405) ne changent pas.
 - **Aucune adresse personnelle** stockée, **aucun appel réseau** (pas d'API SNCF ou
   autre) : saisie manuelle.
 
@@ -114,7 +121,14 @@ financières de ST et du LIRMM) : euros seulement, forme canonique `"1234.50"`,
 saisie `^\d{1,6}([.,]\d{1,2})?$` ; les totaux se calculent en Python après un seul
 `open_texts` par requête.
 
-## Ordre de mission
+## Accord de mission (`MissionOrder` dans le code)
+
+L'ordre de mission officiel reste hors plateforme. `Mission.official_order_obtained`
+(case de la liste de préparation) et `Mission.official_order_document` (document du
+coffre, au niveau de la mission ; restriction de lecture : voir la mission **et** lire
+son niveau ; suit les changements de niveau de la mission) le documentent. Marquer
+« effectuée » une mission payée par ST ou le LIRMM sans la case cochée affiche un
+avertissement, sans bloquer.
 
 - **Demande** (doctorant) : mission `PLANNED` ou `ORDER_REFUSED`, payeur `ST` ou
   `LIRMM`, au moins une personne active qui peut décider et lire le niveau ; fige

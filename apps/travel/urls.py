@@ -30,6 +30,7 @@ urlpatterns = [
     path(MISSION + "cancel/", views.CancelMissionView.as_view(), name="cancel_mission"),
     path(MISSION + "done/", views.MissionDoneView.as_view(), name="mission_done"),
     path(MISSION + "order/", views.RequestOrderView.as_view(), name="request_order"),
+    path(MISSION + "official-order/", views.OfficialOrderView.as_view(), name="official_order"),
     path("orders/", views.OrdersView.as_view(), name="orders"),
     path(ORDER + "decide/", views.DecideOrderView.as_view(), name="decide_order"),
     path(ORDER + "withdraw/", views.WithdrawOrderView.as_view(), name="withdraw_order"),

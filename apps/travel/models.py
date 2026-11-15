@@ -141,7 +141,7 @@ class TravelPolicy(TimeStampedModel):
     )
     # Reminder periods.
     order_lead_days = models.PositiveSmallIntegerField(
-        _("mission order to request (days before)"), default=15
+        _("mission approval to request (days before)"), default=15
     )
     receipt_grace_days = models.PositiveSmallIntegerField(
         _("receipts expected (days after)"), default=3
@@ -250,6 +250,19 @@ class Mission(TimeStampedModel):
     )
     tickets_booked = models.BooleanField(_("tickets booked"), default=False)
     lodging_booked = models.BooleanField(_("lodging booked"), default=False)
+    # The OFFICIAL mission order, issued outside the platform (ST's HR tool, the
+    # LIRMM's manager); MissionOrder is the supervisor's approval.
+    official_order_obtained = models.BooleanField(
+        _("official mission order obtained"), default=False
+    )
+    official_order_document = models.ForeignKey(
+        "vault.Document",
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="+",
+        verbose_name=_("official mission order"),
+    )
 
     objects = MissionQuerySet.as_manager()
 
@@ -364,7 +377,7 @@ class MissionOrder(TimeStampedModel):
     objects = _HistoryQuerySet.as_manager()
 
     class Meta:
-        verbose_name = _("mission order")
+        verbose_name = _("mission approval")
         ordering: ClassVar[list[str]] = ["created_at", "pk"]
         constraints: ClassVar[list[models.BaseConstraint]] = [
             models.CheckConstraint(

@@ -69,9 +69,12 @@ class Lodging(models.TextChoices):
 
 class MissionStatus(models.TextChoices):
     PLANNED = "PLANNED", pgettext_lazy("mission status", "Planned")
-    ORDER_REQUESTED = "ORDER_REQUESTED", pgettext_lazy("mission status", "Mission order requested")
-    ORDER_GRANTED = "ORDER_GRANTED", pgettext_lazy("mission status", "Mission order granted")
-    ORDER_REFUSED = "ORDER_REFUSED", pgettext_lazy("mission status", "Mission order refused")
+    ORDER_REQUESTED = (
+        "ORDER_REQUESTED",
+        pgettext_lazy("mission status", "Mission approval requested"),
+    )
+    ORDER_GRANTED = "ORDER_GRANTED", pgettext_lazy("mission status", "Mission approval granted")
+    ORDER_REFUSED = "ORDER_REFUSED", pgettext_lazy("mission status", "Mission approval refused")
     DONE = "DONE", pgettext_lazy("mission status", "Done")
     REIMBURSED = "REIMBURSED", pgettext_lazy("mission status", "Reimbursed")
     CANCELLED = "CANCELLED", pgettext_lazy("mission status", "Cancelled")
@@ -86,10 +89,10 @@ PRESENCE_OF_DESTINATION = {
 
 
 class OrderDecision(models.TextChoices):
-    PENDING = "PENDING", pgettext_lazy("mission order", "Pending")
-    GRANTED = "GRANTED", pgettext_lazy("mission order", "Granted")
-    REFUSED = "REFUSED", pgettext_lazy("mission order", "Refused")
-    WITHDRAWN = "WITHDRAWN", pgettext_lazy("mission order", "Withdrawn")
+    PENDING = "PENDING", pgettext_lazy("mission approval", "Pending")
+    GRANTED = "GRANTED", pgettext_lazy("mission approval", "Granted")
+    REFUSED = "REFUSED", pgettext_lazy("mission approval", "Refused")
+    WITHDRAWN = "WITHDRAWN", pgettext_lazy("mission approval", "Withdrawn")
 
 
 class OrderRefusalReason(models.TextChoices):

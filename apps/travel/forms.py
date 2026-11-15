@@ -74,7 +74,7 @@ class TargetForm(forms.Form):
 
 class RemindersForm(forms.Form):
     order_lead_days = forms.IntegerField(
-        label=_("Mission order to request (days before departure)"),
+        label=_("Mission approval to request (days before departure)"),
         min_value=0,
         max_value=MAX_ORDER_LEAD_DAYS,
     )
@@ -136,6 +136,11 @@ class MissionForm(forms.Form):
     )
     tickets_booked = forms.BooleanField(label=_("Tickets booked"), required=False)
     lodging_booked = forms.BooleanField(label=_("Lodging booked"), required=False)
+    official_order_obtained = forms.BooleanField(
+        label=_("Official mission order obtained"),
+        required=False,
+        help_text=_("Issued by ST or the LIRMM, outside the platform."),
+    )
     fill_presence = forms.BooleanField(
         label=_("Fill in the presence calendar (days already filled in are kept)"),
         required=False,
@@ -186,4 +191,11 @@ class OrderDecisionForm(forms.Form):
         max_length=2000,
         widget=forms.Textarea(attrs={"rows": 3}),
         help_text=_("Sealed at the mission's level; never in the e-mails."),
+    )
+
+
+class OfficialOrderForm(forms.Form):
+    file = forms.FileField(
+        label=_("Official mission order"),
+        help_text=_("Stored encrypted in the vault, at the mission's level."),
     )

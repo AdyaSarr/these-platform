@@ -34,6 +34,7 @@ from apps.vault import formats
 from apps.vault import services as vault
 from apps.vault.audit import AuditAction
 from apps.vault.errors import ReauthenticationRequiredError
+from apps.vault.models import Document
 from apps.vault.services import audit
 
 from . import amounts, holidays, split
@@ -606,6 +607,7 @@ MISSION_FIELDS = (
     "submission",
     "tickets_booked",
     "lodging_booked",
+    "official_order_obtained",
 )
 _ALLOWED_CONTROLS = frozenset("\n\t")
 _OPEN_MISSION = (
@@ -689,7 +691,7 @@ def _check_mission(thesis: Thesis, values: dict[str, Any]) -> None:
     _same_thesis(edition, thesis, "edition")
     _same_thesis(values["meeting"], thesis, "meeting")
     _same_thesis(values["submission"], thesis, "submission")
-    for name in ("tickets_booked", "lodging_booked"):
+    for name in ("tickets_booked", "lodging_booked", "official_order_obtained"):
         if type(values[name]) is not bool:
             raise ValidationError(_("Yes or no."), code=name)
 
@@ -723,6 +725,7 @@ def create_mission(
     submission: Any = None,
     tickets_booked: bool = False,
     lodging_booked: bool = False,
+    official_order_obtained: bool = False,
     fill_presence: bool = True,
 ) -> Mission:
     """A mission of the student; ``fill_presence`` fills its working days in the
@@ -749,6 +752,7 @@ def create_mission(
         "submission": submission,
         "tickets_booked": tickets_booked,
         "lodging_booked": lodging_booked,
+        "official_order_obtained": official_order_obtained,
         **texts,
     }
     _check_mission(_fresh(thesis), values)
@@ -816,7 +820,7 @@ def update_mission(*, mission: Mission, user: User, changes: Mapping[str, Any]) 
         # Before any other check: whatever the new values, the order is pending.
         raise ValidationError(
             _(
-                "A mission order is pending: withdraw it before changing the dates, the "
+                "A mission approval is pending: withdraw it before changing the dates, the "
                 "destination or the payer."
             ),
             code="order_pending",
@@ -893,6 +897,14 @@ def change_mission_level(
             obj=locked,
             **_from_to(previous, level.value),
         )
+    # The official order follows, in the vault's own transaction (CLAUDE.md: one
+    # transaction per vault service). Meanwhile official_order_restriction keeps the
+    # document no more open than the mission.
+    document_id = locked.official_order_document_id
+    if document_id is not None:
+        document = Document.objects.get(pk=document_id)
+        if document.confidentiality != level.value:
+            vault.change_level(document=document, level=level, user=user)
     return locked
 
 
@@ -971,7 +983,7 @@ def mark_done(*, mission: Mission, user: User) -> Mission:
             raise _terminal()
         if locked.payer != Payer.OTHER and not order_covers(locked):
             raise ValidationError(
-                _("A granted mission order is needed first."), code="order_required"
+                _("A granted mission approval is needed first."), code="order_required"
             )
         if locked.end_date > timezone.localdate():
             raise ValidationError(_("The mission is not over yet."), code="not_returned")
@@ -1077,7 +1089,7 @@ def _withdraw(order: MissionOrder) -> None:
 
 
 def _decided() -> ValidationError:
-    return ValidationError(_("This mission order is already decided."), code="decided")
+    return ValidationError(_("This mission approval is already decided."), code="decided")
 
 
 def request_order(*, mission: Mission, user: User, estimated_total: str) -> MissionOrder:
@@ -1088,9 +1100,9 @@ def request_order(*, mission: Mission, user: User, estimated_total: str) -> Miss
     _check_open(thesis)
     fresh = Mission.objects.get(pk=mission.pk)
     if fresh.payer not in ORDER_PAYERS:
-        raise ValidationError(_("No mission order for another body."), code="no_order")
+        raise ValidationError(_("No mission approval for another body."), code="no_order")
     if fresh.status == MissionStatus.ORDER_REQUESTED:
-        raise ValidationError(_("A mission order is already pending."), code="already_pending")
+        raise ValidationError(_("A mission approval is already pending."), code="already_pending")
     if fresh.status not in (MissionStatus.PLANNED, MissionStatus.ORDER_REFUSED):
         raise _terminal()
     try:
@@ -1105,7 +1117,9 @@ def request_order(*, mission: Mission, user: User, estimated_total: str) -> Miss
     with vault.sealing(user=user, thesis=thesis, level=level, action=Action.TRAVEL_WRITE) as sealer:
         locked = _locked_mission(fresh)
         if locked.status not in (MissionStatus.PLANNED, MissionStatus.ORDER_REFUSED):
-            raise ValidationError(_("A mission order is already pending."), code="already_pending")
+            raise ValidationError(
+                _("A mission approval is already pending."), code="already_pending"
+            )
         if locked.level != fresh.level or locked.payer != fresh.payer:
             raise ValidationError(_("The mission changed meanwhile: try again."), code="stale")
         order = MissionOrder(
@@ -1290,3 +1304,51 @@ def order_for(user: Any, thesis: Thesis, order_id: Any, operation: str) -> Missi
     if order is None:
         raise _deny(user, operation, "unknown_order", thesis=thesis)
     return order
+
+
+# --------------------------------------------------------------------------- official order
+
+OFFICIAL_ORDER_TITLE = "Ordre de mission officiel"  # in clear (M2): fixed, says nothing
+
+
+def attach_official_order(*, mission: Mission, user: User, upload: Any) -> Document:
+    """Store the official mission order (issued outside the platform) in the vault at
+    the mission's level, as a new version once there is one, and tick the checklist.
+    The vault stores it in its own transaction, then the mission is linked in another
+    (CLAUDE.md: never two vault services, nor a vault service and audit(), mixed)."""
+    thesis = _fresh(mission.thesis)
+    _require(user, Action.TRAVEL_WRITE, thesis, "official_order")
+    _check_open(thesis)
+    fresh = Mission.objects.get(pk=mission.pk)
+    if fresh.status == MissionStatus.CANCELLED:
+        raise _terminal()
+    level = ConfidentialityLevel(fresh.level)
+    if fresh.official_order_document_id is None:
+        document = vault.store(
+            thesis=thesis, upload=upload, title=OFFICIAL_ORDER_TITLE, level=level, user=user
+        )
+    else:
+        document = Document.objects.get(pk=fresh.official_order_document_id)
+        vault.add_version(document=document, upload=upload, user=user)
+        document.refresh_from_db()
+    with transaction.atomic():
+        locked = _locked_mission(fresh)
+        if locked.official_order_document_id not in (None, document.pk):
+            raise ValidationError(_("The mission changed meanwhile: try again."), code="stale")
+        locked.official_order_document = document
+        locked.official_order_obtained = True
+        locked.save()
+        audit(
+            AuditAction.MISSION_OFFICIAL_ORDER_ATTACHED,
+            actor=user,
+            obj=locked,
+            document_id=str(document.pk),
+            version=document.current_version,
+        )
+    return document
+
+
+def official_order_missing(mission: Mission) -> bool:
+    """A mission paid by ST or the LIRMM whose official order is not ticked as
+    obtained: a warning when it is marked done, never a refusal."""
+    return mission.payer in ORDER_PAYERS and not mission.official_order_obtained

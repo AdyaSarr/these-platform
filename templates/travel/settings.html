@@ -30,7 +30,7 @@
 {% endif %}
 <h2>{% translate "Reminders" %}</h2>
 <ul>
-  <li>{% blocktranslate with n=policy.order_lead_days %}Mission order to request {{ n }} days before departure.{% endblocktranslate %}</li>
+  <li>{% blocktranslate with n=policy.order_lead_days %}Mission approval to request {{ n }} days before departure.{% endblocktranslate %}</li>
   <li>{% blocktranslate with n=policy.receipt_grace_days %}Receipts expected {{ n }} days after return.{% endblocktranslate %}</li>
 </ul>
 {% if reminders_form %}

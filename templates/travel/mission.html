@@ -16,13 +16,15 @@
   <li>{% translate "Transport:" %} {{ transports|join:", " }}</li>
   <li>{% translate "Lodging:" %} {{ mission.get_lodging_display }}{% if texts.lodging_note.text or texts.lodging_note.restricted %} — {% include "conferences/_text.html" with value=texts.lodging_note %}{% endif %}</li>
   <li>{% translate "Tickets booked:" %} {{ mission.tickets_booked|yesno:_("yes,no") }} · {% translate "Lodging booked:" %} {{ mission.lodging_booked|yesno:_("yes,no") }}</li>
+  <li>{% translate "Official mission order obtained:" %} {{ mission.official_order_obtained|yesno:_("yes,no") }}{% if official_document %} — <a href="{% url 'vault:document' thesis_id=thesis.pk document_id=official_document.pk %}">{% translate "the document" %}</a>{% endif %}</li>
   {% if zrr %}<li>{% translate "ZRR access (administrative file):" %} {{ zrr.get_status_display }}</li>{% endif %}
   {% if meeting %}<li><a href="{% url 'meetings:detail' thesis_id=thesis.pk meeting_id=meeting.pk %}">{% translate "Linked meeting" %}</a> ({{ meeting.get_kind_display }}, {{ meeting.starts_at|date:"d/m/Y" }})</li>{% endif %}
   {% if submission_id %}<li><a href="{% url 'conferences:submission' thesis_id=thesis.pk submission_id=submission_id %}">{% translate "Linked submission" %}</a></li>{% endif %}
 </ul>
 <h2>{% translate "Purpose" %}</h2>
 <p>{% if texts.purpose.text or texts.purpose.restricted %}{% include "conferences/_text.html" with value=texts.purpose %}{% else %}<span class="muted">—</span>{% endif %}</p>
-<h2>{% translate "Mission order" %}</h2>
+<h2>{% translate "Mission approval" %}</h2>
+<p class="muted">{% translate "This approval does not replace the official mission order of ST or the LIRMM." %}</p>
 {% if orders %}
 <table class="table">
   <thead><tr><th scope="col">{% translate "Requested on" %}</th><th scope="col">{% translate "Estimate" %}</th><th scope="col">{% translate "Decision" %}</th><th scope="col">{% translate "Comment" %}</th></tr></thead>
@@ -33,11 +35,11 @@
     <td>{% include "conferences/_text.html" with value=row.comment %}</td>
   </tr>{% endfor %}</tbody>
 </table>
-{% elif mission.payer == "OTHER" %}<p class="muted">{% translate "Paid by another body: no mission order in the platform." %}</p>
-{% else %}<p class="muted">{% translate "No mission order requested yet." %}</p>{% endif %}
+{% elif mission.payer == "OTHER" %}<p class="muted">{% translate "Paid by another body: no mission approval in the platform." %}</p>
+{% else %}<p class="muted">{% translate "No mission approval requested yet." %}</p>{% endif %}
 {% if request_form %}
 <form class="stack" method="post" action="{% url 'travel:request_order' thesis_id=thesis.pk mission_id=mission.pk %}">{% csrf_token %}{% with form=request_form %}{% include "conferences/_form.html" %}{% endwith %}
-  <button type="submit">{% translate "Request the mission order" %}</button>
+  <button type="submit">{% translate "Request the mission approval" %}</button>
   <span class="muted">{% translate "The dates, the destination and the payer are then frozen until the decision." %}</span></form>
 {% endif %}
 {% if pending and writer %}
@@ -47,6 +49,10 @@
 <form class="stack" method="post" action="{% url 'travel:decide_order' thesis_id=thesis.pk order_id=pending.pk %}">{% csrf_token %}{% with form=decision_form %}{% include "conferences/_form.html" %}{% endwith %}
   <button type="submit">{% translate "Record the decision" %}</button>
   <span class="muted">{% translate "Asks for your second factor." %}</span></form>
+{% endif %}
+{% if official_form %}
+<form class="stack" method="post" enctype="multipart/form-data" action="{% url 'travel:official_order' thesis_id=thesis.pk mission_id=mission.pk %}">{% csrf_token %}{% with form=official_form %}{% include "conferences/_form.html" %}{% endwith %}
+  <button type="submit">{% translate "Store the official mission order" %}</button></form>
 {% endif %}
 {% if writer %}
 <p class="actions"><a href="{% url 'travel:edit_mission' thesis_id=thesis.pk mission_id=mission.pk %}">{% translate "Edit" %}</a>
