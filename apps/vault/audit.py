@@ -147,6 +147,12 @@ class AuditAction(StrEnum):
     PUBLICATION_POLICY_CHANGED = "PUBLICATION_POLICY_CHANGED"  # from, to (days)
     CONFERENCES_IMPORTED = "CONFERENCES_IMPORTED"  # counts
     CONFERENCE_ACCESS_DENIED = "CONFERENCE_ACCESS_DENIED"
+    # Travel (M7): codes, dates, counts, percents and ids; never an amount nor a text.
+    PRESENCE_CORRECTED = "PRESENCE_CORRECTED"  # day, from, to (kinds; None = blank)
+    TRAVEL_RULES_CHANGED = "TRAVEL_RULES_CHANGED"  # changes: {field: {from, to}}
+    TRAVEL_TARGET_CHANGED = "TRAVEL_TARGET_CHANGED"  # cifre_year, from, to (ST percent)
+    TRAVEL_REMINDERS_CHANGED = "TRAVEL_REMINDERS_CHANGED"  # changes: {field: {from, to}}
+    TRAVEL_ACCESS_DENIED = "TRAVEL_ACCESS_DENIED"
     # Keys (M2).
     KEK_CREATED = "KEK_CREATED"
     KEK_RETIRED = "KEK_RETIRED"

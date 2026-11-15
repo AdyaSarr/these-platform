@@ -126,7 +126,7 @@ def test_unknown_kind_is_refused(team: SimpleNamespace, kind: str) -> None:
 
 def test_a_datetime_is_refused(team: SimpleNamespace) -> None:
     with pytest.raises(TypeError):
-        _set(team, NOW, D(2027, 1, 25), "LIRMM")  # type: ignore[arg-type]
+        _set(team, NOW, D(2027, 1, 25), "LIRMM")
 
 
 @pytest.mark.parametrize("status", [Thesis.Status.DEFENDED, Thesis.Status.CLOSED])
@@ -286,7 +286,8 @@ def test_full_counter_for_the_student_and_the_tutor(team: SimpleNamespace) -> No
 def test_director_counter_shows_unavailable_not_leave(team: SimpleNamespace) -> None:
     _fill_week(team)
     summary = _summary(team, "director")
-    assert (summary.st_days, summary.lab_days, summary.st_percent) == (2, 2, 50)
+    assert (summary.st_days, summary.lab_days) == (2, 2)
+    assert summary.st_percent == 50
     assert summary.shown_counts == {
         "ROUSSET": 1,
         "LIRMM": 1,

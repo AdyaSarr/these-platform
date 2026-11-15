@@ -1,0 +1,41 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% translate "Travel settings" %}{% endblock %}
+{% block content %}
+{% include "travel/_nav.html" %}
+<h1>{% translate "Travel settings" %}</h1>
+{% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
+<h2>{% translate "Counting rules" %}</h2>
+<ul>
+  <li>{% translate "Remote work counts for:" %} {{ remote_side }}</li>
+  <li>{% translate "Conferences count for:" %} {{ conference_side }}</li>
+  <li>{% if policy.whit_monday_holiday %}{% translate "Whit Monday is a holiday." %}{% else %}{% translate "Whit Monday is a working day." %}{% endif %}</li>
+  <li>{% blocktranslate with n=policy.gap_alert_points %}Alert when the gap to the target exceeds {{ n }} points.{% endblocktranslate %}</li>
+  <li>{% if policy.min_lab_days_per_month is not None %}{% blocktranslate with n=policy.min_lab_days_per_month %}At least {{ n }} days at the LIRMM per month.{% endblocktranslate %}{% else %}{% translate "No monthly rule." %}{% endif %}</li>
+</ul>
+{% if rules_form %}
+<form class="stack" method="post" action="{% url 'travel:rules' thesis_id=thesis.pk %}">{% csrf_token %}{% with form=rules_form %}{% include "conferences/_form.html" %}{% endwith %}
+  <button type="submit">{% translate "Save the rules" %}</button>
+  <span class="muted">{% translate "Asks for your second factor." %}</span></form>
+{% endif %}
+<h2>{% translate "ST / LIRMM targets" %}</h2>
+<p class="muted">{% translate "From the collaboration contract (administrative file)." %}</p>
+<table class="table">
+  <thead><tr><th scope="col">{% translate "CIFRE year" %}</th><th scope="col">{% translate "ST share" %} (%)</th></tr></thead>
+  <tbody>{% for n, st in targets %}<tr><td>{{ n }}</td><td>{% if st is not None %}{{ st }} %{% else %}—{% endif %}</td></tr>{% endfor %}</tbody>
+</table>
+{% if target_form %}
+<form class="stack" method="post" action="{% url 'travel:target' thesis_id=thesis.pk %}">{% csrf_token %}{% with form=target_form %}{% include "conferences/_form.html" %}{% endwith %}
+  <button type="submit">{% translate "Save the target" %}</button>
+  <span class="muted">{% translate "Asks for your second factor." %}</span></form>
+{% endif %}
+<h2>{% translate "Reminders" %}</h2>
+<ul>
+  <li>{% blocktranslate with n=policy.order_lead_days %}Mission order to request {{ n }} days before departure.{% endblocktranslate %}</li>
+  <li>{% blocktranslate with n=policy.receipt_grace_days %}Receipts expected {{ n }} days after return.{% endblocktranslate %}</li>
+</ul>
+{% if reminders_form %}
+<form class="stack" method="post" action="{% url 'travel:reminders' thesis_id=thesis.pk %}">{% csrf_token %}{% with form=reminders_form %}{% include "conferences/_form.html" %}{% endwith %}
+  <button type="submit">{% translate "Save the reminders" %}</button>
+  <span class="muted">{% translate "Asks for your second factor." %}</span></form>
+{% endif %}
+{% endblock %}

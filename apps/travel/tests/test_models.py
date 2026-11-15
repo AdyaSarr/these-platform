@@ -80,7 +80,7 @@ def test_one_policy_per_thesis() -> None:
 @pytest.mark.parametrize(
     "fields",
     [
-        {"remote_counts_as": "HOME"},
+        {"remote_counts_as": "XX"},  # short: hits the CHECK, not the length
         {"conference_counts_as": ""},
         {"gap_alert_points": 0},
         {"gap_alert_points": 51},

@@ -108,11 +108,14 @@ def _walk(patterns: list[Any], prefix: str = "") -> Iterator[tuple[str, URLPatte
 
 
 def _plain_travel_pages(team: SimpleNamespace) -> list[str]:
-    """Every travel route whose only argument is the thesis id."""
+    """Every GET travel route whose only argument is the thesis id."""
     out = []
     for route, pattern in _walk(get_resolver().url_patterns):
         if not route.startswith("t/<uuid:thesis_id>/travel/") or not pattern.name:
             continue
+        view_class = getattr(pattern.callback, "view_class", None)
+        if view_class is not None and "get" not in view_class.http_method_names:
+            continue  # POST only: nothing is shown
         if set(re.findall(r"<(?:\w+:)?(\w+)>", route)) == {"thesis_id"}:
             out.append(reverse(f"travel:{pattern.name}", kwargs={"thesis_id": team.thesis.pk}))
     return sorted(out)

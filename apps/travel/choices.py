@@ -20,3 +20,15 @@ class Side(models.TextChoices):
 
     ST = "ST", _("ST")
     LAB = "LAB", _("Laboratory")
+
+
+class ShownKind(models.TextChoices):
+    """A day as shown to one viewer (services.visible_days): a PresenceKind, or
+    UNAVAILABLE, the director's view of a leave day (never the word leave)."""
+
+    ROUSSET = PresenceKind.ROUSSET.value, PresenceKind.ROUSSET.label
+    LIRMM = PresenceKind.LIRMM.value, PresenceKind.LIRMM.label
+    REMOTE = PresenceKind.REMOTE.value, PresenceKind.REMOTE.label
+    CONFERENCE = PresenceKind.CONFERENCE.value, PresenceKind.CONFERENCE.label
+    LEAVE = PresenceKind.LEAVE.value, PresenceKind.LEAVE.label
+    UNAVAILABLE = "UNAVAILABLE", _("Unavailable")

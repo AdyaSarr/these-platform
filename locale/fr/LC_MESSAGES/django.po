@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-15 00:00+0100\n"
+"POT-Creation-Date: 2026-11-15 13:21+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -132,7 +132,7 @@ msgstr "Externe"
 msgid "name"
 msgstr "nom"
 
-#: apps/accounts/models.py:84
+#: apps/accounts/models.py:84 apps/travel/models.py:47
 msgid "kind"
 msgstr "type"
 
@@ -491,8 +491,8 @@ msgstr "Attestation CVEC"
 
 #: apps/admin_file/forms.py:18
 msgid ""
-"This comment is not encrypted and is shown to the supervisors of the section:"
-" no personal information (nationality, health, amounts)."
+"This comment is not encrypted and is shown to the supervisors of the "
+"section: no personal information (nationality, health, amounts)."
 msgstr ""
 "Ce commentaire n'est pas chiffré et il est visible des encadrants de la "
 "partie concernée : aucune information personnelle (nationalité, santé, "
@@ -500,8 +500,8 @@ msgstr ""
 
 #: apps/admin_file/forms.py:22
 msgid ""
-"The label is not encrypted and is shown to the supervisors of the section: no"
-" personal information (nationality, health, amounts). Example: “Residence "
+"The label is not encrypted and is shown to the supervisors of the section: "
+"no personal information (nationality, health, amounts). Example: “Residence "
 "permit renewal”, never the nationality."
 msgstr ""
 "Le libellé n'est pas chiffré et il est visible des encadrants de la partie "
@@ -510,13 +510,13 @@ msgstr ""
 
 #: apps/admin_file/forms.py:28
 msgid ""
-"Once attached, co-supervisors and the industrial tutor will no longer be able"
-" to read it from the Documents page: only those who see this part of the file"
-" can."
+"Once attached, co-supervisors and the industrial tutor will no longer be "
+"able to read it from the Documents page: only those who see this part of the "
+"file can."
 msgstr ""
-"Une fois rattaché, les co-encadrants et le tuteur industriel ne pourront plus"
-" le lire depuis la page Documents : seuls ceux qui voient cette partie du "
-"dossier le peuvent."
+"Une fois rattaché, les co-encadrants et le tuteur industriel ne pourront "
+"plus le lire depuis la page Documents : seuls ceux qui voient cette partie "
+"du dossier le peuvent."
 
 #: apps/admin_file/forms.py:32
 msgid ""
@@ -908,8 +908,8 @@ msgid ""
 "The document has changed since it was submitted: withdraw it and submit it "
 "again, or reject it."
 msgstr ""
-"Le document a changé depuis le dépôt : retirez le dépôt et déposez à nouveau,"
-" ou refusez la pièce."
+"Le document a changé depuis le dépôt : retirez le dépôt et déposez à "
+"nouveau, ou refusez la pièce."
 
 #: apps/admin_file/views.py:65
 msgid "The item has changed, reload the page."
@@ -1135,7 +1135,7 @@ msgstr "Nouvelle édition de conférence ou revue"
 msgid "ST review period (days)"
 msgstr "Délai de relecture ST (jours)"
 
-#: apps/conferences/models.py:57
+#: apps/conferences/models.py:57 apps/travel/choices.py:14
 msgid "Conference"
 msgstr "Conférence"
 
@@ -1434,7 +1434,8 @@ msgstr "Cette édition existe déjà."
 msgid "This deadline was cancelled."
 msgstr "Cette échéance a été annulée."
 
-#: apps/conferences/services.py:472
+#: apps/conferences/services.py:472 apps/travel/services.py:464
+#: apps/travel/services.py:485 apps/travel/services.py:492
 #, python-format
 msgid "Between 0 and %(max)d days."
 msgstr "Entre 0 et %(max)d jours."
@@ -1750,11 +1751,11 @@ msgstr "Statut"
 msgid "All"
 msgstr "Tous"
 
-#: apps/meetings/forms.py:216
+#: apps/meetings/forms.py:216 apps/travel/forms.py:31
 msgid "From"
 msgstr "Du"
 
-#: apps/meetings/forms.py:217
+#: apps/meetings/forms.py:217 apps/travel/forms.py:32
 msgid "To"
 msgstr "Au"
 
@@ -1798,11 +1799,11 @@ msgstr "Séminaire d'équipe"
 msgid "ST meeting"
 msgstr "Réunion ST"
 
-#: apps/meetings/models.py:68
+#: apps/meetings/models.py:68 apps/travel/choices.py:11
 msgid "ST Rousset"
 msgstr "ST Rousset"
 
-#: apps/meetings/models.py:69
+#: apps/meetings/models.py:69 apps/travel/choices.py:12
 msgid "LIRMM Montpellier"
 msgstr "LIRMM Montpellier"
 
@@ -2109,7 +2110,8 @@ msgstr ""
 "Obligatoire : cet objectif est approuvé. Le motif est conservé avec la "
 "modification et montré au directeur."
 
-#: apps/objectives/forms.py:40
+#: apps/objectives/forms.py:40 apps/travel/forms.py:62 apps/travel/models.py:73
+#: templates/travel/settings.html:23
 msgid "CIFRE year"
 msgstr "Année CIFRE"
 
@@ -2336,8 +2338,8 @@ msgstr "Ce document ne peut pas être joint."
 
 #: apps/objectives/services.py:728
 msgid ""
-"An objective with progress cannot go back to “Planned”: keep “In progress” or"
-" set the progress back to zero."
+"An objective with progress cannot go back to “Planned”: keep “In progress” "
+"or set the progress back to zero."
 msgstr ""
 "Un objectif avec un avancement ne peut pas revenir à « Prévu » : gardez « En "
 "cours » ou ramenez l'avancement à zéro."
@@ -2374,6 +2376,178 @@ msgstr "%(count)d objectif(s) approuvé(s)."
 #: apps/objectives/views.py:493
 msgid "Progress recorded."
 msgstr "Avancement enregistré."
+
+#: apps/travel/choices.py:13
+msgid "Remote work"
+msgstr "Télétravail"
+
+#: apps/travel/choices.py:15
+msgid "Leave"
+msgstr "Congé"
+
+#: apps/travel/choices.py:21
+msgid "ST"
+msgstr "ST"
+
+#: apps/travel/choices.py:22
+msgid "Laboratory"
+msgstr "Laboratoire"
+
+#: apps/travel/choices.py:34
+msgid "Unavailable"
+msgstr "Indisponible"
+
+#: apps/travel/forms.py:34 templates/travel/split.html:20
+msgid "Kind"
+msgstr "Type"
+
+#: apps/travel/forms.py:35
+msgid "— clear —"
+msgstr "— effacer —"
+
+#: apps/travel/forms.py:39
+msgid "Also weekends and public holidays"
+msgstr "Aussi les week-ends et jours fériés"
+
+#: apps/travel/forms.py:44
+msgid "Remote work counts for"
+msgstr "Le télétravail compte pour"
+
+#: apps/travel/forms.py:46
+msgid "Conferences count for"
+msgstr "Les conférences comptent pour"
+
+#: apps/travel/forms.py:48 apps/travel/models.py:111
+msgid "Whit Monday is a holiday"
+msgstr "Le lundi de Pentecôte est férié"
+
+#: apps/travel/forms.py:50
+msgid "Alert when the gap exceeds (points)"
+msgstr "Alerte si l'écart dépasse (points)"
+
+#: apps/travel/forms.py:53
+msgid "Minimum LIRMM days per month"
+msgstr "Minimum de jours au LIRMM par mois"
+
+#: apps/travel/forms.py:57
+msgid "Leave empty: no monthly rule."
+msgstr "Laisser vide : pas de règle mensuelle."
+
+#: apps/travel/forms.py:63 apps/travel/models.py:74
+msgid "ST share (percent)"
+msgstr "Part ST (%)"
+
+#: apps/travel/forms.py:68
+msgid "Mission order to request (days before departure)"
+msgstr "Ordre de mission à demander (jours avant le départ)"
+
+#: apps/travel/forms.py:73
+msgid "Receipts expected (days after return)"
+msgstr "Justificatifs attendus (jours après le retour)"
+
+#: apps/travel/models.py:46
+msgid "day"
+msgstr "jour"
+
+#: apps/travel/models.py:52
+msgid "presence day"
+msgstr "jour de présence"
+
+#: apps/travel/models.py:75
+msgid "laboratory share (percent)"
+msgstr "part laboratoire (%)"
+
+#: apps/travel/models.py:78
+msgid "time-split target"
+msgstr "cible de répartition du temps"
+
+#: apps/travel/models.py:106
+msgid "remote work counts for"
+msgstr "le télétravail compte pour"
+
+#: apps/travel/models.py:109
+msgid "conferences count for"
+msgstr "les conférences comptent pour"
+
+#: apps/travel/models.py:112
+msgid "alert above (points)"
+msgstr "alerte au-delà de (points)"
+
+#: apps/travel/models.py:114
+msgid "minimum LIRMM days per month"
+msgstr "minimum de jours au LIRMM par mois"
+
+#: apps/travel/models.py:118
+msgid "mission order to request (days before)"
+msgstr "ordre de mission à demander (jours avant)"
+
+#: apps/travel/models.py:121
+msgid "receipts expected (days after)"
+msgstr "justificatifs attendus (jours après)"
+
+#: apps/travel/models.py:134
+msgid "travel policy"
+msgstr "règles des déplacements"
+
+#: apps/travel/services.py:79
+msgid "The thesis is finished: its travel data is frozen."
+msgstr "La thèse est terminée : ses déplacements sont figés."
+
+#: apps/travel/services.py:109
+#, python-format
+msgid "The dates must be between %(first)s and %(last)s."
+msgstr "Les dates doivent être comprises entre le %(first)s et le %(last)s."
+
+#: apps/travel/services.py:156
+msgid "Unknown kind of day."
+msgstr "Type de jour inconnu."
+
+#: apps/travel/services.py:158
+msgid "The first day must not be after the last one."
+msgstr "Le premier jour ne peut pas être après le dernier."
+
+#: apps/travel/services.py:161
+#, python-format
+msgid "At most %(n)d days at once."
+msgstr "%(n)d jours au plus à la fois."
+
+#: apps/travel/services.py:262 apps/travel/services.py:507
+msgid "Unknown CIFRE year."
+msgstr "Année CIFRE inconnue."
+
+#: apps/travel/services.py:352
+msgid "Unknown month."
+msgstr "Mois inconnu."
+
+#: apps/travel/services.py:354
+msgid "This month is outside the thesis."
+msgstr "Ce mois est hors de la thèse."
+
+#: apps/travel/services.py:448
+msgid "Unknown side."
+msgstr "Côté inconnu."
+
+#: apps/travel/services.py:450
+msgid "Yes or no."
+msgstr "Oui ou non."
+
+#: apps/travel/services.py:456
+#, python-format
+msgid "Between 1 and %(max)d points."
+msgstr "Entre 1 et %(max)d points."
+
+#: apps/travel/services.py:508
+msgid "Between 0 and 100."
+msgstr "Entre 0 et 100."
+
+#: apps/travel/views.py:151
+#, python-format
+msgid "%(n)d days updated."
+msgstr "%(n)d jours mis à jour."
+
+#: apps/travel/views.py:244
+msgid "Settings saved."
+msgstr "Réglages enregistrés."
 
 #: apps/vault/forms.py:14 templates/vault/upload.html:6
 msgid ""
@@ -2706,8 +2880,8 @@ msgid ""
 "Inviting, changing a role, removing or extending a member asks for your "
 "second factor if you have not used it in the last 10 minutes."
 msgstr ""
-"Inviter, changer un rôle, retirer ou prolonger un membre demande votre second"
-" facteur si vous ne l'avez pas utilisé depuis 10 minutes."
+"Inviter, changer un rôle, retirer ou prolonger un membre demande votre "
+"second facteur si vous ne l'avez pas utilisé depuis 10 minutes."
 
 #: templates/accounts/team.html:69
 msgid "Pending invitations"
@@ -2808,8 +2982,8 @@ msgid ""
 "Validated on %(validated)s, then reopened on %(reopened)s by %(name)s — "
 "reason: %(reason)s"
 msgstr ""
-"Validée le %(validated)s puis rouverte le %(reopened)s par %(name)s — motif :"
-" %(reason)s"
+"Validée le %(validated)s puis rouverte le %(reopened)s par %(name)s — "
+"motif : %(reason)s"
 
 #: templates/admin_file/item_row.html:33
 #, python-format
@@ -3042,6 +3216,7 @@ msgstr "Contrat de collaboration :"
 #: templates/conferences/submission_form.html:7
 #: templates/conferences/venue.html:22 templates/conferences/venue_form.html:7
 #: templates/meetings/form.html:13 templates/objectives/form.html:18
+#: templates/travel/month.html:23
 msgid "Save"
 msgstr "Enregistrer"
 
@@ -3074,7 +3249,8 @@ msgstr "Pas des travaux ST : aucun accord nécessaire"
 #: templates/conferences/submission.html:73
 #: templates/conferences/submission.html:121
 #: templates/objectives/dashboard.html:94 templates/objectives/detail.html:40
-#: templates/objectives/detail.html:81
+#: templates/objectives/detail.html:81 templates/travel/settings.html:18
+#: templates/travel/settings.html:29 templates/travel/settings.html:39
 msgid "Asks for your second factor."
 msgstr "Demande votre second facteur."
 
@@ -3210,6 +3386,7 @@ msgid "Edit the venue"
 msgstr "Modifier la conférence ou revue"
 
 #: templates/core/home.html:3 templates/core/home.html:5
+#: templates/travel/_nav.html:1
 msgid "Dashboard"
 msgstr "Tableau de bord"
 
@@ -3329,8 +3506,8 @@ msgid ""
 "The minutes, decisions and actions can be written from the start of the "
 "meeting."
 msgstr ""
-"Le compte rendu, les décisions et les actions se saisissent à partir du début"
-" de la réunion."
+"Le compte rendu, les décisions et les actions se saisissent à partir du "
+"début de la réunion."
 
 #: templates/meetings/detail.html:74
 #, python-format
@@ -3403,8 +3580,8 @@ msgid ""
 "Asks for your second factor. Every attendee must be able to read the new "
 "level."
 msgstr ""
-"Demande votre second facteur. Chaque participant doit pouvoir lire le nouveau"
-" niveau."
+"Demande votre second facteur. Chaque participant doit pouvoir lire le "
+"nouveau niveau."
 
 #: templates/meetings/duplicate.html:2 templates/meetings/duplicate.html:4
 msgid "Duplicate the meeting"
@@ -3412,8 +3589,8 @@ msgstr "Dupliquer la réunion"
 
 #: templates/meetings/duplicate.html:6
 msgid ""
-"Copies the type, place, duration, confidentiality, attendees and title; never"
-" the agenda, minutes, decisions, actions, documents, room or video link."
+"Copies the type, place, duration, confidentiality, attendees and title; "
+"never the agenda, minutes, decisions, actions, documents, room or video link."
 msgstr ""
 "Copie le type, le lieu, la durée, la confidentialité, les participants et le "
 "titre ; jamais l'ordre du jour, le compte rendu, les décisions, les actions, "
@@ -3516,8 +3693,8 @@ msgstr "Secret d'authentification"
 
 #: templates/mfa/totp/activate_form.html:26
 msgid ""
-"You can store this secret and use it to reinstall your authenticator app at a"
-" later time."
+"You can store this secret and use it to reinstall your authenticator app at "
+"a later time."
 msgstr ""
 "Vous pouvez stocker ce secret et l'utiliser pour réinstaller votre "
 "application d'authentification ultérieurement."
@@ -3557,11 +3734,11 @@ msgstr "Évolution de l'avancement moyen pondéré"
 
 #: templates/objectives/_progress_chart.html:5
 msgid ""
-"Weighted average progress at the end of each month. The table below gives the"
-" same values."
+"Weighted average progress at the end of each month. The table below gives "
+"the same values."
 msgstr ""
-"Avancement moyen pondéré à la fin de chaque mois. Le tableau ci-dessous donne"
-" les mêmes valeurs."
+"Avancement moyen pondéré à la fin de chaque mois. Le tableau ci-dessous "
+"donne les mêmes valeurs."
 
 #: templates/objectives/_progress_chart.html:21
 msgid "Weighted average progress by month"
@@ -3746,6 +3923,188 @@ msgstr ""
 #: templates/objectives/form.html:18
 msgid "Create the objective"
 msgstr "Créer l'objectif"
+
+#: templates/travel/_nav.html:1 templates/travel/month.html:2
+#: templates/travel/month.html:5
+msgid "Presence calendar"
+msgstr "Calendrier de présence"
+
+#: templates/travel/_nav.html:1 templates/travel/split.html:2
+#: templates/travel/split.html:5
+msgid "ST / LIRMM time"
+msgstr "Temps ST / LIRMM"
+
+#: templates/travel/_nav.html:1 templates/travel/settings.html:2
+#: templates/travel/settings.html:5
+msgid "Travel settings"
+msgstr "Réglages des déplacements"
+
+#: templates/travel/month.html:6
+msgid "Previous month"
+msgstr "Mois précédent"
+
+#: templates/travel/month.html:7
+msgid "Next month"
+msgstr "Mois suivant"
+
+#: templates/travel/month.html:12
+msgid "public holiday"
+msgstr "férié"
+
+#: templates/travel/month.html:16
+msgid "Legend:"
+msgstr "Légende :"
+
+#: templates/travel/month.html:17
+#, python-format
+msgid "%(n)s working day at the LIRMM this month."
+msgid_plural "%(n)s working days at the LIRMM this month."
+msgstr[0] "%(n)s jour ouvré au LIRMM ce mois-ci."
+msgstr[1] "%(n)s jours ouvrés au LIRMM ce mois-ci."
+
+#: templates/travel/month.html:18
+#, python-format
+msgid "Rule: at least %(n)s."
+msgstr "Règle : au moins %(n)s."
+
+#: templates/travel/month.html:19
+msgid "Met."
+msgstr "Respectée."
+
+#: templates/travel/month.html:19
+msgid "Not met."
+msgstr "Non respectée."
+
+#: templates/travel/month.html:21
+msgid "Fill in days"
+msgstr "Renseigner des jours"
+
+#: templates/travel/month.html:24
+msgid ""
+"Working days only unless the box is ticked. A change to a past day is "
+"recorded in the audit log."
+"Jours ouvrés seulement, sauf si la case est cochée. Toute modification d'un "
+"jour passé est inscrite au journal d'audit."
+msgstr "Jours ouvrés seulement, sauf si la case est cochée. Toute modification d'un jour passé est inscrite au journal d'audit."
+
+#: templates/travel/settings.html:7
+msgid "Counting rules"
+msgstr "Règles de comptage"
+
+#: templates/travel/settings.html:9
+msgid "Remote work counts for:"
+msgstr "Le télétravail compte pour :"
+
+#: templates/travel/settings.html:10
+msgid "Conferences count for:"
+msgstr "Les conférences comptent pour :"
+
+#: templates/travel/settings.html:11
+msgid "Whit Monday is a holiday."
+msgstr "Le lundi de Pentecôte est férié."
+
+#: templates/travel/settings.html:11
+msgid "Whit Monday is a working day."
+msgstr "Le lundi de Pentecôte est travaillé."
+
+#: templates/travel/settings.html:12
+#, python-format
+msgid "Alert when the gap to the target exceeds %(n)s points."
+msgstr "Alerte quand l'écart à la cible dépasse %(n)s points."
+
+#: templates/travel/settings.html:13
+#, python-format
+msgid "At least %(n)s days at the LIRMM per month."
+msgstr "Au moins %(n)s jours au LIRMM par mois."
+
+#: templates/travel/settings.html:13
+msgid "No monthly rule."
+msgstr "Pas de règle mensuelle."
+
+#: templates/travel/settings.html:17
+msgid "Save the rules"
+msgstr "Enregistrer les règles"
+
+#: templates/travel/settings.html:20
+msgid "ST / LIRMM targets"
+msgstr "Cibles ST / LIRMM"
+
+#: templates/travel/settings.html:21
+msgid "From the collaboration contract (administrative file)."
+msgstr "D'après le contrat de collaboration (dossier administratif)."
+
+#: templates/travel/settings.html:23 templates/travel/split.html:13
+msgid "ST share"
+msgstr "Part ST"
+
+#: templates/travel/settings.html:28
+msgid "Save the target"
+msgstr "Enregistrer la cible"
+
+#: templates/travel/settings.html:31
+msgid "Reminders"
+msgstr "Rappels"
+
+#: templates/travel/settings.html:33
+#, python-format
+msgid "Mission order to request %(n)s days before departure."
+msgstr "Ordre de mission à demander %(n)s jours avant le départ."
+
+#: templates/travel/settings.html:34
+#, python-format
+msgid "Receipts expected %(n)s days after return."
+msgstr "Justificatifs attendus %(n)s jours après le retour."
+
+#: templates/travel/settings.html:38
+msgid "Save the reminders"
+msgstr "Enregistrer les rappels"
+
+#: templates/travel/split.html:5
+#, python-format
+msgid "CIFRE year %(n)s"
+msgstr "Année CIFRE %(n)s"
+
+#: templates/travel/split.html:6
+#, python-format
+msgid "Year %(n)s"
+msgstr "Année %(n)s"
+
+#: templates/travel/split.html:7
+#, python-format
+msgid "Working days from %(first)s to %(last)s."
+msgstr "Jours ouvrés du %(first)s au %(last)s."
+
+#: templates/travel/split.html:9
+msgid "Days at the LIRMM"
+msgstr "Jours au LIRMM"
+
+#: templates/travel/split.html:11
+msgid "ST side (days)"
+msgstr "Côté ST (jours)"
+
+#: templates/travel/split.html:12
+msgid "Laboratory side (days)"
+msgstr "Côté laboratoire (jours)"
+
+#: templates/travel/split.html:14
+msgid "Target ST share"
+msgstr "Part ST visée"
+
+#: templates/travel/split.html:15
+msgid "Gap (points)"
+msgstr "Écart (points)"
+
+#: templates/travel/split.html:15
+msgid "Above the alert threshold."
+msgstr "Au-delà du seuil d'alerte."
+
+#: templates/travel/split.html:20 templates/travel/split.html:23
+msgid "Working days"
+msgstr "Jours ouvrés"
+
+#: templates/travel/split.html:22
+msgid "Not filled in"
+msgstr "Non renseignés"
 
 #: templates/vault/blocks/dashboard.html:2
 #, python-format
