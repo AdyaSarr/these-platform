@@ -86,3 +86,16 @@ def test_a_mission_reminder_is_due_today(demo: scenario.SeedResult) -> None:
     """The DONE conference mission lacks a receipt: the card and the reminder show it."""
     done = Mission.objects.get(thesis=_thesis(), status="DONE")
     assert services.expenses_incomplete(done)
+
+
+def test_the_mission_to_come_fills_the_presence_calendar(demo: scenario.SeedResult) -> None:
+    """The co-supervisor's calendar shows the LIRMM days of the mission to come."""
+    from apps.travel import holidays
+
+    pending = MissionOrder.objects.get(thesis=_thesis(), decision="PENDING").mission
+    days = holidays.working_days(pending.start_date, pending.end_date)
+    assert days
+    seen = services.visible_days(
+        _user(Role.CO_SUPERVISOR), _thesis(), pending.start_date, pending.end_date
+    )
+    assert {d: k for d, k in seen.items() if d in days} == {d: "LIRMM" for d in days}

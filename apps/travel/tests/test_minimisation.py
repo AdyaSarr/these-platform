@@ -148,6 +148,9 @@ def _lirmm(team: SimpleNamespace) -> list[Mission]:
     for day in LIRMM_DAYS:
         assert holidays.is_working_day(day)
         PresenceDay.objects.create(thesis=team.thesis, day=day, kind="LIRMM")
+    services.set_rules(  # the monthly rule's text ("in progress", "not met") is rendered
+        thesis=team.thesis, user=team.director, recent_mfa=True, min_lab_days_per_month=3
+    )
     meeting_of(team)  # shared objects a mission may link (?meeting=, ?submission=)
     submission_of(team)
     shared = [  # shared missions to the LIRMM: one the co-supervisor reads, one not

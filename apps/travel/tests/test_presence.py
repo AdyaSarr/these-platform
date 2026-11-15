@@ -378,18 +378,6 @@ def test_month_view_masks_per_role(team: SimpleNamespace) -> None:
     assert kinds(co_sup) == {D(2027, 1, 5): "LIRMM"}
 
 
-def test_month_rule(team: SimpleNamespace) -> None:
-    _fill_week(team)
-    assert services.month_view(team.student, team.thesis, 2027, 1).rule_met is None
-    services.set_rules(
-        thesis=team.thesis, user=team.director, recent_mfa=True, min_lab_days_per_month=2
-    )
-    month = services.month_view(team.co_supervisor, team.thesis, 2027, 1)
-    assert (month.rule_minimum, month.lirmm_days, month.rule_met) == (2, 1, False)
-    PresenceDay.objects.create(thesis=team.thesis, day=D(2027, 1, 12), kind="LIRMM")
-    assert services.month_view(team.co_supervisor, team.thesis, 2027, 1).rule_met is True
-
-
 @pytest.mark.parametrize(("year", "month"), [(2026, 8), (2030, 12), (2027, 13), (2027, 0)])
 def test_month_outside_the_bounds(team: SimpleNamespace, year: int, month: int) -> None:
     with pytest.raises(ValidationError):
