@@ -80,3 +80,45 @@ def browser_post(client: Client, page_url: str, url: str, data: dict[str, Any]) 
 
 def url(team: SimpleNamespace, name: str, **kw: Any) -> str:
     return reverse(f"travel:{name}", kwargs={"thesis_id": team.thesis.pk, **kw})
+
+
+def marker() -> str:
+    return "TEMOIN-" + secrets.token_hex(6)
+
+
+def mission_of(team: SimpleNamespace, **overrides: Any) -> Any:
+    """A fictitious mission of the student (to the LIRMM, paid by ST by default),
+    without filling presence days unless asked."""
+    from apps.travel import services
+
+    fields: dict[str, Any] = {
+        "thesis": team.thesis,
+        "user": team.student,
+        "start_date": D(2027, 2, 8),
+        "end_date": D(2027, 2, 10),
+        "destination": "LIRMM",
+        "payer": "ST",
+        "purpose": "Séjour fictif au laboratoire.",
+        "fill_presence": False,
+    }
+    fields.update(overrides)
+    return services.create_mission(**fields)
+
+
+def database_dump() -> list[str]:
+    """Every row of every table, as JSON text (to look for a marker in clear)."""
+    from django.db import connection
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            "SELECT tablename FROM pg_tables WHERE schemaname = 'public' ORDER BY tablename"
+        )
+        tables = [row[0] for row in cursor.fetchall()]
+        dumps: list[str] = []
+        for table in tables:
+            # Names come from the catalogue itself, quoted: no user input here.
+            cursor.execute(
+                'SELECT row_to_json(t)::text FROM "' + table.replace('"', '""') + '" t'  # noqa: S608  # nosec B608
+            )
+            dumps += [row[0] for row in cursor.fetchall()]
+    return dumps

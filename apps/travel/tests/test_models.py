@@ -92,3 +92,60 @@ def test_one_policy_per_thesis() -> None:
 def test_policy_ranges(fields: dict[str, Any]) -> None:
     thesis = ThesisFactory.create()
     _refused(lambda: TravelPolicy.objects.create(thesis=thesis, **fields))
+
+
+# --------------------------------------------------------------------------- missions
+
+
+def _mission(thesis: Any, **fields: Any) -> Any:
+    from apps.travel.models import Mission
+
+    values: dict[str, Any] = {
+        "thesis": thesis,
+        "start_date": D(2027, 2, 8),
+        "end_date": D(2027, 2, 10),
+        "destination": "LIRMM",
+        "payer": "ST",
+        "level": "INTERNAL_ST",
+        "transports": ["TRAIN"],
+        "lodging": "NONE",
+        "status": "PLANNED",
+    }
+    values.update(fields)
+    return Mission.objects.create(**values)
+
+
+def test_a_valid_mission_row() -> None:
+    _mission(ThesisFactory.create())
+
+
+@pytest.mark.parametrize(
+    "fields",
+    [
+        {"end_date": D(2027, 2, 7)},
+        {"destination": "HOME"},
+        {"payer": "UNIV"},
+        {"status": "LOST"},
+        {"lodging": "TENT"},
+        {"level": "SECRET"},
+        {"transports": []},
+        {"transports": ["CAR"]},
+        {"payer": "ST", "level": "INTERNAL_LIRMM"},
+        {"payer": "LIRMM", "level": "INTERNAL_ST"},
+    ],
+)
+def test_mission_constraints(fields: dict[str, Any]) -> None:
+    thesis = ThesisFactory.create()
+    _refused(lambda: _mission(thesis, **fields))
+
+
+def test_an_edition_only_on_a_conference_mission() -> None:
+    from apps.conferences.models import Edition, Venue
+
+    thesis = ThesisFactory.create()
+    venue = Venue.objects.create(thesis=thesis, kind="CONFERENCE", acronym="SFCA", name="Fictif")
+    edition = Edition.objects.create(thesis=thesis, venue=venue, year=2027)
+    _mission(
+        thesis, destination="CONFERENCE", payer="LIRMM", level="INTERNAL_LIRMM", edition=edition
+    )
+    _refused(lambda: _mission(thesis, destination="LIRMM", edition=edition))

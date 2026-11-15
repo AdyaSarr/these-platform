@@ -1,8 +1,10 @@
 """Data minimisation of the presence calendar (M7, GDPR), as an indistinguishability
 test.
 
-Two worlds share the same LIRMM days and differ in everything else: leave, Rousset,
-remote and conference days, days left blank, past days corrected (journaled). Every
+Two worlds share the same LIRMM days and missions to the LIRMM, and differ in
+everything else: leave, Rousset, remote and conference days, days left blank, past
+days corrected (journaled), missions elsewhere (Rousset, a conference, another
+place, with their sealed texts). Every
 surface shown to the co-supervisor must be byte-for-byte identical in both worlds:
 then no function of what they see (a subtraction from a counter, a count of cells,
 a CSS class, a link) can tell leave or ST days apart, since it takes the same value
@@ -12,8 +14,10 @@ Surfaces: every GET page of the travel module that takes no object id (walked fr
 the URL configuration, so a page added later, such as the .ics export of all
 missions, is covered without editing this test), each month of the year with its
 navigation, the counter of each CIFRE year, and the thesis dashboard (where the
-"Travel" card goes). The .ics of one mission and the mission pages are added with
-the missions (step 3 onwards): they take an id.
+"Travel" card goes), the list of missions, the page and the edit page of each
+shared mission, and the new-mission page (refused to the co-supervisor: refused
+alike in both worlds). Pages with an object id are listed by _surfaces() itself;
+test_every_get_route_is_covered_or_listed checks that none is forgotten.
 
 The test is not vacuous: the student's surfaces differ between the worlds, and the
 co-supervisor's show the LIRMM days.
@@ -33,8 +37,8 @@ from django.test import Client
 from django.urls import URLPattern, URLResolver, get_resolver, resolve, reverse
 
 from apps.travel import holidays, services
-from apps.travel.models import PresenceDay
-from apps.travel.tests.helpers import NOW, D, client_for, make_team
+from apps.travel.models import Mission, PresenceDay
+from apps.travel.tests.helpers import NOW, D, client_for, make_team, mission_of
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -89,12 +93,35 @@ def _world(team: SimpleNamespace, pattern: str) -> None:
             services.set_presence(
                 thesis=team.thesis, user=team.student, first=past, last=past, kind=kind
             )
+    # Missions elsewhere: removed (a test shortcut, the platform never deletes one),
+    # then the pattern's own.
+    Mission.objects.filter(thesis=team.thesis).exclude(destination="LIRMM").delete()
+    elsewhere = {
+        "a": [
+            {"destination": "ROUSSET", "payer": "ST", "start_date": D(2027, 1, 11)},
+            {"destination": "CONFERENCE", "payer": "LIRMM", "start_date": D(2027, 2, 15)},
+            {
+                "destination": "OTHER",
+                "payer": "OTHER",
+                "destination_detail": "Ville fictive",
+                "start_date": D(2027, 3, 8),
+            },
+        ],
+        "b": [{"destination": "ROUSSET", "payer": "ST", "start_date": D(2026, 12, 14)}],
+    }[pattern]
+    for fields in elsewhere:
+        start = fields["start_date"]
+        mission_of(team, **{**fields, "end_date": start + dt.timedelta(days=2)}, purpose=pattern)
 
 
-def _lirmm(team: SimpleNamespace) -> None:
+def _lirmm(team: SimpleNamespace) -> list[Mission]:
     for day in LIRMM_DAYS:
         assert holidays.is_working_day(day)
         PresenceDay.objects.create(thesis=team.thesis, day=day, kind="LIRMM")
+    return [  # shared missions to the LIRMM: one the co-supervisor reads, one not
+        mission_of(team, payer="LIRMM", start_date=D(2027, 1, 26), end_date=D(2027, 1, 26)),
+        mission_of(team, payer="ST", start_date=D(2027, 3, 2), end_date=D(2027, 3, 2)),
+    ]
 
 
 # --------------------------------------------------------------------------- surfaces
@@ -127,8 +154,17 @@ def _surfaces(team: SimpleNamespace) -> list[str]:
     months = [reverse("travel:month", kwargs={**kw, "year": y, "month": m}) for y, m in MONTHS]
     years = [reverse("travel:split", kwargs=kw) + f"?year={n}" for n in (1, 2, 3)]
     dashboard = reverse("accounts:dashboard", kwargs=kw)
-    return [*_plain_travel_pages(team), *months, *years, dashboard]
+    shared = Mission.objects.filter(thesis=team.thesis, destination="LIRMM").order_by("start_date")
+    missions = [
+        reverse(f"travel:{name}", kwargs={**kw, "mission_id": m.pk})
+        for m in shared
+        for name in ("mission", "edit_mission")
+    ]
+    return [*_plain_travel_pages(team), *months, *years, *missions, dashboard]
 
+
+# Pages of the student only: the co-supervisor gets a 403, the same in both worlds.
+REFUSED_TO_CO_SUP = frozenset({"new_mission", "edit_mission"})
 
 _CSRF = re.compile(r'(name="csrfmiddlewaretoken" value=|"X-CSRFToken": )"[^"]+"')
 
@@ -148,6 +184,7 @@ def _services(team: SimpleNamespace, user: Any) -> tuple[Any, ...]:
         [services.split_summary(user, team.thesis, cifre_year=n) for n in (1, 2, 3)],
         services.split_summary(user, team.thesis),
         [services.month_view(user, team.thesis, y, m) for y, m in MONTHS],
+        [m.pk for m in services.mission_list(user, team.thesis)],
     )
 
 
@@ -217,9 +254,11 @@ def test_the_co_supervisor_cannot_tell_two_worlds_apart(team: SimpleNamespace) -
 
     # Not vacuous: the worlds differ for the student, the pages work, LIRMM days show.
     assert student_a != student_b
-    assert all(status == 200 for status, _, _ in seen_a.values()), {
-        k: v[0] for k, v in seen_a.items()
-    }
+    statuses = {k: v[0] for k, v in seen_a.items()}
+    refused = {k for k, v in statuses.items() if v != 200}
+    # Only the student's forms are refused (403); every other page is shown.
+    assert {resolve(urlsplit(k).path).url_name for k in refused} <= REFUSED_TO_CO_SUP, statuses
+    assert all(statuses[k] == 403 for k in refused), statuses
     january = reverse(
         "travel:month", kwargs={"thesis_id": team.thesis.pk, "year": 2027, "month": 1}
     )

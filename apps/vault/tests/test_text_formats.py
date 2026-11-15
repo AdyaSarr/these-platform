@@ -43,6 +43,9 @@ EVER_ASSIGNED_SLOTS = {
     0x0304: "conferences.Submission.notes",
     0x0305: "conferences.StApproval.comment",
     0x0306: "conferences.Preprint.url",
+    0x0401: "travel.Mission.destination_detail",
+    0x0402: "travel.Mission.purpose",
+    0x0403: "travel.Mission.lodging_note",
 }
 EXPECTED_SLOT_RANGES = {
     0x01: "objectives",
