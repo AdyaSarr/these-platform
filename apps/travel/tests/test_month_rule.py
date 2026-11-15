@@ -1,7 +1,8 @@
 """The monthly rule (at least N days at the LIRMM): never "not met" before the month (a
 Paris date) is over. In progress: the LIRMM days so far (today included) and the
 LIRMM days planned for the rest of the month (presence filled in, missions to the
-LIRMM not cancelled), each working day counted once. One function for the month page
+LIRMM planned, requested or granted (a refused one does not count, but presence days
+filled in always do), each working day counted once. One function for the month page
 and the dashboard card; the co-supervisor gets the same figures (LIRMM only)."""
 
 from __future__ import annotations
@@ -88,14 +89,49 @@ def test_the_last_day_of_the_month_is_still_in_progress(
     assert rule is not None and rule.finished is True  # 1 February in Paris
 
 
-def test_a_refused_approval_still_counts_as_planned(team: SimpleNamespace) -> None:
-    mission = mission_of(team, payer="ST", start_date=D(2027, 1, 27), end_date=D(2027, 1, 27))
+def _refused(team: SimpleNamespace, day: dt.date, *, fill_presence: bool) -> None:
+    mission = mission_of(
+        team, payer="ST", start_date=day, end_date=day, fill_presence=fill_presence
+    )
     order = services.request_order(mission=mission, user=team.student, estimated_total="1")
     services.decide_order(
         order=order, user=team.tutor, decision="REFUSED", reason="OTHER", recent_mfa=True
     )
+
+
+def test_a_refused_approval_is_not_planned(team: SimpleNamespace) -> None:
+    _refused(team, D(2027, 1, 27), fill_presence=False)
     rule = services.month_rule(team.student, team.thesis, 2027, 1)
-    assert rule is not None and rule.planned == 1  # not cancelled: still planned
+    assert rule is not None and rule.planned == 0
+
+
+def test_presence_filled_in_counts_even_from_a_refused_mission(team: SimpleNamespace) -> None:
+    """The presence calendar is what counts: the student corrects it if needed."""
+    _refused(team, D(2027, 1, 27), fill_presence=True)
+    assert PresenceDay.objects.get(thesis=team.thesis, day=D(2027, 1, 27)).kind == "LIRMM"
+    rule = services.month_rule(team.student, team.thesis, 2027, 1)
+    assert rule is not None and rule.planned == 1
+
+
+@pytest.mark.parametrize(
+    ("payer", "steps", "planned"),
+    [
+        ("ST", [], 1),  # PLANNED
+        ("ST", ["request"], 1),  # ORDER_REQUESTED
+        ("ST", ["request", "grant"], 1),  # ORDER_GRANTED
+        ("OTHER", [], 1),  # another body: no approval, PLANNED
+    ],
+)
+def test_missions_to_the_lirmm_still_planned(
+    team: SimpleNamespace, payer: str, steps: list[str], planned: int
+) -> None:
+    mission = mission_of(team, payer=payer, start_date=D(2027, 1, 27), end_date=D(2027, 1, 27))
+    if "request" in steps:
+        order = services.request_order(mission=mission, user=team.student, estimated_total="1")
+        if "grant" in steps:
+            services.decide_order(order=order, user=team.tutor, decision="GRANTED", recent_mfa=True)
+    rule = services.month_rule(team.student, team.thesis, 2027, 1)
+    assert rule is not None and rule.planned == planned
 
 
 def test_no_rule_no_figure(team: SimpleNamespace) -> None:
