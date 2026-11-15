@@ -56,6 +56,13 @@ DASHBOARD_BLOCKS: tuple[DashboardBlock, ...] = (
         data="apps.conferences.services.dashboard_block",
     ),
     DashboardBlock(
+        "travel",
+        Action.TRAVEL_READ,
+        _("Travel"),
+        "travel/blocks/dashboard.html",
+        data="apps.travel.services.dashboard_block",
+    ),
+    DashboardBlock(
         "documents",
         Action.DOCUMENT_READ,
         _("Documents"),

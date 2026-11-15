@@ -36,7 +36,8 @@ def _one(team: SimpleNamespace, mission: Mission, role: str = "student") -> Any:
 
 
 def _events(body: str) -> list[str]:
-    return re.findall(r"BEGIN:VEVENT\r\n(.*?)END:VEVENT", body, re.S)
+    unfolded = body.replace("\r\n ", "")  # RFC 5545 §3.1: long lines are folded
+    return re.findall(r"BEGIN:VEVENT\r\n(.*?)END:VEVENT", unfolded, re.S)
 
 
 def test_an_all_day_event_with_labels_only(team: SimpleNamespace) -> None:

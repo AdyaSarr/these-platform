@@ -1791,3 +1791,71 @@ def actual_amount_set(mission: Mission, expenses: list[Expense]) -> dict[Any, bo
         ).values_list("object_id", flat=True)
     )
     return {e.pk: e.pk in present for e in expenses}
+
+
+# =========================================================================== .ics, card
+
+
+def record_ics_export(*, user: Any, thesis: Thesis, count: int) -> None:
+    with transaction.atomic():
+        audit(AuditAction.TRAVEL_ICS_EXPORTED, actor=user, thesis=thesis, count=count)
+
+
+def expenses_incomplete(mission: Mission) -> bool:
+    """A line without actual amount, or without receipt unless flat-rate (read from
+    the sealed rows' existence: nothing decrypted)."""
+    expenses = list(Expense.objects.filter(mission=mission).prefetch_related("receipts"))
+    if not expenses:
+        return False
+    actual = actual_amount_set(mission, expenses)
+    return any(not actual[e.pk] or (not e.flat_rate and not e.receipts.all()) for e in expenses)
+
+
+def dashboard_block(request: Any, thesis: Thesis) -> dict[str, Any]:
+    """The "Travel" card: computed from what the viewer sees (access.py, the levels,
+    budget_payers): a co-supervisor gets the next LIRMM mission and LIRMM days only."""
+    user = request.user
+    today = timezone.localdate()
+    upcoming = (
+        Mission.objects.visible_to(user, thesis)
+        .filter(end_date__gte=today)
+        .exclude(status=MissionStatus.CANCELLED)
+        .order_by("start_date", "pk")
+        .first()
+    )
+    summary = split_summary(user, thesis)
+    month = (
+        month_view(user, thesis, today.year, today.month)
+        if _month_in_bounds(_fresh(thesis), today.year, today.month)
+        else None
+    )
+    missing = 0
+    if can(user, Action.TRAVEL_WRITE, thesis):
+        missing = sum(
+            1
+            for m in Mission.objects.filter(thesis=thesis, status=MissionStatus.DONE)
+            if expenses_incomplete(m)
+        )
+    budgets: list[dict[str, Any]] = []
+    if budget_payers(user, thesis) and today.year in budget_years(_fresh(thesis)):
+        for line in budget_summary(user, thesis, today.year).values():
+            if line.budget is not None:
+                budgets.append(
+                    {
+                        "payer": Payer(line.payer).label,
+                        "committed": amounts.display(line.committed),
+                        "budget": amounts.display(line.budget),
+                        "over": line.committed > line.budget,
+                    }
+                )
+    return {
+        "upcoming": upcoming,
+        "pending": len(pending_orders_for(user, thesis)),
+        "missing_receipts": missing,
+        "summary": summary,
+        "full": summary.access is not PresenceAccess.LIRMM_ONLY,
+        "st_percent": None if summary.st_percent is None else round(float(summary.st_percent)),
+        "gap": None if summary.gap is None else round(float(summary.gap), 1),
+        "month": month,
+        "budgets": budgets,
+    }

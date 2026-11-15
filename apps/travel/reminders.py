@@ -27,7 +27,7 @@ from apps.core import timezones
 
 from . import services
 from .choices import MissionStatus, NotificationKind, OrderDecision, Window
-from .models import ORDER_PAYERS, Expense, Mission, MissionOrder
+from .models import ORDER_PAYERS, Mission, MissionOrder
 from .notifications import members_with_roles, notify, requeue_failed
 
 OPEN_THESIS = (Thesis.Status.SETUP, Thesis.Status.ACTIVE)
@@ -70,14 +70,6 @@ def receipt_window(days: int, *, grace_days: int) -> str | None:
     if grace_days <= days <= 13:
         return Window.AFTER_GRACE
     return None
-
-
-def _incomplete(mission: Mission) -> bool:
-    expenses = list(Expense.objects.filter(mission=mission).prefetch_related("receipts"))
-    if not expenses:
-        return False
-    actual = services.actual_amount_set(mission, expenses)
-    return any(not actual[e.pk] or (not e.flat_rate and not e.receipts.all()) for e in expenses)
 
 
 def run(now: dt.datetime | None = None) -> RunResult:
@@ -125,7 +117,7 @@ def run(now: dt.datetime | None = None) -> RunResult:
             window = receipt_window(
                 (today - mission.end_date).days, grace_days=policy.receipt_grace_days
             )
-            if window is not None and _incomplete(mission):
+            if window is not None and services.expenses_incomplete(mission):
                 receipts += notify(
                     thesis,
                     NotificationKind.RECEIPTS_MISSING,

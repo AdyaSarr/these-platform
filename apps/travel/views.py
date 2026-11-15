@@ -18,6 +18,7 @@ from dataclasses import dataclass
 from fractions import Fraction
 from typing import Any
 
+from django.conf import settings
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.http import Http404, HttpRequest, HttpResponse, HttpResponseBase
@@ -25,6 +26,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import formats, timezone
 from django.utils.dates import WEEKDAYS_ABBR
+from django.utils.http import content_disposition_header
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django.views import View
@@ -45,7 +47,7 @@ from apps.objectives.years import year_count
 from apps.vault import services as vault
 from apps.vault.errors import ReauthenticationRequiredError
 
-from . import amounts, services
+from . import amounts, ics, services
 from .access import PresenceAccess
 from .choices import (
     Destination,
@@ -996,3 +998,37 @@ class SetBudgetView(_Mixin, _BudgetGuard, RecentAuthRequiredMixin, View):
             return redirect(self._url("budget"))
         messages.success(request, _("Budget saved."))
         return redirect(f"{self._url('budget')}?year={data['year']}")
+
+
+# --------------------------------------------------------------------------- .ics
+
+
+def _ics_response(data: bytes, filename: str) -> HttpResponse:
+    response = HttpResponse(data, content_type="text/calendar; charset=utf-8")
+    response["Content-Disposition"] = content_disposition_header(
+        as_attachment=True, filename=filename
+    )
+    response["Cache-Control"] = "no-store, private"
+    return response
+
+
+class MissionIcsView(_MissionMixin, View):
+    """The .ics of one mission, for a reader who sees it: labels only (travel.ics)."""
+
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        mission = self._mission("mission_ics")
+        services.record_ics_export(user=_user(request), thesis=self.thesis, count=1)
+        url = settings.SITE_URL + self._mission_url(mission)
+        data = ics.calendar([(mission, url)], now=timezone.now())
+        return _ics_response(data, f"mission-{mission.start_date.isoformat()}.ics")
+
+
+class MissionsIcsView(_Mixin, View):
+    """The .ics of every mission the reader sees (a co-supervisor: LIRMM only)."""
+
+    def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
+        user = _user(request)
+        missions = services.mission_list(user, self.thesis)
+        services.record_ics_export(user=user, thesis=self.thesis, count=len(missions))
+        items = [(m, settings.SITE_URL + self._url("mission", mission_id=m.pk)) for m in missions]
+        return _ics_response(ics.calendar(items, now=timezone.now()), "missions.ics")

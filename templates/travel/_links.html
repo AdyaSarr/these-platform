@@ -1,0 +1,7 @@
+{% load i18n %}{# travel.templatetags.travel_links: the missions linked to this meeting or submission that the viewer sees. #}
+{% if not hidden %}<section>
+  <h2>{% translate "Travel" %}</h2>
+  {% if missions %}<ul>{% for m in missions %}<li><a href="{% url 'travel:mission' thesis_id=thesis.pk mission_id=m.pk %}">{{ m.start_date|date:"d/m/Y" }} – {{ m.end_date|date:"d/m/Y" }}</a> — {{ m.get_destination_display }} ({{ m.get_status_display }})</li>{% endfor %}</ul>
+  {% else %}<p class="muted">{% translate "No mission linked." %}</p>{% endif %}
+  {% if plan_url %}<p><a href="{{ plan_url }}">{% translate "Plan a mission" %}</a></p>{% endif %}
+</section>{% endif %}

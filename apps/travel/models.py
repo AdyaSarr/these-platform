@@ -4,7 +4,8 @@ travel policy of a thesis and its missions. See docs/modules/M07-deplacements.md
 from __future__ import annotations
 
 import uuid
-from typing import Any, ClassVar, TypeVar
+from collections.abc import Collection
+from typing import Any, ClassVar, Self, TypeVar
 
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
@@ -269,7 +270,13 @@ class Mission(TimeStampedModel):
         verbose_name=_("official mission order"),
     )
 
+    # Raised whenever the dates, the destination or the status change, so that a
+    # calendar that imported the .ics updates its event (RFC 5545 SEQUENCE).
+    ics_sequence = models.PositiveIntegerField(default=0, editable=False)
+
     objects = MissionQuerySet.as_manager()
+
+    ICS_FIELDS: ClassVar[tuple[str, ...]] = ("start_date", "end_date", "destination", "status")
 
     class Meta:
         verbose_name = _("mission")
@@ -307,6 +314,23 @@ class Mission(TimeStampedModel):
 
     def __str__(self) -> str:
         return f"mission {self.pk}"
+
+    @classmethod
+    def from_db(
+        cls, db: str | None, field_names: Collection[str], values: Collection[Any], **kw: Any
+    ) -> Self:
+        instance = super().from_db(db, field_names, values, **kw)
+        if all(name in field_names for name in cls.ICS_FIELDS):
+            instance._ics_seen = tuple(getattr(instance, n) for n in cls.ICS_FIELDS)
+        return instance
+
+    def save(self, *args: Any, **kwargs: Any) -> None:
+        current = tuple(getattr(self, n) for n in self.ICS_FIELDS)
+        seen = getattr(self, "_ics_seen", None)
+        if seen is not None and seen != current:
+            self.ics_sequence += 1
+        super().save(*args, **kwargs)
+        self._ics_seen = current
 
     @property
     def is_closed(self) -> bool:

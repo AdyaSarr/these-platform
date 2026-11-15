@@ -166,6 +166,7 @@ class AuditAction(StrEnum):
     EXPENSE_UPDATED = "EXPENSE_UPDATED"  # expense_id, field names
     EXPENSE_RECEIPT_ATTACHED = "EXPENSE_RECEIPT_ATTACHED"  # expense_id, document_id
     TRAVEL_BUDGET_SET = "TRAVEL_BUDGET_SET"  # payer, year, created (never the amount)
+    TRAVEL_ICS_EXPORTED = "TRAVEL_ICS_EXPORTED"  # count
     TRAVEL_ACCESS_DENIED = "TRAVEL_ACCESS_DENIED"
     # Keys (M2).
     KEK_CREATED = "KEK_CREATED"
