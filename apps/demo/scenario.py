@@ -8,7 +8,8 @@ encryption and permission checks are those of real use. Two things differ:
   so that objectives and memberships exist for months and the progress chart has
   a real curve. Every step must end within STEP_WINDOW of its start.
 - WHO ACTS. The command acts in each person's name. Where a view would require a
-  second factor less than 10 minutes old (approving objectives, acknowledging),
+  second factor less than 10 minutes old (approving objectives, acknowledging,
+  deciding a mission approval, setting a travel budget, a target or the rules),
   the command states it (``recent_mfa=True``): those events are attributed to
   fictional people of a demonstration database, and every event carries
   ``details.source = "demo_seed"`` (vault.audit_source).
@@ -30,6 +31,7 @@ import re
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass, field
+from typing import Any
 
 import time_machine
 from django.core import mail
@@ -53,6 +55,9 @@ from apps.meetings.models import Meeting, MinutesAcknowledgement
 from apps.objectives import services as objectives
 from apps.objectives.models import Category, Objective, Status
 from apps.objectives.years import add_years
+from apps.travel import holidays as travel_holidays
+from apps.travel import services as travel
+from apps.travel.models import Expense, Mission, PresenceDay
 from apps.vault import services as vault
 from apps.vault.models import AuditEvent, Document, DocumentVersion
 
@@ -292,6 +297,7 @@ class _Run:
     submissions: dict[str, Submission] = field(default_factory=dict)
     articles: dict[str, Document] = field(default_factory=dict)
     summary: Document | None = None
+    missions: dict[str, Mission] = field(default_factory=dict)
 
     # ---------------------------------------------------------------- machinery
 
@@ -717,6 +723,166 @@ class _Run:
         self.submission("c", "cfse", "Contre-mesure fictive pour un cas d'école")
         self.request("c")
 
+    # ---------------------------------------------------------------- travel (M7)
+
+    def travel_settings(self) -> None:
+        """Target and monthly rule (the supervisors), budgets (each payer's person) for
+        every calendar year of the demonstration. Fictitious amounts. recent_mfa=True:
+        stated by the command for the fictional supervisors (docstring)."""
+        tutor, director = self.users[Role.INDUSTRIAL_TUTOR], self.users[Role.DIRECTOR]
+        travel.set_target(thesis=self.t, user=tutor, recent_mfa=True, cifre_year=1, st_percent=70)
+        travel.set_rules(thesis=self.t, user=director, recent_mfa=True, min_lab_days_per_month=2)
+        for year in range(self.anchor.year, timezone.localdate(self.real_now).year + 1):
+            travel.set_budget(
+                thesis=self.t, user=tutor, payer="ST", year=year, amount="3500", recent_mfa=True
+            )
+            travel.set_budget(
+                thesis=self.t, user=director, payer="LIRMM", year=year, amount="2800",
+                recent_mfa=True,
+            )  # fmt: skip
+
+    def presence(self, k: int, *, leave: tuple[int, int] | None = None) -> None:
+        """The working days of month ``k`` not filled in yet (by a mission): Rousset,
+        remote on Thursdays, a LIRMM day a fortnight, leave on ``leave`` (days)."""
+        student = self.users[Role.PHD_STUDENT]
+        first = _month(self.anchor, k)
+        last = _day(self.anchor, k, 31)
+        filled = set(
+            PresenceDay.objects.filter(thesis=self.t, day__range=(first, last)).values_list(
+                "day", flat=True
+            )
+        )
+        for day in travel_holidays.working_days(first, last):
+            if day in filled:
+                continue
+            if leave and leave[0] <= day.day <= leave[1]:
+                kind = "LEAVE"
+            elif day.weekday() == 3:
+                kind = "REMOTE"
+            elif day.weekday() == 1 and day.isocalendar().week % 2 == 0:
+                kind = "LIRMM"
+            else:
+                kind = "ROUSSET"
+            travel.set_presence(thesis=self.t, user=student, first=day, last=day, kind=kind)
+
+    def _mission(self, key: str, lines: list[tuple[str, str, bool]], **fields: Any) -> None:
+        student = self.users[Role.PHD_STUDENT]
+        self.missions[key] = travel.create_mission(thesis=self.t, user=student, **fields)
+        for category, estimated, flat_rate in lines:
+            travel.add_expense(
+                mission=self.missions[key],
+                user=student,
+                category=category,
+                estimated=estimated,
+                flat_rate=flat_rate,
+            )
+
+    def _request(self, key: str, total: str) -> None:
+        travel.request_order(
+            mission=self.missions[key], user=self.users[Role.PHD_STUDENT], estimated_total=total
+        )
+
+    def _decide_order(self, key: str, role: Role, decision: str, **kw: Any) -> None:
+        order = self.missions[key].orders.get(decision="PENDING")
+        # recent_mfa=True: stated by the command for the fictional supervisors (docstring).
+        travel.decide_order(
+            order=order, user=self.users[role], decision=decision, recent_mfa=True, **kw
+        )
+
+    def lab_mission(self) -> None:
+        a = self.anchor
+        self._mission(
+            "lab",
+            [("TRANSPORT", "95", False), ("LODGING", "180", False), ("MEALS", "45", True)],
+            start_date=_day(a, 1, 14),
+            end_date=_day(a, 1, 16),
+            destination="LIRMM",
+            payer="LIRMM",
+            transports=["TRAIN", "URBAN_TRANSIT"],
+            lodging="GUESTHOUSE",
+            purpose="Séjour fictif au laboratoire : séances de travail (démonstration).",
+        )
+        self._request("lab", "320")
+
+    def official_order(self) -> None:
+        travel.attach_official_order(
+            mission=self.missions["lab"],
+            user=self.users[Role.PHD_STUDENT],
+            upload=_upload("Ordre de mission officiel (fictif)"),
+        )
+
+    def _actuals(self, key: str, actuals: dict[str, str], receipts: set[str]) -> None:
+        student = self.users[Role.PHD_STUDENT]
+        for expense in Expense.objects.filter(mission=self.missions[key]).order_by("created_at"):
+            travel.update_expense(expense=expense, user=student, actual=actuals[expense.category])
+            if expense.category in receipts:
+                travel.attach_receipt(
+                    expense=expense, user=student, upload=_upload(f"Justificatif fictif {key}")
+                )
+
+    def lab_back(self) -> None:
+        travel.mark_done(mission=self.missions["lab"], user=self.users[Role.PHD_STUDENT])
+        self._actuals(
+            "lab",
+            {"TRANSPORT": "92,40", "LODGING": "180", "MEALS": "45"},
+            receipts={"TRANSPORT", "LODGING"},
+        )
+
+    def refused_mission(self) -> None:
+        a = self.anchor
+        self._mission(
+            "refused",
+            [("TRANSPORT", "95", False)],
+            start_date=_day(a, 2, 6),
+            end_date=_day(a, 2, 7),
+            destination="LIRMM",
+            payer="ST",
+            purpose="Séjour fictif demandé sur le budget ST (démonstration).",
+            fill_presence=False,
+        )
+        self._request("refused", "95")
+
+    def conference_mission(self) -> None:
+        a = self.anchor
+        self._mission(
+            "sfca",
+            [("REGISTRATION", "350", False), ("LODGING", "240", False), ("MEALS", "60", True)],
+            start_date=_day(a, 4, 9),
+            end_date=_day(a, 4, 11),
+            destination="CONFERENCE",
+            edition=self.editions["sfca"],
+            submission=self.submissions["a"],
+            payer="LIRMM",
+            transports=["TRAIN"],
+            lodging="HOTEL",
+            purpose="Présentation fictive de l'article accepté (démonstration).",
+        )
+        self._request("sfca", "650")
+
+    def conference_back(self) -> None:
+        travel.mark_done(mission=self.missions["sfca"], user=self.users[Role.PHD_STUDENT])
+        # The lodging receipt is still missing: the card and the reminder show it.
+        self._actuals(
+            "sfca",
+            {"REGISTRATION": "350", "LODGING": "236,50", "MEALS": "60"},
+            receipts={"REGISTRATION"},
+        )
+
+    def pending_mission(self) -> None:
+        """A mission to the LIRMM paid by ST in ten days: its approval awaits the tutor."""
+        start = timezone.localdate(self.real_now) + dt.timedelta(days=10)
+        self._mission(
+            "pending",
+            [("TRANSPORT", "95", False)],
+            start_date=start,
+            end_date=start + dt.timedelta(days=1),
+            destination="LIRMM",
+            payer="ST",
+            purpose="Séjour fictif à venir (démonstration).",
+            fill_presence=True,  # its LIRMM days appear in the calendar
+        )
+        self._request("pending", "95")
+
     # ---------------------------------------------------------------- the story
 
     def play(self) -> None:
@@ -736,6 +902,7 @@ class _Run:
             lambda: self.approve(tutor, "employment_contract"),
             lambda: self.approve(director, "fsd_zrr_clearance"),
         )
+        s("travel-settings", at(0, 6, 10), self.travel_settings)
         s("objectives", at(0, 15, 10), lambda: self.create_objectives(*YEAR_1))
         s("objectives-approved", at(0, 16, 15), self.approve_year)
         s(
@@ -748,14 +915,23 @@ class _Run:
             at(0, 24, 11),
             lambda: self.approve(tutor, "cifre_agreement"),
         )
+        s("presence-0", at(0, 27, 17), lambda: self.presence(0))
         s("progress-0", end(0), lambda: self.progress(MONTHLY_PROGRESS[0]))
+        s("mission-lab", at(1, 2, 10), self.lab_mission)
         s(
             "meeting-tutor",
             at(1, 5, 10),
             lambda: self.meeting("tutor", Role.PHD_STUDENT, at(1, 12, 14), **TUTOR_MEETING),
             lambda: self.agenda("tutor", Role.PHD_STUDENT, TUTOR_AGENDA),
         )
+        s(
+            "mission-lab-granted",
+            at(1, 6, 11),
+            lambda: self._decide_order("lab", director, "GRANTED", comment="Accord fictif."),
+        )
+        s("mission-lab-official", at(1, 7, 10), self.official_order)
         s("conferences", at(1, 8, 10), self.catalogue)
+        s("mission-st-requested", at(1, 9, 10), self.refused_mission)
         s(
             "submission-a",
             at(1, 10, 10),
@@ -792,7 +968,13 @@ class _Run:
             ),
         )
         s("meeting-tutor-approved", at(1, 13, 9), lambda: self.mark("tutor", tutor, "APPROVED"))
+        s("mission-lab-back", at(1, 17, 10), self.lab_back)
         s("st-grants-a", at(1, 20, 10), lambda: self.st_decide("a", "GRANTED"))
+        s(
+            "mission-st-refused",
+            at(1, 21, 10),
+            lambda: self._decide_order("refused", tutor, "REFUSED", reason="BUDGET_EXHAUSTED"),
+        )
         s("meeting-tutor-action-done", at(1, 25, 10), self.finish_tutor_action)
         s(
             "st-refuses-b",
@@ -801,6 +983,7 @@ class _Run:
                 "b", "REFUSED", "CHANGES_REQUESTED", "Retirer la figure fictive 3."
             ),
         )
+        s("presence-1", at(1, 27, 17), lambda: self.presence(1))
         s(
             "b-version-2",
             at(1, 28, 10),
@@ -815,6 +998,13 @@ class _Run:
                 "tripartite", Role.PHD_STUDENT, at(2, 20, 10), **TRIPARTITE_MEETING
             ),
             lambda: self.agenda("tripartite", Role.PHD_STUDENT, TRIPARTITE_AGENDA),
+        )
+        s(
+            "mission-lab-reimbursed",
+            at(2, 3, 10),
+            lambda: travel.mark_reimbursed(
+                mission=self.missions["lab"], user=self.users[Role.PHD_STUDENT]
+            ),
         )
         s("st-grants-b", at(2, 5, 10), lambda: self.st_decide("b", "GRANTED"))
         s(
@@ -858,6 +1048,7 @@ class _Run:
             at(2, 26, 10),
             lambda: self.set_status("a", "SUBMITTED", with_version=True),
         )
+        s("presence-2", at(2, 27, 17), lambda: self.presence(2, leave=(3, 14)))
         s(
             "collaboration-director",
             at(2, 28, 16),
@@ -883,6 +1074,13 @@ class _Run:
             lambda: self.comment(director, "counter", DIRECTOR_COMMENT),
         )
         s("b-rejected", at(3, 16, 10), lambda: self.set_status("b", "REJECTED"))
+        s("mission-sfca", at(3, 20, 10), self.conference_mission)
+        s(
+            "mission-sfca-granted",
+            at(3, 22, 10),
+            lambda: self._decide_order("sfca", director, "GRANTED"),
+        )
+        s("presence-3", at(3, 27, 17), lambda: self.presence(3))
         s("progress-3", end(3), lambda: self.progress(MONTHLY_PROGRESS[3]))
         s("acknowledged", at(4, 1, 9), lambda: self.acknowledge("sota"))
         s(
@@ -908,6 +1106,7 @@ class _Run:
             lambda: self.comment(Role.CO_SUPERVISOR, "bench", CO_SUPERVISOR_COMMENT),
         )
         s("contract-reopened", at(4, 12, 10), self.reopen_contract)
+        s("mission-sfca-back", at(4, 13, 10), self.conference_back)
         s("side-objective-dropped", at(4, 15, 10), lambda: self.drop("tool"))
         s(
             "charter",
@@ -920,10 +1119,12 @@ class _Run:
         s("due-date-proposed", at(4, 25, 10), self.propose_due_date)
         s("submission-c", at(4, 26, 10), self.pending_submission)
         s("charter-rejected", at(4, 27, 15), self.reject_charter)
+        s("presence-4", at(4, 27, 17), lambda: self.presence(4))
         s("upcoming-meetings", at(4, 28, 10), self.upcoming)
         s("progress-4", end(4), lambda: self.progress(MONTHLY_PROGRESS[4]))
         # The last steps happen today, a few hours before the real time.
         hour = dt.timedelta(hours=1)
+        s("mission-pending", self.real_now - 4 * hour, self.pending_mission)
         s("csi", self.real_now - 3 * hour, lambda: self.invite(CSI))
         s("note-v2", self.real_now - 2 * hour, self.new_note_version)
         s("progress-today", self.real_now - hour, lambda: self.progress(RECENT_PROGRESS))

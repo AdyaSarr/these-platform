@@ -147,6 +147,27 @@ class AuditAction(StrEnum):
     PUBLICATION_POLICY_CHANGED = "PUBLICATION_POLICY_CHANGED"  # from, to (days)
     CONFERENCES_IMPORTED = "CONFERENCES_IMPORTED"  # counts
     CONFERENCE_ACCESS_DENIED = "CONFERENCE_ACCESS_DENIED"
+    # Travel (M7): codes, dates, counts, percents and ids; never an amount nor a text.
+    PRESENCE_CORRECTED = "PRESENCE_CORRECTED"  # day, from, to (kinds; None = blank)
+    TRAVEL_RULES_CHANGED = "TRAVEL_RULES_CHANGED"  # changes: {field: {from, to}}
+    TRAVEL_TARGET_CHANGED = "TRAVEL_TARGET_CHANGED"  # cifre_year, from, to (ST percent)
+    TRAVEL_REMINDERS_CHANGED = "TRAVEL_REMINDERS_CHANGED"  # changes: {field: {from, to}}
+    MISSION_CREATED = "MISSION_CREATED"  # destination, payer, level, dates
+    MISSION_UPDATED = "MISSION_UPDATED"  # field names
+    MISSION_LEVEL_CHANGED = "MISSION_LEVEL_CHANGED"  # from, to
+    MISSION_STATUS_CHANGED = "MISSION_STATUS_CHANGED"  # from, to
+    MISSION_ORDER_REQUESTED = "MISSION_ORDER_REQUESTED"  # order_id, payer, dates (never the amount)
+    MISSION_ORDER_GRANTED = "MISSION_ORDER_GRANTED"  # order_id, payer
+    MISSION_ORDER_REFUSED = "MISSION_ORDER_REFUSED"  # order_id, payer, reason code
+    MISSION_ORDER_WITHDRAWN = "MISSION_ORDER_WITHDRAWN"  # order_id
+    MISSION_ORDER_INVALIDATED = "MISSION_ORDER_INVALIDATED"  # order_id, fields changed
+    MISSION_OFFICIAL_ORDER_ATTACHED = "MISSION_OFFICIAL_ORDER_ATTACHED"  # document_id, version
+    EXPENSE_ADDED = "EXPENSE_ADDED"  # expense_id, category, flat_rate (never an amount)
+    EXPENSE_UPDATED = "EXPENSE_UPDATED"  # expense_id, field names
+    EXPENSE_RECEIPT_ATTACHED = "EXPENSE_RECEIPT_ATTACHED"  # expense_id, document_id
+    TRAVEL_BUDGET_SET = "TRAVEL_BUDGET_SET"  # payer, year, created (never the amount)
+    TRAVEL_ICS_EXPORTED = "TRAVEL_ICS_EXPORTED"  # count
+    TRAVEL_ACCESS_DENIED = "TRAVEL_ACCESS_DENIED"
     # Keys (M2).
     KEK_CREATED = "KEK_CREATED"
     KEK_RETIRED = "KEK_RETIRED"

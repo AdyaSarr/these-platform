@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% translate "Missions" %}{% endblock %}
+{% block content %}
+{% include "travel/_nav.html" %}
+<h1>{% translate "Missions" %}</h1>
+<p class="actions">{% if can_plan %}<a href="{% url 'travel:new_mission' thesis_id=thesis.pk %}">{% translate "Plan a mission" %}</a> · {% endif %}<a href="{% url 'travel:missions_ics' thesis_id=thesis.pk %}">{% translate "Add my missions to my calendar (.ics)" %}</a></p>
+{% if missions %}
+<table class="table">
+  <thead><tr><th scope="col">{% translate "Dates" %}</th><th scope="col">{% translate "Destination" %}</th><th scope="col">{% translate "Paid by" %}</th><th scope="col">{% translate "Status" %}</th></tr></thead>
+  <tbody>{% for m in missions %}<tr>
+    <td><a href="{% url 'travel:mission' thesis_id=thesis.pk mission_id=m.pk %}">{{ m.start_date|date:"d/m/Y" }} – {{ m.end_date|date:"d/m/Y" }}</a></td>
+    <td>{{ m.get_destination_display }}{% if m.edition %} ({{ m.edition.venue.acronym }} {{ m.edition.year }}){% endif %}</td>
+    <td>{{ m.get_payer_display }}</td>
+    <td class="status">{{ m.get_status_display }}</td>
+  </tr>{% endfor %}</tbody>
+</table>
+{% else %}<p class="muted">{% translate "No mission yet." %}</p>{% endif %}
+{% endblock %}

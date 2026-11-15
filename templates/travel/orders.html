@@ -1,0 +1,17 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% translate "Mission approvals to decide" %}{% endblock %}
+{% block content %}
+{% include "travel/_nav.html" %}
+<h1>{% translate "Mission approvals to decide" %}</h1>
+<p class="muted">{% translate "This approval does not replace the official mission order of ST or the LIRMM." %}</p>
+{% if orders %}
+<table class="table">
+  <thead><tr><th scope="col">{% translate "Dates" %}</th><th scope="col">{% translate "Destination" %}</th><th scope="col">{% translate "Requested on" %}</th></tr></thead>
+  <tbody>{% for o in orders %}<tr>
+    <td><a href="{% url 'travel:mission' thesis_id=thesis.pk mission_id=o.mission_id %}">{{ o.snapshot_start|date:"d/m/Y" }} – {{ o.snapshot_end|date:"d/m/Y" }}</a></td>
+    <td>{{ o.get_snapshot_destination_display }}</td>
+    <td>{{ o.created_at|date:"d/m/Y" }}</td>
+  </tr>{% endfor %}</tbody>
+</table>
+{% else %}<p class="muted">{% translate "No mission approval waits for your decision." %}</p>{% endif %}
+{% endblock %}

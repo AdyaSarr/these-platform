@@ -1,0 +1,26 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% translate "ST / LIRMM time" %}{% endblock %}
+{% block content %}
+{% include "travel/_nav.html" %}
+<h1>{% translate "ST / LIRMM time" %} — {% blocktranslate with n=summary.cifre_year %}CIFRE year {{ n }}{% endblocktranslate %}</h1>
+<ul class="years">{% for n, link in years %}<li>{% if n == summary.cifre_year %}<strong>{% blocktranslate %}Year {{ n }}{% endblocktranslate %}</strong>{% else %}<a href="{{ link }}">{% blocktranslate %}Year {{ n }}{% endblocktranslate %}</a>{% endif %}</li>{% endfor %}</ul>
+<p class="muted">{% blocktranslate with first=summary.first|date:"d/m/Y" last=summary.last|date:"d/m/Y" %}Working days from {{ first }} to {{ last }}.{% endblocktranslate %}</p>
+<dl class="stats">
+  <div><dt>{% translate "Days at the LIRMM" %}</dt><dd>{{ summary.lirmm_days }}</dd></div>
+{% if full %}
+  <div><dt>{% translate "ST side (days)" %}</dt><dd>{{ summary.st_days }}</dd></div>
+  <div><dt>{% translate "Laboratory side (days)" %}</dt><dd>{{ summary.lab_days }}</dd></div>
+  <div><dt>{% translate "ST share" %}</dt><dd>{% if st_percent %}{{ st_percent }} %{% else %}—{% endif %}</dd></div>
+  <div><dt>{% translate "Target ST share" %}</dt><dd>{% if summary.target_st_percent is not None %}{{ summary.target_st_percent }} %{% else %}—{% endif %}</dd></div>
+  <div><dt>{% translate "Gap to the target" %}</dt><dd>{% if gap %}{% blocktranslate %}{{ gap }} points{% endblocktranslate %}{% else %}—{% endif %}</dd>{% if summary.alert %}<dd class="helptext overdue">{% translate "Above the alert threshold." %}</dd>{% endif %}</div>
+{% endif %}
+</dl>
+{% if full %}
+<table class="table">
+  <thead><tr><th scope="col">{% translate "Kind" %}</th><th scope="col">{% translate "Working days" %}</th></tr></thead>
+  <tbody>{% for label, n in counts %}<tr><td>{{ label }}</td><td>{{ n }}</td></tr>{% endfor %}
+  <tr><td>{% translate "Not filled in" %}</td><td>{{ summary.unfilled_days }}</td></tr>
+  <tr><th scope="row">{% translate "Working days" %}</th><td>{{ summary.working_days }}</td></tr></tbody>
+</table>
+{% endif %}
+{% endblock %}

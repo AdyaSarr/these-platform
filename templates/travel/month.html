@@ -1,0 +1,26 @@
+{% extends "base.html" %}{% load i18n %}
+{% block title %}{% translate "Presence calendar" %}{% endblock %}
+{% block content %}
+{% include "travel/_nav.html" %}
+<h1>{% translate "Presence calendar" %} — {{ month_start|date:"F Y" }}</h1>
+<p class="actions">{% if previous_url %}<a href="{{ previous_url }}">← {% translate "Previous month" %}</a>{% endif %}
+  {% if next_url %}<a href="{{ next_url }}">{% translate "Next month" %} →</a>{% endif %}</p>
+{% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
+<table class="table calendar">
+  <thead><tr>{% for name in weekdays %}<th scope="col">{{ name }}</th>{% endfor %}</tr></thead>
+  <tbody>
+  {% for week in weeks %}<tr>{% for cell in week %}{% if cell %}<td class="day{% if cell.kind %} day-{{ cell.kind|lower }}{% endif %}{% if not cell.working %} day-off{% endif %}{% if cell.today %} day-today{% endif %}"><span class="day-number">{{ cell.day|date:"j" }}</span>{% if cell.holiday %} <span class="muted">{% translate "public holiday" %}</span>{% endif %}{% if cell.label %}<br><span class="day-kind">{{ cell.label }}</span>{% endif %}</td>{% else %}<td class="day day-outside"></td>{% endif %}{% endfor %}</tr>
+  {% endfor %}
+  </tbody>
+</table>
+<p class="muted">{% translate "Legend:" %} {% for value, label in legend %}<span class="day-{{ value|lower }} legend-item">{{ label }}</span>{% if not forloop.last %} · {% endif %}{% endfor %}</p>
+<p>{% blocktranslate count n=view.lirmm_days %}{{ n }} working day at the LIRMM this month.{% plural %}{{ n }} working days at the LIRMM this month.{% endblocktranslate %}
+</p>
+{% if view.rule %}<p>{% include "travel/_rule.html" with rule=view.rule %}</p>{% endif %}
+{% if form %}
+<h2>{% translate "Fill in days" %}</h2>
+<form class="stack" method="post" action="{% url 'travel:presence' thesis_id=thesis.pk %}">{% csrf_token %}{% include "conferences/_form.html" %}
+  <button type="submit">{% translate "Save" %}</button>
+  <span class="muted">{% translate "Working days only unless the box is ticked. A change to a past day is recorded in the audit log." %}</span></form>
+{% endif %}
+{% endblock %}

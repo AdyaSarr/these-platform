@@ -64,3 +64,49 @@ def test_vendored_htmx_matches_recorded_sha384() -> None:
     content = (BASE_DIR / "static" / "vendor" / "htmx" / "htmx.min.js").read_bytes()
     actual = base64.b64encode(hashlib.sha384(content).digest()).decode()
     assert actual == recorded.group(1)
+
+
+# Top-level modules of the dev dependency group (pyproject.toml) that code could
+# import; the application never does (they are absent from a production install).
+TEST_ONLY_MODULES = frozenset({"dateutil", "factory", "icalendar", "pytest", "time_machine"})
+# apps.demo is installed in the demo and test settings only (docs/decisions.md,
+# "Horloge simulée de demo_seed").
+TEST_ONLY_ALLOWED = {"apps/demo/scenario.py": frozenset({"time_machine"})}
+
+
+def _imported_roots(path: Path) -> set[str]:
+    import ast
+
+    roots: set[str] = set()
+    for node in ast.walk(ast.parse(path.read_text(), filename=str(path))):
+        if isinstance(node, ast.Import):
+            roots.update(alias.name.split(".")[0] for alias in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.module and node.level == 0:
+            roots.add(node.module.split(".")[0])
+    return roots
+
+
+def test_application_code_never_imports_a_test_only_dependency() -> None:
+    offenders = []
+    for folder in ("apps", "config"):
+        for path in sorted((BASE_DIR / folder).rglob("*.py")):
+            rel = path.relative_to(BASE_DIR).as_posix()
+            if "/tests/" in rel or path.name == "conftest.py":
+                continue
+            bad = (_imported_roots(path) & TEST_ONLY_MODULES) - TEST_ONLY_ALLOWED.get(
+                rel, frozenset()
+            )
+            if bad:
+                offenders.append((rel, sorted(bad)))
+    assert offenders == []
+
+
+def test_test_only_dependencies_are_in_the_dev_group() -> None:
+    import tomllib
+
+    project = tomllib.loads((BASE_DIR / "pyproject.toml").read_text())
+    runtime = " ".join(project["project"]["dependencies"])
+    dev = " ".join(project["dependency-groups"]["dev"])
+    for distribution in ("python-dateutil", "factory-boy", "icalendar", "time-machine"):
+        assert distribution in dev
+        assert distribution not in runtime

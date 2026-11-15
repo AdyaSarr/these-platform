@@ -242,6 +242,19 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       accords en attente rappelés au tuteur (J-7, J-1). La relancer n'envoie rien deux
       fois. *Vérifier* : la sortie ne contient que des nombres.
 
+- [ ] **Rappels des déplacements (M7) : un timer quotidien.**
+      *Timer systemd*, chaque jour à 07 h 00 Europe/Paris (`Persistent=true`) :
+      ```
+      manage.py travel_reminders
+      ```
+      Accord de mission à demander (une semaine avant le délai `order_lead_days`,
+      puis à ce délai), accord en attente rappelé à la personne du payeur (J-7, J-1
+      avant le départ), justificatifs ou montants réels manquants après le retour.
+      Dates à Paris ; la relancer n'envoie rien deux fois (`TravelNotification`,
+      contrainte d'unicité) ; à l'envoi, destinataire revérifié et rappel encore dû
+      (mission annulée, accord décidé, justificatif déposé entre-temps : rien
+      n'est envoyé). *Vérifier* : la sortie ne contient que des nombres.
+
 - [ ] **Résumé hebdomadaire des objectifs (M4) : un timer le lundi.**
       *Timer systemd* (utilisateur du serveur), chaque lundi à 08 h 00 Europe/Paris
       (`OnCalendar=Mon *-*-* 08:00:00 Europe/Paris`, `Persistent=true` pour

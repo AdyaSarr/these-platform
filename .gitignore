@@ -38,3 +38,4 @@ htmlcov/
 
 # Claude Code : réglages personnels
 .claude/settings.local.json
+var/pytest-*.lock

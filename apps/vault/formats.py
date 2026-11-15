@@ -146,6 +146,14 @@ TEXT_SLOTS: Mapping[str, int] = MappingProxyType(
         "conferences.Submission.notes": 0x0304,
         "conferences.StApproval.comment": 0x0305,
         "conferences.Preprint.url": 0x0306,
+        "travel.Mission.destination_detail": 0x0401,
+        "travel.Mission.purpose": 0x0402,
+        "travel.Mission.lodging_note": 0x0403,
+        "travel.MissionOrder.comment": 0x0404,
+        "travel.MissionOrder.estimated_total": 0x0405,
+        "travel.Expense.estimated_amount": 0x0406,
+        "travel.Expense.actual_amount": 0x0407,
+        "travel.TravelBudget.amount": 0x0408,
     }
 )
 RETIRED_SLOT_CODES: frozenset[int] = frozenset()

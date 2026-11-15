@@ -60,9 +60,11 @@ def test_thesis_id_is_only_accepted_as_uuid() -> None:
 
 
 def _path(route: str, thesis_id: uuid.UUID) -> str:
-    """Fill the route: the thesis id, and random UUIDs for any other object id."""
+    """Fill the route: the thesis id, random UUIDs for any other object id, and 1 for
+    an integer (a year or a month: the guard answers before the view reads it)."""
     path = route.replace(f"<uuid:{THESIS_URL_KWARG}>", str(thesis_id))
     path = re.sub(r"<uuid:\w+>", lambda _: str(uuid.uuid4()), path)
+    path = re.sub(r"<int:\w+>", "1", path)
     assert "<" not in path, f"unsupported converter in {route}"
     return "/" + path.lstrip("^").rstrip("$")
 

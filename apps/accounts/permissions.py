@@ -64,6 +64,14 @@ class Action(StrEnum):
     CONFERENCE_WRITE = "CONFERENCE_WRITE"
     SUBMISSION_READ = "SUBMISSION_READ"
     SUBMISSION_WRITE = "SUBMISSION_WRITE"
+    # Travel (M7). TRAVEL_READ: what each role sees is filtered by travel's
+    # visible_to (the co-supervisor: LIRMM only). The payer's person decides an order
+    # and sets its budget (tutor: ST, director: LIRMM), checked by travel.services.
+    TRAVEL_READ = "TRAVEL_READ"
+    TRAVEL_WRITE = "TRAVEL_WRITE"
+    TRAVEL_REMINDERS_SET = "TRAVEL_REMINDERS_SET"
+    TRAVEL_RULES_SET = "TRAVEL_RULES_SET"
+    TRAVEL_BUDGET_SET = "TRAVEL_BUDGET_SET"
     # Documents (M2); also subject to can_access_level().
     DOCUMENT_READ = "DOCUMENT_READ"
     DOCUMENT_WRITE = "DOCUMENT_WRITE"
@@ -82,6 +90,7 @@ class Action(StrEnum):
     VALIDATE_CSI = "VALIDATE_CSI"
     VALIDATE_ANRT = "VALIDATE_ANRT"
     VALIDATE_PUBLICATION = "VALIDATE_PUBLICATION"
+    VALIDATE_MISSION_ORDER = "VALIDATE_MISSION_ORDER"  # M7
 
 
 _A = Action
@@ -98,6 +107,7 @@ ROLE_ACTIONS: Mapping[Role, frozenset[Action]] = MappingProxyType(
                 _A.MEETING_READ, _A.MEETING_WRITE, _A.MEETING_ACKNOWLEDGE,  # écrire
                 _A.CONFERENCE_READ, _A.CONFERENCE_WRITE,                # M6
                 _A.SUBMISSION_READ, _A.SUBMISSION_WRITE,                # M6
+                _A.TRAVEL_READ, _A.TRAVEL_WRITE, _A.TRAVEL_REMINDERS_SET,  # M7
                 _A.DOCUMENT_READ, _A.DOCUMENT_WRITE, _A.DOCUMENT_COMMENT,  # écrire
                 _A.DOCUMENT_GRANT,                                      # + liste explicite
                 _A.ADMIN_FILE_READ, _A.ADMIN_FILE_WRITE, _A.CIFRE_FILE_READ,  # écrire
@@ -109,6 +119,8 @@ ROLE_ACTIONS: Mapping[Role, frozenset[Action]] = MappingProxyType(
                 _A.OBJECTIVE_READ, _A.OBJECTIVE_COMMENT,                # commenter
                 _A.MEETING_READ, _A.MEETING_WRITE, _A.MEETING_ACKNOWLEDGE,  # écrire
                 _A.CONFERENCE_READ, _A.CONFERENCE_WRITE, _A.SUBMISSION_READ,  # M6
+                _A.TRAVEL_READ, _A.TRAVEL_RULES_SET, _A.TRAVEL_BUDGET_SET,  # M7
+                _A.VALIDATE_MISSION_ORDER,                              # M7: payer LIRMM
                 _A.DOCUMENT_READ, _A.DOCUMENT_COMMENT,                  # lire, commenter
                 _A.ADMIN_FILE_READ, _A.CIFRE_FILE_READ,                 # lire
                 _A.VALIDATE_OBJECTIVES, _A.VALIDATE_CSI, _A.VALIDATE_ANRT,  # objectifs, CSI, ANRT
@@ -120,6 +132,7 @@ ROLE_ACTIONS: Mapping[Role, frozenset[Action]] = MappingProxyType(
                 _A.OBJECTIVE_READ, _A.OBJECTIVE_COMMENT,                # commenter
                 _A.MEETING_READ, _A.MEETING_WRITE, _A.MEETING_ACKNOWLEDGE,  # écrire
                 _A.CONFERENCE_READ, _A.CONFERENCE_WRITE, _A.SUBMISSION_READ,  # M6
+                _A.TRAVEL_READ,                                         # M7: LIRMM only
                 _A.DOCUMENT_READ, _A.DOCUMENT_COMMENT,                  # lire, commenter
             }                                                       # admin : —
         ),
@@ -129,6 +142,8 @@ ROLE_ACTIONS: Mapping[Role, frozenset[Action]] = MappingProxyType(
                 _A.OBJECTIVE_READ, _A.OBJECTIVE_COMMENT,                # commenter
                 _A.MEETING_READ, _A.MEETING_WRITE, _A.MEETING_ACKNOWLEDGE,  # écrire
                 _A.CONFERENCE_READ, _A.CONFERENCE_WRITE, _A.SUBMISSION_READ,  # M6
+                _A.TRAVEL_READ, _A.TRAVEL_RULES_SET, _A.TRAVEL_BUDGET_SET,  # M7
+                _A.VALIDATE_MISSION_ORDER,                              # M7: payer ST
                 _A.DOCUMENT_READ, _A.DOCUMENT_COMMENT,                  # lire, commenter
                 _A.CIFRE_FILE_READ,                                     # partie CIFRE
                 _A.VALIDATE_ANRT, _A.VALIDATE_PUBLICATION,              # ANRT, publications

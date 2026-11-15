@@ -121,4 +121,6 @@
     <span class="muted">{% translate "Asks for your second factor." %}</span></form>
 </section>
 {% endif %}
+{# M7: the linked missions (travel.templatetags.travel_links). #}
+{% load travel_tags %}{% travel_links submission %}
 {% endblock %}

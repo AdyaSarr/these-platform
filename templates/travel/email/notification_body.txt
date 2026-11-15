@@ -1,0 +1,5 @@
+{% load i18n %}{% translate "Something about the travels concerns you on the platform:" %}
+
+{{ url }}
+
+{% translate "This message contains no detail: sign in to see it." %}

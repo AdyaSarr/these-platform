@@ -137,6 +137,17 @@ Un module = une conversation = un ou plusieurs commits.
 - **Une branche par module** (`m0-socle`, `m1-comptes`, …). Les commits `wip` sont
   autorisés sur la branche ; la fusion dans `main` se fait seulement après la revue
   de fin du module, tous tests verts.
+- **Avant toute fusion** : `uv run pytest -m merge_gate > var/merge-gate.log 2>&1; echo "exit=$?"`
+  doit donner `exit=0`, en plus de la suite complète. Les tests marqués
+  `merge_gate` (exclus par défaut) ne passent qu'en fin de module.
+- **Pour décider d'un commit, ne jamais se fier au code de sortie d'une commande
+  pipée.** Lancer : `uv run pytest -q > var/last-pytest.log 2>&1; echo "pytest exit=$?"`
+  — puis lire `tail` du fichier. Un commit n'est fait que si `exit=0` et que la
+  ligne de résumé ne contient ni `failed` ni `error`. Hors commits `wip … (red)`,
+  rouges par construction.
+- **Ne jamais lancer pytest pendant qu'une autre exécution tourne** ; le verrou
+  l'empêche de toute façon (un verrou par base de test,
+  `var/pytest-<empreinte>.lock`, `tests/pytest_lock.py`).
 - N'écris aucun fichier tant que le plan n'est pas validé explicitement.
 - Écris les tests des critères d'acceptation avant le code.
 - Lance les tests après chaque étape et montre le résultat.
