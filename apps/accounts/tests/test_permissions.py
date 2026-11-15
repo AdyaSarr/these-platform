@@ -66,6 +66,15 @@ EXPECTED: dict[Action, set[Role]] = {
     A.CONFERENCE_WRITE: _SUPERVISION,
     A.SUBMISSION_READ: _SUPERVISION,
     A.SUBMISSION_WRITE: {R.PHD_STUDENT},
+    # Travel (M7): the co-supervisor reads LIRMM days and missions only (the filter is
+    # travel's visible_to); the payer's person decides an order and sets its budget
+    # (tutor: ST, director: LIRMM; checked by travel.services).
+    A.TRAVEL_READ: _SUPERVISION,
+    A.TRAVEL_WRITE: {R.PHD_STUDENT},
+    A.TRAVEL_REMINDERS_SET: {R.PHD_STUDENT},
+    A.TRAVEL_RULES_SET: {R.DIRECTOR, R.INDUSTRIAL_TUTOR},
+    A.TRAVEL_BUDGET_SET: {R.DIRECTOR, R.INDUSTRIAL_TUTOR},
+    A.VALIDATE_MISSION_ORDER: {R.DIRECTOR, R.INDUSTRIAL_TUTOR},
     # Documents: écrire / lire, commenter x3 / rapport CSI / projet partagé (per-object, M2)
     A.DOCUMENT_READ: _SUPERVISION,
     A.DOCUMENT_WRITE: {R.PHD_STUDENT},
