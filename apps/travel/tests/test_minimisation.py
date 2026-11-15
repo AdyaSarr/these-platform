@@ -130,6 +130,7 @@ def _world(team: SimpleNamespace, pattern: str) -> None:
             services.decide_order(
                 order=order, user=decider, decision="GRANTED", recent_mfa=True, comment="a"
             )
+            services.attach_official_order(mission=mission, user=team.student, upload=_pdf())
 
 
 def _lirmm(team: SimpleNamespace) -> list[Mission]:
@@ -143,7 +144,14 @@ def _lirmm(team: SimpleNamespace) -> list[Mission]:
         mission_of(team, payer="ST", start_date=D(2027, 3, 2), end_date=D(2027, 3, 2)),
     ]
     services.request_order(mission=shared[1], user=team.student, estimated_total="80")
+    services.attach_official_order(mission=shared[0], user=team.student, upload=_pdf())
     return shared
+
+
+def _pdf() -> Any:
+    from django.core.files.uploadedfile import SimpleUploadedFile
+
+    return SimpleUploadedFile("ordre.pdf", b"%PDF-1.7\n%ordre fictif\n%%EOF\n", "application/pdf")
 
 
 # --------------------------------------------------------------------------- surfaces
