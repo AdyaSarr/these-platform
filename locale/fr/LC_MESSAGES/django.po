@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-15 17:36+0100\n"
+"POT-Creation-Date: 2026-11-15 18:06+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -132,7 +132,7 @@ msgstr "Externe"
 msgid "name"
 msgstr "nom"
 
-#: apps/accounts/models.py:84 apps/travel/models.py:75
+#: apps/accounts/models.py:84 apps/travel/models.py:78
 msgid "kind"
 msgstr "type"
 
@@ -183,7 +183,7 @@ msgstr "date de fin prévue"
 #: apps/accounts/models.py:109 apps/admin_file/models.py:137
 #: apps/conferences/models.py:246 apps/meetings/models.py:105
 #: apps/meetings/models.py:284 apps/objectives/models.py:133
-#: apps/objectives/models.py:237 apps/travel/models.py:251
+#: apps/objectives/models.py:237 apps/travel/models.py:254
 msgid "status"
 msgstr "statut"
 
@@ -222,13 +222,13 @@ msgstr "En file d'attente"
 
 #: apps/accounts/models.py:223 apps/admin_file/models.py:286
 #: apps/conferences/models.py:520 apps/meetings/models.py:343
-#: apps/objectives/models.py:356
+#: apps/objectives/models.py:356 apps/travel/choices.py:140
 msgid "Sent"
 msgstr "Envoyé"
 
 #: apps/accounts/models.py:224 apps/admin_file/models.py:287
 #: apps/conferences/models.py:521 apps/meetings/models.py:344
-#: apps/objectives/models.py:357
+#: apps/objectives/models.py:357 apps/travel/choices.py:141
 msgid "Failed"
 msgstr "Échec"
 
@@ -1169,7 +1169,7 @@ msgid "venue"
 msgstr "conférence ou revue"
 
 #: apps/conferences/models.py:105 apps/objectives/models.py:54
-#: apps/objectives/models.py:127 apps/travel/models.py:506
+#: apps/objectives/models.py:127 apps/travel/models.py:509
 msgid "year"
 msgstr "année"
 
@@ -1243,7 +1243,7 @@ msgstr "Publié"
 
 #: apps/conferences/models.py:240 apps/meetings/models.py:99
 #: apps/objectives/models.py:137 apps/objectives/models.py:236
-#: apps/travel/models.py:248 apps/vault/models.py:221
+#: apps/travel/models.py:251 apps/vault/models.py:221
 msgid "confidentiality"
 msgstr "confidentialité"
 
@@ -1331,7 +1331,7 @@ msgstr "Accord ST décidé"
 msgid "ST review period changed"
 msgstr "Délai de relecture ST modifié"
 
-#: apps/conferences/models.py:511
+#: apps/conferences/models.py:511 apps/travel/choices.py:129
 msgid "Event"
 msgstr "Événement"
 
@@ -1344,12 +1344,12 @@ msgid "conference notification"
 msgstr "notification de conférence"
 
 #: apps/conferences/services.py:112 apps/meetings/services.py:105
-#: apps/objectives/services.py:153 apps/travel/services.py:630
+#: apps/objectives/services.py:153 apps/travel/services.py:646
 msgid "This text is invalid."
 msgstr "Ce texte n'est pas valide."
 
 #: apps/conferences/services.py:115 apps/meetings/services.py:108
-#: apps/objectives/services.py:156 apps/travel/services.py:633
+#: apps/objectives/services.py:156 apps/travel/services.py:649
 msgid "The text contains a control character."
 msgstr "Le texte contient un caractère de contrôle."
 
@@ -1359,7 +1359,7 @@ msgstr "Le texte contient un caractère de contrôle."
 msgid "Between %(min)d and %(max)d characters."
 msgstr "Entre %(min)d et %(max)d caractères."
 
-#: apps/conferences/services.py:127 apps/travel/services.py:639
+#: apps/conferences/services.py:127 apps/travel/services.py:655
 msgid "One line only."
 msgstr "Une seule ligne."
 
@@ -1368,7 +1368,7 @@ msgid "The address must start with https://."
 msgstr "L'adresse doit commencer par https://."
 
 #: apps/conferences/services.py:143 apps/meetings/services.py:135
-#: apps/travel/services.py:645
+#: apps/travel/services.py:661
 msgid "Unknown confidentiality level."
 msgstr "Niveau de confidentialité inconnu."
 
@@ -1439,8 +1439,8 @@ msgstr "Cette édition existe déjà."
 msgid "This deadline was cancelled."
 msgstr "Cette échéance a été annulée."
 
-#: apps/conferences/services.py:472 apps/travel/services.py:522
-#: apps/travel/services.py:543 apps/travel/services.py:550
+#: apps/conferences/services.py:472 apps/travel/services.py:537
+#: apps/travel/services.py:558 apps/travel/services.py:565
 #, python-format
 msgid "Between 0 and %(max)d days."
 msgstr "Entre 0 et %(max)d jours."
@@ -1502,7 +1502,7 @@ msgstr ""
 msgid "A request is already pending."
 msgstr "Une demande est déjà en attente."
 
-#: apps/conferences/services.py:1114 apps/travel/services.py:1214
+#: apps/conferences/services.py:1114 apps/travel/services.py:1238
 #: apps/travel/views.py:788
 msgid "Grant or refuse."
 msgstr "Accordez ou refusez."
@@ -1870,7 +1870,7 @@ msgstr "Approuvé"
 msgid "acknowledgement of minutes"
 msgstr "marque de lecture du compte rendu"
 
-#: apps/meetings/models.py:254 apps/travel/models.py:369
+#: apps/meetings/models.py:254 apps/travel/models.py:372
 msgid "decision"
 msgstr "décision"
 
@@ -2122,7 +2122,7 @@ msgstr ""
 "modification et montré au directeur."
 
 #: apps/objectives/forms.py:40 apps/travel/forms.py:72
-#: apps/travel/models.py:101 templates/travel/settings.html:23
+#: apps/travel/models.py:104 templates/travel/settings.html:23
 msgid "CIFRE year"
 msgstr "Année CIFRE"
 
@@ -2226,7 +2226,7 @@ msgid "Not achieved"
 msgstr "Non atteint"
 
 #: apps/objectives/models.py:129 apps/objectives/models.py:233
-#: apps/travel/models.py:454
+#: apps/travel/models.py:457
 msgid "category"
 msgstr "catégorie"
 
@@ -2295,7 +2295,7 @@ msgstr "points hebdomadaires"
 msgid "A reason of at least %(min)d characters is required."
 msgstr "Un motif d'au moins %(min)d caractères est obligatoire."
 
-#: apps/objectives/services.py:186 apps/travel/services.py:1425
+#: apps/objectives/services.py:186 apps/travel/services.py:1457
 msgid "Unknown category."
 msgstr "Catégorie inconnue."
 
@@ -2561,6 +2561,55 @@ msgstr "Frais d'inscription"
 msgid "Other expense"
 msgstr "Autre dépense"
 
+#: apps/travel/choices.py:120
+msgid "Mission approval to request"
+msgstr "Accord de mission à demander"
+
+#: apps/travel/choices.py:121
+msgid "Mission approval awaiting a decision"
+msgstr "Accord de mission en attente de décision"
+
+#: apps/travel/choices.py:122
+msgid "Receipts or actual amounts missing"
+msgstr "Justificatifs ou montants réels manquants"
+
+#: apps/travel/choices.py:123
+msgid "Mission approval requested"
+msgstr "Accord de mission demandé"
+
+#: apps/travel/choices.py:124
+msgid "Mission approval decided"
+msgstr "Accord de mission décidé"
+
+#: apps/travel/choices.py:125
+msgid "Time-split target or rules changed"
+msgstr "Cible ou règles de répartition modifiées"
+
+#: apps/travel/choices.py:130
+msgid "A week before the deadline"
+msgstr "Une semaine avant le délai"
+
+#: apps/travel/choices.py:131
+msgid "Deadline reached"
+msgstr "Délai atteint"
+
+#: apps/travel/choices.py:134
+msgid "After the return"
+msgstr "Après le retour"
+
+#: apps/travel/choices.py:135
+msgid "Two weeks after the return"
+msgstr "Deux semaines après le retour"
+
+#: apps/travel/choices.py:139
+msgctxt "notification"
+msgid "Pending"
+msgstr "En attente"
+
+#: apps/travel/choices.py:142
+msgid "Not sent: no longer concerned"
+msgstr "Non envoyé : destinataire plus concerné"
+
 #: apps/travel/forms.py:46 templates/travel/split.html:20
 msgid "Kind"
 msgstr "Type"
@@ -2581,7 +2630,7 @@ msgstr "Le télétravail compte pour"
 msgid "Conferences count for"
 msgstr "Les conférences comptent pour"
 
-#: apps/travel/forms.py:58 apps/travel/models.py:139
+#: apps/travel/forms.py:58 apps/travel/models.py:142
 msgid "Whit Monday is a holiday"
 msgstr "Le lundi de Pentecôte est férié"
 
@@ -2597,7 +2646,7 @@ msgstr "Minimum de jours au LIRMM par mois"
 msgid "Leave empty: no monthly rule."
 msgstr "Laisser vide : pas de règle mensuelle."
 
-#: apps/travel/forms.py:73 apps/travel/models.py:102
+#: apps/travel/forms.py:73 apps/travel/models.py:105
 msgid "ST share (percent)"
 msgstr "Part ST (%)"
 
@@ -2705,7 +2754,9 @@ msgstr "Conservé chiffré dans le coffre, au niveau de la mission."
 msgid ""
 "The document is encrypted at the mission's level. Avoid leaving unrelated "
 "information in it (home address, other expenses)."
-msgstr "Le document est chiffré au niveau de la mission. Évitez d'y laisser des informations sans rapport (adresse personnelle, autres dépenses)."
+msgstr ""
+"Le document est chiffré au niveau de la mission. Évitez d'y laisser des "
+"informations sans rapport (adresse personnelle, autres dépenses)."
 
 #: apps/travel/forms.py:213 apps/travel/forms.py:223
 msgid "Estimated (euros)"
@@ -2735,233 +2786,237 @@ msgstr "Payeur"
 msgid "Budget (euros)"
 msgstr "Budget (euros)"
 
-#: apps/travel/models.py:74
+#: apps/travel/models.py:77
 msgid "day"
 msgstr "jour"
 
-#: apps/travel/models.py:80
+#: apps/travel/models.py:83
 msgid "presence day"
 msgstr "jour de présence"
 
-#: apps/travel/models.py:103
+#: apps/travel/models.py:106
 msgid "laboratory share (percent)"
 msgstr "part laboratoire (%)"
 
-#: apps/travel/models.py:106
+#: apps/travel/models.py:109
 msgid "time-split target"
 msgstr "cible de répartition du temps"
 
-#: apps/travel/models.py:134
+#: apps/travel/models.py:137
 msgid "remote work counts for"
 msgstr "le télétravail compte pour"
 
-#: apps/travel/models.py:137
+#: apps/travel/models.py:140
 msgid "conferences count for"
 msgstr "les conférences comptent pour"
 
-#: apps/travel/models.py:140
+#: apps/travel/models.py:143
 msgid "alert above (points)"
 msgstr "alerte au-delà de (points)"
 
-#: apps/travel/models.py:142
+#: apps/travel/models.py:145
 msgid "minimum LIRMM days per month"
 msgstr "minimum de jours au LIRMM par mois"
 
-#: apps/travel/models.py:146
+#: apps/travel/models.py:149
 msgid "mission approval to request (days before)"
 msgstr "accord de mission à demander (jours avant)"
 
-#: apps/travel/models.py:149
+#: apps/travel/models.py:152
 msgid "receipts expected (days after)"
 msgstr "justificatifs attendus (jours après)"
 
-#: apps/travel/models.py:162
+#: apps/travel/models.py:165
 msgid "travel policy"
 msgstr "règles des déplacements"
 
-#: apps/travel/models.py:216
+#: apps/travel/models.py:219
 msgid "departure"
 msgstr "départ"
 
-#: apps/travel/models.py:217
+#: apps/travel/models.py:220
 msgid "return"
 msgstr "retour"
 
-#: apps/travel/models.py:218
+#: apps/travel/models.py:221
 msgid "destination"
 msgstr "destination"
 
-#: apps/travel/models.py:225
+#: apps/travel/models.py:228
 msgid "conference"
 msgstr "conférence"
 
-#: apps/travel/models.py:239
+#: apps/travel/models.py:242
 msgid "transport"
 msgstr "transport"
 
-#: apps/travel/models.py:244
+#: apps/travel/models.py:247
 msgid "lodging"
 msgstr "hébergement"
 
-#: apps/travel/models.py:246
+#: apps/travel/models.py:249
 msgid "paid by"
 msgstr "payé par"
 
-#: apps/travel/models.py:253
+#: apps/travel/models.py:256
 msgid "tickets booked"
 msgstr "billets réservés"
 
-#: apps/travel/models.py:254
+#: apps/travel/models.py:257
 msgid "lodging booked"
 msgstr "hébergement réservé"
 
-#: apps/travel/models.py:258
+#: apps/travel/models.py:261
 msgid "official mission order obtained"
 msgstr "ordre de mission officiel obtenu"
 
-#: apps/travel/models.py:266
+#: apps/travel/models.py:269
 msgid "official mission order"
 msgstr "ordre de mission officiel"
 
-#: apps/travel/models.py:272
+#: apps/travel/models.py:275
 msgid "mission"
 msgstr "mission"
 
-#: apps/travel/models.py:372
+#: apps/travel/models.py:375
 msgid "reason"
 msgstr "motif"
 
-#: apps/travel/models.py:382
+#: apps/travel/models.py:385
 msgid "mission approval"
 msgstr "accord de mission"
 
-#: apps/travel/models.py:455
+#: apps/travel/models.py:458
 msgid "flat rate (no receipt)"
 msgstr "forfait (sans justificatif)"
 
-#: apps/travel/models.py:458
+#: apps/travel/models.py:461
 msgid "expense"
 msgstr "dépense"
 
-#: apps/travel/models.py:484 templates/travel/mission.html:61
+#: apps/travel/models.py:487 templates/travel/mission.html:61
 msgid "receipt"
 msgstr "justificatif"
 
-#: apps/travel/models.py:505
+#: apps/travel/models.py:508
 msgid "payer"
 msgstr "payeur"
 
-#: apps/travel/models.py:510
+#: apps/travel/models.py:513
 msgid "travel budget"
 msgstr "budget des déplacements"
 
-#: apps/travel/services.py:116
+#: apps/travel/models.py:560
+msgid "travel notification"
+msgstr "notification des déplacements"
+
+#: apps/travel/services.py:118
 msgid "The thesis is finished: its travel data is frozen."
 msgstr "La thèse est terminée : ses déplacements sont figés."
 
-#: apps/travel/services.py:146
+#: apps/travel/services.py:148
 #, python-format
 msgid "The dates must be between %(first)s and %(last)s."
 msgstr "Les dates doivent être comprises entre le %(first)s et le %(last)s."
 
-#: apps/travel/services.py:193
+#: apps/travel/services.py:195
 msgid "Unknown kind of day."
 msgstr "Type de jour inconnu."
 
-#: apps/travel/services.py:195
+#: apps/travel/services.py:197
 msgid "The first day must not be after the last one."
 msgstr "Le premier jour ne peut pas être après le dernier."
 
-#: apps/travel/services.py:198
+#: apps/travel/services.py:200
 #, python-format
 msgid "At most %(n)d days at once."
 msgstr "%(n)d jours au plus à la fois."
 
-#: apps/travel/services.py:317 apps/travel/services.py:565
+#: apps/travel/services.py:319 apps/travel/services.py:580
 msgid "Unknown CIFRE year."
 msgstr "Année CIFRE inconnue."
 
-#: apps/travel/services.py:410
+#: apps/travel/services.py:412
 msgid "Unknown month."
 msgstr "Mois inconnu."
 
-#: apps/travel/services.py:412
+#: apps/travel/services.py:414
 msgid "This month is outside the thesis."
 msgstr "Ce mois est hors de la thèse."
 
-#: apps/travel/services.py:506
+#: apps/travel/services.py:521
 msgid "Unknown side."
 msgstr "Côté inconnu."
 
-#: apps/travel/services.py:508 apps/travel/services.py:702
-#: apps/travel/services.py:1397
+#: apps/travel/services.py:523 apps/travel/services.py:718
+#: apps/travel/services.py:1429
 msgid "Yes or no."
 msgstr "Oui ou non."
 
-#: apps/travel/services.py:514
+#: apps/travel/services.py:529
 #, python-format
 msgid "Between 1 and %(max)d points."
 msgstr "Entre 1 et %(max)d points."
 
-#: apps/travel/services.py:566
+#: apps/travel/services.py:581
 msgid "Between 0 and 100."
 msgstr "Entre 0 et 100."
 
-#: apps/travel/services.py:636
+#: apps/travel/services.py:652
 #, python-format
 msgid "At most %(max)d characters."
 msgstr "%(max)d caractères au plus."
 
-#: apps/travel/services.py:653
+#: apps/travel/services.py:669
 msgid "The person who decides for this payer must be able to read the mission."
 msgstr "La personne qui décide pour ce payeur doit pouvoir lire la mission."
 
-#: apps/travel/services.py:660 apps/travel/views.py:374
+#: apps/travel/services.py:676 apps/travel/views.py:374
 msgid "Unknown linked object."
 msgstr "Objet lié inconnu."
 
-#: apps/travel/services.py:669
+#: apps/travel/services.py:685
 msgid "The return must not be before the departure."
 msgstr "Le retour ne peut pas précéder le départ."
 
-#: apps/travel/services.py:671
+#: apps/travel/services.py:687
 #, python-format
 msgid "At most %(n)d days."
 msgstr "%(n)d jours au plus."
 
-#: apps/travel/services.py:674
+#: apps/travel/services.py:690
 msgid "Unknown destination."
 msgstr "Destination inconnue."
 
-#: apps/travel/services.py:676 apps/travel/services.py:742
+#: apps/travel/services.py:692 apps/travel/services.py:758
 msgid "Unknown payer."
 msgstr "Payeur inconnu."
 
-#: apps/travel/services.py:678
+#: apps/travel/services.py:694
 msgid "Unknown lodging."
 msgstr "Hébergement inconnu."
 
-#: apps/travel/services.py:686
+#: apps/travel/services.py:702
 msgid "Choose one or more means of transport."
 msgstr "Choisissez un ou plusieurs moyens de transport."
 
-#: apps/travel/services.py:689
+#: apps/travel/services.py:705
 msgid "Name the place (a town, a site)."
 msgstr "Indiquez le lieu (une ville, un site)."
 
-#: apps/travel/services.py:692
+#: apps/travel/services.py:708
 msgid "A place is named for another destination only."
 msgstr "Un lieu ne s'indique que pour une autre destination."
 
-#: apps/travel/services.py:696
+#: apps/travel/services.py:712
 msgid "A conference only for a conference trip."
 msgstr "Une conférence seulement pour un déplacement en conférence."
 
-#: apps/travel/services.py:804
+#: apps/travel/services.py:820
 msgid "This mission is closed."
 msgstr "Cette mission est close."
 
-#: apps/travel/services.py:829
+#: apps/travel/services.py:845
 msgid ""
 "A mission approval is pending: withdraw it before changing the dates, the "
 "destination or the payer."
@@ -2969,67 +3024,67 @@ msgstr ""
 "Une demande d'accord de mission est en attente : retirez-la avant de changer "
 "les dates, la destination ou le payeur."
 
-#: apps/travel/services.py:847 apps/travel/services.py:892
-#: apps/travel/services.py:1131 apps/travel/services.py:1231
-#: apps/travel/services.py:1347 apps/travel/services.py:1435
-#: apps/travel/services.py:1547 apps/travel/services.py:1615
+#: apps/travel/services.py:863 apps/travel/services.py:908
+#: apps/travel/services.py:1147 apps/travel/services.py:1255
+#: apps/travel/services.py:1379 apps/travel/services.py:1467
+#: apps/travel/services.py:1579 apps/travel/services.py:1647
 msgid "The mission changed meanwhile: try again."
 msgstr "La mission a changé entre-temps : réessayez."
 
-#: apps/travel/services.py:993
+#: apps/travel/services.py:1009
 msgid "A granted mission approval is needed first."
 msgstr "Il faut d'abord un accord de mission obtenu."
 
-#: apps/travel/services.py:996
+#: apps/travel/services.py:1012
 msgid "The mission is not over yet."
 msgstr "La mission n'est pas encore terminée."
 
-#: apps/travel/services.py:1099
+#: apps/travel/services.py:1115
 msgid "This mission approval is already decided."
 msgstr "Cette demande d'accord est déjà décidée."
 
-#: apps/travel/services.py:1110
+#: apps/travel/services.py:1126
 msgid "No mission approval for another body."
 msgstr "Pas d'accord de mission pour un autre organisme."
 
-#: apps/travel/services.py:1112 apps/travel/services.py:1128
+#: apps/travel/services.py:1128 apps/travel/services.py:1144
 msgid "A mission approval is already pending."
 msgstr "Une demande d'accord de mission est déjà en attente."
 
-#: apps/travel/services.py:1118 apps/travel/services.py:1392
-#: apps/travel/services.py:1644 apps/travel/views.py:728
+#: apps/travel/services.py:1134 apps/travel/services.py:1424
+#: apps/travel/services.py:1676 apps/travel/views.py:728
 msgid "An amount in euros, such as 123,45."
 msgstr "Un montant en euros, par exemple 123,45."
 
-#: apps/travel/services.py:1122
+#: apps/travel/services.py:1138
 msgid "Nobody active can decide for this payer and read the mission."
 msgstr "Personne d'actif ne peut décider pour ce payeur et lire la mission."
 
-#: apps/travel/services.py:1216
+#: apps/travel/services.py:1240
 msgid "Choose a reason for the refusal."
 msgstr "Choisissez un motif de refus."
 
-#: apps/travel/services.py:1218
+#: apps/travel/services.py:1242
 msgid "A grant has no reason."
 msgstr "Un accord n'a pas de motif."
 
-#: apps/travel/services.py:1399
+#: apps/travel/services.py:1431
 msgid "A flat rate only for meals or other expenses."
 msgstr "Un forfait seulement pour les repas ou les autres dépenses."
 
-#: apps/travel/services.py:1600
+#: apps/travel/services.py:1632
 msgid "Only a mission done can be reimbursed."
 msgstr "Seule une mission effectuée peut être remboursée."
 
-#: apps/travel/services.py:1605
+#: apps/travel/services.py:1637
 msgid "Every expense line needs its actual amount."
 msgstr "Chaque ligne de frais doit avoir son montant réel."
 
-#: apps/travel/services.py:1609
+#: apps/travel/services.py:1641
 msgid "Every expense line needs a receipt, unless it is a flat rate."
 msgstr "Chaque ligne de frais doit avoir un justificatif, sauf un forfait."
 
-#: apps/travel/services.py:1641 apps/travel/services.py:1709
+#: apps/travel/services.py:1673 apps/travel/services.py:1741
 msgid "This year is outside the thesis."
 msgstr "Cette année est hors de la thèse."
 
@@ -3501,6 +3556,7 @@ msgstr "Une pièce du dossier administratif a changé sur la plateforme :"
 #: templates/conferences/email/notification_body.txt:5
 #: templates/meetings/email/notification_body.txt:5
 #: templates/objectives/email/summary_body.txt:5
+#: templates/travel/email/notification_body.txt:5
 msgid "This message contains no detail: sign in to see it."
 msgstr ""
 "Ce message ne contient aucun détail : connectez-vous pour le consulter."
@@ -4534,7 +4590,9 @@ msgstr "Budget des déplacements"
 msgid ""
 "Calendar year of the departure. Committed: the estimates of the missions not "
 "cancelled nor refused; actual: their actual amounts."
-msgstr "Année civile du départ. Engagé : les estimations des missions ni annulées ni refusées ; réel : leurs montants réels."
+msgstr ""
+"Année civile du départ. Engagé : les estimations des missions ni annulées ni "
+"refusées ; réel : leurs montants réels."
 
 #: templates/travel/budget.html:9
 msgid "Committed"
@@ -4564,7 +4622,33 @@ msgstr "Enregistrer le budget"
 msgid ""
 "Asks for your second factor. The amount is sealed and never written in the "
 "audit log."
-msgstr "Demande votre second facteur. Le montant est scellé et n'est jamais inscrit au journal d'audit."
+msgstr ""
+"Demande votre second facteur. Le montant est scellé et n'est jamais inscrit "
+"au journal d'audit."
+
+#: templates/travel/email/notification_body.txt:1
+msgid "Something about the travels concerns you on the platform:"
+msgstr "Un élément de vos déplacements vous concerne sur la plateforme :"
+
+#: templates/travel/email/notification_subject.txt:1
+msgid "CIFRE thesis: a mission approval should be requested"
+msgstr "Thèse CIFRE : un accord de mission est à demander"
+
+#: templates/travel/email/notification_subject.txt:1
+msgid "CIFRE thesis: a mission approval awaits your decision"
+msgstr "Thèse CIFRE : un accord de mission attend votre décision"
+
+#: templates/travel/email/notification_subject.txt:1
+msgid "CIFRE thesis: a mission approval was decided"
+msgstr "Thèse CIFRE : un accord de mission a été décidé"
+
+#: templates/travel/email/notification_subject.txt:1
+msgid "CIFRE thesis: expenses of a mission are incomplete"
+msgstr "Thèse CIFRE : les frais d'une mission sont incomplets"
+
+#: templates/travel/email/notification_subject.txt:1
+msgid "CIFRE thesis: the ST / LIRMM time settings have changed"
+msgstr "Thèse CIFRE : les réglages du temps ST / LIRMM ont changé"
 
 #: templates/travel/mission.html:2 templates/travel/mission.html:5
 msgid "Mission"
@@ -4700,7 +4784,9 @@ msgstr "Marquer comme remboursée"
 #: templates/travel/mission.html:75
 msgid ""
 "Every line needs its actual amount, and a receipt unless it is a flat rate."
-msgstr "Chaque ligne doit avoir son montant réel, et un justificatif sauf pour un forfait."
+msgstr ""
+"Chaque ligne doit avoir son montant réel, et un justificatif sauf pour un "
+"forfait."
 
 #: templates/travel/mission.html:79
 msgid "Store the official mission order"

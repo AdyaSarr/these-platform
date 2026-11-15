@@ -46,6 +46,7 @@ from .choices import (
     ExpenseCategory,
     Lodging,
     MissionStatus,
+    NotificationKind,
     OrderDecision,
     OrderRefusalReason,
     Payer,
@@ -73,6 +74,7 @@ from .models import (
     TravelBudget,
     TravelPolicy,
 )
+from .notifications import members_with_roles, notify
 
 OPEN_THESIS = (Thesis.Status.SETUP, Thesis.Status.ACTIVE)
 MAX_RANGE_DAYS = 92  # one quarter in a single request
@@ -475,8 +477,21 @@ def _save_policy(
         for name, value in values.items():
             setattr(policy, name, value)
         policy.save()
+        if action == AuditAction.TRAVEL_RULES_CHANGED:
+            _notify_rules(locked, user)
         audit(action, actor=user, obj=policy, thesis=locked, changes=changes)
     return policy
+
+
+def _notify_rules(thesis: Thesis, user: User) -> None:
+    """A target or the rules changed: the other supervisor and the student are told."""
+    notify(
+        thesis,
+        NotificationKind.RULES_CHANGED,
+        uuid.uuid4(),
+        members_with_roles(thesis, Role.PHD_STUDENT, Role.DIRECTOR, Role.INDUSTRIAL_TUTOR),
+        exclude=user,
+    )
 
 
 def set_rules(
@@ -578,6 +593,7 @@ def set_target(
             target = TimeSplitTarget(thesis=locked, cifre_year=cifre_year, created_by=user)
         target.st_percent, target.lab_percent = st_percent, 100 - st_percent
         target.save()
+        _notify_rules(locked, user)
         audit(
             AuditAction.TRAVEL_TARGET_CHANGED,
             actor=user,
@@ -1143,6 +1159,14 @@ def request_order(*, mission: Mission, user: User, estimated_total: str) -> Miss
         sealer.seal(order, "estimated_total", amounts.canonical(cents))
         locked.status = MissionStatus.ORDER_REQUESTED.value
         locked.save()
+        notify(
+            locked.thesis,
+            NotificationKind.ORDER_REQUESTED,
+            order.pk,
+            members_with_roles(locked.thesis, DECIDER_ROLE[locked.payer]),
+            mission=locked,
+            exclude=user,
+        )
         audit(
             AuditAction.MISSION_ORDER_REQUESTED,
             actor=user,
@@ -1241,6 +1265,14 @@ def decide_order(
             MissionStatus.ORDER_GRANTED if granted else MissionStatus.ORDER_REFUSED
         ).value
         mission.save()
+        notify(
+            mission.thesis,
+            NotificationKind.ORDER_DECIDED,
+            locked.pk,
+            members_with_roles(mission.thesis, Role.PHD_STUDENT),
+            mission=mission,
+            exclude=user,
+        )
         details: dict[str, Any] = {"order_id": str(locked.pk), "payer": locked.payer}
         if not granted:
             details["reason"] = locked.reason
@@ -1745,3 +1777,17 @@ def budget_summary(user: Any, thesis: Thesis, year: int) -> dict[str, BudgetLine
             **sums,
         )
     return out
+
+
+def actual_amount_set(mission: Mission, expenses: list[Expense]) -> dict[Any, bool]:
+    """{expense pk: whether an actual amount is sealed}, WITHOUT decrypting anything
+    (the reminders run with no user): the existence of the sealed row is enough."""
+    from apps.vault.models import SealedText
+
+    code = formats.slot_code("travel.Expense.actual_amount")
+    present = set(
+        SealedText.objects.filter(
+            thesis_id=mission.thesis_id, slot=code, object_id__in=[e.pk for e in expenses]
+        ).values_list("object_id", flat=True)
+    )
+    return {e.pk: e.pk in present for e in expenses}

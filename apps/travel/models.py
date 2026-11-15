@@ -22,12 +22,15 @@ from .choices import (
     ExpenseCategory,
     Lodging,
     MissionStatus,
+    NotificationKind,
+    NotificationStatus,
     OrderDecision,
     OrderRefusalReason,
     Payer,
     PresenceKind,
     Side,
     Transport,
+    Window,
 )
 
 MAX_GAP_ALERT_POINTS = 50
@@ -522,3 +525,50 @@ class TravelBudget(TimeStampedModel):
 
     def __str__(self) -> str:
         return f"travel budget {self.pk}"
+
+
+# --------------------------------------------------------------------------- notifications
+
+
+class TravelNotification(TimeStampedModel):
+    """One e-mail (a link only) to one recipient: a reminder in one window, or an
+    event. Unique per (kind, target, window, recipient): sent once."""
+
+    Kind = NotificationKind
+    Status = NotificationStatus
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    thesis = models.ForeignKey(
+        "accounts.Thesis", on_delete=models.PROTECT, related_name="+", editable=False
+    )
+    kind = models.CharField(max_length=20, choices=NotificationKind.choices, editable=False)
+    target_id = models.UUIDField(editable=False)  # the event (uuid5 of its parts)
+    mission = models.ForeignKey(  # the page the e-mail links to; none: the settings
+        Mission, on_delete=models.PROTECT, null=True, blank=True, related_name="+", editable=False
+    )
+    window = models.CharField(max_length=12, choices=Window.choices, blank=True, default="")
+    recipient = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+", editable=False
+    )
+    status = models.CharField(
+        max_length=10, choices=NotificationStatus.choices, default=NotificationStatus.PENDING
+    )
+    attempts = models.PositiveSmallIntegerField(default=0)
+    sent_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = _("travel notification")
+        constraints: ClassVar[list[models.BaseConstraint]] = [
+            models.UniqueConstraint(
+                fields=["kind", "target_id", "window", "recipient"], name="travel_notification_once"
+            ),
+            models.CheckConstraint(
+                condition=Q(kind__in=NotificationKind.values)
+                & Q(window__in=Window.values)
+                & Q(status__in=NotificationStatus.values),
+                name="travel_notification_choices",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"travel notification {self.pk}"

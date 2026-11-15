@@ -114,3 +114,29 @@ class ExpenseCategory(models.TextChoices):
 
 # A flat-rate line (no receipt needed to be reimbursed): these categories only.
 FLAT_RATE_CATEGORIES = (ExpenseCategory.MEALS.value, ExpenseCategory.OTHER.value)
+
+
+class NotificationKind(models.TextChoices):
+    ORDER_TO_REQUEST = "ORDER_TO_REQUEST", _("Mission approval to request")
+    ORDER_PENDING = "ORDER_PENDING", _("Mission approval awaiting a decision")
+    RECEIPTS_MISSING = "RECEIPTS_MISSING", _("Receipts or actual amounts missing")
+    ORDER_REQUESTED = "ORDER_REQUESTED", _("Mission approval requested")
+    ORDER_DECIDED = "ORDER_DECIDED", _("Mission approval decided")
+    RULES_CHANGED = "RULES_CHANGED", _("Time-split target or rules changed")
+
+
+class Window(models.TextChoices):
+    NONE = "", _("Event")
+    EARLY = "EARLY", _("A week before the deadline")
+    DUE = "DUE", _("Deadline reached")
+    J7 = "J7", "J-7"
+    J1 = "J1", "J-1"
+    AFTER_GRACE = "AFTER_GRACE", _("After the return")
+    AFTER_14 = "AFTER_14", _("Two weeks after the return")
+
+
+class NotificationStatus(models.TextChoices):
+    PENDING = "PENDING", pgettext_lazy("notification", "Pending")
+    SENT = "SENT", _("Sent")
+    FAILED = "FAILED", _("Failed")
+    SKIPPED = "SKIPPED", _("Not sent: no longer concerned")
