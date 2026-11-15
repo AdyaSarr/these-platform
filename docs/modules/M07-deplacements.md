@@ -189,6 +189,12 @@ Paris :
 Événements : demande (personne qui décide), décision (doctorant), cible ou règles
 réglées (voir « Droits »).
 
+À l'envoi (ligne verrouillée : jamais deux fois, même par deux workers à la fois),
+le destinataire doit être encore concerné **et** le courriel encore dû : mission
+annulée, accord demandé ou décidé entre-temps, justificatif déposé entre-temps →
+`SKIPPED`, rien n'est envoyé (tests de concurrence et de changement d'état dans
+`apps/travel/tests/test_reminders.py`).
+
 ## Export `.ics`
 
 Par mission et pour toutes les missions visibles par l'utilisateur : événements sur
@@ -206,21 +212,44 @@ d'hébergement.
   (M6), avec « Prévoir une mission » prérempli.
 
 ## Critères d'acceptation
-- [ ] Le calcul des jours exclut week-ends et jours fériés français, lundi de
+- [x] Le calcul des jours exclut week-ends et jours fériés français, lundi de
       Pentecôte selon la politique (test).
-- [ ] L'écart à la cible est correct sur une année CIFRE à cheval sur deux années
+- [x] L'écart à la cible est correct sur une année CIFRE à cheval sur deux années
       civiles (test).
-- [ ] Le tuteur voit tous les types de jours ; le directeur voit un congé comme
+- [x] Le tuteur voit tous les types de jours ; le directeur voit un congé comme
       « indisponible » ; un co-encadrant voit seulement les jours et les missions
       LIRMM ; aucun compteur ne révèle le détail masqué (tests par rôle).
-- [ ] Seule la personne du payeur décide un ordre de mission, avec un second facteur
-      récent demandé après le contrôle des droits ; un ordre dont l'instantané ne
+- [x] Seule la personne du payeur décide un accord de mission, avec un second facteur
+      récent demandé après le contrôle des droits ; un accord dont l'instantané ne
       correspond plus ne couvre pas la mission (tests).
-- [ ] Toute modification d'un jour passé est journalisée (`PRESENCE_CORRECTED`) ;
+- [x] Toute modification d'un jour passé est journalisée (`PRESENCE_CORRECTED`) ;
       un jour à venir, non.
-- [ ] Aucun montant, motif, lieu `OTHER`, note d'hébergement ou commentaire en clair
+- [x] Aucun montant, motif, lieu `OTHER`, note d'hébergement ou commentaire en clair
       en base, dans les journaux, les courriels ou les `.ics`.
-- [ ] Aucun champ d'adresse, aucun import réseau dans `apps/travel` (tests statiques).
-- [ ] Rappels aux bonnes fenêtres, sans doublon, un lien seulement.
-- [ ] `demo_seed` : présence fictive, missions fictives (LIRMM, conférence M6), un
-      ordre accordé, un en attente, un refusé, montants fictifs.
+- [x] Aucun champ d'adresse, aucun import réseau dans `apps/travel` (tests statiques).
+- [x] Rappels aux bonnes fenêtres, sans doublon, un lien seulement.
+- [x] `demo_seed` : présence fictive, missions fictives (LIRMM, conférence M6), un
+      accord obtenu, un en attente, un refusé, montants fictifs.
+
+Ajoutés pendant le module (plan et retours du développeur, 2026-11-15) :
+- [x] Test des deux mondes structurel : toute page GET de M7 (paramètres entiers
+      compris) est rendue ou listée dans `DEFERRED` ; une entrée orpheline échoue ;
+      `DEFERRED` vide exigé à la fusion (`merge_gate`, `tests/test_security_audit_m7.py`).
+- [x] Liens `?meeting=` et `?submission=` : identifiant mal formé, inexistant, d'une
+      autre thèse ou illisible refusé de façon indiscernable, jamais renvoyé, journalisé.
+- [x] « Accord de mission » dans l'interface, case et document de l'ordre de mission
+      officiel, avertissement non bloquant au passage à « effectuée ».
+- [x] Nom du fichier téléversé jamais conservé (titres neutres datés) ; lignes au
+      forfait (repas, autres) sans justificatif mais avec un montant réel.
+- [x] Budget jamais montré au co-encadrant (il additionne des missions qu'il ne voit
+      pas) ; carte, `.ics` et sections M5 / M6 dans le test des deux mondes.
+
+Revue de fin de module (2026-11-15) : `tests/test_security_audit_m7.py` (aucun
+témoin ni montant en base, dans le stockage, les journaux, les courriels, les `.ics`
+ni le tableau de bord ; IDOR sur toutes les routes à identifiant ; deux demandes
+simultanées ; rotation et retrait de la KEK `INTERNAL_LIRMM` ; aucun import réseau,
+YAML ni pickle ; aucun modèle dans l'admin ; aucun champ d'adresse ; thèse terminée
+figée), son test principal vérifié par un mutant (motif recopié dans le journal :
+détecté). Les fuites du test des deux mondes ont été vérifiées par mutants à chaque
+étape (vue du directeur donnée au co-encadrant, compteur sur toutes les lignes,
+missions, budget, section M5 / M6, `.ics` de toutes les missions).
