@@ -3,6 +3,7 @@ SQL, bypassing the services."""
 
 from __future__ import annotations
 
+import datetime as dt
 from collections.abc import Callable
 from typing import Any
 
@@ -14,6 +15,8 @@ from apps.travel.models import PresenceDay, TimeSplitTarget, TravelPolicy
 from apps.travel.tests.helpers import D
 
 pytestmark = pytest.mark.django_db
+
+NOW_DT = dt.datetime(2027, 1, 20, 9, 0, tzinfo=dt.UTC)
 
 
 def _refused(create: Callable[[], Any]) -> None:
@@ -149,3 +152,70 @@ def test_an_edition_only_on_a_conference_mission() -> None:
         thesis, destination="CONFERENCE", payer="LIRMM", level="INTERNAL_LIRMM", edition=edition
     )
     _refused(lambda: _mission(thesis, destination="LIRMM", edition=edition))
+
+
+# --------------------------------------------------------------------------- orders
+
+
+def _order(mission: Any, **fields: Any) -> Any:
+    from apps.travel.models import MissionOrder
+
+    values: dict[str, Any] = {
+        "thesis": mission.thesis,
+        "mission": mission,
+        "requested_by": _user(),
+        "payer": "ST",
+        "snapshot_start": mission.start_date,
+        "snapshot_end": mission.end_date,
+        "snapshot_destination": mission.destination,
+        "decision": "PENDING",
+    }
+    values.update(fields)
+    return MissionOrder.objects.create(**values)
+
+
+def _user() -> Any:
+    from apps.accounts.tests.factories import UserFactory
+
+    return UserFactory.create()
+
+
+def test_one_pending_order_per_mission() -> None:
+    mission = _mission(ThesisFactory.create())
+    _order(mission)
+    _refused(lambda: _order(mission))
+
+
+@pytest.mark.parametrize(
+    "fields",
+    [
+        {"decision": "MAYBE"},
+        {"payer": "OTHER"},  # no order for another body
+        {"decision": "GRANTED"},  # decided without decided_by / decided_at
+        {"decision": "REFUSED", "reason": "", "decided_at": NOW_DT},
+        {"decision": "GRANTED", "reason": "OTHER", "decided_at": NOW_DT},
+        {"decision": "PENDING", "reason": "OTHER"},
+        {"decision": "REFUSED", "reason": "TOO_EXPENSIVE", "decided_at": NOW_DT},
+        {"decision": "WITHDRAWN"},  # without decided_at
+        {"decision": "PENDING", "decided_at": NOW_DT},
+    ],
+)
+def test_order_constraints(fields: dict[str, Any]) -> None:
+    mission = _mission(ThesisFactory.create())
+    if fields.get("decision") in ("GRANTED", "REFUSED") and "decided_at" in fields:
+        fields = {**fields, "decided_by": _user()}
+    _refused(lambda: _order(mission, **fields))
+
+
+def test_an_order_is_never_decided_by_its_requester() -> None:
+    mission = _mission(ThesisFactory.create())
+    requester = _user()
+    _refused(
+        lambda: _order(
+            mission,
+            requested_by=requester,
+            decided_by=requester,
+            decision="GRANTED",
+            decided_at=NOW_DT,
+        )
+    )

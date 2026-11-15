@@ -117,7 +117,17 @@ def _world(team: SimpleNamespace, pattern: str) -> None:
     }[pattern]
     for fields in elsewhere:
         start: dt.date = fields["start_date"]
-        mission_of(team, **{**fields, "end_date": start + dt.timedelta(days=2)}, purpose=pattern)
+        mission = mission_of(
+            team, **{**fields, "end_date": start + dt.timedelta(days=2)}, purpose=pattern
+        )
+        if pattern == "a" and mission.payer in ("ST", "LIRMM"):  # orders on hidden missions
+            order = services.request_order(
+                mission=mission, user=team.student, estimated_total="321,00"
+            )
+            decider = team.tutor if mission.payer == "ST" else team.director
+            services.decide_order(
+                order=order, user=decider, decision="GRANTED", recent_mfa=True, comment="a"
+            )
 
 
 def _lirmm(team: SimpleNamespace) -> list[Mission]:
@@ -126,10 +136,12 @@ def _lirmm(team: SimpleNamespace) -> list[Mission]:
         PresenceDay.objects.create(thesis=team.thesis, day=day, kind="LIRMM")
     meeting_of(team)  # shared objects a mission may link (?meeting=, ?submission=)
     submission_of(team)
-    return [  # shared missions to the LIRMM: one the co-supervisor reads, one not
+    shared = [  # shared missions to the LIRMM: one the co-supervisor reads, one not
         mission_of(team, payer="LIRMM", start_date=D(2027, 1, 26), end_date=D(2027, 1, 26)),
         mission_of(team, payer="ST", start_date=D(2027, 3, 2), end_date=D(2027, 3, 2)),
     ]
+    services.request_order(mission=shared[1], user=team.student, estimated_total="80")
+    return shared
 
 
 # --------------------------------------------------------------------------- surfaces
@@ -179,7 +191,7 @@ def _surfaces(team: SimpleNamespace) -> list[str]:
 
 
 # Pages of the student only: the co-supervisor gets a 403, the same in both worlds.
-REFUSED_TO_CO_SUP = frozenset({"new_mission", "edit_mission"})
+REFUSED_TO_CO_SUP = frozenset({"new_mission", "edit_mission", "orders"})
 
 _CSRF = re.compile(r'(name="csrfmiddlewaretoken" value=|"X-CSRFToken": )"[^"]+"')
 
