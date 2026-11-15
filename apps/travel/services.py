@@ -19,6 +19,7 @@ from typing import Any
 
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
+from django.utils import formats as text_formats
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
@@ -1914,7 +1915,10 @@ def dashboard_block(request: Any, thesis: Thesis) -> dict[str, Any]:
         "summary": summary,
         "full": summary.access is not PresenceAccess.LIRMM_ONLY,
         "st_percent": None if summary.st_percent is None else round(float(summary.st_percent)),
-        "gap": None if summary.gap is None else round(float(summary.gap), 1),
+        # Rounded and localised for display only ("16,7"); the alert used the exact value.
+        "gap": None
+        if summary.gap is None
+        else text_formats.number_format(round(float(summary.gap), 1), 1),
         "month": month,
         "rule": month.rule if month else None,
         "budgets": budgets,
