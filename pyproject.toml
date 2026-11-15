@@ -32,6 +32,8 @@ dev = [
     "time-machine>=2.16",
     "pytest-randomly>=5.1.0",
     "icalendar>=7.3.0",
+    "python-dateutil>=2.9",
+    "types-python-dateutil>=2.9",
 ]
 
 [tool.uv]

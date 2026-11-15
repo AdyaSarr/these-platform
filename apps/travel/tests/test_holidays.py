@@ -4,7 +4,7 @@ pure date arithmetic (no database, no clock, no network)."""
 import datetime as dt
 
 import pytest
-from dateutil.easter import EASTER_WESTERN, easter  # type: ignore[import-untyped]  # reference only
+from dateutil.easter import EASTER_WESTERN, easter  # reference implementation, tests only
 
 from apps.travel import holidays
 
