@@ -66,7 +66,9 @@ def test_missions_in_every_state_the_story_needs(demo: scenario.SeedResult) -> N
 
 def test_amounts_are_sealed_and_add_up(demo: scenario.SeedResult) -> None:
     thesis = _thesis()
-    assert TravelBudget.objects.filter(thesis=thesis).count() == 2
+    # One budget per payer and per calendar year the demonstration covers.
+    payers = set(TravelBudget.objects.filter(thesis=thesis).values_list("payer", flat=True))
+    assert payers == {"ST", "LIRMM"}
     assert ExpenseReceipt.objects.filter(expense__mission__thesis=thesis).exists()
     assert Expense.objects.filter(thesis=thesis, flat_rate=True).exists()
     year = Mission.objects.get(thesis=thesis, status="REIMBURSED").start_date.year
