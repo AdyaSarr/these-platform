@@ -62,6 +62,21 @@ scripts/test_all.sh apps/travel -x                                      # argume
 
 `uv run pytest` seul tourne en série (pas de `-n` par défaut), comme avant.
 
+Les tests tournent de préférence sur leur propre serveur PostgreSQL, le service
+`db-test` : même image que `db`, données en mémoire (perdues à l'arrêt du
+conteneur), sans fsync. Seule la durabilité après une panne change, jamais le
+comportement SQL ; la suite complète dure environ deux fois moins longtemps. Il
+faut `TEST_POSTGRES_PASSWORD` et `TEST_DATABASE_URL` dans `.env` (voir
+`.env.example`), puis :
+
+```bash
+docker compose up -d db-test
+```
+
+Sans `TEST_DATABASE_URL`, les tests utilisent le serveur de `DATABASE_URL`, comme
+avant, et pytest le signale en fin de sortie. `fsync=off` et `tmpfs` ne figurent
+que sur `db-test`, jamais sur `db`, qui garde son volume (test statique).
+
 L'ordre des tests est tiré au hasard à chaque exécution (`pytest-randomly`) : un
 test qui dépend d'un autre finit par échouer. Sous xdist, chaque worker écrit les
 tests qu'il a lancés, dans l'ordre, dans `var/pytest-order/<empreinte>/gwN.txt` ;

@@ -71,7 +71,7 @@ def test_two_complementary_phases_with_one_seed(tmp_path: Path) -> None:
     assert parallel[:3] == ["run", "pytest", "-q"] and serial[:3] == ["run", "pytest", "-q"]
     assert _option(parallel, "-m") == "not serial and not merge_gate"
     assert _option(serial, "-m") == "serial and not merge_gate"
-    assert _option(parallel, "-n") == "4"
+    assert _option(parallel, "-n") == "6"
     assert _option(parallel, "--dist") == "load"
     assert _option(parallel, "--max-worker-restart") == "0"
     assert _option(serial, "-p") == "no:xdist"

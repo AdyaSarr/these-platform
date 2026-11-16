@@ -34,6 +34,10 @@ SERIAL_MESSAGE = (
 )
 WORKER_LOCK_MESSAGE = "Worker xdist : le verrou de la session n'est pas tenu par son contrôleur"
 NO_SESSION_LOCK_MESSAGE = "Le verrou de la session n'a pas été pris (pytest_configure)."
+FALLBACK_DATABASE_MESSAGE = (
+    "Base de test : serveur de DATABASE_URL (TEST_DATABASE_URL absente). Plus rapide : "
+    "docker compose up -d db-test, puis TEST_DATABASE_URL dans .env (README)."
+)
 
 _LOCK_FD = pytest.StashKey[int]()
 _ORDER_FILE = pytest.StashKey[IO[str]]()
@@ -138,6 +142,11 @@ def pytest_terminal_summary(terminalreporter: Any, exitstatus: int, config: pyte
     Its own header line is hidden by -q, and the end of the output is what a
     `tail` keeps: without this, a run failing at random could not be replayed.
     """
+    from django.conf import settings
+
+    # config/settings/test.py: said here, never when the settings are imported.
+    if settings.configured and getattr(settings, "TEST_DATABASE_SOURCE", None) == "DATABASE_URL":
+        terminalreporter.write_line(FALLBACK_DATABASE_MESSAGE)
     seed = getattr(config.option, "randomly_seed", None)
     path = pytest_lock.session_lock()
     if isinstance(seed, int) and path is not None:

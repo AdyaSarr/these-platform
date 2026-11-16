@@ -18,6 +18,27 @@ services:
       retries: 10
     restart: unless-stopped
 
+  # The server of the test suite only (TEST_DATABASE_URL, config/settings/test.py):
+  # the development image, its data in memory (lost when the container stops), and
+  # no fsync. Only durability after a crash differs, never SQL (docs/decisions.md).
+  db-test:
+    image: postgres:16-alpine
+    command: ["postgres", "-c", "fsync=off", "-c", "synchronous_commit=off", "-c", "full_page_writes=off"]
+    environment:
+      POSTGRES_DB: theses
+      POSTGRES_USER: theses
+      POSTGRES_PASSWORD: ${TEST_POSTGRES_PASSWORD:?set TEST_POSTGRES_PASSWORD in .env}
+    ports:
+      - "127.0.0.1:5433:5432"
+    tmpfs:
+      - /var/lib/postgresql/data:rw,size=2g
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U theses -d theses"]
+      interval: 2s
+      timeout: 3s
+      retries: 15
+    restart: unless-stopped
+
   redis:
     image: redis:7-alpine
     command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}", "--appendonly", "yes"]

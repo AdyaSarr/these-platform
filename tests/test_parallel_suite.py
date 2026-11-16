@@ -14,7 +14,7 @@ from pathlib import Path
 import pytest
 
 from tests import pytest_lock
-from tests.pytest_child import BASE_DIR, FAKE_DATABASE, child_env, run_pytest
+from tests.pytest_child import BASE_DIR, fake_database_env, run_pytest
 
 # Child pytest runs and timings: alone, after the parallel phase (scripts/test_all.sh).
 pytestmark = pytest.mark.serial
@@ -24,7 +24,7 @@ SEED = "1234"
 
 
 def _env(name: str) -> dict[str, str]:
-    return child_env(DATABASE_URL=FAKE_DATABASE.format(name=name))
+    return fake_database_env(name)
 
 
 def _order_dir(name: str) -> Path:
