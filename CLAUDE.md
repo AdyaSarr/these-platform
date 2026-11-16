@@ -121,6 +121,9 @@ la contourner.
   message n'est construit qu'après cette décision. Un test statique le vérifie.
 - Tests avec pytest et factory-boy ; pour chaque vue, au moins un test autorisé et un
   test refusé par rôle concerné.
+- Un test de non-fuite utilise un témoin qu'aucune valeur produite par hasard ne
+  peut contenir (pas de chiffres seuls ni d'hexadécimal) : par exemple un montant
+  avec virgule ou une chaîne comme `TEMOIN-FUITE-…`.
 - Un test qui enchaîne une opération journalisée (connexion, invitation...) puis une
   opération du coffre (`wrap`, chiffrement MFA, dépôt) doit être en
   `django_db(transaction=True)` : sinon la transaction englobante du test garde le
