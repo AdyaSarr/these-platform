@@ -1,8 +1,9 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}{% load i18n ui %}
 {% block title %}{% if meeting %}{% translate "Edit the meeting" %}{% else %}{% translate "New meeting" %}{% endif %}{% endblock %}
 {% block content %}
-<h1>{% if meeting %}{% translate "Edit the meeting" %}{% else %}{% translate "New meeting" %}{% endif %}</h1>
-<p><a href="{% if meeting %}{% url 'meetings:detail' thesis_id=thesis.pk meeting_id=meeting.pk %}{% else %}{% url 'meetings:list' thesis_id=thesis.pk %}{% endif %}">{% translate "Back" %}</a></p>
+{% module_tabs "meetings" %}
+{% if meeting %}{% url 'meetings:detail' thesis_id=thesis.pk meeting_id=meeting.pk as back_url %}{% else %}{% url 'meetings:list' thesis_id=thesis.pk as back_url %}{% endif %}
+{% page_header parent_url=back_url parent_label=_("Back") %}{% if meeting %}{% translate "Edit the meeting" %}{% else %}{% translate "New meeting" %}{% endif %}{% endpage_header %}
 <form class="stack" method="post">
   {% csrf_token %}
   {{ form.non_field_errors }}

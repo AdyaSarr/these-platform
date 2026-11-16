@@ -1,11 +1,12 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}{% load i18n ui %}
 {% block title %}{% translate "Conferences" %}{% endblock %}
 {% block content %}
-<h1>{% translate "Conferences" %}</h1>
-<p><a href="{% url 'accounts:dashboard' thesis_id=thesis.pk %}">{% translate "Back to the thesis" %}</a> ·
-  <a href="{% url 'conferences:submissions' thesis_id=thesis.pk %}">{% translate "Submissions" %}</a> ·
-  <a href="{% url 'conferences:policy' thesis_id=thesis.pk %}">{% blocktranslate with days=review_days %}ST review period: {{ days }} days{% endblocktranslate %}</a>
-  {% if can_write %} · <a href="{% url 'conferences:new_venue' thesis_id=thesis.pk %}">{% translate "New venue" %}</a>{% endif %}</p>
+{% module_tabs "conferences" %}
+{% page_header %}{% translate "Conferences" %}{% actions %}
+  {% url 'conferences:policy' thesis_id=thesis.pk as policy_url %}{% blocktranslate asvar policy_label with days=review_days %}ST review period: {{ days }} days{% endblocktranslate %}
+  {% include "ui/action.html" with url=policy_url label=policy_label icon="settings" %}
+  {% if can_write %}{% url 'conferences:new_venue' thesis_id=thesis.pk as new_url %}{% include "ui/action.html" with url=new_url label=_("New venue") icon="plus" primary=True %}{% endif %}
+{% endpage_header %}
 
 <section aria-labelledby="deadlines-title">
   <h2 id="deadlines-title">{% translate "Upcoming deadlines" %}</h2>
@@ -29,7 +30,7 @@
   <ul>
     {% for venue in venues %}
       <li><a href="{% url 'conferences:venue' thesis_id=thesis.pk venue_id=venue.pk %}">{{ venue.acronym }}</a> — {{ venue.name }} ({{ venue.get_kind_display }})
-        {% for edition in venue.editions.all %}· <a href="{% url 'conferences:edition' thesis_id=thesis.pk edition_id=edition.pk %}">{{ edition.year }}</a>{% endfor %}</li>
+        {% if venue.editions.all %}<br><span class="muted">{% translate "Editions:" %}</span> {% for edition in venue.editions.all %}<a href="{% url 'conferences:edition' thesis_id=thesis.pk edition_id=edition.pk %}">{{ edition.year }}</a>{% if not forloop.last %}, {% endif %}{% endfor %}{% endif %}</li>
     {% endfor %}
   </ul>
   {% else %}<p class="muted">{% translate "No venue yet." %}</p>{% endif %}

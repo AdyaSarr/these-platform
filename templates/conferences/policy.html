@@ -1,8 +1,8 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}{% load i18n ui %}
 {% block title %}{% translate "ST review period" %}{% endblock %}
 {% block content %}
-<p><a href="{% url 'conferences:deadlines' thesis_id=thesis.pk %}">{% translate "Conferences" %}</a></p>
-<h1>{% translate "ST review period" %}</h1>
+{% module_tabs "conferences" %}
+{% page_header %}{% translate "ST review period" %}{% endpage_header %}
 {% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
 <p>{% blocktranslate with days=days %}ST's approval is to be requested {{ days }} days before the paper deadline (dates in Paris).{% endblocktranslate %}</p>
 <p class="muted">{% translate "The collaboration contract (administrative file) sets this period; requests already made keep the period they were made with." %}

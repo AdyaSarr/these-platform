@@ -2,16 +2,15 @@
 {% load i18n ui %}
 {% block title %}{{ thesis.title }}{% endblock %}
 {% block content %}
-  <div class="page-head">
-    <p class="greeting">{% blocktranslate with name=user.first_name|default:user.email %}Hello {{ name }}{% endblocktranslate %}</p>
-    <h1>{{ thesis.title }}</h1>
-    {# Ordinary spaces before ":" kept: asserted verbatim by apps/admin_file/tests/test_setup_explanation.py (tests/test_french_typography.py, KEPT). #}
-    <p class="muted">
-      {{ thesis.get_status_display }} ·
-      {% translate "CIFRE effective date" %} : {{ thesis.cifre_start_date|date:"j F Y" }} ·
-      {% translate "First enrolment" %} : {{ thesis.first_enrollment_date|date:"j F Y" }}
-    </p>
-  </div>
+  <p class="greeting">{% blocktranslate with name=user.first_name|default:user.email %}Hello {{ name }}{% endblocktranslate %}</p>
+  {# Ordinary spaces before ":" kept: asserted verbatim by apps/admin_file/tests/test_setup_explanation.py (tests/test_french_typography.py, KEPT). #}
+  {# The status line stays a <p class="muted"> of its own: apps/accounts/tests/test_thesis_status_label.py reads it. #}
+  {% page_header %}{{ thesis.title }}{% endpage_header %}
+  <p class="muted">
+    {{ thesis.get_status_display }} ·
+    {% translate "CIFRE effective date" %} : {{ thesis.cifre_start_date|date:"j F Y" }} ·
+    {% translate "First enrolment" %} : {{ thesis.first_enrollment_date|date:"j F Y" }}
+  </p>
   {# data = admin_file.services.setup_explanation: only for a SETUP thesis. Only « Open the file » is a link (docs/ui-notes.md). #}
   {% if setup %}
     <div class="alert alert-info">{% icon "info" %}

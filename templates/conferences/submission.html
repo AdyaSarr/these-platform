@@ -1,16 +1,14 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}{% load i18n ui %}
 {% block title %}{% translate "Submission" %}{% endblock %}
 {% block content %}
-<p><a href="{% url 'conferences:submissions' thesis_id=thesis.pk %}">{% translate "Submissions" %}</a></p>
-<h1>{% include "conferences/_text.html" with value=texts.title %}</h1>
-{% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
-
-<p class="muted">
+{% module_tabs "conferences" %}
+{% page_header %}{% include "conferences/_text.html" with value=texts.title %}{% subtitle %}
   {{ submission.venue.acronym }}{% if submission.edition %} {{ submission.edition.year }}{% endif %} ({{ submission.venue.get_kind_display }}) ·
   <strong>{{ submission.get_status_display }}</strong> ·
   {% translate "Confidentiality" %} : {{ submission.get_level_display }} ·
   {% if submission.st_work %}{% translate "ST work: ST's approval required" %}{% else %}{% translate "Not ST work" %}{% endif %}
-</p>
+{% endpage_header %}
+{% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
 {% if submission.resubmission_of_id %}<p class="muted"><a href="{% url 'conferences:submission' thesis_id=thesis.pk submission_id=submission.resubmission_of_id %}">{% translate "Resubmission of an earlier submission" %}</a></p>{% endif %}
 
 <div class="actions">

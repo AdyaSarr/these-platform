@@ -2,7 +2,8 @@
 the sidebar of that role and nothing more.
 
 Every full page also has the common structure (apps/ui/tests/test_page_structure.py):
-one <h1>, in the page header; no link back to the thesis dashboard in the content
+one <h1>, in the page header; at most one current item in the sidebar and in the
+module's tabs; no link back to the thesis dashboard in the content
 (the sidebar does it); no bar of links separated by dots.
 
 The thesis is the fictitious demonstration thesis (apps/demo/scenario.py: every
@@ -87,6 +88,9 @@ def _crawl(client: Client, start: str, prefix: str, role: Role) -> dict[str, int
             assert sidebar is not None, (role, url)
             assert len(re.findall(r'aria-current="page"', sidebar.group(0))) <= 1, (role, url)
             _assert_structure(page, prefix, (role, url))
+            tabs = re.search(r'<nav class="tabs".*?</nav>', page, re.S)
+            if tabs is not None:
+                assert len(re.findall(r'aria-current="page"', tabs.group(0))) <= 1, (role, url)
         queue.extend(_links(page, prefix) - seen.keys())
     assert len(seen) < MAX_PAGES, "the crawl did not finish"
     return seen

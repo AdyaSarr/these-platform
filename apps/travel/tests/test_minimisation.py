@@ -332,6 +332,29 @@ def test_the_co_supervisor_cannot_tell_two_worlds_apart(team: SimpleNamespace) -
     for target in surfaces:
         assert seen_a[target] == seen_b[target], target
 
+    # Module tabs (apps/ui/tabs.py, frontend step 2): neither the budget nor the
+    # approvals queue for the co-supervisor, on any surface; each one shown to
+    # whoever it is for, or this check would be vacuous.
+    budget = reverse("travel:budget", kwargs={"thesis_id": team.thesis.pk}).encode()
+    orders = reverse("travel:orders", kwargs={"thesis_id": team.thesis.pk}).encode()
+    bars = [_tab_bar(body) for status, _type, body in seen_a.values() if status == 200]
+    tabbed = [nav for nav in bars if nav is not None]
+    assert tabbed
+    assert not any(budget in nav or orders in nav for nav in tabbed)
+    calendar = reverse("travel:calendar", kwargs={"thesis_id": team.thesis.pk})
+    student_tabs = _tab_bar(student_a[calendar][2])
+    assert student_tabs is not None
+    assert budget in student_tabs and orders not in student_tabs
+    for decider in ("director", "tutor"):
+        tabs = _tab_bar(client_for(team, decider).get(calendar).content)
+        assert tabs is not None, decider
+        assert orders in tabs and budget in tabs, decider
+
+
+def _tab_bar(body: bytes) -> bytes | None:
+    match = re.search(rb'<nav class="tabs".*?</nav>', body, re.S)
+    return match.group(0) if match else None
+
 
 def test_the_director_cannot_tell_leave_from_any_other_absence_label(
     team: SimpleNamespace,

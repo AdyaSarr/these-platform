@@ -1,0 +1,9 @@
+{% load ui %}{# {% page_header %} (apps/ui/templatetags/ui.py): title, subtitle, actions; the main action last, on the right. #}
+<header class="page-header">
+  {% if parent_url %}<p class="page-back"><a class="page-parent" href="{{ parent_url }}">{% icon "chevron-left" %}<span>{{ parent_label }}</span></a></p>{% endif %}
+  <div class="page-heading">
+    <h1>{{ title }}</h1>
+    {% if subtitle %}<p class="page-subtitle">{{ subtitle }}</p>{% endif %}
+  </div>
+  {% if actions %}<div class="page-actions">{{ actions }}</div>{% endif %}
+</header>

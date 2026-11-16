@@ -1,9 +1,8 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n ui %}
 {% block title %}{% translate "Team" %}{% endblock %}
 {% block content %}
-  <p><a href="{% url 'accounts:dashboard' thesis_id=thesis.pk %}">{{ thesis.title }}</a></p>
-  <h1>{% translate "Team" %}</h1>
+  {% page_header %}{% translate "Team" %}{% endpage_header %}
   {# Management controls are shown to right holders only; the views re-check (403). #}
   <table class="table">
     <thead>

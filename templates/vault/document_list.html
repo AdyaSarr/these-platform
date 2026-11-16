@@ -1,9 +1,7 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}{% load i18n ui %}
 {% block title %}{% translate "Documents" %}{% endblock %}
 {% block content %}
-<h1>{% translate "Documents" %}</h1>
-<p><a href="{% url 'accounts:dashboard' thesis_id=thesis.pk %}">{% translate "Back to the thesis" %}</a></p>
-{% if can_upload %}<p><a href="{% url 'vault:upload' thesis_id=thesis.pk %}">{% translate "Store a document" %}</a></p>{% endif %}
+{% page_header %}{% translate "Documents" %}{% actions %}{% if can_upload %}{% url 'vault:upload' thesis_id=thesis.pk as upload_url %}{% include "ui/action.html" with url=upload_url label=_("Store a document") icon="plus" primary=True %}{% endif %}{% endpage_header %}
 {% if documents %}
 <table>
   <thead><tr><th>{% translate "Title" %}</th><th>{% translate "Confidentiality" %}</th><th>{% translate "Version" %}</th><th>{% translate "Updated" %}</th></tr></thead>

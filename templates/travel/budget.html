@@ -1,9 +1,9 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}{% load i18n ui %}
 {% block title %}{% translate "Travel budget" %}{% endblock %}
 {% block content %}
-{% include "travel/_nav.html" %}
-<h1>{% translate "Travel budget" %} — {{ year }}</h1>
-<ul class="years">{% for y, link in years %}<li>{% if y == year %}<strong>{{ y }}</strong>{% else %}<a href="{{ link }}">{{ y }}</a>{% endif %}</li>{% endfor %}</ul>
+{% module_tabs "travel" %}
+{% page_header %}{% translate "Travel budget" %} — {{ year }}{% endpage_header %}
+<nav class="segmented" aria-label="{% translate 'Years' %}">{% for y, link in years %}<a class="segment" href="{{ link }}"{% if y == year %} aria-current="page"{% endif %}>{{ y }}</a>{% endfor %}</nav>
 <p class="muted">{% translate "Calendar year of the departure. Committed: the estimates of the missions not cancelled nor refused; actual: their actual amounts." %}</p>
 <table class="table">
   <thead><tr><th scope="col">{% translate "Payer" %}</th><th scope="col">{% translate "Budget" %}</th><th scope="col">{% translate "Committed" %}</th><th scope="col">{% translate "Actual" %}</th><th scope="col">{% translate "of which conferences (committed / actual)" %}</th></tr></thead>

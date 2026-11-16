@@ -1,18 +1,10 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}{% load i18n ui %}
 {% block title %}{% translate "Objectives" %}{% endblock %}
 {% block content %}
-<h1>{% translate "Objectives" %}</h1>
-<p><a href="{% url 'accounts:dashboard' thesis_id=thesis.pk %}">{% translate "Back to the thesis" %}</a></p>
+{% page_header %}{% translate "Objectives" %}{% subtitle %}{% if data.year %}{% blocktranslate with start=data.year.cifre_start|date:"SHORT_DATE_FORMAT" end=data.year.cifre_end|date:"SHORT_DATE_FORMAT" %}CIFRE year from {{ start }} to {{ end }}{% endblocktranslate %}{% endif %}{% actions %}{% if can_write %}{% url 'objectives:new' thesis_id=thesis.pk as new_url %}{% include "ui/action.html" with url=new_url label=_("New objective") icon="plus" primary=True %}{% endif %}{% endpage_header %}
 {% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
 
-<nav aria-label="{% translate 'CIFRE years' %}">
-  <ul class="years">
-    {% for year in data.years %}
-      <li>{% if year.pk == data.year.pk %}<strong aria-current="page">{% blocktranslate with number=year.number %}Year {{ number }}{% endblocktranslate %}</strong>{% else %}<a href="?year={{ year.number }}">{% blocktranslate with number=year.number %}Year {{ number }}{% endblocktranslate %}</a>{% endif %}</li>
-    {% endfor %}
-  </ul>
-</nav>
-<p class="muted">{% blocktranslate with start=data.year.cifre_start|date:"SHORT_DATE_FORMAT" end=data.year.cifre_end|date:"SHORT_DATE_FORMAT" %}CIFRE year from {{ start }} to {{ end }}{% endblocktranslate %}</p>
+{% if data.years %}<nav class="segmented" aria-label="{% translate 'CIFRE years' %}">{% for year in data.years %}<a class="segment" href="?year={{ year.number }}"{% if year.pk == data.year.pk %} aria-current="page"{% endif %}>{% blocktranslate with number=year.number %}Year {{ number }}{% endblocktranslate %}</a>{% endfor %}</nav>{% endif %}
 
 <dl class="stats" data-drafts="{{ stats.drafts }}" data-overdue="{{ stats.overdue }}">
   <div><dt>{% translate "Weighted attainment" %}</dt><dd>{% if attainment is None %}—{% else %}{{ attainment }} %{% endif %}</dd>
@@ -68,7 +60,6 @@
 
 <section aria-labelledby="list-title">
   <h2 id="list-title">{% translate "Objectives of the year" %}</h2>
-  {% if can_write %}<p><a href="{% url 'objectives:new' thesis_id=thesis.pk %}">{% translate "New objective" %}</a></p>{% endif %}
   {% if rows %}
   <table class="table">
     <thead><tr><th scope="col">{% translate "Title" %}</th><th scope="col">{% translate "Category" %}</th><th scope="col">{% translate "Due date" %}</th><th scope="col">{% translate "Weight" %}</th><th scope="col">{% translate "Status" %}</th></tr></thead>

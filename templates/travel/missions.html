@@ -1,9 +1,11 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}{% load i18n ui %}
 {% block title %}{% translate "Missions" %}{% endblock %}
 {% block content %}
-{% include "travel/_nav.html" %}
-<h1>{% translate "Missions" %}</h1>
-<p class="actions">{% if can_plan %}<a href="{% url 'travel:new_mission' thesis_id=thesis.pk %}">{% translate "Plan a mission" %}</a> · {% endif %}<a href="{% url 'travel:missions_ics' thesis_id=thesis.pk %}">{% translate "Add my missions to my calendar (.ics)" %}</a></p>
+{% module_tabs "travel" %}
+{% page_header %}{% translate "Missions" %}{% actions %}
+  {% url 'travel:missions_ics' thesis_id=thesis.pk as ics_url %}{% include "ui/action.html" with url=ics_url label=_("Add my missions to my calendar (.ics)") icon="calendar-plus" %}
+  {% if can_plan %}{% url 'travel:new_mission' thesis_id=thesis.pk as new_url %}{% include "ui/action.html" with url=new_url label=_("Plan a mission") icon="plus" primary=True %}{% endif %}
+{% endpage_header %}
 {% if missions %}
 <table class="table">
   <thead><tr><th scope="col">{% translate "Dates" %}</th><th scope="col">{% translate "Destination" %}</th><th scope="col">{% translate "Paid by" %}</th><th scope="col">{% translate "Status" %}</th></tr></thead>

@@ -349,9 +349,10 @@ def test_vendored_files_match_the_manifest() -> None:
 
 def test_manifest_fingerprint_is_recorded_in_decisions() -> None:
     decisions = (BASE_DIR / "docs" / "decisions.md").read_text(encoding="utf-8")
-    line = next(
-        line for line in decisions.splitlines() if "SHA384SUMS" in line and "sha384-" in line
-    )
+    # The latest line wins: decisions.md only grows, a new manifest gets a new line.
+    line = [line for line in decisions.splitlines() if "SHA384SUMS" in line and "sha384-" in line][
+        -1
+    ]
     recorded = re.findall(r"sha384-[A-Za-z0-9+/=]+", line)
     assert _sha384(MANIFEST) in recorded
 

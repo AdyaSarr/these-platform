@@ -1,10 +1,13 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}{% load i18n ui %}
 {% block title %}{% translate "Presence calendar" %}{% endblock %}
 {% block content %}
-{% include "travel/_nav.html" %}
-<h1>{% translate "Presence calendar" %} — {{ month_start|date:"F Y" }}</h1>
-<p class="actions">{% if previous_url %}<a href="{{ previous_url }}">← {% translate "Previous month" %}</a>{% endif %}
-  {% if next_url %}<a href="{{ next_url }}">{% translate "Next month" %} →</a>{% endif %}</p>
+{% module_tabs "travel" %}
+{% page_header %}{% translate "Presence calendar" %}{% endpage_header %}
+<nav class="segmented" aria-label="{% translate 'Month' %}">
+  {% if previous_url %}<a class="segment" href="{{ previous_url }}">{% icon "chevron-left" %}<span>{% translate "Previous month" %}</span></a>{% else %}<span class="segment segment-disabled" aria-disabled="true">{% icon "chevron-left" %}<span>{% translate "Previous month" %}</span></span>{% endif %}
+  <span class="segment segment-label" aria-current="page">{{ month_start|date:"F Y" }}</span>
+  {% if next_url %}<a class="segment" href="{{ next_url }}"><span>{% translate "Next month" %}</span>{% icon "chevron-right" %}</a>{% else %}<span class="segment segment-disabled" aria-disabled="true"><span>{% translate "Next month" %}</span>{% icon "chevron-right" %}</span>{% endif %}
+</nav>
 {% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
 <table class="table calendar">
   <thead><tr>{% for name in weekdays %}<th scope="col">{{ name }}</th>{% endfor %}</tr></thead>

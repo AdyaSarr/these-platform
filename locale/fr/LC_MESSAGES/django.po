@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-16 12:05+0100\n"
+"POT-Creation-Date: 2026-11-16 16:50+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -50,16 +50,16 @@ msgid "The two passwords do not match."
 msgstr "Les deux mots de passe ne correspondent pas."
 
 #: apps/accounts/forms.py:58 templates/account/login.html:10
-#: templates/accounts/team.html:12 templates/accounts/team.html:74
+#: templates/accounts/team.html:11 templates/accounts/team.html:73
 msgid "Email address"
 msgstr "Adresse électronique"
 
-#: apps/accounts/forms.py:59 templates/accounts/team.html:13
-#: templates/accounts/team.html:75
+#: apps/accounts/forms.py:59 templates/accounts/team.html:12
+#: templates/accounts/team.html:74
 msgid "Role"
 msgstr "Rôle"
 
-#: apps/accounts/forms.py:61 templates/accounts/team.html:14
+#: apps/accounts/forms.py:61 templates/accounts/team.html:13
 msgid "Organization"
 msgstr "Organisation"
 
@@ -395,42 +395,41 @@ msgid "Active"
 msgstr "Active"
 
 #: apps/accounts/views.py:36 apps/ui/navigation.py:48
-#: templates/accounts/team.html:3 templates/accounts/team.html:6
+#: templates/accounts/team.html:3 templates/accounts/team.html:5
 msgid "Team"
 msgstr "Équipe"
 
 #: apps/accounts/views.py:40 apps/ui/navigation.py:38
 #: templates/objectives/dashboard.html:2 templates/objectives/dashboard.html:4
-#: templates/objectives/detail.html:4
+#: templates/objectives/detail.html:5
 msgid "Objectives"
 msgstr "Objectifs"
 
-#: apps/accounts/views.py:47 apps/ui/navigation.py:40
-#: templates/meetings/detail.html:4 templates/meetings/list.html:2
-#: templates/meetings/list.html:4 templates/meetings/register.html:5
+#: apps/accounts/views.py:47 apps/ui/navigation.py:40 apps/ui/tabs.py:57
+#: apps/ui/tabs.py:59 templates/meetings/list.html:2
+#: templates/meetings/list.html:5
 msgid "Meetings"
 msgstr "Réunions"
 
-#: apps/accounts/views.py:54 apps/ui/navigation.py:42
+#: apps/accounts/views.py:54 apps/ui/navigation.py:42 apps/ui/tabs.py:64
 #: templates/conferences/deadlines.html:2
-#: templates/conferences/deadlines.html:4 templates/conferences/policy.html:4
-#: templates/conferences/submissions.html:5 templates/conferences/venue.html:4
+#: templates/conferences/deadlines.html:5
 msgid "Conferences"
 msgstr "Conférences"
 
-#: apps/accounts/views.py:61 apps/ui/navigation.py:44
+#: apps/accounts/views.py:61 apps/ui/navigation.py:44 apps/ui/tabs.py:79
 #: templates/travel/_links.html:3
 msgid "Travel"
 msgstr "Déplacements"
 
 #: apps/accounts/views.py:68 apps/ui/navigation.py:46
-#: templates/conferences/submission.html:42
+#: templates/conferences/submission.html:40
 #: templates/vault/document_list.html:2 templates/vault/document_list.html:4
 msgid "Documents"
 msgstr "Documents"
 
 #: apps/accounts/views.py:77 apps/admin_file/services.py:278
-#: apps/ui/navigation.py:36 templates/accounts/dashboard.html:34
+#: apps/ui/navigation.py:36 templates/accounts/dashboard.html:31
 #: templates/admin_file/file.html:2 templates/admin_file/file.html:4
 #: templates/admin_file/item_page.html:4 templates/admin_file/new_item.html:5
 msgid "Administrative file"
@@ -548,13 +547,13 @@ msgstr "Ou un document existant"
 #: apps/meetings/forms.py:133 apps/objectives/forms.py:60
 #: apps/objectives/forms.py:97 apps/travel/forms.py:111
 #: apps/travel/forms.py:165 apps/vault/forms.py:34 apps/vault/forms.py:47
-#: templates/conferences/submission.html:11
-#: templates/conferences/submission.html:118
-#: templates/conferences/submissions.html:9 templates/meetings/detail.html:12
-#: templates/meetings/detail.html:181 templates/meetings/list.html:27
+#: templates/conferences/submission.html:8
+#: templates/conferences/submission.html:116
+#: templates/conferences/submissions.html:8 templates/meetings/detail.html:9
+#: templates/meetings/detail.html:179 templates/meetings/list.html:23
 #: templates/objectives/detail.html:13 templates/objectives/detail.html:76
-#: templates/travel/mission.html:12 templates/vault/document_detail.html:6
-#: templates/vault/document_list.html:9
+#: templates/travel/mission.html:11 templates/vault/document_detail.html:5
+#: templates/vault/document_list.html:7
 msgid "Confidentiality"
 msgstr "Confidentialité"
 
@@ -569,8 +568,8 @@ msgstr "Motif"
 
 #: apps/admin_file/forms.py:71 apps/admin_file/forms.py:101
 #: apps/conferences/forms.py:243 apps/objectives/forms.py:141
-#: apps/travel/forms.py:190 templates/conferences/submission.html:67
-#: templates/objectives/_comments.html:19 templates/travel/mission.html:31
+#: apps/travel/forms.py:190 templates/conferences/submission.html:65
+#: templates/objectives/_comments.html:19 templates/travel/mission.html:30
 msgid "Comment"
 msgstr "Commentaire"
 
@@ -580,7 +579,7 @@ msgstr "Échéance proposée"
 
 #: apps/admin_file/forms.py:111 apps/admin_file/forms.py:136
 #: apps/meetings/forms.py:173 apps/objectives/forms.py:55
-#: templates/admin_file/item_row.html:11 templates/objectives/dashboard.html:74
+#: templates/admin_file/item_row.html:11 templates/objectives/dashboard.html:65
 #: templates/objectives/detail.html:11
 msgid "Due date"
 msgstr "Échéance"
@@ -729,7 +728,7 @@ msgstr "14 jours avant"
 msgid "3 days before"
 msgstr "3 jours avant"
 
-#: apps/admin_file/models.py:286 templates/objectives/dashboard.html:22
+#: apps/admin_file/models.py:286 templates/objectives/dashboard.html:14
 msgid "Overdue"
 msgstr "En retard"
 
@@ -998,8 +997,8 @@ msgstr "Cible inconnue."
 
 #: apps/conferences/forms.py:92 apps/conferences/forms.py:106
 #: apps/meetings/forms.py:69 apps/meetings/forms.py:214
-#: templates/conferences/deadlines.html:14 templates/meetings/list.html:17
-#: templates/meetings/list.html:27 templates/vault/document_detail.html:10
+#: templates/conferences/deadlines.html:15 templates/meetings/list.html:13
+#: templates/meetings/list.html:23 templates/vault/document_detail.html:9
 msgid "Type"
 msgstr "Type"
 
@@ -1007,7 +1006,7 @@ msgstr "Type"
 msgid "Acronym"
 msgstr "Sigle"
 
-#: apps/conferences/forms.py:94 templates/accounts/team.html:11
+#: apps/conferences/forms.py:94 templates/accounts/team.html:10
 msgid "Name"
 msgstr "Nom"
 
@@ -1020,7 +1019,7 @@ msgid "Year"
 msgstr "Année"
 
 #: apps/conferences/forms.py:100 apps/meetings/forms.py:88
-#: apps/travel/forms.py:103 templates/meetings/list.html:27
+#: apps/travel/forms.py:103 templates/meetings/list.html:23
 msgid "Place"
 msgstr "Lieu"
 
@@ -1055,17 +1054,17 @@ msgstr "Édition de conférence ou revue"
 
 #: apps/conferences/forms.py:126 apps/meetings/forms.py:77
 #: apps/objectives/forms.py:41 apps/vault/forms.py:33
-#: templates/conferences/submissions.html:9 templates/meetings/list.html:27
-#: templates/objectives/dashboard.html:74 templates/vault/document_list.html:9
+#: templates/conferences/submissions.html:8 templates/meetings/list.html:23
+#: templates/objectives/dashboard.html:65 templates/vault/document_list.html:7
 msgid "Title"
 msgstr "Titre"
 
 #: apps/conferences/forms.py:128 apps/conferences/models.py:131
-#: templates/conferences/submission.html:28
+#: templates/conferences/submission.html:26
 msgid "Abstract"
 msgstr "Résumé"
 
-#: apps/conferences/forms.py:131 templates/conferences/submission.html:31
+#: apps/conferences/forms.py:131 templates/conferences/submission.html:29
 msgid "External co-authors"
 msgstr "Co-auteurs externes"
 
@@ -1073,7 +1072,7 @@ msgstr "Co-auteurs externes"
 msgid "Names only, one per line."
 msgstr "Noms seulement, un par ligne."
 
-#: apps/conferences/forms.py:138 templates/conferences/submission.html:32
+#: apps/conferences/forms.py:138 templates/conferences/submission.html:30
 msgid "Notes"
 msgstr "Notes"
 
@@ -1081,7 +1080,7 @@ msgstr "Notes"
 msgid "Linked objective"
 msgstr "Objectif lié"
 
-#: apps/conferences/forms.py:142 templates/conferences/submission.html:30
+#: apps/conferences/forms.py:142 templates/conferences/submission.html:28
 msgid "Internal co-authors"
 msgstr "Co-auteurs internes"
 
@@ -1101,8 +1100,8 @@ msgstr ""
 msgid "Document of the vault"
 msgstr "Document du coffre"
 
-#: apps/conferences/forms.py:195 templates/vault/document_detail.html:10
-#: templates/vault/document_list.html:9
+#: apps/conferences/forms.py:195 templates/vault/document_detail.html:9
+#: templates/vault/document_list.html:7
 msgid "Version"
 msgstr "Version"
 
@@ -1128,7 +1127,7 @@ msgstr "Adresse publique (https)"
 
 #: apps/conferences/forms.py:237 apps/meetings/forms.py:166
 #: apps/travel/forms.py:178 templates/meetings/register.html:12
-#: templates/travel/mission.html:31
+#: templates/travel/mission.html:30
 msgid "Decision"
 msgstr "Décision"
 
@@ -1305,7 +1304,7 @@ msgstr "Résultats ST non libérés"
 msgid "Changes requested"
 msgstr "Modifications demandées"
 
-#: apps/conferences/models.py:395 templates/conferences/submission.html:59
+#: apps/conferences/models.py:395 templates/conferences/submission.html:57
 msgid "ST publication approval"
 msgstr "Accord de publication ST"
 
@@ -1543,8 +1542,8 @@ msgstr "La date d'une prépublication est aujourd'hui ou avant."
 
 #: apps/conferences/views.py:127 apps/meetings/views.py:121
 #: templates/conferences/_text.html:1 templates/meetings/_text.html:1
-#: templates/objectives/_text.html:1 templates/travel/mission.html:34
-#: templates/travel/mission.html:60 templates/travel/mission.html:61
+#: templates/objectives/_text.html:1 templates/travel/mission.html:33
+#: templates/travel/mission.html:59 templates/travel/mission.html:60
 msgid "Restricted content"
 msgstr "Contenu restreint"
 
@@ -1713,12 +1712,12 @@ msgstr "Seulement pour une présentation."
 msgid "Duration"
 msgstr "Durée"
 
-#: apps/meetings/forms.py:90 templates/meetings/detail.html:15
+#: apps/meetings/forms.py:90 templates/meetings/detail.html:13
 msgid "Room or address"
 msgstr "Salle ou adresse"
 
-#: apps/meetings/forms.py:95 templates/meetings/detail.html:16
-#: templates/meetings/detail.html:17
+#: apps/meetings/forms.py:95 templates/meetings/detail.html:14
+#: templates/meetings/detail.html:15
 msgid "Video link"
 msgstr "Lien de visio"
 
@@ -1726,7 +1725,7 @@ msgstr "Lien de visio"
 msgid "https:// address; never copied into the calendar file."
 msgstr "Adresse https:// ; jamais copiée dans le fichier d'agenda."
 
-#: apps/meetings/forms.py:102 templates/meetings/detail.html:32
+#: apps/meetings/forms.py:102 templates/meetings/detail.html:30
 msgid "Attendees"
 msgstr "Participants"
 
@@ -1734,11 +1733,11 @@ msgstr "Participants"
 msgid "Each attendee must be able to read the chosen level."
 msgstr "Chaque participant doit pouvoir lire le niveau choisi."
 
-#: apps/meetings/forms.py:146 templates/meetings/detail.html:49
+#: apps/meetings/forms.py:146 templates/meetings/detail.html:47
 msgid "Agenda"
 msgstr "Ordre du jour"
 
-#: apps/meetings/forms.py:156 templates/meetings/detail.html:68
+#: apps/meetings/forms.py:156 templates/meetings/detail.html:66
 msgid "Minutes"
 msgstr "Compte rendu"
 
@@ -1759,14 +1758,14 @@ msgid "Unknown person."
 msgstr "Personne inconnue."
 
 #: apps/meetings/forms.py:201 apps/objectives/forms.py:120
-#: templates/conferences/submission.html:88
-#: templates/conferences/submissions.html:9 templates/meetings/detail.html:138
-#: templates/objectives/dashboard.html:74 templates/travel/mission.html:10
-#: templates/travel/missions.html:9
+#: templates/conferences/submission.html:86
+#: templates/conferences/submissions.html:8 templates/meetings/detail.html:136
+#: templates/objectives/dashboard.html:65 templates/travel/mission.html:9
+#: templates/travel/missions.html:11
 msgid "Status"
 msgstr "Statut"
 
-#: apps/meetings/forms.py:214 templates/meetings/list.html:19
+#: apps/meetings/forms.py:214 templates/meetings/list.html:15
 msgid "All"
 msgstr "Tous"
 
@@ -1893,7 +1892,7 @@ msgid "Done"
 msgstr "Faite"
 
 #: apps/meetings/models.py:264 apps/objectives/models.py:102
-#: templates/objectives/dashboard.html:24
+#: templates/objectives/dashboard.html:16
 msgid "Dropped"
 msgstr "Abandonné"
 
@@ -2145,12 +2144,12 @@ msgid "Success criterion"
 msgstr "Critère de réussite"
 
 #: apps/objectives/forms.py:54 apps/travel/forms.py:212
-#: templates/objectives/dashboard.html:61
-#: templates/objectives/dashboard.html:74 templates/travel/mission.html:57
+#: templates/objectives/dashboard.html:53
+#: templates/objectives/dashboard.html:65 templates/travel/mission.html:56
 msgid "Category"
 msgstr "Catégorie"
 
-#: apps/objectives/forms.py:57 templates/objectives/dashboard.html:74
+#: apps/objectives/forms.py:57 templates/objectives/dashboard.html:65
 #: templates/objectives/detail.html:12
 msgid "Weight"
 msgstr "Poids"
@@ -2684,7 +2683,7 @@ msgstr "Départ"
 msgid "Return"
 msgstr "Retour"
 
-#: apps/travel/forms.py:101 templates/travel/missions.html:9
+#: apps/travel/forms.py:101 templates/travel/missions.html:11
 #: templates/travel/orders.html:9
 msgid "Destination"
 msgstr "Destination"
@@ -2694,8 +2693,8 @@ msgid "For another place only: a town or a site, never an address."
 msgstr ""
 "Seulement pour un autre lieu : une ville ou un site, jamais une adresse."
 
-#: apps/travel/forms.py:109 templates/travel/mission.html:11
-#: templates/travel/missions.html:9
+#: apps/travel/forms.py:109 templates/travel/mission.html:10
+#: templates/travel/missions.html:11
 msgid "Paid by"
 msgstr "Payé par"
 
@@ -2711,7 +2710,7 @@ msgstr ""
 msgid "Lodging note"
 msgstr "Note sur l'hébergement"
 
-#: apps/travel/forms.py:132 templates/travel/mission.html:25
+#: apps/travel/forms.py:132 templates/travel/mission.html:24
 msgid "Purpose"
 msgstr "Motif"
 
@@ -2914,7 +2913,7 @@ msgstr "forfait (sans justificatif)"
 msgid "expense"
 msgstr "dépense"
 
-#: apps/travel/models.py:511 templates/travel/mission.html:62
+#: apps/travel/models.py:511 templates/travel/mission.html:61
 msgid "receipt"
 msgstr "justificatif"
 
@@ -3208,6 +3207,50 @@ msgstr "Accueil"
 msgid "CSI file"
 msgstr "Dossier CSI"
 
+#: apps/ui/tabs.py:60 templates/meetings/register.html:2
+#: templates/meetings/register.html:5
+msgid "Decision register"
+msgstr "Registre des décisions"
+
+#: apps/ui/tabs.py:67 templates/conferences/edition.html:8
+#: templates/conferences/submission.html:34
+msgid "Deadlines"
+msgstr "Échéances"
+
+#: apps/ui/tabs.py:72 templates/conferences/submissions.html:2
+#: templates/conferences/submissions.html:5
+msgid "Submissions"
+msgstr "Soumissions"
+
+#: apps/ui/tabs.py:81
+msgctxt "module tab"
+msgid "Calendar"
+msgstr "Calendrier"
+
+#: apps/ui/tabs.py:82 templates/travel/missions.html:2
+#: templates/travel/missions.html:5
+msgid "Missions"
+msgstr "Missions"
+
+#: apps/ui/tabs.py:83 templates/travel/split.html:2
+#: templates/travel/split.html:5
+msgid "ST / LIRMM time"
+msgstr "Temps ST / LIRMM"
+
+#: apps/ui/tabs.py:84 templates/travel/budget.html:9
+msgid "Budget"
+msgstr "Budget"
+
+#: apps/ui/tabs.py:85
+msgctxt "module tab"
+msgid "Settings"
+msgstr "Réglages"
+
+#: apps/ui/tabs.py:88
+msgctxt "module tab"
+msgid "To decide"
+msgstr "À décider"
+
 #: apps/vault/forms.py:14 templates/vault/upload.html:6
 msgid ""
 "The title is not encrypted: do not put any confidential information in it."
@@ -3366,28 +3409,28 @@ msgstr ""
 msgid "See the team"
 msgstr "Voir l'équipe"
 
-#: templates/accounts/csi_file.html:7
+#: templates/accounts/csi_file.html:6
 msgid "The CSI file will be available in a later module."
 msgstr "Le dossier CSI sera disponible dans un prochain module."
 
-#: templates/accounts/csi_file.html:8
+#: templates/accounts/csi_file.html:7
 msgid "Objectives (read only)"
 msgstr "Objectifs (lecture seule)"
 
-#: templates/accounts/dashboard.html:6
+#: templates/accounts/dashboard.html:5
 #, python-format
 msgid "Hello %(name)s"
 msgstr "Bonjour %(name)s"
 
-#: templates/accounts/dashboard.html:11
+#: templates/accounts/dashboard.html:9
 msgid "CIFRE effective date"
 msgstr "Date d'effet CIFRE"
 
-#: templates/accounts/dashboard.html:12
+#: templates/accounts/dashboard.html:10
 msgid "First enrolment"
 msgstr "Première inscription"
 
-#: templates/accounts/dashboard.html:19
+#: templates/accounts/dashboard.html:16
 #, python-format
 msgid ""
 "The thesis will become “%(status)s” when the mandatory items of the "
@@ -3396,89 +3439,89 @@ msgstr ""
 "La thèse passera « %(status)s » quand les pièces obligatoires du dossier "
 "administratif seront validées"
 
-#: templates/accounts/dashboard.html:21
+#: templates/accounts/dashboard.html:18
 msgid "that you see"
 msgstr "que vous voyez"
 
-#: templates/accounts/dashboard.html:22 templates/accounts/dashboard.html:38
+#: templates/accounts/dashboard.html:19 templates/accounts/dashboard.html:35
 msgid "Open the file"
 msgstr "Ouvrir le dossier"
 
-#: templates/accounts/dashboard.html:30
+#: templates/accounts/dashboard.html:27
 msgid "At a glance"
 msgstr "En un coup d'œil"
 
-#: templates/accounts/dashboard.html:37
+#: templates/accounts/dashboard.html:34
 #: templates/admin_file/blocks/dashboard.html:4
-#: templates/admin_file/file.html:10
+#: templates/admin_file/file.html:9
 #, python-format
 msgid "%(validated)s / %(total)s mandatory items validated"
 msgstr "%(validated)s / %(total)s pièces obligatoires validées"
 
-#: templates/accounts/dashboard.html:43
+#: templates/accounts/dashboard.html:40
 #: templates/objectives/blocks/dashboard.html:4
-#: templates/objectives/dashboard.html:18
+#: templates/objectives/dashboard.html:10
 msgid "Weighted attainment"
 msgstr "Taux d'atteinte pondéré"
 
-#: templates/accounts/dashboard.html:45
+#: templates/accounts/dashboard.html:42
 #: templates/objectives/blocks/dashboard.html:3
-#: templates/objectives/dashboard.html:11 templates/objectives/detail.html:9
+#: templates/objectives/dashboard.html:7 templates/objectives/detail.html:9
 #, python-format
 msgid "Year %(number)s"
 msgstr "Année %(number)s"
 
-#: templates/accounts/dashboard.html:45
+#: templates/accounts/dashboard.html:42
 #: templates/objectives/blocks/dashboard.html:5
 #, python-format
 msgid "%(overdue)s overdue, %(drafts)s awaiting approval"
 msgstr "%(overdue)s en retard, %(drafts)s en attente d'approbation"
 
-#: templates/accounts/dashboard.html:45
+#: templates/accounts/dashboard.html:42
 msgid "No objective yet."
 msgstr "Aucun objectif pour l'instant."
 
-#: templates/accounts/dashboard.html:46
+#: templates/accounts/dashboard.html:43
 #: templates/objectives/blocks/dashboard.html:7
 msgid "Open the objectives"
 msgstr "Ouvrir les objectifs"
 
-#: templates/accounts/dashboard.html:51
+#: templates/accounts/dashboard.html:48
 #: templates/meetings/blocks/dashboard.html:3
 msgid "Next meeting"
 msgstr "Prochaine réunion"
 
-#: templates/accounts/dashboard.html:55
+#: templates/accounts/dashboard.html:52
 #: templates/meetings/blocks/dashboard.html:3
 msgid "you do not attend"
 msgstr "vous n'y participez pas"
 
-#: templates/accounts/dashboard.html:56
+#: templates/accounts/dashboard.html:53
 msgid "See the meeting"
 msgstr "Voir la réunion"
 
-#: templates/accounts/dashboard.html:59
+#: templates/accounts/dashboard.html:56
 #: templates/meetings/blocks/dashboard.html:8
 msgid "No upcoming meeting."
 msgstr "Aucune réunion à venir."
 
-#: templates/accounts/dashboard.html:60
+#: templates/accounts/dashboard.html:57
 #: templates/meetings/blocks/dashboard.html:18
 msgid "Open the meetings"
 msgstr "Ouvrir les réunions"
 
-#: templates/accounts/dashboard.html:67
+#: templates/accounts/dashboard.html:64
 msgid "To deal with"
 msgstr "À traiter"
 
-#: templates/accounts/dashboard.html:71
+#: templates/accounts/dashboard.html:68
 #, python-format
 msgid "%(counter)s overdue objective"
 msgid_plural "%(counter)s overdue objectives"
 msgstr[0] "%(counter)s objectif en retard"
 msgstr[1] "%(counter)s objectifs en retard"
 
-#: templates/accounts/dashboard.html:71
+#: templates/accounts/dashboard.html:68
 #: templates/meetings/blocks/dashboard.html:10
 #, python-format
 msgid "%(counter)s overdue action"
@@ -3486,7 +3529,7 @@ msgid_plural "%(counter)s overdue actions"
 msgstr[0] "%(counter)s action en retard"
 msgstr[1] "%(counter)s actions en retard"
 
-#: templates/accounts/dashboard.html:71
+#: templates/accounts/dashboard.html:68
 #: templates/conferences/blocks/dashboard.html:10
 #, python-format
 msgid "%(counter)s ST approval awaits your decision"
@@ -3494,7 +3537,7 @@ msgid_plural "%(counter)s ST approvals await your decision"
 msgstr[0] "%(counter)s accord ST attend votre décision"
 msgstr[1] "%(counter)s accords ST attendent votre décision"
 
-#: templates/accounts/dashboard.html:71
+#: templates/accounts/dashboard.html:68
 #: templates/travel/blocks/dashboard.html:4
 #, python-format
 msgid "%(counter)s mission approval awaits your decision"
@@ -3502,7 +3545,7 @@ msgid_plural "%(counter)s mission approvals await your decision"
 msgstr[0] "%(counter)s accord de mission attend votre décision"
 msgstr[1] "%(counter)s accords de mission attendent votre décision"
 
-#: templates/accounts/dashboard.html:71
+#: templates/accounts/dashboard.html:68
 #: templates/travel/blocks/dashboard.html:5
 #, python-format
 msgid "%(counter)s mission with missing receipts"
@@ -3510,7 +3553,7 @@ msgid_plural "%(counter)s missions with missing receipts"
 msgstr[0] "%(counter)s mission avec des justificatifs manquants"
 msgstr[1] "%(counter)s missions avec des justificatifs manquants"
 
-#: templates/accounts/dashboard.html:74
+#: templates/accounts/dashboard.html:71
 msgid "Nothing to report"
 msgstr "Rien à signaler"
 
@@ -3608,7 +3651,8 @@ msgstr ""
 "Vous êtes connecté·e avec une autre adresse ; déconnectez-vous pour accepter "
 "cette invitation."
 
-#: templates/accounts/invitation_other_account.html:10 templates/base.html:58
+#: templates/accounts/invitation_other_account.html:10
+#: templates/ui/header_tools.html:13
 msgid "Log out"
 msgstr "Se déconnecter"
 
@@ -3616,40 +3660,40 @@ msgstr "Se déconnecter"
 msgid "You already have an account. Sign in to accept the invitation."
 msgstr "Vous avez déjà un compte. Connectez-vous pour accepter l'invitation."
 
-#: templates/accounts/team.html:15
+#: templates/accounts/team.html:14
 msgid "Since"
 msgstr "Depuis"
 
-#: templates/accounts/team.html:16
+#: templates/accounts/team.html:15
 msgid "Until"
 msgstr "Jusqu'au"
 
-#: templates/accounts/team.html:17 templates/accounts/team.html:78
-#: templates/meetings/detail.html:129
+#: templates/accounts/team.html:16 templates/accounts/team.html:77
+#: templates/meetings/detail.html:127
 msgid "Actions"
 msgstr "Actions"
 
-#: templates/accounts/team.html:36
+#: templates/accounts/team.html:35
 msgid "Change role"
 msgstr "Changer le rôle"
 
-#: templates/accounts/team.html:43
+#: templates/accounts/team.html:42
 msgid "Extend"
 msgstr "Prolonger"
 
-#: templates/accounts/team.html:49
+#: templates/accounts/team.html:48
 msgid "Remove"
 msgstr "Retirer"
 
-#: templates/accounts/team.html:61
+#: templates/accounts/team.html:60
 msgid "Invite someone"
 msgstr "Inviter une personne"
 
-#: templates/accounts/team.html:65
+#: templates/accounts/team.html:64
 msgid "Send the invitation"
 msgstr "Envoyer l'invitation"
 
-#: templates/accounts/team.html:67
+#: templates/accounts/team.html:66
 msgid ""
 "Inviting, changing a role, removing or extending a member asks for your "
 "second factor if you have not used it in the last 10 minutes."
@@ -3657,27 +3701,27 @@ msgstr ""
 "Inviter, changer un rôle, retirer ou prolonger un membre demande votre "
 "second facteur si vous ne l'avez pas utilisé depuis 10 minutes."
 
-#: templates/accounts/team.html:69
+#: templates/accounts/team.html:68
 msgid "Pending invitations"
 msgstr "Invitations en attente"
 
-#: templates/accounts/team.html:76
+#: templates/accounts/team.html:75
 msgid "Invited on"
 msgstr "Invitée le"
 
-#: templates/accounts/team.html:77
+#: templates/accounts/team.html:76
 msgid "E-mail"
 msgstr "Courriel"
 
-#: templates/accounts/team.html:92
+#: templates/accounts/team.html:91
 msgid "Send again"
 msgstr "Renvoyer"
 
-#: templates/accounts/team.html:96 templates/vault/document_detail.html:47
+#: templates/accounts/team.html:95 templates/vault/document_detail.html:46
 msgid "Revoke"
 msgstr "Retirer"
 
-#: templates/accounts/team.html:105
+#: templates/accounts/team.html:104
 msgid "No pending invitation."
 msgstr "Aucune invitation en attente."
 
@@ -3711,14 +3755,14 @@ msgstr "Une pièce du dossier administratif vous attend sur la plateforme :"
 msgid "CIFRE thesis: an item of the administrative file is waiting"
 msgstr "Thèse CIFRE : une pièce du dossier administratif est en attente"
 
-#: templates/admin_file/file.html:6
-msgid "Incomplete file: a mandatory item is no longer validated."
-msgstr "Dossier incomplet : une pièce obligatoire n'est plus validée."
-
-#: templates/admin_file/file.html:12 templates/admin_file/new_item.html:2
-#: templates/admin_file/new_item.html:4
+#: templates/admin_file/file.html:4 templates/admin_file/new_item.html:2
+#: templates/admin_file/new_item.html:5
 msgid "Add a custom item"
 msgstr "Ajouter une pièce personnalisée"
+
+#: templates/admin_file/file.html:5
+msgid "Incomplete file: a mandatory item is no longer validated."
+msgstr "Dossier incomplet : une pièce obligatoire n'est plus validée."
 
 #: templates/admin_file/item_row.html:6
 msgid "optional"
@@ -3727,8 +3771,8 @@ msgstr "facultative"
 #: templates/admin_file/item_row.html:11
 #: templates/meetings/_objective_actions.html:4
 #: templates/meetings/blocks/dashboard.html:14
-#: templates/meetings/detail.html:133 templates/objectives/dashboard.html:46
-#: templates/objectives/dashboard.html:80
+#: templates/meetings/detail.html:131 templates/objectives/dashboard.html:38
+#: templates/objectives/dashboard.html:71
 msgid "overdue"
 msgstr "en retard"
 
@@ -3815,7 +3859,8 @@ msgstr "Proposer cette échéance"
 msgid "Add the item"
 msgstr "Ajouter la pièce"
 
-#: templates/base.html:10 templates/base.html:27 templates/base.html:42
+#: templates/base.html:10 templates/base.html:27 templates/base.html:44
+#: templates/base.html:46
 msgid "CIFRE thesis"
 msgstr "Thèse CIFRE"
 
@@ -3831,25 +3876,9 @@ msgstr "Navigation principale"
 msgid "Close the menu"
 msgstr "Fermer le menu"
 
-#: templates/base.html:40
+#: templates/base.html:42
 msgid "Menu"
 msgstr "Menu"
-
-#: templates/base.html:47
-msgid "Theme"
-msgstr "Thème"
-
-#: templates/base.html:50
-msgid "Follow the system"
-msgstr "Suivre le système"
-
-#: templates/base.html:51
-msgid "Light theme"
-msgstr "Thème clair"
-
-#: templates/base.html:52
-msgid "Dark theme"
-msgstr "Thème sombre"
 
 #: templates/conferences/_deadline.html:1
 msgid "Paris"
@@ -3882,51 +3911,43 @@ msgstr[1] "Accord ST à demander avant le %(date)s (dans %(counter)s jours)"
 msgid "Open the conferences"
 msgstr "Ouvrir les conférences"
 
-#: templates/conferences/deadlines.html:5 templates/meetings/list.html:5
-#: templates/objectives/dashboard.html:5 templates/vault/document_list.html:5
-msgid "Back to the thesis"
-msgstr "Retour à la thèse"
-
 #: templates/conferences/deadlines.html:6
-#: templates/conferences/submission.html:4
-#: templates/conferences/submissions.html:2
-#: templates/conferences/submissions.html:4
-msgid "Submissions"
-msgstr "Soumissions"
-
-#: templates/conferences/deadlines.html:7
 #, python-format
 msgid "ST review period: %(days)s days"
-msgstr "Délai de relecture ST : %(days)s jours"
+msgstr "Délai de relecture ST : %(days)s jours"
 
 #: templates/conferences/deadlines.html:8
 #: templates/conferences/venue_form.html:2
-#: templates/conferences/venue_form.html:4
+#: templates/conferences/venue_form.html:6
 msgid "New venue"
 msgstr "Nouvelle conférence ou revue"
 
-#: templates/conferences/deadlines.html:11
+#: templates/conferences/deadlines.html:12
 msgid "Upcoming deadlines"
 msgstr "Échéances à venir"
 
-#: templates/conferences/deadlines.html:14
+#: templates/conferences/deadlines.html:15
 msgid "Deadline"
 msgstr "Échéance"
 
-#: templates/conferences/deadlines.html:14
-#: templates/conferences/submissions.html:9 templates/conferences/venue.html:2
+#: templates/conferences/deadlines.html:15
+#: templates/conferences/submissions.html:8 templates/conferences/venue.html:2
 msgid "Venue"
 msgstr "Conférence ou revue"
 
-#: templates/conferences/deadlines.html:23
+#: templates/conferences/deadlines.html:24
 msgid "No upcoming deadline."
 msgstr "Aucune échéance à venir."
 
-#: templates/conferences/deadlines.html:27
+#: templates/conferences/deadlines.html:28
 msgid "Venues"
 msgstr "Conférences et revues"
 
-#: templates/conferences/deadlines.html:35
+#: templates/conferences/deadlines.html:33
+msgid "Editions:"
+msgstr "Éditions :"
+
+#: templates/conferences/deadlines.html:36
 msgid "No venue yet."
 msgstr "Aucune conférence ni revue pour l'instant."
 
@@ -3934,13 +3955,8 @@ msgstr "Aucune conférence ni revue pour l'instant."
 msgid "Edition"
 msgstr "Édition"
 
-#: templates/conferences/edition.html:8
-#: templates/conferences/submission.html:36
-msgid "Deadlines"
-msgstr "Échéances"
-
-#: templates/conferences/edition.html:13 templates/meetings/detail.html:13
-#: templates/meetings/list.html:32
+#: templates/conferences/edition.html:13 templates/meetings/detail.html:10
+#: templates/meetings/list.html:28
 msgid "cancelled"
 msgstr "annulée"
 
@@ -4007,11 +4023,11 @@ msgid "Collaboration contract:"
 msgstr "Contrat de collaboration :"
 
 #: templates/conferences/policy.html:12
-#: templates/conferences/submission_form.html:7
-#: templates/conferences/venue.html:22 templates/conferences/venue_form.html:7
-#: templates/meetings/form.html:13 templates/objectives/form.html:18
-#: templates/travel/mission.html:64 templates/travel/mission_form.html:10
-#: templates/travel/month.html:23
+#: templates/conferences/submission_form.html:8
+#: templates/conferences/venue.html:21 templates/conferences/venue_form.html:8
+#: templates/meetings/form.html:14 templates/objectives/form.html:18
+#: templates/travel/mission.html:63 templates/travel/mission_form.html:10
+#: templates/travel/month.html:26
 msgid "Save"
 msgstr "Enregistrer"
 
@@ -4019,57 +4035,57 @@ msgstr "Enregistrer"
 msgid "Asks for your second factor. The PhD student is told."
 msgstr "Demande votre second facteur. Le doctorant est prévenu."
 
-#: templates/conferences/submission.html:12
+#: templates/conferences/submission.html:9
 msgid "ST work: ST's approval required"
 msgstr "Travaux ST : accord de ST nécessaire"
 
-#: templates/conferences/submission.html:12
+#: templates/conferences/submission.html:9
 msgid "Not ST work"
 msgstr "Pas des travaux ST"
 
-#: templates/conferences/submission.html:14
+#: templates/conferences/submission.html:12
 msgid "Resubmission of an earlier submission"
 msgstr "Nouvelle soumission d'un article précédent"
 
-#: templates/conferences/submission.html:17 templates/meetings/detail.html:22
-#: templates/objectives/detail.html:29 templates/travel/mission.html:83
+#: templates/conferences/submission.html:15 templates/meetings/detail.html:20
+#: templates/objectives/detail.html:29 templates/travel/mission.html:82
 msgid "Edit"
 msgstr "Modifier"
 
-#: templates/conferences/submission.html:20
+#: templates/conferences/submission.html:18
 msgid "Not ST work: no approval needed"
 msgstr "Pas des travaux ST : aucun accord nécessaire"
 
-#: templates/conferences/submission.html:21
-#: templates/conferences/submission.html:73
-#: templates/conferences/submission.html:121
-#: templates/objectives/dashboard.html:94 templates/objectives/detail.html:40
-#: templates/objectives/detail.html:81 templates/travel/mission.html:52
-#: templates/travel/mission.html:90 templates/travel/settings.html:18
+#: templates/conferences/submission.html:19
+#: templates/conferences/submission.html:71
+#: templates/conferences/submission.html:119
+#: templates/objectives/dashboard.html:85 templates/objectives/detail.html:40
+#: templates/objectives/detail.html:81 templates/travel/mission.html:51
+#: templates/travel/mission.html:89 templates/travel/settings.html:18
 #: templates/travel/settings.html:29 templates/travel/settings.html:39
 msgid "Asks for your second factor."
 msgstr "Demande votre second facteur."
 
-#: templates/conferences/submission.html:24
+#: templates/conferences/submission.html:22
 msgid "Concerns ST work"
 msgstr "Concerne des travaux ST"
 
-#: templates/conferences/submission.html:47 templates/meetings/detail.html:164
+#: templates/conferences/submission.html:45 templates/meetings/detail.html:162
 msgid "Unlink"
 msgstr "Délier"
 
-#: templates/conferences/submission.html:51 templates/meetings/detail.html:169
+#: templates/conferences/submission.html:49 templates/meetings/detail.html:167
 #, python-format
 msgid "%(counter)s linked document you may not read."
 msgid_plural "%(counter)s linked documents you may not read."
 msgstr[0] "%(counter)s document lié que vous ne pouvez pas lire."
 msgstr[1] "%(counter)s documents liés que vous ne pouvez pas lire."
 
-#: templates/conferences/submission.html:54 templates/meetings/detail.html:174
+#: templates/conferences/submission.html:52 templates/meetings/detail.html:172
 msgid "Link the document"
 msgstr "Lier le document"
 
-#: templates/conferences/submission.html:60
+#: templates/conferences/submission.html:58
 msgid ""
 "Submitting, publishing the final version and posting a preprint each need "
 "ST's approval of the exact version, for ST work."
@@ -4077,113 +4093,112 @@ msgstr ""
 "Soumettre, publier la version finale et déposer une prépublication exigent "
 "chacun, pour des travaux ST, l'accord de ST sur la version exacte."
 
-#: templates/conferences/submission.html:64
+#: templates/conferences/submission.html:62
 msgid "Restricted document"
 msgstr "Document restreint"
 
-#: templates/conferences/submission.html:66
+#: templates/conferences/submission.html:64
 #, python-format
 msgid "period %(days)s days"
 msgstr "délai %(days)s jours"
 
-#: templates/conferences/submission.html:66
+#: templates/conferences/submission.html:64
 #, python-format
 msgid "to request by %(date)s"
 msgstr "à demander avant le %(date)s"
 
-#: templates/conferences/submission.html:69 templates/travel/mission.html:47
+#: templates/conferences/submission.html:67 templates/travel/mission.html:46
 msgid "Withdraw the request"
 msgstr "Retirer la demande"
 
-#: templates/conferences/submission.html:72 templates/meetings/detail.html:123
-#: templates/travel/mission.html:51
+#: templates/conferences/submission.html:70 templates/meetings/detail.html:121
+#: templates/travel/mission.html:50
 msgid "Record the decision"
 msgstr "Enregistrer la décision"
 
-#: templates/conferences/submission.html:79
+#: templates/conferences/submission.html:77
 msgid "No request yet."
 msgstr "Aucune demande pour l'instant."
 
-#: templates/conferences/submission.html:82
+#: templates/conferences/submission.html:80
 msgid "Request ST's approval"
 msgstr "Demander l'accord de ST"
 
-#: templates/conferences/submission.html:90
+#: templates/conferences/submission.html:88
 msgid "Change the status"
 msgstr "Changer le statut"
 
-#: templates/conferences/submission.html:91
+#: templates/conferences/submission.html:89
 msgid "Submitted and published: choose the version sent."
 msgstr "Soumis et publié : choisissez la version envoyée."
 
-#: templates/conferences/submission.html:96
+#: templates/conferences/submission.html:94
 msgid "Preprints"
 msgstr "Prépublications"
 
-#: templates/conferences/submission.html:100
+#: templates/conferences/submission.html:98
 msgid "No preprint."
 msgstr "Aucune prépublication."
 
-#: templates/conferences/submission.html:103
+#: templates/conferences/submission.html:101
 msgid "Record the preprint"
 msgstr "Enregistrer la prépublication"
 
-#: templates/conferences/submission.html:109
+#: templates/conferences/submission.html:107
 msgid "Submit elsewhere"
 msgstr "Soumettre ailleurs"
 
-#: templates/conferences/submission.html:111
+#: templates/conferences/submission.html:109
 msgid "Create the new submission"
 msgstr "Créer la nouvelle soumission"
 
-#: templates/conferences/submission.html:112
+#: templates/conferences/submission.html:110
 msgid "A new ST approval is required: the earlier one is never reused."
 msgstr "Un nouvel accord ST est nécessaire : l'ancien n'est jamais repris."
 
-#: templates/conferences/submission.html:120 templates/meetings/detail.html:184
-#: templates/objectives/detail.html:80 templates/travel/mission.html:89
+#: templates/conferences/submission.html:118 templates/meetings/detail.html:182
+#: templates/objectives/detail.html:80 templates/travel/mission.html:88
 msgid "Change the confidentiality"
 msgstr "Changer la confidentialité"
 
 #: templates/conferences/submission_form.html:2
-#: templates/conferences/submission_form.html:4
+#: templates/conferences/submission_form.html:6
 msgid "Edit the submission"
 msgstr "Modifier la soumission"
 
 #: templates/conferences/submission_form.html:2
-#: templates/conferences/submission_form.html:4
-#: templates/conferences/submissions.html:6
+#: templates/conferences/submission_form.html:6
+#: templates/conferences/submissions.html:5
 msgid "New submission"
 msgstr "Nouvelle soumission"
 
-#: templates/conferences/submission_form.html:5
-#: templates/conferences/venue_form.html:5 templates/meetings/duplicate.html:5
-#: templates/meetings/form.html:5 templates/objectives/form.html:5
+#: templates/conferences/submission_form.html:6
+#: templates/conferences/venue_form.html:6 templates/meetings/duplicate.html:6
+#: templates/meetings/form.html:6 templates/objectives/form.html:5
 msgid "Back"
 msgstr "Retour"
 
-#: templates/conferences/submissions.html:18
+#: templates/conferences/submissions.html:17
 msgid "No submission."
 msgstr "Aucune soumission."
 
-#: templates/conferences/venue.html:9
+#: templates/conferences/venue.html:8
 msgid "Editions"
 msgstr "Éditions"
 
-#: templates/conferences/venue.html:11
+#: templates/conferences/venue.html:10
 msgid "No edition yet."
 msgstr "Aucune édition pour l'instant."
 
-#: templates/conferences/venue.html:14
+#: templates/conferences/venue.html:13
 msgid "Add the edition"
 msgstr "Ajouter l'édition"
 
-#: templates/conferences/venue.html:20
+#: templates/conferences/venue.html:19
 msgid "Edit the venue"
 msgstr "Modifier la conférence ou revue"
 
 #: templates/core/home.html:3 templates/core/home.html:7
-#: templates/travel/_nav.html:1
 msgid "Dashboard"
 msgstr "Tableau de bord"
 
@@ -4218,19 +4233,19 @@ msgstr "Afficher les actions liées"
 msgid "Meeting"
 msgstr "Réunion"
 
-#: templates/meetings/detail.html:20 templates/travel/mission.html:6
+#: templates/meetings/detail.html:18 templates/travel/mission.html:5
 msgid "Add to my calendar (.ics)"
 msgstr "Ajouter à mon agenda (.ics)"
 
-#: templates/meetings/detail.html:23 templates/meetings/duplicate.html:11
+#: templates/meetings/detail.html:21 templates/meetings/duplicate.html:12
 msgid "Duplicate"
 msgstr "Dupliquer"
 
-#: templates/meetings/detail.html:25
+#: templates/meetings/detail.html:23
 msgid "Cancel the meeting"
 msgstr "Annuler la réunion"
 
-#: templates/meetings/detail.html:29
+#: templates/meetings/detail.html:27
 msgid ""
 "The calendar file contains the type, date and place only, never the title or "
 "the texts."
@@ -4238,44 +4253,44 @@ msgstr ""
 "Le fichier d'agenda ne contient que le type, la date et le lieu, jamais le "
 "titre ni les textes."
 
-#: templates/meetings/detail.html:36
+#: templates/meetings/detail.html:34
 msgid "approved the minutes"
 msgstr "a approuvé le compte rendu"
 
-#: templates/meetings/detail.html:37
+#: templates/meetings/detail.html:35
 msgid "read the minutes"
 msgstr "a lu le compte rendu"
 
-#: templates/meetings/detail.html:38
+#: templates/meetings/detail.html:36
 msgid "marked an earlier version of the minutes"
 msgstr "a marqué une version antérieure du compte rendu"
 
-#: templates/meetings/detail.html:43
+#: templates/meetings/detail.html:41
 msgid "Former attendees, no longer members of the thesis:"
 msgstr "Anciens participants, qui ne font plus partie de la thèse :"
 
-#: templates/meetings/detail.html:54
+#: templates/meetings/detail.html:52
 msgid "Save the agenda"
 msgstr "Enregistrer l'ordre du jour"
 
-#: templates/meetings/detail.html:57
+#: templates/meetings/detail.html:55
 msgid "Add the open actions and overdue objectives"
 msgstr "Ajouter les actions ouvertes et les objectifs en retard"
 
-#: templates/meetings/detail.html:58
+#: templates/meetings/detail.html:56
 msgid "Only items that every reader of this meeting may read are copied."
 msgstr ""
 "Seuls les éléments que tout lecteur de cette réunion peut lire sont copiés."
 
-#: templates/meetings/detail.html:63
+#: templates/meetings/detail.html:61
 msgid "No agenda."
 msgstr "Pas d'ordre du jour."
 
-#: templates/meetings/detail.html:70
+#: templates/meetings/detail.html:68
 msgid "The minutes of a CSI meeting will be available soon."
 msgstr "Le compte rendu d'une réunion du CSI sera disponible prochainement."
 
-#: templates/meetings/detail.html:72
+#: templates/meetings/detail.html:70
 msgid ""
 "The minutes, decisions and actions can be written from the start of the "
 "meeting."
@@ -4283,73 +4298,73 @@ msgstr ""
 "Le compte rendu, les décisions et les actions se saisissent à partir du "
 "début de la réunion."
 
-#: templates/meetings/detail.html:74
+#: templates/meetings/detail.html:72
 #, python-format
 msgid "Version %(version)s, %(date)s"
 msgstr "Version %(version)s, %(date)s"
 
-#: templates/meetings/detail.html:80
+#: templates/meetings/detail.html:78
 msgid "Save the minutes"
 msgstr "Enregistrer le compte rendu"
 
-#: templates/meetings/detail.html:85
+#: templates/meetings/detail.html:83
 msgid "No minutes yet."
 msgstr "Pas encore de compte rendu."
 
-#: templates/meetings/detail.html:92
+#: templates/meetings/detail.html:90
 msgid "Mark as read"
 msgstr "Marquer comme lu"
 
-#: templates/meetings/detail.html:98
+#: templates/meetings/detail.html:96
 msgid "Approve the minutes"
 msgstr "Approuver le compte rendu"
 
-#: templates/meetings/detail.html:100
+#: templates/meetings/detail.html:98
 msgid "Approving asks for your second factor."
 msgstr "Approuver demande votre second facteur."
 
-#: templates/meetings/detail.html:109
+#: templates/meetings/detail.html:107
 msgid "Decisions"
 msgstr "Décisions"
 
-#: templates/meetings/detail.html:114 templates/meetings/register.html:18
+#: templates/meetings/detail.html:112 templates/meetings/register.html:18
 #, python-format
 msgid "withdrawn on %(date)s"
 msgstr "retirée le %(date)s"
 
-#: templates/meetings/detail.html:115
+#: templates/meetings/detail.html:113
 msgid "Withdraw"
 msgstr "Retirer"
 
-#: templates/meetings/detail.html:119 templates/meetings/register.html:24
+#: templates/meetings/detail.html:117 templates/meetings/register.html:24
 msgid "No decision."
 msgstr "Aucune décision."
 
-#: templates/meetings/detail.html:134
+#: templates/meetings/detail.html:132
 msgid "linked objective"
 msgstr "objectif lié"
 
-#: templates/meetings/detail.html:142
+#: templates/meetings/detail.html:140
 msgid "Update"
 msgstr "Mettre à jour"
 
-#: templates/meetings/detail.html:148
+#: templates/meetings/detail.html:146
 msgid "No action."
 msgstr "Aucune action."
 
-#: templates/meetings/detail.html:152
+#: templates/meetings/detail.html:150
 msgid "Record the action"
 msgstr "Enregistrer l'action"
 
-#: templates/meetings/detail.html:159
+#: templates/meetings/detail.html:157
 msgid "Linked documents"
 msgstr "Documents liés"
 
-#: templates/meetings/detail.html:170
+#: templates/meetings/detail.html:168
 msgid "No linked document."
 msgstr "Aucun document lié."
 
-#: templates/meetings/detail.html:185
+#: templates/meetings/detail.html:183
 msgid ""
 "Asks for your second factor. Every attendee must be able to read the new "
 "level."
@@ -4357,11 +4372,11 @@ msgstr ""
 "Demande votre second facteur. Chaque participant doit pouvoir lire le "
 "nouveau niveau."
 
-#: templates/meetings/duplicate.html:2 templates/meetings/duplicate.html:4
+#: templates/meetings/duplicate.html:2 templates/meetings/duplicate.html:6
 msgid "Duplicate the meeting"
 msgstr "Dupliquer la réunion"
 
-#: templates/meetings/duplicate.html:6
+#: templates/meetings/duplicate.html:7
 msgid ""
 "Copies the type, place, duration, confidentiality, attendees and title; "
 "never the agenda, minutes, decisions, actions, documents, room or video link."
@@ -4394,51 +4409,46 @@ msgstr "Thèse CIFRE : un compte rendu à lire"
 msgid "CIFRE thesis: a meeting has changed"
 msgstr "Thèse CIFRE : une réunion a changé"
 
-#: templates/meetings/form.html:2 templates/meetings/form.html:4
+#: templates/meetings/form.html:2 templates/meetings/form.html:6
 msgid "Edit the meeting"
 msgstr "Modifier la réunion"
 
-#: templates/meetings/form.html:2 templates/meetings/form.html:4
-#: templates/meetings/list.html:7
+#: templates/meetings/form.html:2 templates/meetings/form.html:6
+#: templates/meetings/list.html:5
 msgid "New meeting"
 msgstr "Nouvelle réunion"
 
-#: templates/meetings/form.html:12
+#: templates/meetings/form.html:13
 msgid "The confidentiality has its own form on the meeting's page."
 msgstr ""
 "La confidentialité se change par son propre formulaire, sur la page de la "
 "réunion."
 
-#: templates/meetings/list.html:6 templates/meetings/register.html:2
-#: templates/meetings/register.html:4
-msgid "Decision register"
-msgstr "Registre des décisions"
-
-#: templates/meetings/list.html:9
+#: templates/meetings/list.html:7
 msgid "Period"
 msgstr "Période"
 
-#: templates/meetings/list.html:11
+#: templates/meetings/list.html:8
 msgid "Upcoming"
 msgstr "À venir"
 
-#: templates/meetings/list.html:12
+#: templates/meetings/list.html:9
 msgid "Past"
 msgstr "Passées"
 
-#: templates/meetings/list.html:22 templates/meetings/register.html:8
+#: templates/meetings/list.html:18 templates/meetings/register.html:8
 msgid "Filter"
 msgstr "Filtrer"
 
-#: templates/meetings/list.html:27
+#: templates/meetings/list.html:23
 msgid "Date (Paris)"
 msgstr "Date (Paris)"
 
-#: templates/meetings/list.html:32
+#: templates/meetings/list.html:28
 msgid "you attend"
 msgstr "vous y participez"
 
-#: templates/meetings/list.html:41
+#: templates/meetings/list.html:37
 msgid "No meeting."
 msgstr "Aucune réunion."
 
@@ -4502,7 +4512,7 @@ msgid "Record the progress"
 msgstr "Enregistrer l'avancement"
 
 #: templates/objectives/_progress_chart.html:4
-#: templates/objectives/dashboard.html:53
+#: templates/objectives/dashboard.html:45
 msgid "Weighted average progress over time"
 msgstr "Évolution de l'avancement moyen pondéré"
 
@@ -4518,12 +4528,12 @@ msgstr ""
 msgid "Weighted average progress by month"
 msgstr "Avancement moyen pondéré par mois"
 
-#: templates/objectives/_progress_chart.html:22
+#: templates/objectives/_progress_chart.html:22 templates/travel/month.html:6
 msgid "Month"
 msgstr "Mois"
 
 #: templates/objectives/_progress_chart.html:22
-#: templates/objectives/dashboard.html:20
+#: templates/objectives/dashboard.html:12
 msgid "Weighted average progress"
 msgstr "Avancement moyen pondéré"
 
@@ -4531,16 +4541,21 @@ msgstr "Avancement moyen pondéré"
 msgid "No progress to show yet."
 msgstr "Aucun avancement à afficher pour l'instant."
 
-#: templates/objectives/dashboard.html:8
-msgid "CIFRE years"
-msgstr "Années CIFRE"
-
-#: templates/objectives/dashboard.html:15
+#: templates/objectives/dashboard.html:4
 #, python-format
 msgid "CIFRE year from %(start)s to %(end)s"
 msgstr "Année CIFRE du %(start)s au %(end)s"
 
-#: templates/objectives/dashboard.html:19
+#: templates/objectives/dashboard.html:4 templates/objectives/form.html:2
+#: templates/objectives/form.html:5
+msgid "New objective"
+msgstr "Nouvel objectif"
+
+#: templates/objectives/dashboard.html:7 templates/travel/split.html:6
+msgid "CIFRE years"
+msgstr "Années CIFRE"
+
+#: templates/objectives/dashboard.html:11
 msgid ""
 "Approved objectives declared achieved (½ for partially), weighted by their "
 "weight."
@@ -4548,60 +4563,55 @@ msgstr ""
 "Objectifs approuvés déclarés atteints (½ pour partiellement), pondérés par "
 "leur poids."
 
-#: templates/objectives/dashboard.html:21
+#: templates/objectives/dashboard.html:13
 msgid "Average of the declared progress percentages, weighted by the weight."
 msgstr "Moyenne des pourcentages d'avancement déclarés, pondérée par le poids."
 
-#: templates/objectives/dashboard.html:23
+#: templates/objectives/dashboard.html:15
 msgid "Drafts awaiting approval"
 msgstr "Brouillons en attente d'approbation"
 
-#: templates/objectives/dashboard.html:29
+#: templates/objectives/dashboard.html:21
 msgid "To acknowledge"
 msgstr "À prendre en connaissance"
 
-#: templates/objectives/dashboard.html:33 templates/objectives/detail.html:19
+#: templates/objectives/dashboard.html:25 templates/objectives/detail.html:19
 msgid "changed since approval"
 msgstr "modifié depuis l'approbation"
 
-#: templates/objectives/dashboard.html:34 templates/objectives/detail.html:20
+#: templates/objectives/dashboard.html:26 templates/objectives/detail.html:20
 msgid "result declared, to acknowledge"
 msgstr "résultat déclaré, à prendre en connaissance"
 
-#: templates/objectives/dashboard.html:43
+#: templates/objectives/dashboard.html:35
 msgid "Overdue objectives"
 msgstr "Objectifs en retard"
 
-#: templates/objectives/dashboard.html:59
+#: templates/objectives/dashboard.html:51
 msgid "By category"
 msgstr "Par catégorie"
 
-#: templates/objectives/dashboard.html:61
+#: templates/objectives/dashboard.html:53
 msgid "Approved objectives by status"
 msgstr "Objectifs approuvés par statut"
 
-#: templates/objectives/dashboard.html:70
+#: templates/objectives/dashboard.html:62
 msgid "Objectives of the year"
 msgstr "Objectifs de l'année"
 
-#: templates/objectives/dashboard.html:71 templates/objectives/form.html:2
-#: templates/objectives/form.html:4
-msgid "New objective"
-msgstr "Nouvel objectif"
-
-#: templates/objectives/dashboard.html:82 templates/objectives/detail.html:17
+#: templates/objectives/dashboard.html:73 templates/objectives/detail.html:17
 msgid "to be declared achieved"
 msgstr "à déclarer atteint"
 
-#: templates/objectives/dashboard.html:82
+#: templates/objectives/dashboard.html:73
 msgid "draft"
 msgstr "brouillon"
 
-#: templates/objectives/dashboard.html:88
+#: templates/objectives/dashboard.html:79
 msgid "No objective for this year yet."
 msgstr "Aucun objectif pour cette année."
 
-#: templates/objectives/dashboard.html:93
+#: templates/objectives/dashboard.html:84
 #, python-format
 msgid "Approve the draft of the year"
 msgid_plural "Approve the %(counter)s drafts of the year"
@@ -4662,7 +4672,7 @@ msgstr "Le point hebdomadaire des objectifs vous attend sur la plateforme :"
 msgid "CIFRE thesis: the weekly summary of the objectives"
 msgstr "Thèse CIFRE : le point hebdomadaire des objectifs"
 
-#: templates/objectives/form.html:2 templates/objectives/form.html:4
+#: templates/objectives/form.html:2 templates/objectives/form.html:5
 msgid "Edit an objective"
 msgstr "Modifier un objectif"
 
@@ -4683,33 +4693,9 @@ msgid "No mission linked."
 msgstr "Aucune mission liée."
 
 #: templates/travel/_links.html:6 templates/travel/mission_form.html:2
-#: templates/travel/mission_form.html:5 templates/travel/missions.html:6
+#: templates/travel/mission_form.html:5 templates/travel/missions.html:7
 msgid "Plan a mission"
 msgstr "Prévoir une mission"
-
-#: templates/travel/_nav.html:1 templates/travel/month.html:2
-#: templates/travel/month.html:5
-msgid "Presence calendar"
-msgstr "Calendrier de présence"
-
-#: templates/travel/_nav.html:1 templates/travel/missions.html:2
-#: templates/travel/missions.html:5
-msgid "Missions"
-msgstr "Missions"
-
-#: templates/travel/_nav.html:1 templates/travel/split.html:2
-#: templates/travel/split.html:5
-msgid "ST / LIRMM time"
-msgstr "Temps ST / LIRMM"
-
-#: templates/travel/_nav.html:1 templates/travel/budget.html:9
-msgid "Budget"
-msgstr "Budget"
-
-#: templates/travel/_nav.html:1 templates/travel/settings.html:2
-#: templates/travel/settings.html:5
-msgid "Travel settings"
-msgstr "Réglages des déplacements"
 
 #: templates/travel/_rule.html:1
 #, python-format
@@ -4799,6 +4785,10 @@ msgstr "Ouvrir les déplacements"
 msgid "Travel budget"
 msgstr "Budget des déplacements"
 
+#: templates/travel/budget.html:6
+msgid "Years"
+msgstr "Années"
+
 #: templates/travel/budget.html:7
 msgid ""
 "Calendar year of the departure. Committed: the estimates of the missions not "
@@ -4811,7 +4801,7 @@ msgstr ""
 msgid "Committed"
 msgstr "Engagé"
 
-#: templates/travel/budget.html:9 templates/travel/mission.html:57
+#: templates/travel/budget.html:9 templates/travel/mission.html:56
 msgid "Actual"
 msgstr "Réel"
 
@@ -4859,149 +4849,149 @@ msgstr "Thèse CIFRE : les frais d'une mission sont incomplets"
 msgid "CIFRE thesis: the ST / LIRMM time settings have changed"
 msgstr "Thèse CIFRE : les réglages du temps ST / LIRMM ont changé"
 
-#: templates/travel/mission.html:9 templates/travel/missions.html:9
+#: templates/travel/mission.html:8 templates/travel/missions.html:11
 #: templates/travel/orders.html:9
 msgid "Dates"
 msgstr "Dates"
 
-#: templates/travel/mission.html:15
+#: templates/travel/mission.html:14
 msgid "Place:"
 msgstr "Lieu :"
 
-#: templates/travel/mission.html:16
+#: templates/travel/mission.html:15
 msgid "Conference:"
 msgstr "Conférence :"
 
-#: templates/travel/mission.html:17
+#: templates/travel/mission.html:16
 msgid "Transport:"
 msgstr "Transport :"
 
-#: templates/travel/mission.html:18
+#: templates/travel/mission.html:17
 msgid "Lodging:"
 msgstr "Hébergement :"
 
-#: templates/travel/mission.html:19
+#: templates/travel/mission.html:18
 msgid "Tickets booked:"
 msgstr "Billets réservés :"
 
-#: templates/travel/mission.html:19 templates/travel/mission.html:20
+#: templates/travel/mission.html:18 templates/travel/mission.html:19
 msgid "yes,no"
 msgstr "oui,non"
 
-#: templates/travel/mission.html:19
+#: templates/travel/mission.html:18
 msgid "Lodging booked:"
 msgstr "Hébergement réservé :"
 
-#: templates/travel/mission.html:20
+#: templates/travel/mission.html:19
 msgid "Official mission order obtained:"
 msgstr "Ordre de mission officiel obtenu :"
 
-#: templates/travel/mission.html:20
+#: templates/travel/mission.html:19
 msgid "the document"
 msgstr "le document"
 
-#: templates/travel/mission.html:21
+#: templates/travel/mission.html:20
 msgid "ZRR access (administrative file):"
 msgstr "Accès ZRR (dossier administratif) :"
 
-#: templates/travel/mission.html:22
+#: templates/travel/mission.html:21
 msgid "Linked meeting"
 msgstr "Réunion liée"
 
-#: templates/travel/mission.html:23
+#: templates/travel/mission.html:22
 msgid "Linked submission"
 msgstr "Soumission liée"
 
-#: templates/travel/mission.html:27
+#: templates/travel/mission.html:26
 msgid "Mission approval"
 msgstr "Accord de mission"
 
-#: templates/travel/mission.html:28 templates/travel/orders.html:6
+#: templates/travel/mission.html:27 templates/travel/orders.html:6
 msgid ""
 "This approval does not replace the official mission order of ST or the LIRMM."
 msgstr ""
 "Cet accord ne remplace pas l'ordre de mission officiel de ST ou du LIRMM."
 
-#: templates/travel/mission.html:31 templates/travel/orders.html:9
+#: templates/travel/mission.html:30 templates/travel/orders.html:9
 msgid "Requested on"
 msgstr "Demandé le"
 
-#: templates/travel/mission.html:31
+#: templates/travel/mission.html:30
 msgid "Estimate"
 msgstr "Estimation"
 
-#: templates/travel/mission.html:39
+#: templates/travel/mission.html:38
 msgid "Paid by another body: no mission approval in the platform."
 msgstr ""
 "Payée par un autre organisme : pas d'accord de mission dans la plateforme."
 
-#: templates/travel/mission.html:40
+#: templates/travel/mission.html:39
 msgid "No mission approval requested yet."
 msgstr "Aucun accord de mission demandé pour l'instant."
 
-#: templates/travel/mission.html:43
+#: templates/travel/mission.html:42
 msgid "Request the mission approval"
 msgstr "Demander l'accord de mission"
 
-#: templates/travel/mission.html:44
+#: templates/travel/mission.html:43
 msgid ""
 "The dates, the destination and the payer are then frozen until the decision."
 msgstr ""
 "Les dates, la destination et le payeur sont ensuite figés jusqu'à la "
 "décision."
 
-#: templates/travel/mission.html:54
+#: templates/travel/mission.html:53
 msgid "Expenses"
 msgstr "Frais"
 
-#: templates/travel/mission.html:57
+#: templates/travel/mission.html:56
 msgid "Estimated"
 msgstr "Estimé"
 
-#: templates/travel/mission.html:57
+#: templates/travel/mission.html:56
 msgid "Receipts"
 msgstr "Justificatifs"
 
-#: templates/travel/mission.html:59
+#: templates/travel/mission.html:58
 msgid "flat rate"
 msgstr "forfait"
 
-#: templates/travel/mission.html:62
+#: templates/travel/mission.html:61
 msgid "none needed"
 msgstr "aucun nécessaire"
 
-#: templates/travel/mission.html:65
+#: templates/travel/mission.html:64
 msgid "Store the receipt"
 msgstr "Déposer le justificatif"
 
-#: templates/travel/mission.html:69
+#: templates/travel/mission.html:68
 msgid "No expense line yet."
 msgstr "Aucune ligne de frais pour l'instant."
 
-#: templates/travel/mission.html:72
+#: templates/travel/mission.html:71
 msgid "Add the line"
 msgstr "Ajouter la ligne"
 
-#: templates/travel/mission.html:75
+#: templates/travel/mission.html:74
 msgid "Mark as reimbursed"
 msgstr "Marquer comme remboursée"
 
-#: templates/travel/mission.html:76
+#: templates/travel/mission.html:75
 msgid ""
 "Every line needs its actual amount, and a receipt unless it is a flat rate."
 msgstr ""
 "Chaque ligne doit avoir son montant réel, et un justificatif sauf pour un "
 "forfait."
 
-#: templates/travel/mission.html:80
+#: templates/travel/mission.html:79
 msgid "Store the official mission order"
 msgstr "Déposer l'ordre de mission officiel"
 
-#: templates/travel/mission.html:84
+#: templates/travel/mission.html:83
 msgid "Mark as done"
 msgstr "Marquer comme effectuée"
 
-#: templates/travel/mission.html:85
+#: templates/travel/mission.html:84
 msgid "Cancel the mission"
 msgstr "Annuler la mission"
 
@@ -5019,38 +5009,42 @@ msgstr ""
 msgid "Add my missions to my calendar (.ics)"
 msgstr "Ajouter mes missions à mon agenda (.ics)"
 
-#: templates/travel/missions.html:17
+#: templates/travel/missions.html:19
 msgid "No mission yet."
 msgstr "Aucune mission pour l'instant."
 
-#: templates/travel/month.html:6
+#: templates/travel/month.html:2 templates/travel/month.html:5
+msgid "Presence calendar"
+msgstr "Calendrier de présence"
+
+#: templates/travel/month.html:7
 msgid "Previous month"
 msgstr "Mois précédent"
 
-#: templates/travel/month.html:7
+#: templates/travel/month.html:9
 msgid "Next month"
 msgstr "Mois suivant"
 
-#: templates/travel/month.html:12
+#: templates/travel/month.html:15
 msgid "public holiday"
 msgstr "férié"
 
-#: templates/travel/month.html:16
+#: templates/travel/month.html:19
 msgid "Legend:"
 msgstr "Légende :"
 
-#: templates/travel/month.html:17
+#: templates/travel/month.html:20
 #, python-format
 msgid "%(n)s working day at the LIRMM this month."
 msgid_plural "%(n)s working days at the LIRMM this month."
 msgstr[0] "%(n)s jour ouvré au LIRMM ce mois-ci."
 msgstr[1] "%(n)s jours ouvrés au LIRMM ce mois-ci."
 
-#: templates/travel/month.html:21
+#: templates/travel/month.html:24
 msgid "Fill in days"
 msgstr "Renseigner des jours"
 
-#: templates/travel/month.html:24
+#: templates/travel/month.html:27
 msgid ""
 "Working days only unless the box is ticked. A change to a past day is "
 "recorded in the audit log."
@@ -5065,6 +5059,10 @@ msgstr "Accords de mission à décider"
 #: templates/travel/orders.html:16
 msgid "No mission approval waits for your decision."
 msgstr "Aucune demande d'accord de mission n'attend votre décision."
+
+#: templates/travel/settings.html:2 templates/travel/settings.html:5
+msgid "Travel settings"
+msgstr "Réglages des déplacements"
 
 #: templates/travel/settings.html:7
 msgid "Counting rules"
@@ -5164,6 +5162,27 @@ msgstr "Jours ouvrés"
 msgid "Not filled in"
 msgstr "Non renseignés"
 
+#: templates/ui/header_tools.html:3
+msgid "Theme"
+msgstr "Thème"
+
+#: templates/ui/header_tools.html:6
+msgid "Follow the system"
+msgstr "Suivre le système"
+
+#: templates/ui/header_tools.html:7
+msgid "Light theme"
+msgstr "Thème clair"
+
+#: templates/ui/header_tools.html:8
+msgid "Dark theme"
+msgstr "Thème sombre"
+
+#: templates/ui/tabs.html:2
+#, python-format
+msgid "Sections of %(module)s"
+msgstr "Sections : %(module)s"
+
 #: templates/vault/blocks/dashboard.html:2
 #, python-format
 msgid "%(counter)s document you can read"
@@ -5180,35 +5199,35 @@ msgstr "Ouvrir les documents"
 msgid "All documents"
 msgstr "Tous les documents"
 
-#: templates/vault/document_detail.html:8
+#: templates/vault/document_detail.html:7
 msgid "Versions"
 msgstr "Versions"
 
-#: templates/vault/document_detail.html:10
+#: templates/vault/document_detail.html:9
 msgid "Size"
 msgstr "Taille"
 
-#: templates/vault/document_detail.html:10
+#: templates/vault/document_detail.html:9
 msgid "Stored"
 msgstr "Enregistré le"
 
-#: templates/vault/document_detail.html:18
+#: templates/vault/document_detail.html:17
 msgid "Download"
 msgstr "Télécharger"
 
-#: templates/vault/document_detail.html:25
+#: templates/vault/document_detail.html:24
 msgid "New version"
 msgstr "Nouvelle version"
 
-#: templates/vault/document_detail.html:28
+#: templates/vault/document_detail.html:27
 msgid "Store the new version"
 msgstr "Enregistrer la nouvelle version"
 
-#: templates/vault/document_detail.html:33
+#: templates/vault/document_detail.html:32
 msgid "Confidentiality level"
 msgstr "Niveau de confidentialité"
 
-#: templates/vault/document_detail.html:34
+#: templates/vault/document_detail.html:33
 msgid ""
 "Changing the level re-encrypts every version; a recent second factor is "
 "asked."
@@ -5216,32 +5235,32 @@ msgstr ""
 "Changer le niveau rechiffre toutes les versions ; un second facteur récent "
 "est demandé."
 
-#: templates/vault/document_detail.html:37
+#: templates/vault/document_detail.html:36
 msgid "Change the level"
 msgstr "Changer le niveau"
 
-#: templates/vault/document_detail.html:42
+#: templates/vault/document_detail.html:41
 msgid "Explicit access"
 msgstr "Accès explicite"
 
-#: templates/vault/document_detail.html:50
+#: templates/vault/document_detail.html:49
 msgid "No explicit access."
 msgstr "Aucun accès explicite."
 
-#: templates/vault/document_detail.html:58
+#: templates/vault/document_detail.html:57
 msgid "Give access"
 msgstr "Donner l'accès"
 
-#: templates/vault/document_list.html:6 templates/vault/upload.html:2
-#: templates/vault/upload.html:4
+#: templates/vault/document_list.html:4 templates/vault/upload.html:2
+#: templates/vault/upload.html:5
 msgid "Store a document"
 msgstr "Déposer un document"
 
-#: templates/vault/document_list.html:9
+#: templates/vault/document_list.html:7
 msgid "Updated"
 msgstr "Modifié le"
 
-#: templates/vault/document_list.html:22
+#: templates/vault/document_list.html:20
 msgid "No document you can read."
 msgstr "Aucun document que vous pouvez lire."
 
@@ -5278,6 +5297,3 @@ msgstr ""
 #: templates/vault/upload.html:9
 msgid "Store"
 msgstr "Déposer"
-
-#~ msgid "Not sent: no longer a member"
-#~ msgstr "Non envoyé : ne fait plus partie de la thèse"

@@ -84,6 +84,7 @@
     background: var(--accent);
     border: 1px solid var(--accent);
   }
+  a.btn:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
   .btn-secondary, a.btn-secondary {
     color: var(--fg);
     background: var(--surface);
@@ -348,6 +349,95 @@
     border-color: var(--border-strong);
   }
   .logout button:hover { background: var(--surface-2); }
+
+  /* ---------------------------------------------------------------- page header */
+  /* ui/page_header.html: title and subtitle on the left, actions on the right
+     (the main one last), all wrapping below on a narrow screen. */
+  .page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-3) var(--space-4);
+    margin-block-end: var(--space-5);
+  }
+  .page-back { flex-basis: 100%; margin: 0; }
+  .page-parent {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    color: var(--muted);
+    font-size: var(--text-sm);
+    text-decoration: none;
+  }
+  .page-parent:hover { color: var(--fg); text-decoration: underline; }
+  .page-heading { flex: 1 1 18rem; min-width: 0; }
+  .page-heading h1 { margin: 0; overflow-wrap: anywhere; }
+  .page-subtitle { margin: var(--space-1) 0 0; color: var(--muted); }
+  .page-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+  .page-actions .btn-ghost { background: var(--surface); border-color: var(--border); }
+
+  /* ---------------------------------------------------------------- tabs */
+  /* ui/tabs.html. Current tab: weight and an indigo underline, not colour alone. */
+  .tabs {
+    margin-block-end: var(--space-5);
+    border-block-end: 1px solid var(--border);
+    overflow-x: auto;
+  }
+  .tabs ul { display: flex; gap: var(--space-1); margin: 0; padding: 0; list-style: none; }
+  .tab {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: var(--space-2) var(--space-3);
+    color: var(--muted);
+    font-weight: 500;
+    white-space: nowrap;
+    text-decoration: none;
+    border-block-end: 3px solid transparent;
+  }
+  .tab:hover { color: var(--fg); border-block-end-color: var(--border-strong); }
+  .tab:focus-visible { outline-offset: -3px; }
+  .tab[aria-current="page"] {
+    color: var(--accent-strong);
+    font-weight: 650;
+    border-block-end-color: var(--accent);
+  }
+
+  /* ---------------------------------------------------------------- segmented control */
+  /* A choice of 2 or 3 values (years, period, month). Current value: raised,
+     outlined and bold. */
+  .segmented {
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 2px;
+    padding: 2px;
+    margin-block-end: var(--space-4);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .segment {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-height: 2.25rem;
+    padding: var(--space-1) var(--space-3);
+    color: var(--fg);
+    font-weight: 500;
+    text-decoration: none;
+    border-radius: calc(var(--radius) - 2px);
+  }
+  a.segment:hover { background: var(--surface); }
+  .segment[aria-current="page"] {
+    color: var(--accent-strong);
+    font-weight: 650;
+    background: var(--surface);
+    box-shadow: var(--shadow-sm);
+    outline: 1px solid var(--border-strong);
+  }
+  .segment-label { min-width: 9rem; justify-content: center; }
+  .segment-disabled { color: var(--muted); }
 
   /* ---------------------------------------------------------------- style guide */
   .sg-section { margin-bottom: var(--space-6); }

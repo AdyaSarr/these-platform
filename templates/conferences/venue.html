@@ -1,9 +1,8 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}{% load i18n ui %}
 {% block title %}{% translate "Venue" %}{% endblock %}
 {% block content %}
-<p><a href="{% url 'conferences:deadlines' thesis_id=thesis.pk %}">{% translate "Conferences" %}</a></p>
-<h1>{{ venue.acronym }} — {{ venue.name }}</h1>
-<p class="muted">{{ venue.get_kind_display }}{% if venue.url %} · {% include "conferences/_external.html" with url=venue.url label=venue.url %}{% endif %}</p>
+{% module_tabs "conferences" %}
+{% page_header %}{{ venue.acronym }} — {{ venue.name }}{% subtitle %}{{ venue.get_kind_display }}{% if venue.url %} · {% include "conferences/_external.html" with url=venue.url label=venue.url %}{% endif %}{% endpage_header %}
 {% if not venue.is_journal %}
 <section aria-labelledby="editions-title">
   <h2 id="editions-title">{% translate "Editions" %}</h2>

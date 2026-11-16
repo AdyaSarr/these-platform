@@ -1,9 +1,8 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}{% load i18n ui %}
 {% block title %}{% translate "Mission" %}{% endblock %}
 {% block content %}
-{% include "travel/_nav.html" %}
-<h1>{% translate "Mission" %} — {{ mission.get_destination_display }}</h1>
-<p><a href="{% url 'travel:mission_ics' thesis_id=thesis.pk mission_id=mission.pk %}">{% translate "Add to my calendar (.ics)" %}</a></p>
+{% module_tabs "travel" %}
+{% page_header %}{% translate "Mission" %} — {{ mission.get_destination_display }}{% actions %}{% url 'travel:mission_ics' thesis_id=thesis.pk mission_id=mission.pk as ics_url %}{% include "ui/action.html" with url=ics_url label=_("Add to my calendar (.ics)") icon="calendar-plus" %}{% endpage_header %}
 {% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
 <dl class="stats">
   <div><dt>{% translate "Dates" %}</dt><dd>{{ mission.start_date|date:"d/m/Y" }} – {{ mission.end_date|date:"d/m/Y" }}</dd></div>

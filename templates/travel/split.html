@@ -1,9 +1,9 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}{% load i18n ui %}
 {% block title %}{% translate "ST / LIRMM time" %}{% endblock %}
 {% block content %}
-{% include "travel/_nav.html" %}
-<h1>{% translate "ST / LIRMM time" %} — {% blocktranslate with n=summary.cifre_year %}CIFRE year {{ n }}{% endblocktranslate %}</h1>
-<ul class="years">{% for n, link in years %}<li>{% if n == summary.cifre_year %}<strong>{% blocktranslate %}Year {{ n }}{% endblocktranslate %}</strong>{% else %}<a href="{{ link }}">{% blocktranslate %}Year {{ n }}{% endblocktranslate %}</a>{% endif %}</li>{% endfor %}</ul>
+{% module_tabs "travel" %}
+{% page_header %}{% translate "ST / LIRMM time" %} — {% blocktranslate with n=summary.cifre_year %}CIFRE year {{ n }}{% endblocktranslate %}{% endpage_header %}
+<nav class="segmented" aria-label="{% translate 'CIFRE years' %}">{% for n, link in years %}<a class="segment" href="{{ link }}"{% if n == summary.cifre_year %} aria-current="page"{% endif %}>{% blocktranslate %}Year {{ n }}{% endblocktranslate %}</a>{% endfor %}</nav>
 <p class="muted">{% blocktranslate with first=summary.first|date:"d/m/Y" last=summary.last|date:"d/m/Y" %}Working days from {{ first }} to {{ last }}.{% endblocktranslate %}</p>
 <dl class="stats">
   <div><dt>{% translate "Days at the LIRMM" %}</dt><dd>{{ summary.lirmm_days }}</dd></div>

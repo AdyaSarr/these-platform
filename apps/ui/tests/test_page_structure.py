@@ -100,8 +100,8 @@ def test_page_header_with_every_part() -> None:
     html = _render(
         "{% page_header parent_url=up parent_label='Objectifs' %}<em>Titre</em>"
         "{% subtitle %}Année 1{% actions %}"
-        '{% include "ui/action.html" with url="/n/" label="Nouveau" icon="plus" primary=True %}'
         '{% include "ui/action.html" with url="/s/" label="Réglages" icon="settings" %}'
+        '{% include "ui/action.html" with url="/n/" label="Nouveau" icon="plus" primary=True %}'
         "{% endpage_header %}",
         up="/t/x/objectives/",
     )
@@ -266,6 +266,7 @@ def test_module_tabs(page: str, tabs: list[tuple[str, bool]]) -> None:
 
 
 TRAVEL_TABS = ["Calendrier", "Missions", "Temps ST / LIRMM", "Budget", "Réglages"]
+ORDERS_TAB = "À décider"
 
 
 @pytest.mark.parametrize(
@@ -289,6 +290,70 @@ def test_the_budget_tab_follows_the_budget_rule() -> None:
     neither its tab."""
     html, _ = _get(Role.CO_SUPERVISOR, "travel:calendar")
     assert [label for label, _ in _tabs(html)] == [t for t in TRAVEL_TABS if t != "Budget"]
+
+
+@pytest.mark.parametrize(
+    ("role", "shown"),
+    [
+        (Role.DIRECTOR, True),  # decides the LIRMM approvals
+        (Role.INDUSTRIAL_TUTOR, True),  # decides the ST approvals
+        (Role.PHD_STUDENT, False),
+        (Role.CO_SUPERVISOR, False),
+    ],
+)
+def test_the_approvals_tab_is_for_the_payers_person_only(role: Role, shown: bool) -> None:
+    """Same rule as the queue (travel.services.pending_orders_for): the right to
+    decide and the payer's role."""
+    html, thesis = _get(role, "travel:calendar")
+    labels = [label for label, _ in _tabs(html)]
+    assert (ORDERS_TAB in labels) is shown
+    orders = reverse("travel:orders", kwargs={"thesis_id": thesis.pk})
+    assert (f'href="{orders}"' in html) is shown
+
+
+@pytest.mark.parametrize("role", [Role.DIRECTOR, Role.INDUSTRIAL_TUTOR])
+def test_the_approvals_page_says_approval_never_order(role: Role) -> None:
+    html, _ = _get(role, "travel:orders")
+    assert dict(_tabs(html))[ORDERS_TAB] is True
+    header = _header(html)
+    assert re.search(r"<h1>\s*Accords de mission à décider\s*</h1>", header)
+    tabs = re.search(r'<nav class="tabs".*?</nav>', html, re.S)
+    assert tabs is not None
+    for part in (header, tabs.group(0)):
+        assert "rdre de mission" not in part and "rdres de mission" not in part
+
+
+def _module_pages(module: str, thesis_id: object) -> dict[str, str]:
+    from apps.ui.tabs import MODULES
+
+    return {
+        str(tab.label): reverse(f"{module}:{tab.url_name}", kwargs={"thesis_id": thesis_id})
+        for tab in MODULES[module].tabs
+    }
+
+
+@pytest.mark.parametrize("role", [r for r in Role if r is not Role.GUEST])
+@pytest.mark.parametrize("module", ["meetings", "conferences", "travel"])
+def test_tabs_follow_the_rights(role: Role, module: str) -> None:
+    """Like the sidebar: every tab shown opens (200), every tab left out is a page
+    refused to this role (403 or 404)."""
+    from django.utils import translation
+
+    client, thesis = signed_in(role)
+    with translation.override("fr"):
+        pages = _module_pages(module, thesis.pk)
+    first = client.get(next(iter(pages.values())))
+    if first.status_code != 200:  # the module itself is refused: no tab anywhere
+        assert first.status_code in (403, 404), (role, module, first.status_code)
+        return
+    shown = {label for label, _ in _tabs(first.content.decode())}
+    assert shown <= set(pages)
+    for label, url in pages.items():
+        status = client.get(url).status_code
+        if label in shown:
+            assert status == 200, (role, label, status)
+        else:
+            assert status in (403, 404), (role, label, status)
 
 
 def test_tabs_come_before_the_page_header() -> None:

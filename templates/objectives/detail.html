@@ -1,8 +1,8 @@
-{% extends "base.html" %}{% load i18n meetings_tags conferences_tags %}
+{% extends "base.html" %}{% load i18n ui meetings_tags conferences_tags %}
 {% block title %}{% translate "Objective" %}{% endblock %}
 {% block content %}
-<p><a href="{% url 'objectives:dashboard' thesis_id=thesis.pk %}?year={{ objective.year.number }}">{% translate "Objectives" %}</a></p>
-<h1>{% include "objectives/_text.html" with value=texts.title %}</h1>
+{% url 'objectives:dashboard' thesis_id=thesis.pk as objectives_url %}{% with year=objective.year.number|stringformat:"d" %}{% with parent=objectives_url|add:"?year="|add:year %}
+{% page_header parent_url=parent parent_label=_("Objectives") %}{% include "objectives/_text.html" with value=texts.title %}{% endpage_header %}{% endwith %}{% endwith %}
 {% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
 
 <p class="muted">

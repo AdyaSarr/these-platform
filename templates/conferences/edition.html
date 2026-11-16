@@ -1,9 +1,9 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}{% load i18n ui %}
 {% block title %}{% translate "Edition" %}{% endblock %}
 {% block content %}
-<p><a href="{% url 'conferences:venue' thesis_id=thesis.pk venue_id=edition.venue_id %}">{{ edition.venue.acronym }}</a></p>
-<h1>{{ edition.venue.acronym }} {{ edition.year }}</h1>
-<p class="muted">{% if edition.location %}{{ edition.location }}{% endif %}{% if edition.event_start %} · {{ edition.event_start|date:"SHORT_DATE_FORMAT" }}{% if edition.event_end %} – {{ edition.event_end|date:"SHORT_DATE_FORMAT" }}{% endif %}{% endif %}</p>
+{% module_tabs "conferences" %}
+{% url 'conferences:venue' thesis_id=thesis.pk venue_id=edition.venue_id as venue_url %}
+{% page_header parent_url=venue_url parent_label=edition.venue.acronym %}{{ edition.venue.acronym }} {{ edition.year }}{% subtitle %}{% if edition.location %}{{ edition.location }}{% endif %}{% if edition.event_start %} · {{ edition.event_start|date:"SHORT_DATE_FORMAT" }}{% if edition.event_end %} – {{ edition.event_end|date:"SHORT_DATE_FORMAT" }}{% endif %}{% endif %}{% endpage_header %}
 <section aria-labelledby="deadlines-title">
   <h2 id="deadlines-title">{% translate "Deadlines" %}</h2>
   {% if deadlines %}

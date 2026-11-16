@@ -26,6 +26,8 @@ ICON_NAMES: tuple[str, ...] = (
     # States and components
     "circle-check", "triangle-alert", "octagon-alert", "info", "circle-dot", "clock",
     "inbox", "bell", "chevron-right",
+    # Page header, segmented controls (step 2)
+    "plus", "settings", "calendar-plus", "chevron-left",
 )  # fmt: skip
 
 _OPEN = (

@@ -66,6 +66,9 @@ PAIRS: list[tuple[str, str, float]] = [
     *[(fg, bg, TEXT) for fg in ("--fg", "--muted", "--link", "--error") for bg in SURFACES],
     *[(fg, "--sidebar-bg", TEXT) for fg in ("--nav-fg", "--muted")],
     ("--accent-strong", "--accent-soft", TEXT),  # active navigation item
+    ("--accent-strong", "--bg", TEXT),  # current tab
+    ("--accent-strong", "--surface", TEXT),  # current segment
+    ("--link", "--accent-soft", TEXT),  # discreet button, hovered
     ("--accent-2-strong", "--accent-2-soft", TEXT),  # secondary badge
     ("--accent-2-strong", "--surface", TEXT),
     ("--accent-fg", "--accent", TEXT),  # primary button

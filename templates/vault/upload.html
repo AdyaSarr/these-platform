@@ -1,8 +1,8 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}{% load i18n ui %}
 {% block title %}{% translate "Store a document" %}{% endblock %}
 {% block content %}
-<h1>{% translate "Store a document" %}</h1>
-<p><a href="{% url 'vault:documents' thesis_id=thesis.pk %}">{% translate "All documents" %}</a></p>
+{% url 'vault:documents' thesis_id=thesis.pk as documents_url %}
+{% page_header parent_url=documents_url parent_label=_("All documents") %}{% translate "Store a document" %}{% endpage_header %}
 <p class="warning">{% translate "The title is not encrypted: do not put any confidential information in it." %}</p>
 <form method="post" enctype="multipart/form-data">
   {% csrf_token %}{{ form.as_p }}
