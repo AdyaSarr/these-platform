@@ -457,6 +457,16 @@
   .agenda-item .icon { align-self: center; color: var(--muted); }
   .agenda-when { min-width: 8rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 
+  /* ---------------------------------------------------------------- calendar */
+  /* travel/month.html: seven columns of equal width (fixed layout, no width on a
+     column); below 42rem the wrapper scrolls, the page never does. */
+  .calendar { table-layout: fixed; min-width: 42rem; }
+  .calendar td { height: 4.5rem; vertical-align: top; overflow-wrap: anywhere; }
+  .calendar .day-number { font-weight: 650; font-variant-numeric: tabular-nums; }
+  .calendar .day-kind { font-size: var(--text-sm); }
+  .calendar .day-off, .calendar .day-outside { background: var(--surface-2); }
+  .calendar .day-today { outline: 2px solid var(--accent); outline-offset: -2px; }
+
   /* ---------------------------------------------------------------- team */
   /* One card per member (accounts/team.html): nothing truncated, long addresses wrap. */
   .members {

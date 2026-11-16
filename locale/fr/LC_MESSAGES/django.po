@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-16 19:25+0100\n"
+"POT-Creation-Date: 2026-11-16 19:38+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -4040,7 +4040,7 @@ msgstr "Contrat de collaboration :"
 #: templates/conferences/venue.html:21 templates/conferences/venue_form.html:8
 #: templates/meetings/form.html:14 templates/objectives/form.html:18
 #: templates/travel/mission.html:63 templates/travel/mission_form.html:10
-#: templates/travel/month.html:26
+#: templates/travel/month.html:28
 msgid "Save"
 msgstr "Enregistrer"
 
@@ -5021,26 +5021,19 @@ msgstr "Mois précédent"
 msgid "Next month"
 msgstr "Mois suivant"
 
-#: templates/travel/month.html:15
+#: templates/travel/month.html:17
 msgid "public holiday"
 msgstr "férié"
 
-#: templates/travel/month.html:19
+#: templates/travel/month.html:22
 msgid "Legend:"
 msgstr "Légende :"
 
-#: templates/travel/month.html:20
-#, python-format
-msgid "%(n)s working day at the LIRMM this month."
-msgid_plural "%(n)s working days at the LIRMM this month."
-msgstr[0] "%(n)s jour ouvré au LIRMM ce mois-ci."
-msgstr[1] "%(n)s jours ouvrés au LIRMM ce mois-ci."
-
-#: templates/travel/month.html:24
+#: templates/travel/month.html:26
 msgid "Fill in days"
 msgstr "Renseigner des jours"
 
-#: templates/travel/month.html:27
+#: templates/travel/month.html:29
 msgid ""
 "Working days only unless the box is ticked. A change to a past day is "
 "recorded in the audit log."
