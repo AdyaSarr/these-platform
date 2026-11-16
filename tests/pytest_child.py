@@ -26,6 +26,13 @@ def child_env(**overrides: str) -> dict[str, str]:
     return env
 
 
+def fake_database_env(name: str) -> dict[str, str]:
+    """A child on database ``name`` of a server that does not exist. Both variables:
+    the test settings read TEST_DATABASE_URL, and would otherwise take it from .env."""
+    url = FAKE_DATABASE.format(name=name)
+    return child_env(DATABASE_URL=url, TEST_DATABASE_URL=url)
+
+
 def run_pytest(
     *args: str, env: dict[str, str] | None = None, timeout: int = 120
 ) -> subprocess.CompletedProcess[str]:
