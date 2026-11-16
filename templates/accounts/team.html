@@ -84,10 +84,9 @@
                     {% csrf_token %}
                     <button type="submit">{% translate "Send again" %}</button>
                   </form>
-                  <form method="post" action="{% url 'accounts:team_revoke_invitation' thesis_id=thesis.pk invitation_id=inv.pk %}">
-                    {% csrf_token %}
-                    <button type="submit" class="danger">{% translate "Revoke" %}</button>
-                  </form>
+                  {% url 'accounts:team_revoke_invitation' thesis_id=thesis.pk invitation_id=inv.pk as revoke_url %}
+                  {% blocktranslate asvar revoke_message with email=inv.email %}The invitation sent to {{ email }} will no longer work.{% endblocktranslate %}
+                  {% include "ui/confirm.html" with label=_("Revoke") message=revoke_message action=revoke_url confirm_label=_("Revoke the invitation") %}
                 </td>
               </tr>
             {% endwith %}

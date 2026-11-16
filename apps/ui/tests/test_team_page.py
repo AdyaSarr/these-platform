@@ -140,3 +140,32 @@ def test_nothing_is_truncated() -> None:
     assert rules
     assert not any("ellipsis" in body or "nowrap" in body for _, body in rules)
     assert any("overflow-wrap: anywhere" in body for _, body in rules)
+
+
+def test_revoking_an_invitation_asks_for_a_confirmation() -> None:
+    """Same confirmation as « Retirer » (review of point 9)."""
+    from apps.accounts import services
+
+    thesis = ThesisFactory.create()
+    client, thesis = signed_in(Role.PHD_STUDENT, thesis)
+    student = Membership.objects.get(thesis=thesis, role=Role.PHD_STUDENT)
+    invitation = services.create_invitation(
+        thesis=thesis,
+        email="invite.fictif@example.org",
+        role=Role.DIRECTOR,
+        organization=student.organization,
+        by=student.user,
+    )
+    html = client.get(reverse("accounts:team", kwargs={"thesis_id": thesis.pk})).content.decode()
+    url = reverse(
+        "accounts:team_revoke_invitation",
+        kwargs={"thesis_id": thesis.pk, "invitation_id": invitation.pk},
+    )
+    confirm = re.search(
+        rf'<details class="confirm">(?:(?!</details>).)*?{url}.*?</details>', html, re.S
+    )
+    assert confirm is not None
+    assert re.search(
+        r'<summary class="btn btn-danger">.*?Révoquer</summary>', confirm.group(0), re.S
+    )
+    assert html.count(f'action="{url}"') == 1  # the only form that revokes

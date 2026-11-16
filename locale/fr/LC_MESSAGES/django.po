@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-16 19:07+0100\n"
+"POT-Creation-Date: 2026-11-16 19:25+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3732,11 +3732,20 @@ msgstr "Courriel"
 msgid "Send again"
 msgstr "Renvoyer"
 
+#: templates/accounts/team.html:88
+#, python-format
+msgid "The invitation sent to %(email)s will no longer work."
+msgstr "L'invitation envoyée à %(email)s ne fonctionnera plus."
+
 #: templates/accounts/team.html:89 templates/vault/document_detail.html:46
 msgid "Revoke"
-msgstr "Retirer"
+msgstr "Révoquer"
 
-#: templates/accounts/team.html:98
+#: templates/accounts/team.html:89
+msgid "Revoke the invitation"
+msgstr "Révoquer l'invitation"
+
+#: templates/accounts/team.html:97
 msgid "No pending invitation."
 msgstr "Aucune invitation en attente."
 
