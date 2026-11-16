@@ -6,8 +6,8 @@
 #
 #   scripts/test_all.sh [pytest arguments...] > var/last-pytest.log 2>&1; echo "pytest exit=$?"
 #
-# PYTEST_WORKERS  number of workers of phase 1 (default 4: measured on a 10-core Mac,
-#                 no gain beyond, see docs/decisions.md)
+# PYTEST_WORKERS  number of workers of phase 1 (default 6: measured on a 10-core Mac
+#                 with db-test, little gain beyond, see docs/decisions.md)
 # PYTEST_SEED     pytest-randomly seed of both phases (default: drawn at random)
 #
 # Exit code: the first non-zero code of the two phases (both always run), else 0.
@@ -21,7 +21,7 @@ set -u
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "$REPO" || exit 2
 
-workers="${PYTEST_WORKERS:-4}"
+workers="${PYTEST_WORKERS:-6}"
 if [[ ! "$workers" =~ ^[1-9][0-9]?$ ]]; then
   echo "test_all: PYTEST_WORKERS must be a number from 1 to 99, not '$workers'" >&2
   exit 2

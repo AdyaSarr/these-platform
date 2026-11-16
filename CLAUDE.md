@@ -161,7 +161,7 @@ Un module = une conversation = un ou plusieurs commits.
   `failed` ni `error`, et que la dernière ligne est
   `test_all: exit=0 parallel=0 serial=0 seed=…`. Vaut pour **tout** commit, même
   jugé inoffensif (dépendance, documentation) ; seuls les commits `wip … (red)`,
-  rouges par construction, font exception. Workers : `PYTEST_WORKERS` (4 par
+  rouges par construction, font exception. Workers : `PYTEST_WORKERS` (6 par
   défaut) ; graine : `PYTEST_SEED`.
 - **Ne jamais lancer pytest pendant qu'une autre exécution tourne** ; le verrou
   l'empêche de toute façon (un verrou par base de test configurée,
