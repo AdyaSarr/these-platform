@@ -14,6 +14,7 @@ from django.utils.safestring import SafeString
 
 from .. import icons
 from ..agenda import Entry, agenda_for
+from ..documents import LEVEL_TONES, numbered_titles
 from ..tabs import tabs_for
 from ..tiles import Tiles, dashboard_tiles
 
@@ -110,3 +111,25 @@ def module_tabs(context: Context, module: str) -> dict[str, Any]:
 def dashboard_agenda(context: Context, blocks: list[tuple[Any, dict[str, Any]]]) -> list[Entry]:
     """The « À venir » card (apps/ui/agenda.py): filtered per viewer, then cut."""
     return agenda_for(context["request"], context["thesis"], blocks)
+
+
+@register.simple_tag
+def document_rows(documents: list[Any]) -> list[tuple[Any, str]]:
+    """(document, label) for the list: ``documents`` are the viewer's readable ones."""
+    labels = numbered_titles(documents)
+    return [(d, labels[d.pk]) for d in documents]
+
+
+@register.simple_tag(takes_context=True)
+def document_label(context: Context, document: Any) -> str:
+    """The label of ``document`` in the viewer's list (the detail page's title)."""
+    from apps.vault.services import readable_documents
+
+    request = context["request"]
+    readable = readable_documents(request.user, context["thesis"])
+    return numbered_titles(readable).get(document.pk, str(document.title))
+
+
+@register.filter
+def level_tone(level: str) -> str:
+    return LEVEL_TONES.get(str(level), "neutral")

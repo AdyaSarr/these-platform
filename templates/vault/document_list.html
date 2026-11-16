@@ -3,19 +3,23 @@
 {% block content %}
 {% page_header %}{% translate "Documents" %}{% actions %}{% if can_upload %}{% url 'vault:upload' thesis_id=thesis.pk as upload_url %}{% include "ui/action.html" with url=upload_url label=_("Store a document") icon="plus" primary=True %}{% endif %}{% endpage_header %}
 {% if documents %}
-<table>
-  <thead><tr><th>{% translate "Title" %}</th><th>{% translate "Confidentiality" %}</th><th>{% translate "Version" %}</th><th>{% translate "Updated" %}</th></tr></thead>
+{# Labels numbered among the documents this viewer reads (apps/ui/documents.py). #}
+{% document_rows documents as rows %}
+<div class="table-wrap">
+<table class="table documents">
+  <thead><tr><th scope="col">{% translate "Title" %}</th><th scope="col">{% translate "Confidentiality" %}</th><th scope="col" class="num">{% translate "Version" %}</th><th scope="col">{% translate "Updated" %}</th></tr></thead>
   <tbody>
-  {% for document in documents %}
+  {% for document, label in rows %}
     <tr>
-      <td><a href="{% url 'vault:document' thesis_id=thesis.pk document_id=document.pk %}">{{ document.title }}</a></td>
-      <td>{{ document.get_confidentiality_display }}</td>
-      <td>{{ document.current_version }}</td>
+      <td class="document-title"><a href="{% url 'vault:document' thesis_id=thesis.pk document_id=document.pk %}">{{ label }}</a></td>
+      <td>{% include "ui/badge.html" with tone=document.confidentiality|level_tone label=document.get_confidentiality_display %}</td>
+      <td class="num">{{ document.current_version }}</td>
       <td>{{ document.updated_at|date:"SHORT_DATETIME_FORMAT" }}</td>
     </tr>
   {% endfor %}
   </tbody>
 </table>
+</div>
 {% else %}
 <p>{% translate "No document you can read." %}</p>
 {% endif %}
