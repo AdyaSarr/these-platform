@@ -53,6 +53,9 @@ LIRMM_DAYS = frozenset(
     {D(2026, 12, 8), D(2026, 12, 9), D(2027, 1, 5), D(2027, 1, 26), D(2027, 3, 2)}
 )
 MONTHS = [(2026, 9), (2026, 12), (2027, 1), (2027, 2), (2027, 3), (2027, 11)]
+NEAR_HIDDEN = [D(2027, 1, d) for d in (21, 22, 25, 27, 28, 29)] + [
+    D(2027, 2, d) for d in (1, 2, 3, 4)
+]
 
 
 @pytest.fixture(autouse=True)
@@ -142,6 +145,15 @@ def _world(team: SimpleNamespace, pattern: str) -> None:
                 mission=mission, user=team.student, category="LODGING", estimated="210"
             )
             services.attach_receipt(expense=line, user=team.student, upload=_pdf())
+    if pattern == "a":
+        # Hidden missions NEARER than the shared one of 12 February, more than the
+        # 8 lines of the « À venir » card: a cut before the filter per viewer would
+        # change what the co-supervisor's card shows.
+        for day in NEAR_HIDDEN:
+            mission_of(
+                team, destination="ROUSSET", payer="ST", start_date=day, end_date=day,
+                purpose=pattern,
+            )  # fmt: skip
 
 
 def _lirmm(team: SimpleNamespace) -> list[Mission]:
@@ -163,6 +175,11 @@ def _lirmm(team: SimpleNamespace) -> list[Mission]:
         mission=shared[0], user=team.student, category="MEALS", flat_rate=True, estimated="30"
     )
     services.attach_receipt(expense=line, user=team.student, upload=_pdf())
+    # « À venir » card of the dashboard (frontend step 8a): a shared mission the
+    # co-supervisor sees, after the hidden ones of world "a" (_world).
+    shared.append(
+        mission_of(team, payer="LIRMM", start_date=D(2027, 2, 12), end_date=D(2027, 2, 12))
+    )
     return shared
 
 
@@ -349,6 +366,22 @@ def test_the_co_supervisor_cannot_tell_two_worlds_apart(team: SimpleNamespace) -
         tabs = _tab_bar(client_for(team, decider).get(calendar).content)
         assert tabs is not None, decider
         assert orders in tabs and budget in tabs, decider
+
+    # « À venir » card: cut after the filter per viewer. The student's card is full
+    # of the hidden missions; the co-supervisor's shows theirs, 12 February included.
+    dashboard = reverse("accounts:dashboard", kwargs={"thesis_id": team.thesis.pk})
+    student_agenda = _agenda_card(student_a[dashboard][2])
+    assert student_agenda.count(b'class="agenda-item"') == 8
+    assert "12\u00a0févr.".encode() not in student_agenda
+    co_sup_agenda = _agenda_card(seen_a[dashboard][2])
+    assert "12\u00a0févr.".encode() in co_sup_agenda
+    assert co_sup_agenda.count(b'class="agenda-item"') == 2  # 26 January, 12 February
+
+
+def _agenda_card(body: bytes) -> bytes:
+    match = re.search(rb'<section class="card agenda".*?</section>', body, re.S)
+    assert match is not None
+    return match.group(0)
 
 
 def _tab_bar(body: bytes) -> bytes | None:
