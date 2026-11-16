@@ -284,7 +284,7 @@ def test_header_height_is_fixed_and_known_to_scroll_padding() -> None:
     """One line of a fixed height, the --header-height that scroll-padding-top
     adds: a sticky header never hides the title the page scrolls to (WCAG 2.4.11)."""
     css = _strip_css_comments(_css("layout.css"))
-    top = _remove_blocks(_remove_blocks(css, NARROW)[0], WIDE)[0]
+    top = _remove_blocks(css, "@media")[0]
     header = [body for sel, body in _rules(top) if sel == ".site-header"]
     assert len(header) == 1
     assert re.search(r"flex-wrap\s*:\s*nowrap", header[0])

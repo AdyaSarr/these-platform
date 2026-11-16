@@ -51,7 +51,7 @@
           <span class="tile-label">{% icon "calendar-days" %}{% translate "Next meeting" %}</span>
           {% with meeting=tiles.meeting.next_meeting %}
             {% if meeting %}
-              <span class="tile-value">{{ meeting.starts_at|date:"j M" }}</span>
+              <span class="tile-value">{{ meeting.starts_at|short_date }}</span>
               <p class="tile-detail">{{ meeting.starts_at|time:"H:i" }} · {{ meeting.get_kind_display }}{% if not tiles.meeting.next_is_mine %} ({% translate "you do not attend" %}){% endif %}</p>
               <a href="{% url 'meetings:detail' thesis_id=thesis.pk meeting_id=meeting.pk %}">{% translate "See the meeting" %}</a>
             {% else %}

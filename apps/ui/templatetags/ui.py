@@ -1,10 +1,12 @@
-"""{% icon "name" %} and {% dashboard_tiles blocks as tiles %}."""
+"""{% icon "name" %}, {% dashboard_tiles blocks as tiles %} and |short_date."""
 
 from __future__ import annotations
 
+import datetime as dt
 from typing import Any
 
 from django import template
+from django.utils import formats, timezone
 from django.utils.safestring import SafeString
 
 from .. import icons
@@ -38,3 +40,14 @@ BLOCK_ICONS = {
 @register.simple_tag
 def block_icon(key: str) -> SafeString:
     return icons.svg(BLOCK_ICONS.get(key, "circle-dot"))
+
+
+@register.filter
+def short_date(value: dt.date | dt.datetime | None) -> str:
+    """« 18 nov. »: the day, a no-break space, the French month abbreviation
+    (format "N"; "M" would give « Nov »). An instant shows its day in TIME_ZONE."""
+    if value is None or value == "":
+        return ""
+    if isinstance(value, dt.datetime) and timezone.is_aware(value):
+        value = timezone.localtime(value)
+    return formats.date_format(value, "j\u00a0N")

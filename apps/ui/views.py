@@ -30,18 +30,16 @@ def set_theme(request: HttpRequest) -> HttpResponse:
     ):
         target = "/"
     response = redirect(target)
-    if choice == "auto":
-        response.delete_cookie(COOKIE_NAME, path="/", samesite="Lax")
-    else:
-        response.set_cookie(
-            COOKIE_NAME,
-            choice,
-            max_age=MAX_AGE,
-            path="/",
-            secure=settings.SESSION_COOKIE_SECURE,
-            httponly=True,
-            samesite="Lax",
-        )
+    # "auto" is stored too: without a cookie the theme is the default (dark).
+    response.set_cookie(
+        COOKIE_NAME,
+        choice,
+        max_age=MAX_AGE,
+        path="/",
+        secure=settings.SESSION_COOKIE_SECURE,
+        httponly=True,
+        samesite="Lax",
+    )
     return response
 
 

@@ -1,4 +1,7 @@
-"""Light / dark preference: a cookie read by the server (no script)."""
+"""Light / dark preference: a cookie read by the server (no script).
+
+Dark by default (no cookie, or a value outside the list); "auto" is a stored
+choice too, and leaves the theme to prefers-color-scheme."""
 
 from __future__ import annotations
 
@@ -6,13 +9,14 @@ from django.http import HttpRequest
 
 COOKIE_NAME = "theme"
 THEMES = ("auto", "light", "dark")
+DEFAULT = "dark"
 MAX_AGE = 365 * 24 * 3600
 
 
 def theme_of(request: HttpRequest) -> str:
-    """The viewer's choice, from the closed list only; "auto" otherwise."""
+    """The viewer's choice, from the closed list only; the default otherwise."""
     value = request.COOKIES.get(COOKIE_NAME, "")
-    return value if value in THEMES else "auto"
+    return value if value in THEMES else DEFAULT
 
 
 def back_to(request: HttpRequest) -> str:

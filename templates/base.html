@@ -32,32 +32,23 @@
             <li><a class="nav-link" data-nav="{{ item.key }}" href="{{ item.url }}"{% if item.current %} aria-current="page"{% endif %}>{% icon item.icon %}<span>{{ item.label }}</span></a></li>
           {% endfor %}
         </ul>
+        {# The header's tools, for a narrow screen where the header holds only the menu button. #}
+        <div class="nav-tools">{% include "ui/header_tools.html" %}</div>
       </nav>
     {% endif %}
     <div class="main-col">
       <header class="site-header">
         {% if ui_nav %}
           <button type="button" class="nav-toggle" popovertarget="sidebar">{% icon "menu" %}<span>{% translate "Menu" %}</span></button>
+          {# Short name, narrow screen only: on a wide screen the sidebar shows it. #}
+          <a class="brand header-brand" href="{% url 'core:home' %}">{% icon "graduation-cap" %}<span>{% translate "CIFRE thesis" %}</span></a>
         {% else %}
           <a class="brand" href="{% url 'core:home' %}">{% icon "graduation-cap" %}<span>{% translate "CIFRE thesis" %}</span></a>
         {% endif %}
         {% if ui_thesis %}<p class="header-thesis">{{ ui_thesis.title }}</p>{% else %}<span class="header-spacer"></span>{% endif %}
         <div class="header-tools">
-          {% if user.is_authenticated %}
-          {# No script: the choice is a POST, the server sets the cookie and comes back to this page. #}
           {# Signed-in users only: an anonymous page keeps a single CSRF token (test_invitations.py). #}
-          <form class="theme-toggle" method="post" action="{% url 'ui:theme' %}" role="group" aria-label="{% translate 'Theme' %}">
-            {% csrf_token %}
-            <input type="hidden" name="next" value="{{ ui_next }}">
-            <button type="submit" name="theme" value="auto" aria-pressed="{% if ui_theme == 'auto' %}true{% else %}false{% endif %}" title="{% translate 'Follow the system' %}">{% icon "monitor" %}<span class="visually-hidden">{% translate "Follow the system" %}</span></button>
-            <button type="submit" name="theme" value="light" aria-pressed="{% if ui_theme == 'light' %}true{% else %}false{% endif %}" title="{% translate 'Light theme' %}">{% icon "sun" %}<span class="visually-hidden">{% translate "Light theme" %}</span></button>
-            <button type="submit" name="theme" value="dark" aria-pressed="{% if ui_theme == 'dark' %}true{% else %}false{% endif %}" title="{% translate 'Dark theme' %}">{% icon "moon" %}<span class="visually-hidden">{% translate "Dark theme" %}</span></button>
-          </form>
-            <form class="logout" method="post" action="{% url 'logout' %}">
-              {% csrf_token %}
-              <span class="who">{{ user.email }}</span>
-              <button type="submit">{% icon "log-out" %}<span>{% translate "Log out" %}</span></button>
-            </form>
+          {% if user.is_authenticated %}{% include "ui/header_tools.html" %}
           {% endif %}
         </div>
       </header>
