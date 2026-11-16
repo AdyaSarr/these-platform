@@ -14,7 +14,7 @@ gets the item page with the message (error).
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 from django.contrib import messages
@@ -28,7 +28,7 @@ from django.utils.translation import gettext as _
 from django.utils.translation import gettext_lazy
 from django.views import View
 
-from apps.accounts.models import User
+from apps.accounts.models import Membership, User
 from apps.accounts.permissions import (
     Action,
     ThesisPermissionRequiredMixin,
@@ -94,8 +94,15 @@ class Row:
     document: Document | None  # None also when the user cannot read it
     has_hidden_document: bool
     stale: bool
-    overdue: bool
+    overdue: bool  # still to deposit (TODO, REJECTED) and past its due date
     validators: list[str]
+    # Deposited: days since the deposit, in Paris dates (None: deposited before
+    # RequiredItem.submitted_at existed, or not deposited).
+    waiting_days: int | None = None
+    # Validator roles nobody holds in the team (never for a validated item), and
+    # whether the viewer may invite them.
+    missing_validators: list[str] = field(default_factory=list)
+    can_invite: bool = False
     submit_form: SubmitForm | None = None
     decision_form: DecisionForm | None = None
     reopen_form: ReopenForm | None = None
@@ -139,12 +146,25 @@ def build_row(user: User, item: RequiredItem, **forms: Any) -> Row:
         has_hidden_document=item.document is not None and not readable,
         stale=services.is_stale(item),
         overdue=item.due_date is not None
-        and item.status != ItemStatus.VALIDATED
+        and status in (ItemStatus.TODO, ItemStatus.REJECTED)
         and item.due_date < timezone.localdate(),
         validators=[str(Role(r).label) for r in item.validator_roles],
         error=forms.pop("error", ""),
         errors=forms.pop("errors", None),
     )
+    if status == ItemStatus.SUBMITTED and item.submitted_at is not None:
+        deposited = timezone.localdate(item.submitted_at)
+        row.waiting_days = (timezone.localdate() - deposited).days
+    if status != ItemStatus.VALIDATED:
+        held = set(
+            Membership.objects.active()
+            .filter(thesis_id=item.thesis_id)
+            .values_list("role", flat=True)
+        )
+        row.missing_validators = [str(Role(r).label) for r in item.validator_roles if r not in held]
+        row.can_invite = bool(row.missing_validators) and can(
+            user, Action.INVITE_MEMBER, item.thesis
+        )
     if rights.submit:
         row.submit_form = forms.get("submit_form") or SubmitForm(item=item, user=user)
     if rights.decide:

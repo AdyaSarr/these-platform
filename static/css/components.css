@@ -457,6 +457,15 @@
   .agenda-item .icon { align-self: center; color: var(--muted); }
   .agenda-when { min-width: 8rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 
+  /* ---------------------------------------------------------------- administrative file */
+  /* An item's forms: buttons at their own width (« Rouvrir » took the whole one),
+     the due-date form on one line that wraps, never over the button. */
+  .item form button { justify-self: start; }
+  .item-inline { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
+  .item-inline input { width: auto; }
+  .item .badge { align-self: center; }
+  .missing-validator { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); color: var(--warning-fg); }
+
   /* ---------------------------------------------------------------- calendar */
   /* travel/month.html: seven columns of equal width (fixed layout, no width on a
      column); below 42rem the wrapper scrolls, the page never does. */

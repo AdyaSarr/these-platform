@@ -2,6 +2,7 @@
 {% block title %}{{ row.label }}{% endblock %}
 {% block content %}
 {% url 'admin_file:file' thesis_id=thesis.pk as file_url %}
-{% page_header parent_url=file_url parent_label=_("Administrative file") %}{{ row.label }}{% endpage_header %}
+{# The label is the card's title below: the page's title names the kind of page (one title, never twice). #}
+{% page_header parent_url=file_url parent_label=_("Administrative file") %}{% translate "Administrative file item" %}{% endpage_header %}
 {% include "admin_file/item_row.html" %}
 {% endblock %}

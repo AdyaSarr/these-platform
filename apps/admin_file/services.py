@@ -349,6 +349,7 @@ def submit(
             raise ValidationError(_("This item needs an attachment."), code="attachment")
         locked.cycle += 1
         locked.submitted_by = user
+        locked.submitted_at = timezone.now()
         locked.reason_code = ""
         locked.reason_comment = ""
         try:
@@ -377,6 +378,7 @@ def withdraw(*, item: RequiredItem, user: User) -> RequiredItem:
         _require_writer(user, locked)
         before = locked.status
         locked.status = target(before, Event.WITHDRAW)
+        locked.submitted_at = None
         locked.save()
         audit(
             AuditAction.ADMIN_ITEM_WITHDRAWN,
@@ -491,6 +493,7 @@ def reject(*, item: RequiredItem, user: User, reason: Any, comment: str = "") ->
         before = locked.status
         locked.status = target(before, Event.REJECT)
         locked.reason_code, locked.reason_comment = code, comment
+        locked.submitted_at = None
         locked.save()
         audit(
             AuditAction.ADMIN_ITEM_REJECTED,
@@ -547,6 +550,7 @@ def reopen(*, item: RequiredItem, user: User, reason: Any, comment: str = "") ->
         if validated_at is None:  # impossible once VALIDATED (database constraint)
             raise InvalidTransitionError("a validated item has a validation time")
         locked.validated_at = None
+        locked.submitted_at = None
         locked.reason_code, locked.reason_comment = code, comment
         locked.save()
         reopening = ItemReopening.objects.create(

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-16 19:38+0100\n"
+"POT-Creation-Date: 2026-11-16 20:15+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -219,13 +219,13 @@ msgstr "appartenances"
 msgid "Queued"
 msgstr "En file d'attente"
 
-#: apps/accounts/models.py:228 apps/admin_file/models.py:290
+#: apps/accounts/models.py:228 apps/admin_file/models.py:294
 #: apps/conferences/models.py:520 apps/meetings/models.py:343
 #: apps/objectives/models.py:356 apps/travel/choices.py:140
 msgid "Sent"
 msgstr "Envoyé"
 
-#: apps/accounts/models.py:229 apps/admin_file/models.py:291
+#: apps/accounts/models.py:229 apps/admin_file/models.py:295
 #: apps/conferences/models.py:521 apps/meetings/models.py:344
 #: apps/objectives/models.py:357 apps/travel/choices.py:141
 msgid "Failed"
@@ -251,7 +251,7 @@ msgstr "Envoyée, en attente d'acceptation"
 msgid "Expired"
 msgstr "Expirée"
 
-#: apps/accounts/models.py:237 apps/admin_file/models.py:394
+#: apps/accounts/models.py:237 apps/admin_file/models.py:398
 #: apps/conferences/models.py:205
 msgid "Accepted"
 msgstr "Acceptée"
@@ -430,7 +430,7 @@ msgstr "Documents"
 #: apps/accounts/views.py:81 apps/admin_file/services.py:278
 #: apps/ui/navigation.py:36 templates/accounts/dashboard.html:33
 #: templates/admin_file/file.html:2 templates/admin_file/file.html:4
-#: templates/admin_file/item_page.html:5 templates/admin_file/new_item.html:5
+#: templates/admin_file/item_page.html:6 templates/admin_file/new_item.html:5
 msgid "Administrative file"
 msgstr "Dossier administratif"
 
@@ -551,8 +551,7 @@ msgstr "Ou un document existant"
 #: templates/conferences/submissions.html:8 templates/meetings/detail.html:9
 #: templates/meetings/detail.html:179 templates/meetings/list.html:23
 #: templates/objectives/detail.html:13 templates/objectives/detail.html:76
-#: templates/travel/mission.html:11 templates/vault/document_detail.html:5
-#: templates/vault/document_list.html:7
+#: templates/travel/mission.html:11 templates/vault/document_list.html:10
 msgid "Confidentiality"
 msgstr "Confidentialité"
 
@@ -561,7 +560,7 @@ msgid "Give a new file or an existing document, not both."
 msgstr "Donnez un nouveau fichier ou un document existant, pas les deux."
 
 #: apps/admin_file/forms.py:69 apps/admin_file/forms.py:99
-#: templates/admin_file/item_row.html:26 templates/objectives/detail.html:52
+#: templates/admin_file/item_row.html:32 templates/objectives/detail.html:52
 msgid "Reason"
 msgstr "Motif"
 
@@ -578,7 +577,7 @@ msgstr "Échéance proposée"
 
 #: apps/admin_file/forms.py:111 apps/admin_file/forms.py:136
 #: apps/meetings/forms.py:173 apps/objectives/forms.py:55
-#: templates/admin_file/item_row.html:11 templates/objectives/dashboard.html:65
+#: templates/admin_file/item_row.html:12 templates/objectives/dashboard.html:65
 #: templates/objectives/detail.html:11
 msgid "Due date"
 msgstr "Échéance"
@@ -591,7 +590,7 @@ msgstr "Libellé"
 msgid "Part of the file"
 msgstr "Partie du dossier"
 
-#: apps/admin_file/forms.py:127 templates/admin_file/item_row.html:10
+#: apps/admin_file/forms.py:127 templates/admin_file/item_row.html:11
 msgid "Validated by"
 msgstr "Validée par"
 
@@ -608,7 +607,7 @@ msgid "Attachment required"
 msgstr "Pièce jointe obligatoire"
 
 #: apps/admin_file/forms.py:148 apps/admin_file/forms.py:150
-#: apps/admin_file/services.py:731
+#: apps/admin_file/services.py:735
 msgid "These validators are not allowed."
 msgstr "Ces validateurs ne sont pas permis."
 
@@ -703,124 +702,124 @@ msgstr "pièce jointe obligatoire"
 msgid "due date"
 msgstr "échéance"
 
-#: apps/admin_file/models.py:162
+#: apps/admin_file/models.py:166
 msgid "required item"
 msgstr "pièce du dossier"
 
-#: apps/admin_file/models.py:163
+#: apps/admin_file/models.py:167
 msgid "required items"
 msgstr "pièces du dossier"
 
-#: apps/admin_file/models.py:248
+#: apps/admin_file/models.py:252
 msgid "approval"
 msgstr "approbation"
 
-#: apps/admin_file/models.py:249
+#: apps/admin_file/models.py:253
 msgid "approvals"
 msgstr "approbations"
 
-#: apps/admin_file/models.py:284
+#: apps/admin_file/models.py:288
 msgid "14 days before"
 msgstr "14 jours avant"
 
-#: apps/admin_file/models.py:285
+#: apps/admin_file/models.py:289
 msgid "3 days before"
 msgstr "3 jours avant"
 
-#: apps/admin_file/models.py:286 templates/objectives/dashboard.html:14
+#: apps/admin_file/models.py:290 templates/objectives/dashboard.html:14
 msgid "Overdue"
 msgstr "En retard"
 
-#: apps/admin_file/models.py:289 apps/admin_file/models.py:393
+#: apps/admin_file/models.py:293 apps/admin_file/models.py:397
 #: apps/conferences/models.py:342 apps/conferences/models.py:519
 #: apps/meetings/models.py:342 apps/objectives/models.py:355
 msgid "Pending"
 msgstr "En attente"
 
-#: apps/admin_file/models.py:292 apps/conferences/models.py:522
+#: apps/admin_file/models.py:296 apps/conferences/models.py:522
 #: apps/meetings/models.py:345
 msgid "Not sent: no longer concerned or due"
 msgstr "Non envoyé : destinataire plus concerné ou envoi plus dû"
 
-#: apps/admin_file/models.py:310
+#: apps/admin_file/models.py:314
 msgid "reminder"
 msgstr "rappel"
 
-#: apps/admin_file/models.py:311
+#: apps/admin_file/models.py:315
 msgid "reminders"
 msgstr "rappels"
 
-#: apps/admin_file/models.py:360
+#: apps/admin_file/models.py:364
 msgid "reopening"
 msgstr "réouverture"
 
-#: apps/admin_file/models.py:361
+#: apps/admin_file/models.py:365
 msgid "reopenings"
 msgstr "réouvertures"
 
-#: apps/admin_file/models.py:395 apps/conferences/models.py:344
+#: apps/admin_file/models.py:399 apps/conferences/models.py:344
 msgid "Refused"
 msgstr "Refusée"
 
-#: apps/admin_file/models.py:396 apps/conferences/models.py:207
+#: apps/admin_file/models.py:400 apps/conferences/models.py:207
 #: apps/conferences/models.py:345
 msgid "Withdrawn"
 msgstr "Retirée"
 
-#: apps/admin_file/models.py:397
+#: apps/admin_file/models.py:401
 msgid "Superseded"
 msgstr "Remplacée"
 
-#: apps/admin_file/models.py:421
+#: apps/admin_file/models.py:425
 msgid "due-date proposal"
 msgstr "proposition d'échéance"
 
-#: apps/admin_file/models.py:422
+#: apps/admin_file/models.py:426
 msgid "due-date proposals"
 msgstr "propositions d'échéance"
 
-#: apps/admin_file/models.py:482
+#: apps/admin_file/models.py:486
 msgid "Item reopened"
 msgstr "Pièce rouverte"
 
-#: apps/admin_file/models.py:483
+#: apps/admin_file/models.py:487
 msgid "Due date proposed"
 msgstr "Échéance proposée"
 
-#: apps/admin_file/models.py:484
+#: apps/admin_file/models.py:488
 msgid "Proposed due date accepted"
 msgstr "Échéance proposée acceptée"
 
-#: apps/admin_file/models.py:485
+#: apps/admin_file/models.py:489
 msgid "Proposed due date refused"
 msgstr "Échéance proposée refusée"
 
-#: apps/admin_file/models.py:486
+#: apps/admin_file/models.py:490
 msgid "Due date changed"
 msgstr "Échéance modifiée"
 
-#: apps/admin_file/models.py:506
+#: apps/admin_file/models.py:510
 msgid "item notification"
 msgstr "notification de pièce"
 
-#: apps/admin_file/models.py:507
+#: apps/admin_file/models.py:511
 msgid "item notifications"
 msgstr "notifications de pièce"
 
 #: apps/admin_file/services.py:214 apps/admin_file/services.py:308
-#: apps/admin_file/services.py:764 apps/admin_file/views.py:66
+#: apps/admin_file/services.py:768 apps/admin_file/views.py:66
 msgid "The thesis is finished: its administrative file is frozen."
 msgstr "La thèse est terminée : son dossier administratif est gelé."
 
-#: apps/admin_file/services.py:261 apps/admin_file/services.py:956
+#: apps/admin_file/services.py:261 apps/admin_file/services.py:960
 msgid "Choose a reason."
 msgstr "Choisissez un motif."
 
-#: apps/admin_file/services.py:264 apps/admin_file/services.py:939
+#: apps/admin_file/services.py:264 apps/admin_file/services.py:943
 msgid "The comment is too long."
 msgstr "Le commentaire est trop long."
 
-#: apps/admin_file/services.py:266 apps/admin_file/services.py:941
+#: apps/admin_file/services.py:266 apps/admin_file/services.py:945
 msgid "The comment contains a control character."
 msgstr "Le commentaire contient un caractère de contrôle."
 
@@ -828,11 +827,11 @@ msgstr "Le commentaire contient un caractère de contrôle."
 msgid "A validator could not read this document."
 msgstr "Un validateur ne pourrait pas lire ce document."
 
-#: apps/admin_file/services.py:315 apps/admin_file/services.py:359
+#: apps/admin_file/services.py:315 apps/admin_file/services.py:360
 msgid "This document belongs to another item."
 msgstr "Ce document appartient déjà à une autre pièce."
 
-#: apps/admin_file/services.py:326 apps/admin_file/services.py:737
+#: apps/admin_file/services.py:326 apps/admin_file/services.py:741
 msgid "A validator could not read the file at this level."
 msgstr "Un validateur ne pourrait pas lire le fichier à ce niveau."
 
@@ -840,52 +839,52 @@ msgstr "Un validateur ne pourrait pas lire le fichier à ce niveau."
 msgid "This item needs an attachment."
 msgstr "Cette pièce demande une pièce jointe."
 
-#: apps/admin_file/services.py:418
+#: apps/admin_file/services.py:420
 msgid "The attachment changed since it was submitted."
 msgstr "La pièce jointe a changé depuis le dépôt."
 
-#: apps/admin_file/services.py:718
+#: apps/admin_file/services.py:722
 msgid "A label is required."
 msgstr "Un libellé est obligatoire."
 
-#: apps/admin_file/services.py:720
+#: apps/admin_file/services.py:724
 msgid "The label is too long."
 msgstr "Le libellé est trop long."
 
-#: apps/admin_file/services.py:722
+#: apps/admin_file/services.py:726
 msgid "The label contains a control character."
 msgstr "Le libellé contient un caractère de contrôle."
 
-#: apps/admin_file/services.py:734
+#: apps/admin_file/services.py:738
 msgid "A validator would not see this section."
 msgstr "Un validateur ne verrait pas cette partie du dossier."
 
-#: apps/admin_file/services.py:820
+#: apps/admin_file/services.py:824
 msgid "Enter a valid date."
 msgstr "Saisissez une date valide."
 
-#: apps/admin_file/services.py:823
+#: apps/admin_file/services.py:827
 msgid "The due date cannot be before the CIFRE start date."
 msgstr "L'échéance ne peut pas précéder la date d'effet CIFRE."
 
-#: apps/admin_file/services.py:827
+#: apps/admin_file/services.py:831
 msgid "The due date cannot be after the planned end of the thesis."
 msgstr "L'échéance ne peut pas dépasser la fin prévue de la thèse."
 
-#: apps/admin_file/services.py:883
+#: apps/admin_file/services.py:887
 msgid "A mandatory item of the catalogue keeps a due date."
 msgstr "Une pièce obligatoire du catalogue garde une échéance."
 
-#: apps/admin_file/services.py:926 apps/conferences/services.py:1049
+#: apps/admin_file/services.py:930 apps/conferences/services.py:1049
 msgid "No industrial tutor in the team: invite them first."
 msgstr ""
 "Aucun·e tuteur·rice industriel·le dans l'équipe : invitez-le·la d'abord."
 
-#: apps/admin_file/services.py:927
+#: apps/admin_file/services.py:931
 msgid "No thesis director in the team: invite them first."
 msgstr "Aucun·e directeur·rice de thèse dans l'équipe : invitez-le·la d'abord."
 
-#: apps/admin_file/services.py:929
+#: apps/admin_file/services.py:933
 msgid ""
 "Neither a thesis director nor an industrial tutor in the team: invite one "
 "first."
@@ -893,31 +892,31 @@ msgstr ""
 "Ni directeur·rice de thèse ni tuteur·rice industriel·le dans l'équipe : "
 "invitez l'un·e d'eux d'abord."
 
-#: apps/admin_file/services.py:936
+#: apps/admin_file/services.py:940
 msgid "The comment is not text."
 msgstr "Le commentaire n'est pas du texte."
 
-#: apps/admin_file/services.py:964
+#: apps/admin_file/services.py:968
 msgid "The due date of a custom item is changed directly."
 msgstr "L'échéance d'une pièce personnalisée se modifie directement."
 
-#: apps/admin_file/services.py:967
+#: apps/admin_file/services.py:971
 msgid "Give the proposed due date."
 msgstr "Indiquez l'échéance proposée."
 
-#: apps/admin_file/services.py:970
+#: apps/admin_file/services.py:974
 msgid "This is already the due date."
 msgstr "C'est déjà l'échéance actuelle."
 
-#: apps/admin_file/services.py:973
+#: apps/admin_file/services.py:977
 msgid "A proposal is already waiting for a decision."
 msgstr "Une proposition attend déjà une décision."
 
-#: apps/admin_file/services.py:1025
+#: apps/admin_file/services.py:1029
 msgid "This proposal has already been decided."
 msgstr "Cette proposition a déjà été tranchée."
 
-#: apps/admin_file/views.py:62 templates/admin_file/item_row.html:18
+#: apps/admin_file/views.py:62 templates/admin_file/item_row.html:24
 msgid ""
 "The document has changed since it was submitted: withdraw it and submit it "
 "again, or reject it."
@@ -929,52 +928,52 @@ msgstr ""
 msgid "The item has changed, reload the page."
 msgstr "La pièce a changé, rechargez la page."
 
-#: apps/admin_file/views.py:220 apps/conferences/views.py:608
+#: apps/admin_file/views.py:242 apps/conferences/views.py:608
 #: apps/meetings/views.py:454 apps/objectives/views.py:344
 msgid "Saved."
 msgstr "Enregistré."
 
-#: apps/admin_file/views.py:262
+#: apps/admin_file/views.py:284
 msgid "Item submitted."
 msgstr "Pièce déposée."
 
-#: apps/admin_file/views.py:280
+#: apps/admin_file/views.py:302
 msgid "Submission withdrawn."
 msgstr "Dépôt retiré."
 
-#: apps/admin_file/views.py:307 apps/admin_file/views.py:319
+#: apps/admin_file/views.py:329 apps/admin_file/views.py:341
 msgid "Due date saved."
 msgstr "Échéance enregistrée."
 
-#: apps/admin_file/views.py:329
+#: apps/admin_file/views.py:351
 msgid "Due date proposed: the validators are notified."
 msgstr "Échéance proposée : les validateur·rices sont prévenu·es."
 
-#: apps/admin_file/views.py:353
+#: apps/admin_file/views.py:375
 msgid "Proposed due date accepted."
 msgstr "Échéance proposée acceptée."
 
-#: apps/admin_file/views.py:361
+#: apps/admin_file/views.py:383
 msgid "Proposed due date refused."
 msgstr "Échéance proposée refusée."
 
-#: apps/admin_file/views.py:370
+#: apps/admin_file/views.py:392
 msgid "Proposal withdrawn."
 msgstr "Proposition retirée."
 
-#: apps/admin_file/views.py:378
+#: apps/admin_file/views.py:400
 msgid "Approval recorded."
 msgstr "Approbation enregistrée."
 
-#: apps/admin_file/views.py:386
+#: apps/admin_file/views.py:408
 msgid "Item rejected."
 msgstr "Pièce refusée."
 
-#: apps/admin_file/views.py:395
+#: apps/admin_file/views.py:417
 msgid "Item reopened."
 msgstr "Pièce rouverte."
 
-#: apps/admin_file/views.py:432
+#: apps/admin_file/views.py:454
 msgid "Item added."
 msgstr "Pièce ajoutée."
 
@@ -1054,7 +1053,7 @@ msgstr "Édition de conférence ou revue"
 #: apps/conferences/forms.py:126 apps/meetings/forms.py:77
 #: apps/objectives/forms.py:41 apps/vault/forms.py:33
 #: templates/conferences/submissions.html:8 templates/meetings/list.html:23
-#: templates/objectives/dashboard.html:65 templates/vault/document_list.html:7
+#: templates/objectives/dashboard.html:65 templates/vault/document_list.html:10
 msgid "Title"
 msgstr "Titre"
 
@@ -1100,7 +1099,7 @@ msgid "Document of the vault"
 msgstr "Document du coffre"
 
 #: apps/conferences/forms.py:195 templates/vault/document_detail.html:9
-#: templates/vault/document_list.html:7
+#: templates/vault/document_list.html:10
 msgid "Version"
 msgstr "Version"
 
@@ -3788,11 +3787,15 @@ msgstr "Ajouter une pièce personnalisée"
 msgid "Incomplete file: a mandatory item is no longer validated."
 msgstr "Dossier incomplet : une pièce obligatoire n'est plus validée."
 
-#: templates/admin_file/item_row.html:6
+#: templates/admin_file/item_page.html:6
+msgid "Administrative file item"
+msgstr "Pièce du dossier administratif"
+
+#: templates/admin_file/item_row.html:7
 msgid "optional"
 msgstr "facultative"
 
-#: templates/admin_file/item_row.html:11
+#: templates/admin_file/item_row.html:12
 #: templates/meetings/_objective_actions.html:4
 #: templates/meetings/blocks/dashboard.html:5
 #: templates/meetings/detail.html:131 templates/objectives/dashboard.html:38
@@ -3801,19 +3804,45 @@ msgid "overdue"
 msgstr "en retard"
 
 #: templates/admin_file/item_row.html:14
+msgid "awaiting validation"
+msgstr "en attente de validation"
+
+#: templates/admin_file/item_row.html:14
+msgid "awaiting validation since today"
+msgstr "en attente de validation depuis aujourd'hui"
+
+#: templates/admin_file/item_row.html:14
+#, python-format
+msgid "awaiting validation for %(counter)s day"
+msgid_plural "awaiting validation for %(counter)s days"
+msgstr[0] "en attente de validation depuis %(counter)s jour"
+msgstr[1] "en attente de validation depuis %(counter)s jours"
+
+#: templates/admin_file/item_row.html:17
+#, python-format
+msgid ""
+"Nobody holds the role « %(role)s » in the team: this item cannot be "
+"validated yet."
+msgstr "Personne n'a le rôle « %(role)s » dans l'équipe : cette pièce ne peut pas encore être validée."
+
+#: templates/admin_file/item_row.html:17
+msgid "Invite them"
+msgstr "Inviter cette personne"
+
+#: templates/admin_file/item_row.html:20
 msgid "Attachment"
 msgstr "Pièce jointe"
 
-#: templates/admin_file/item_row.html:14
+#: templates/admin_file/item_row.html:20
 #, python-format
 msgid "version %(version)s submitted"
 msgstr "version %(version)s déposée"
 
-#: templates/admin_file/item_row.html:16
+#: templates/admin_file/item_row.html:22
 msgid "An attachment exists, but you cannot read it."
 msgstr "Une pièce jointe existe, mais vous ne pouvez pas la lire."
 
-#: templates/admin_file/item_row.html:21
+#: templates/admin_file/item_row.html:27
 #, python-format
 msgid ""
 "Validated on %(validated)s, then reopened on %(reopened)s by %(name)s — "
@@ -3822,12 +3851,12 @@ msgstr ""
 "Validée le %(validated)s puis rouverte le %(reopened)s par %(name)s — "
 "motif : %(reason)s"
 
-#: templates/admin_file/item_row.html:33
+#: templates/admin_file/item_row.html:39
 #, python-format
 msgid "Cancelled approvals (submission %(cycle)s):"
 msgstr "Approbations annulées (dépôt %(cycle)s) :"
 
-#: templates/admin_file/item_row.html:40
+#: templates/admin_file/item_row.html:46
 #, python-format
 msgid ""
 "Proposed due date: %(date)s, by %(name)s on %(created)s — reason: %(reason)s"
@@ -3835,47 +3864,47 @@ msgstr ""
 "Échéance proposée : %(date)s, par %(name)s le %(created)s — motif : "
 "%(reason)s"
 
-#: templates/admin_file/item_row.html:48
+#: templates/admin_file/item_row.html:54
 msgid "Accept"
 msgstr "Accepter"
 
-#: templates/admin_file/item_row.html:53
+#: templates/admin_file/item_row.html:59
 msgid "Refuse the proposal"
 msgstr "Refuser la proposition"
 
-#: templates/admin_file/item_row.html:60
+#: templates/admin_file/item_row.html:66
 msgid "Withdraw the proposal"
 msgstr "Retirer la proposition"
 
-#: templates/admin_file/item_row.html:66
+#: templates/admin_file/item_row.html:72
 msgid "You have approved this submission."
 msgstr "Vous avez approuvé ce dépôt."
 
-#: templates/admin_file/item_row.html:76
+#: templates/admin_file/item_row.html:82
 msgid "Submit"
 msgstr "Déposer"
 
-#: templates/admin_file/item_row.html:85
+#: templates/admin_file/item_row.html:91
 msgid "Withdraw the submission"
 msgstr "Retirer le dépôt"
 
-#: templates/admin_file/item_row.html:92 templates/objectives/detail.html:32
+#: templates/admin_file/item_row.html:98 templates/objectives/detail.html:32
 msgid "Approve"
 msgstr "Approuver"
 
-#: templates/admin_file/item_row.html:102
+#: templates/admin_file/item_row.html:108
 msgid "Reject"
 msgstr "Refuser"
 
-#: templates/admin_file/item_row.html:109
+#: templates/admin_file/item_row.html:115
 msgid "Reopen"
 msgstr "Rouvrir"
 
-#: templates/admin_file/item_row.html:117
+#: templates/admin_file/item_row.html:123
 msgid "Save the due date"
 msgstr "Enregistrer l'échéance"
 
-#: templates/admin_file/item_row.html:125
+#: templates/admin_file/item_row.html:131
 msgid "Propose this due date"
 msgstr "Proposer cette échéance"
 
@@ -5253,11 +5282,11 @@ msgstr "Donner l'accès"
 msgid "Store a document"
 msgstr "Déposer un document"
 
-#: templates/vault/document_list.html:7
+#: templates/vault/document_list.html:10
 msgid "Updated"
 msgstr "Modifié le"
 
-#: templates/vault/document_list.html:20
+#: templates/vault/document_list.html:24
 msgid "No document you can read."
 msgstr "Aucun document que vous pouvez lire."
 

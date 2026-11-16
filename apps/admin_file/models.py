@@ -153,6 +153,10 @@ class RequiredItem(TimeStampedModel):
         "accounts.User", on_delete=models.PROTECT, null=True, related_name="+", editable=False
     )
     validated_at = models.DateTimeField(null=True, editable=False)
+    # When the current cycle was deposited: « en attente de validation depuis X jours »
+    # (frontend step 2). Cleared by a withdrawal, a rejection or a reopening; NULL
+    # for the items deposited before the field existed (no number is shown).
+    submitted_at = models.DateTimeField(null=True, editable=False)
     reason_code = models.CharField(
         max_length=20, choices=Reason.choices, blank=True, editable=False
     )

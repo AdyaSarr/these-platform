@@ -1,15 +1,21 @@
-{% load i18n %}{# One item. Returned alone to htmx (also for 400 / 409): no script, no inline style. #}
+{% load i18n ui %}{# One item. Returned alone to htmx (also for 400 / 409): no script, no inline style. #}
 <article class="item status-{{ row.item.status|lower }}" id="item-{{ row.item.pk }}">
   <header class="item-head">
     <h3><a href="{% url 'admin_file:item' thesis_id=thesis.pk item_id=row.item.pk %}">{{ row.label }}</a></h3>
-    <span class="status">{{ row.item.get_status_display }}</span>
+    {# The status: a badge, a word and an icon (never the colour alone). #}
+    {% if row.item.status == "VALIDATED" %}{% include "ui/badge.html" with tone="success" label=row.item.get_status_display %}{% elif row.item.status == "SUBMITTED" %}{% include "ui/badge.html" with tone="info" label=row.item.get_status_display %}{% elif row.item.status == "REJECTED" %}{% include "ui/badge.html" with tone="danger" label=row.item.get_status_display %}{% else %}{% include "ui/badge.html" with tone="neutral" label=row.item.get_status_display %}{% endif %}
     {% if not row.item.mandatory %}<span class="muted">{% translate "optional" %}</span>{% endif %}
   </header>
   {% if row.error %}<p class="message message-error" role="alert">{{ row.error }}</p>{% endif %}
   <p class="muted">
     {% translate "Validated by" %} : {{ row.validators|join:" + " }}
     {% if row.item.due_date %} · {% translate "Due date" %} : {{ row.item.due_date|date:"SHORT_DATE_FORMAT" }}{% if row.overdue %} <strong class="overdue">{% translate "overdue" %}</strong>{% endif %}{% endif %}
+    {# Deposited: waiting for the validators, never « overdue » (docs/ui-notes.md). #}
+    {% if row.item.status == "SUBMITTED" %} · <span class="waiting">{% if row.waiting_days is None %}{% translate "awaiting validation" %}{% elif row.waiting_days == 0 %}{% translate "awaiting validation since today" %}{% else %}{% blocktranslate count counter=row.waiting_days %}awaiting validation for {{ counter }} day{% plural %}awaiting validation for {{ counter }} days{% endblocktranslate %}{% endif %}</span>{% endif %}
   </p>
+  {% for role in row.missing_validators %}
+    <p class="missing-validator">{% icon "triangle-alert" %} {% blocktranslate %}Nobody holds the role « {{ role }} » in the team: this item cannot be validated yet.{% endblocktranslate %}{% if row.can_invite %} <a href="{% url 'accounts:team' thesis_id=thesis.pk %}">{% translate "Invite them" %}</a>{% endif %}</p>
+  {% endfor %}
   {% if row.document %}
     <p><a href="{% url 'vault:document' thesis_id=thesis.pk document_id=row.document.pk %}">{% translate "Attachment" %}</a>{% if row.item.submitted_version %} ({% blocktranslate with version=row.item.submitted_version %}version {{ version }} submitted{% endblocktranslate %}){% endif %}</p>
   {% elif row.has_hidden_document %}
@@ -111,7 +117,7 @@
   {% endif %}
 
   {% if row.due_form %}
-    <form class="actions" method="post" action="{{ row.due_url }}"
+    <form class="actions item-inline" method="post" action="{{ row.due_url }}"
           hx-post="{{ row.due_url }}" hx-target="#item-{{ row.item.pk }}" hx-swap="outerHTML">
       {% csrf_token %}{{ row.due_form.due_date.label_tag }} {{ row.due_form.due_date }}
       <button type="submit">{% translate "Save the due date" %}</button>

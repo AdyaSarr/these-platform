@@ -119,7 +119,7 @@ def test_a_validator_nobody_holds_is_named(team: SimpleNamespace) -> None:
     student = _article(_file(lonely, "student"), item)
     hint = re.search(r'<p class="missing-validator">.*?</p>', student, re.S)
     assert hint is not None
-    assert "Personne n'a le rôle « " in _text(hint.group(0))
+    assert "Personne n'a le rôle «\u00a0" in _text(hint.group(0))
     assert f'href="{team_url}"' in hint.group(0)  # the student invites
     director = _article(_file(lonely, "director"), item)
     hint = re.search(r'<p class="missing-validator">.*?</p>', director, re.S)
@@ -139,7 +139,7 @@ def test_no_hint_when_the_role_is_held_or_the_item_validated(team: SimpleNamespa
 
 
 def test_the_item_page_has_one_title(team: SimpleNamespace) -> None:
-    item = item_of(team, label="Pièce fictive unique")
+    item = item_of(team, code="custom-a1b2c3d4e5f6", label="Pièce fictive unique")
     client = Client()
     client.force_login(team.student)
     url = reverse("admin_file:item", kwargs={"thesis_id": team.thesis.pk, "item_id": item.pk})
@@ -175,6 +175,7 @@ def test_item_actions_keep_their_width() -> None:
     css = (Path(__file__).resolve().parents[3] / "static" / "css" / "components.css").read_text(
         encoding="utf-8"
     )
-    rules = dict((sel.strip(), body) for sel, body in re.findall(r"([^{}]+)\{([^{}]*)\}", css))
+    css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    rules = {sel.strip(): body for sel, body in re.findall(r"([^{}]+)\{([^{}]*)\}", css)}
     assert re.search(r"justify-self\s*:\s*start", rules.get(".item form button", ""))
     assert re.search(r"width\s*:\s*auto", rules.get(".item-inline input", ""))
