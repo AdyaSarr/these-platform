@@ -199,7 +199,10 @@ réglées (voir « Droits »).
 le destinataire doit être encore concerné **et** le courriel encore dû : mission
 annulée, accord demandé ou décidé entre-temps, justificatif déposé entre-temps →
 `SKIPPED`, rien n'est envoyé (tests de concurrence et de changement d'état dans
-`apps/travel/tests/test_reminders.py`).
+`apps/travel/tests/test_reminders.py`). Depuis la branche
+`notifications-still-due`, l'envoi passe par `core.delivery` : une thèse
+`DEFENDED` ou `CLOSED` est aussi sautée, et chaque saut est journalisé
+(identifiant et code seulement).
 
 ## Export `.ics`
 

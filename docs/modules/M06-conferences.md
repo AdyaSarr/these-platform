@@ -125,6 +125,14 @@ demande d'accord en dates de Paris. Échéances pertinentes selon le statut des
 soumissions en cours ; destinataires : doctorant et co-auteurs internes ; le tuteur
 pour un accord en attente (J-7, J-1 avant l'échéance de référence).
 
+**Revérifiés à l'envoi** (`core.delivery`) : thèse ouverte ; membre interne actif
+qui lit les soumissions et leur niveau, avec le rôle du type (doctorant ou
+co-auteur interne, tuteur, demandeur) ; échéance du même instant, ni annulée ni
+passée, encore pertinente pour une soumission en cours du destinataire ; date
+limite de demande du même jour, non passée, avant toute demande ; accord encore en
+attente (même échéance de référence pour le rappel). Une décision et un
+changement de délai restent dus. Sinon `SKIPPED`.
+
 ## Import JSON local
 
 `manage.py conferences_import <fichier> --thesis <id> --as <courriel du doctorant>`,
