@@ -89,12 +89,14 @@ def test_invalid_lines(team: SimpleNamespace, fields: dict[str, Any]) -> None:
 def test_amounts_are_updated_and_journaled_without_amount(team: SimpleNamespace) -> None:
     mission = mission_of(team)
     line = _line(team, mission)
-    changed = services.update_expense(expense=line, user=team.student, actual="118,20")
+    # « 118,37 »: no UUID (expense_id) can contain a comma nor a point.
+    changed = services.update_expense(expense=line, user=team.student, actual="118,37")
     assert changed == ["actual"]
     (view,) = _view(team.student, mission)
-    assert (view.estimated, view.actual) == (12000, 11820)
+    assert (view.estimated, view.actual) == (12000, 11837)
     assert _events("EXPENSE_UPDATED") == [{"expense_id": str(line.pk), "fields": ["actual"]}]
-    assert "118" not in str(_events("EXPENSE_UPDATED"))
+    journaled = str(_events("EXPENSE_UPDATED"))
+    assert "118,37" not in journaled and "118.37" not in journaled
 
 
 def test_an_amount_can_be_cleared(team: SimpleNamespace) -> None:
