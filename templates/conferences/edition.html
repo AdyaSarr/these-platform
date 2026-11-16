@@ -9,7 +9,7 @@
   {% if deadlines %}
   <ul>
     {% for d in deadlines %}
-      <li>{{ d.deadline.get_kind_display }} : {% include "conferences/_deadline.html" %}
+      <li>{{ d.deadline.get_kind_display }}&nbsp;: {% include "conferences/_deadline.html" %}
         {% if d.deadline.cancelled_at %}<span class="mark">{% translate "cancelled" %}</span>
         {% elif can_write %}<form method="post" action="{% url 'conferences:cancel_deadline' thesis_id=thesis.pk deadline_id=d.deadline.pk %}">{% csrf_token %}<button type="submit">{% translate "Cancel" %}</button></form>{% endif %}</li>
     {% endfor %}

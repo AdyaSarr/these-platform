@@ -8,13 +8,13 @@
 <p class="muted">
   {% blocktranslate with number=objective.year.number %}Year {{ number }}{% endblocktranslate %} ·
   {{ objective.get_category_display }} ·
-  {% translate "Due date" %} : {{ objective.due_date|date:"SHORT_DATE_FORMAT" }} ·
-  {% translate "Weight" %} : {{ objective.weight }} ·
-  {% translate "Confidentiality" %} : {% level_badge objective.level %}
+  {% translate "Due date" %}&nbsp;: {{ objective.due_date|date:"SHORT_DATE_FORMAT" }} ·
+  {% translate "Weight" %}&nbsp;: {{ objective.weight }} ·
+  {% translate "Confidentiality" %}&nbsp;: {% level_badge objective.level %}
 </p>
 <p>
-  <strong>{{ objective.get_status_display }}</strong> ({{ objective.progress }} %)
-  {% if to_declare %}<span class="mark">100 % — {% translate "to be declared achieved" %}</span>{% endif %}
+  <strong>{{ objective.get_status_display }}</strong> ({{ objective.progress }}&nbsp;%)
+  {% if to_declare %}<span class="mark">100&nbsp;% — {% translate "to be declared achieved" %}</span>{% endif %}
   {% if objective.is_approved %}— {% blocktranslate with date=objective.approved_at|date:"SHORT_DATE_FORMAT" %}approved on {{ date }}{% endblocktranslate %}{% else %}— <span class="muted">{% translate "draft, awaiting approval" %}</span>{% endif %}
   {% if objective.changed_since_approval %}<span class="mark">{% translate "changed since approval" %}</span>{% endif %}
   {% if objective.result_declared %}<span class="mark">{% translate "result declared, to acknowledge" %}</span>{% endif %}
@@ -47,9 +47,9 @@
   {% if revisions %}
   <ul class="revisions">
     {% for entry in revisions %}
-      <li>{{ entry.revision.created_at|date:"SHORT_DATETIME_FORMAT" }} — {{ entry.revision.get_field_display }} :
+      <li>{{ entry.revision.created_at|date:"SHORT_DATETIME_FORMAT" }} — {{ entry.revision.get_field_display }}&nbsp;:
         {% include "objectives/_text.html" with value=entry.old %} → {% include "objectives/_text.html" with value=entry.new %}
-        <br>{% translate "Reason" %} : {% include "objectives/_text.html" with value=entry.reason %}
+        <br>{% translate "Reason" %}&nbsp;: {% include "objectives/_text.html" with value=entry.reason %}
       </li>
     {% endfor %}
   </ul>

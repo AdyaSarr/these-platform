@@ -8,8 +8,8 @@
   </header>
   {% if row.error %}<p class="message message-error" role="alert">{{ row.error }}</p>{% endif %}
   <p class="muted">
-    {% translate "Validated by" %} : {{ row.validators|join:" + " }}
-    {% if row.item.due_date %} · {% translate "Due date" %} : {{ row.item.due_date|date:"SHORT_DATE_FORMAT" }}{% if row.overdue %} <strong class="overdue">{% translate "overdue" %}</strong>{% endif %}{% endif %}
+    {% translate "Validated by" %}&nbsp;: {{ row.validators|join:" + " }}
+    {% if row.item.due_date %} · {% translate "Due date" %}&nbsp;: {{ row.item.due_date|date:"SHORT_DATE_FORMAT" }}{% if row.overdue %} <strong class="overdue">{% translate "overdue" %}</strong>{% endif %}{% endif %}
     {# Deposited: waiting for the validators, never « overdue » (docs/ui-notes.md). #}
     {% if row.item.status == "SUBMITTED" %} · <span class="waiting">{% if row.waiting_days is None %}{% translate "awaiting validation" %}{% elif row.waiting_days == 0 %}{% translate "awaiting validation since today" %}{% else %}{% blocktranslate count counter=row.waiting_days %}awaiting validation for {{ counter }} day{% plural %}awaiting validation for {{ counter }} days{% endblocktranslate %}{% endif %}</span>{% endif %}
   </p>
@@ -29,16 +29,16 @@
       {% endblocktranslate %}{% if r.reason_comment %} — {{ r.reason_comment }}{% endif %}</p>
     {% endwith %}
   {% elif row.item.reason_code %}
-    <p>{% translate "Reason" %} : {{ row.item.get_reason_code_display }}{% if row.item.reason_comment %} — {{ row.item.reason_comment }}{% endif %}</p>
+    <p>{% translate "Reason" %}&nbsp;: {{ row.item.get_reason_code_display }}{% if row.item.reason_comment %} — {{ row.item.reason_comment }}{% endif %}</p>
   {% endif %}
   {% if row.approvals %}
     <ul class="approvals">
-      {% for approval in row.approvals %}<li>{{ approval.get_role_display }} : {{ approval.user.get_full_name|default:approval.user.email }}, {{ approval.created_at|date:"SHORT_DATETIME_FORMAT" }}</li>{% endfor %}
+      {% for approval in row.approvals %}<li>{{ approval.get_role_display }}&nbsp;: {{ approval.user.get_full_name|default:approval.user.email }}, {{ approval.created_at|date:"SHORT_DATETIME_FORMAT" }}</li>{% endfor %}
     </ul>
   {% elif row.cancelled_approvals %}
     <p class="muted">{% blocktranslate trimmed with cycle=row.item.cycle %}Cancelled approvals (submission {{ cycle }}):{% endblocktranslate %}</p>
     <ul class="cancelled-approvals muted">
-      {% for approval in row.cancelled_approvals %}<li><s>{{ approval.get_role_display }} : {{ approval.user.get_full_name|default:approval.user.email }}, {{ approval.created_at|date:"SHORT_DATETIME_FORMAT" }}</s></li>{% endfor %}
+      {% for approval in row.cancelled_approvals %}<li><s>{{ approval.get_role_display }}&nbsp;: {{ approval.user.get_full_name|default:approval.user.email }}, {{ approval.created_at|date:"SHORT_DATETIME_FORMAT" }}</s></li>{% endfor %}
     </ul>
   {% endif %}
   {% if row.pending %}

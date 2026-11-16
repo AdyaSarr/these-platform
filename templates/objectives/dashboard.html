@@ -7,9 +7,9 @@
 {% if data.years %}<nav class="segmented" aria-label="{% translate 'CIFRE years' %}">{% for year in data.years %}<a class="segment" href="?year={{ year.number }}"{% if year.pk == data.year.pk %} aria-current="page"{% endif %}>{% blocktranslate with number=year.number %}Year {{ number }}{% endblocktranslate %}</a>{% endfor %}</nav>{% endif %}
 
 <dl class="stats" data-drafts="{{ stats.drafts }}" data-overdue="{{ stats.overdue }}">
-  <div><dt>{% translate "Weighted attainment" %}</dt><dd>{% if attainment is None %}—{% else %}{{ attainment }} %{% endif %}</dd>
+  <div><dt>{% translate "Weighted attainment" %}</dt><dd>{% if attainment is None %}—{% else %}{{ attainment }}&nbsp;%{% endif %}</dd>
     <dd class="helptext">{% translate "Approved objectives declared achieved (½ for partially), weighted by their weight." %}</dd></div>
-  <div><dt>{% translate "Weighted average progress" %}</dt><dd>{% if progress_rate is None %}—{% else %}{{ progress_rate }} %{% endif %}</dd>
+  <div><dt>{% translate "Weighted average progress" %}</dt><dd>{% if progress_rate is None %}—{% else %}{{ progress_rate }}&nbsp;%{% endif %}</dd>
     <dd class="helptext">{% translate "Average of the declared progress percentages, weighted by the weight." %}</dd></div>
   <div><dt>{% translate "Overdue" %}</dt><dd>{{ stats.overdue }}</dd></div>
   <div><dt>{% translate "Drafts awaiting approval" %}</dt><dd>{{ stats.drafts }}</dd></div>
@@ -70,7 +70,7 @@
         <td>{{ row.objective.get_category_display }}</td>
         <td>{{ row.objective.due_date|date:"SHORT_DATE_FORMAT" }}{% if row.overdue %} <strong class="overdue">{% translate "overdue" %}</strong>{% endif %}</td>
         <td>{{ row.objective.weight }}</td>
-        <td>{{ row.objective.get_status_display }} ({{ row.objective.progress }} %){% if can_write and row.objective.status == "IN_PROGRESS" and row.objective.progress == 100 %} — <span class="mark">{% translate "to be declared achieved" %}</span>{% endif %}{% if not row.objective.is_approved %} — <span class="muted">{% translate "draft" %}</span>{% endif %}</td>
+        <td>{{ row.objective.get_status_display }} ({{ row.objective.progress }}&nbsp;%){% if can_write and row.objective.status == "IN_PROGRESS" and row.objective.progress == 100 %} — <span class="mark">{% translate "to be declared achieved" %}</span>{% endif %}{% if not row.objective.is_approved %} — <span class="muted">{% translate "draft" %}</span>{% endif %}</td>
       </tr>
       {% endfor %}
     </tbody>

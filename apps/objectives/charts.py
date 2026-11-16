@@ -106,7 +106,7 @@ def line_chart(
         label_y=_fmt(bottom + 20),
         segments=tuple(segments),
         points=tuple(points),
-        y_ticks=tuple(Tick(y=_fmt(y_of(t)), label=f"{as_percent(t)} %") for t in TICKS),
+        y_ticks=tuple(Tick(y=_fmt(y_of(t)), label=f"{as_percent(t)}\u00a0%") for t in TICKS),
         x_labels=tuple(
             XLabel(x=_fmt(x_of(i)), label=label) for i, (label, _v) in enumerate(series)
         ),

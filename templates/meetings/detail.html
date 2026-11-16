@@ -6,13 +6,13 @@
   {{ meeting.get_kind_display }}{% if meeting.presentation_venue %} — {{ meeting.get_presentation_venue_display }}{% endif %} ·
   {% include "meetings/_when.html" %} ·
   {{ meeting.get_location_display }} ·
-  {% translate "Confidentiality" %} : {% level_badge meeting.level %}
+  {% translate "Confidentiality" %}&nbsp;: {% level_badge meeting.level %}
   {% if meeting.is_cancelled %}· <strong class="overdue">{% translate "cancelled" %}</strong>{% endif %}
 {% endpage_header %}
 {% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
-{% if texts.location_detail.text or texts.location_detail.restricted %}<p>{% translate "Room or address" %} : {% include "meetings/_text.html" with value=texts.location_detail %}</p>{% endif %}
-{% if texts.visio_link.restricted %}<p>{% translate "Video link" %} : {% include "meetings/_text.html" with value=texts.visio_link %}</p>
-{% elif texts.visio_link.text %}<p>{% translate "Video link" %} : <a href="{{ texts.visio_link.text }}" target="_blank" rel="noopener noreferrer">{{ texts.visio_link.text }}</a></p>{% endif %}
+{% if texts.location_detail.text or texts.location_detail.restricted %}<p>{% translate "Room or address" %}&nbsp;: {% include "meetings/_text.html" with value=texts.location_detail %}</p>{% endif %}
+{% if texts.visio_link.restricted %}<p>{% translate "Video link" %}&nbsp;: {% include "meetings/_text.html" with value=texts.visio_link %}</p>
+{% elif texts.visio_link.text %}<p>{% translate "Video link" %}&nbsp;: <a href="{{ texts.visio_link.text }}" target="_blank" rel="noopener noreferrer">{{ texts.visio_link.text }}</a></p>{% endif %}
 
 <div class="actions">
   <a href="{% url 'meetings:ics' thesis_id=thesis.pk meeting_id=meeting.pk %}">{% translate "Add to my calendar (.ics)" %}</a>

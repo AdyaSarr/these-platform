@@ -11,7 +11,7 @@
     <polyline class="chart-line" fill="none" points="{{ segment }}"/>
     {% endfor %}
     {% for point in chart.points %}
-    <circle class="chart-dot" cx="{{ point.x }}" cy="{{ point.y }}" r="3"><title>{{ point.label }} : {{ point.percent }} %</title></circle>
+    <circle class="chart-dot" cx="{{ point.x }}" cy="{{ point.y }}" r="3"><title>{{ point.label }}&nbsp;: {{ point.percent }}&nbsp;%</title></circle>
     {% endfor %}
     {% for label in chart.x_labels %}
     <text class="chart-tick" x="{{ label.x }}" y="{{ chart.label_y }}" text-anchor="middle">{{ label.label }}</text>
@@ -22,7 +22,7 @@
     <thead><tr><th scope="col">{% translate "Month" %}</th><th scope="col">{% translate "Weighted average progress" %}</th></tr></thead>
     <tbody>
       {% for label, percent in chart.table %}
-      <tr><th scope="row">{{ label }}</th><td>{% if percent is None %}—{% else %}{{ percent }} %{% endif %}</td></tr>
+      <tr><th scope="row">{{ label }}</th><td>{% if percent is None %}—{% else %}{{ percent }}&nbsp;%{% endif %}</td></tr>
       {% endfor %}
     </tbody>
   </table>

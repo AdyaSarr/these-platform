@@ -215,9 +215,9 @@ def test_no_marker_in_the_database_the_storage_the_logs_the_mails_or_the_ics(
     assert Decision.objects.count() == 1 and ActionItem.objects.count() == 2
     assert MeetingDocument.objects.count() == 1
     assert {m.subject for m in mail.outbox} >= {
-        "Thèse CIFRE : une réunion a lieu demain",
-        "Thèse CIFRE : une action est en retard",
-        "Thèse CIFRE : un compte rendu à lire",
+        "Thèse CIFRE\u00a0: une réunion a lieu demain",
+        "Thèse CIFRE\u00a0: une action est en retard",
+        "Thèse CIFRE\u00a0: un compte rendu à lire",
     }
 
     dumps = _all_tables_dump()

@@ -159,7 +159,7 @@ def _html(response: Any) -> str:
 def test_month_page_in_progress(team: SimpleNamespace, role: str) -> None:
     _january(team)
     html = _html(client_for(team, role).get(url(team, "month", year=2027, month=1)))
-    assert "En cours : 2 jours au LIRMM, 3 prévus ; règle : au moins 3" in html
+    assert "En cours\u00a0: 2 jours au LIRMM, 3 prévus\u00a0; règle\u00a0: au moins 3" in html
     assert "Non respectée" not in html
 
 
@@ -167,7 +167,7 @@ def test_month_page_singular(team: SimpleNamespace) -> None:
     _day(team, D(2027, 1, 20))
     _day(team, D(2027, 1, 27))
     html = _html(client_for(team, "student").get(url(team, "month", year=2027, month=1)))
-    assert "En cours : 1 jour au LIRMM, 1 prévu ; règle : au moins 3" in html
+    assert "En cours\u00a0: 1 jour au LIRMM, 1 prévu\u00a0; règle\u00a0: au moins 3" in html
 
 
 def test_month_page_of_a_finished_month(team: SimpleNamespace) -> None:
@@ -183,7 +183,7 @@ def test_the_card_uses_the_same_rule(team: SimpleNamespace) -> None:
             reverse("accounts:dashboard", kwargs={"thesis_id": team.thesis.pk})
         )
     )
-    assert "En cours : 2 jours au LIRMM, 3 prévus ; règle : au moins 3" in html
+    assert "En cours\u00a0: 2 jours au LIRMM, 3 prévus\u00a0; règle\u00a0: au moins 3" in html
     assert "Non respectée" not in html
 
 

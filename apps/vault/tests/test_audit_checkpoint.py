@@ -91,12 +91,12 @@ def test_weekly_email_holds_only_the_four_fields_and_goes_to_students_only() -> 
     expected = (
         "Point de contrôle du journal d'audit de la plateforme.\n"
         "\n"
-        f"seq : {checkpoint.seq}\n"
-        f"hash : {checkpoint.hash}\n"
-        f"signature : {checkpoint.signature}\n"
-        f"horodatage : {checkpoints.format_timestamp(checkpoint.timestamp)}\n"
+        f"seq\u00a0: {checkpoint.seq}\n"
+        f"hash\u00a0: {checkpoint.hash}\n"
+        f"signature\u00a0: {checkpoint.signature}\n"
+        f"horodatage\u00a0: {checkpoints.format_timestamp(checkpoint.timestamp)}\n"
         "\n"
-        "Conservez ce message hors de la plateforme : il permet de vérifier que le journal\n"
+        "Conservez ce message hors de la plateforme\u00a0: il permet de vérifier que le journal\n"
         "n'a pas été réécrit (manage.py audit_verify).\n"
     )
     for message in mail.outbox:

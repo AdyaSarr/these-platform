@@ -21,7 +21,7 @@
 <p class="muted">{% translate "From the collaboration contract (administrative file)." %}</p>
 <table class="table">
   <thead><tr><th scope="col">{% translate "CIFRE year" %}</th><th scope="col">{% translate "ST share" %} (%)</th></tr></thead>
-  <tbody>{% for n, st in targets %}<tr><td>{{ n }}</td><td>{% if st is not None %}{{ st }} %{% else %}—{% endif %}</td></tr>{% endfor %}</tbody>
+  <tbody>{% for n, st in targets %}<tr><td>{{ n }}</td><td>{% if st is not None %}{{ st }}&nbsp;%{% else %}—{% endif %}</td></tr>{% endfor %}</tbody>
 </table>
 {% if target_form %}
 <form class="stack" method="post" action="{% url 'travel:target' thesis_id=thesis.pk %}">{% csrf_token %}{% with form=target_form %}{% include "conferences/_form.html" %}{% endwith %}

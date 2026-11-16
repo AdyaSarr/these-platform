@@ -5,7 +5,7 @@
 {% if incomplete %}<p class="message message-error" role="status">{% translate "Incomplete file: a mandatory item is no longer validated." %}</p>{% endif %}
 {# Counted on the items YOU see (the hidden part of the file is never counted). #}
 <p>
-  <progress value="{{ progress.validated }}" max="{{ progress.total }}">{{ progress.percent }} %</progress>
+  <progress value="{{ progress.validated }}" max="{{ progress.total }}">{{ progress.percent }}&nbsp;%</progress>
   {% blocktranslate with validated=progress.validated total=progress.total %}{{ validated }} / {{ total }} mandatory items validated{% endblocktranslate %}
 </p>
 {% for label, rows in sections %}

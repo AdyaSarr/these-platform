@@ -345,9 +345,7 @@ msgstr "Seule l'appartenance d'un membre du CSI peut être prolongée."
 
 #: apps/accounts/services.py:226
 msgid "An expired CSI membership cannot be extended; invite again."
-msgstr ""
-"Une appartenance CSI expirée ne peut pas être prolongée : invitez à nouveau "
-"la personne."
+msgstr "Une appartenance CSI expirée ne peut pas être prolongée : invitez à nouveau la personne."
 
 #: apps/accounts/services.py:273
 msgid "Invalid email address."
@@ -371,7 +369,7 @@ msgstr "Rôle modifié."
 
 #: apps/accounts/team_views.py:117
 msgid "Member removed: their access ended immediately."
-msgstr "Membre retiré : son accès a pris fin immédiatement."
+msgstr "Membre retiré : son accès a pris fin immédiatement."
 
 #: apps/accounts/team_views.py:130
 msgid "The extension must be between 1 and 90 days."
@@ -442,9 +440,7 @@ msgstr "Contrat de travail ST"
 msgid ""
 "The industrial tutor will be able to read this file: prefer an employment "
 "certificate to the contract itself (salary)."
-msgstr ""
-"Le tuteur industriel pourra lire ce fichier : préférez une attestation "
-"d'emploi au contrat lui-même (salaire)."
+msgstr "Le tuteur industriel pourra lire ce fichier : préférez une attestation d'emploi au contrat lui-même (salaire)."
 
 #: apps/admin_file/catalog.py:68
 msgid "CIFRE agreement (ANRT)"
@@ -500,38 +496,27 @@ msgstr "Attestation CVEC"
 msgid ""
 "This comment is not encrypted and is shown to the supervisors of the "
 "section: no personal information (nationality, health, amounts)."
-msgstr ""
-"Ce commentaire n'est pas chiffré et il est visible des encadrants de la "
-"partie concernée : aucune information personnelle (nationalité, santé, "
-"montants)."
+msgstr "Ce commentaire n'est pas chiffré et il est visible des encadrants de la partie concernée : aucune information personnelle (nationalité, santé, montants)."
 
 #: apps/admin_file/forms.py:22
 msgid ""
 "The label is not encrypted and is shown to the supervisors of the section: "
 "no personal information (nationality, health, amounts). Example: “Residence "
 "permit renewal”, never the nationality."
-msgstr ""
-"Le libellé n'est pas chiffré et il est visible des encadrants de la partie "
-"concernée : aucune information personnelle (nationalité, santé, montants). "
-"Exemple : « Renouvellement du titre de séjour », jamais la nationalité."
+msgstr "Le libellé n'est pas chiffré et il est visible des encadrants de la partie concernée : aucune information personnelle (nationalité, santé, montants). Exemple : « Renouvellement du titre de séjour », jamais la nationalité."
 
 #: apps/admin_file/forms.py:28
 msgid ""
 "Once attached, co-supervisors and the industrial tutor will no longer be "
 "able to read it from the Documents page: only those who see this part of the "
 "file can."
-msgstr ""
-"Une fois rattaché, les co-encadrants et le tuteur industriel ne pourront "
-"plus le lire depuis la page Documents : seuls ceux qui voient cette partie "
-"du dossier le peuvent."
+msgstr "Une fois rattaché, les co-encadrants et le tuteur industriel ne pourront plus le lire depuis la page Documents : seuls ceux qui voient cette partie du dossier le peuvent."
 
 #: apps/admin_file/forms.py:32
 msgid ""
 "Once attached, co-supervisors will no longer be able to read it from the "
 "Documents page: only those who see this part of the file can."
-msgstr ""
-"Une fois rattaché, les co-encadrants ne pourront plus le lire depuis la page "
-"Documents : seuls ceux qui voient cette partie du dossier le peuvent."
+msgstr "Une fois rattaché, les co-encadrants ne pourront plus le lire depuis la page Documents : seuls ceux qui voient cette partie du dossier le peuvent."
 
 #: apps/admin_file/forms.py:39
 msgid "New file"
@@ -739,7 +724,7 @@ msgstr "En attente"
 #: apps/admin_file/models.py:296 apps/conferences/models.py:522
 #: apps/meetings/models.py:345
 msgid "Not sent: no longer concerned or due"
-msgstr "Non envoyé : destinataire plus concerné ou envoi plus dû"
+msgstr "Non envoyé : destinataire plus concerné ou envoi plus dû"
 
 #: apps/admin_file/models.py:314
 msgid "reminder"
@@ -809,7 +794,7 @@ msgstr "notifications de pièce"
 #: apps/admin_file/services.py:214 apps/admin_file/services.py:308
 #: apps/admin_file/services.py:768 apps/admin_file/views.py:66
 msgid "The thesis is finished: its administrative file is frozen."
-msgstr "La thèse est terminée : son dossier administratif est gelé."
+msgstr "La thèse est terminée : son dossier administratif est gelé."
 
 #: apps/admin_file/services.py:261 apps/admin_file/services.py:960
 msgid "Choose a reason."
@@ -877,20 +862,17 @@ msgstr "Une pièce obligatoire du catalogue garde une échéance."
 
 #: apps/admin_file/services.py:930 apps/conferences/services.py:1049
 msgid "No industrial tutor in the team: invite them first."
-msgstr ""
-"Aucun·e tuteur·rice industriel·le dans l'équipe : invitez-le·la d'abord."
+msgstr "Aucun·e tuteur·rice industriel·le dans l'équipe : invitez-le·la d'abord."
 
 #: apps/admin_file/services.py:931
 msgid "No thesis director in the team: invite them first."
-msgstr "Aucun·e directeur·rice de thèse dans l'équipe : invitez-le·la d'abord."
+msgstr "Aucun·e directeur·rice de thèse dans l'équipe : invitez-le·la d'abord."
 
 #: apps/admin_file/services.py:933
 msgid ""
 "Neither a thesis director nor an industrial tutor in the team: invite one "
 "first."
-msgstr ""
-"Ni directeur·rice de thèse ni tuteur·rice industriel·le dans l'équipe : "
-"invitez l'un·e d'eux d'abord."
+msgstr "Ni directeur·rice de thèse ni tuteur·rice industriel·le dans l'équipe : invitez l'un·e d'eux d'abord."
 
 #: apps/admin_file/services.py:940
 msgid "The comment is not text."
@@ -920,9 +902,7 @@ msgstr "Cette proposition a déjà été tranchée."
 msgid ""
 "The document has changed since it was submitted: withdraw it and submit it "
 "again, or reject it."
-msgstr ""
-"Le document a changé depuis le dépôt : retirez le dépôt et déposez à "
-"nouveau, ou refusez la pièce."
+msgstr "Le document a changé depuis le dépôt : retirez le dépôt et déposez à nouveau, ou refusez la pièce."
 
 #: apps/admin_file/views.py:65
 msgid "The item has changed, reload the page."
@@ -947,7 +927,7 @@ msgstr "Échéance enregistrée."
 
 #: apps/admin_file/views.py:351
 msgid "Due date proposed: the validators are notified."
-msgstr "Échéance proposée : les validateur·rices sont prévenu·es."
+msgstr "Échéance proposée : les validateur·rices sont prévenu·es."
 
 #: apps/admin_file/views.py:375
 msgid "Proposed due date accepted."
@@ -981,9 +961,7 @@ msgstr "Pièce ajoutée."
 msgid ""
 "Public information, stored in clear text: never a title or a detail of your "
 "work."
-msgstr ""
-"Information publique, stockée en clair : jamais un titre ni un détail de vos "
-"travaux."
+msgstr "Information publique, stockée en clair : jamais un titre ni un détail de vos travaux."
 
 #: apps/conferences/forms.py:35
 msgid "Sealed at the submission's level."
@@ -1043,8 +1021,7 @@ msgstr "Fuseau horaire"
 
 #: apps/conferences/forms.py:118
 msgid "AoE: Anywhere on Earth (UTC-12), as most calls for papers say."
-msgstr ""
-"AoE : Anywhere on Earth (UTC-12), comme la plupart des appels à soumission."
+msgstr "AoE : Anywhere on Earth (UTC-12), comme la plupart des appels à soumission."
 
 #: apps/conferences/forms.py:125
 msgid "Conference edition or journal"
@@ -1090,9 +1067,7 @@ msgstr "Chaque co-auteur doit pouvoir lire le niveau choisi."
 msgid ""
 "ST work (the default) must be readable by the industrial tutor: Public, "
 "Internal ST or Confidential."
-msgstr ""
-"Des travaux ST (par défaut) doivent être lisibles par le tuteur industriel : "
-"Public, Interne ST ou Confidentiel."
+msgstr "Des travaux ST (par défaut) doivent être lisibles par le tuteur industriel : Public, Interne ST ou Confidentiel."
 
 #: apps/conferences/forms.py:187 apps/meetings/forms.py:205
 msgid "Document of the vault"
@@ -1410,7 +1385,7 @@ msgstr "Cet objectif appartient à une autre thèse."
 
 #: apps/conferences/services.py:229
 msgid "The thesis is finished: its submissions are frozen."
-msgstr "La thèse est terminée : ses soumissions sont figées."
+msgstr "La thèse est terminée : ses soumissions sont figées."
 
 #: apps/conferences/services.py:254
 msgid "This change of status is not possible now."
@@ -1460,18 +1435,16 @@ msgstr "Cette soumission est close."
 msgid ""
 "ST's approval was requested for this target: submit elsewhere instead (a new "
 "submission, a new approval)."
-msgstr ""
-"L'accord de ST a été demandé pour cette cible : soumettez plutôt ailleurs "
-"(une nouvelle soumission, un nouvel accord)."
+msgstr "L'accord de ST a été demandé pour cette cible : soumettez plutôt ailleurs (une nouvelle soumission, un nouvel accord)."
 
 #: apps/conferences/services.py:809 apps/conferences/services.py:863
 #: apps/conferences/services.py:1128 apps/conferences/services.py:1293
 msgid "The submission changed meanwhile: try again."
-msgstr "La soumission a été modifiée entre-temps : recommencez."
+msgstr "La soumission a été modifiée entre-temps : recommencez."
 
 #: apps/conferences/services.py:906
 msgid "An ST approval is pending: decide it first."
-msgstr "Un accord ST est en attente : décidez-le d'abord."
+msgstr "Un accord ST est en attente : décidez-le d'abord."
 
 #: apps/conferences/services.py:928 apps/meetings/services.py:1216
 msgid "This document is already linked."
@@ -1495,15 +1468,11 @@ msgstr "Objet inconnu."
 
 #: apps/conferences/services.py:1042
 msgid "This submission does not concern ST work: no approval is needed."
-msgstr ""
-"Cette soumission ne concerne pas des travaux ST : aucun accord n'est "
-"nécessaire."
+msgstr "Cette soumission ne concerne pas des travaux ST : aucun accord n'est nécessaire."
 
 #: apps/conferences/services.py:1054
 msgid "The industrial tutor cannot read this document: change its level first."
-msgstr ""
-"Le tuteur industriel ne peut pas lire ce document : changez d'abord son "
-"niveau."
+msgstr "Le tuteur industriel ne peut pas lire ce document : changez d'abord son niveau."
 
 #: apps/conferences/services.py:1064
 msgid "A request is already pending."
@@ -1621,7 +1590,7 @@ msgstr "Cette soumission a de nouveau besoin de l'accord de ST."
 
 #: apps/conferences/views.py:778
 msgid "New submission created: ST's approval must be requested again."
-msgstr "Nouvelle soumission créée : l'accord de ST doit être redemandé."
+msgstr "Nouvelle soumission créée : l'accord de ST doit être redemandé."
 
 #: apps/core/confidentiality.py:12
 msgid "Public"
@@ -1686,9 +1655,7 @@ msgstr ""
 msgid ""
 "Sealed at the meeting's level: readers without this level see « Restricted "
 "content »."
-msgstr ""
-"Scellé au niveau de la réunion : un lecteur sans ce niveau voit « Contenu "
-"restreint »."
+msgstr "Scellé au niveau de la réunion : un lecteur sans ce niveau voit « Contenu restreint »."
 
 #: apps/meetings/forms.py:53 apps/objectives/forms.py:117
 msgid "Date"
@@ -1721,7 +1688,7 @@ msgstr "Lien de visio"
 
 #: apps/meetings/forms.py:98
 msgid "https:// address; never copied into the calendar file."
-msgstr "Adresse https:// ; jamais copiée dans le fichier d'agenda."
+msgstr "Adresse https:// ; jamais copiée dans le fichier d'agenda."
 
 #: apps/meetings/forms.py:102 templates/meetings/detail.html:30
 msgid "Attendees"
@@ -1781,7 +1748,7 @@ msgstr "Inclure les décisions retirées"
 
 #: apps/meetings/ics.py:80 apps/travel/ics.py:60
 msgid "Details on the platform:"
-msgstr "Détails sur la plateforme :"
+msgstr "Détails sur la plateforme :"
 
 #: apps/meetings/models.py:53
 msgid "Meeting with the ST tutor"
@@ -1979,7 +1946,7 @@ msgstr "Le responsable doit être un membre actif de l'équipe d'encadrement."
 
 #: apps/meetings/services.py:277
 msgid "The thesis is finished: its meetings are frozen."
-msgstr "La thèse est terminée : ses réunions sont figées."
+msgstr "La thèse est terminée : ses réunions sont figées."
 
 #: apps/meetings/services.py:292 apps/meetings/services.py:298
 msgid "This meeting was cancelled."
@@ -1999,7 +1966,7 @@ msgstr ""
 
 #: apps/meetings/services.py:320
 msgid "The meeting changed meanwhile: try again."
-msgstr "La réunion a été modifiée entre-temps : recommencez."
+msgstr "La réunion a été modifiée entre-temps : recommencez."
 
 #: apps/meetings/services.py:780
 msgid ""
@@ -2014,11 +1981,11 @@ msgstr "membre"
 
 #: apps/meetings/services.py:982
 msgid "Open actions:"
-msgstr "Actions ouvertes :"
+msgstr "Actions ouvertes :"
 
 #: apps/meetings/services.py:984
 msgid "Overdue objectives:"
-msgstr "Objectifs en retard :"
+msgstr "Objectifs en retard :"
 
 #: apps/meetings/services.py:987
 msgid "No open action or overdue objective to copy at this level."
@@ -2053,16 +2020,12 @@ msgstr "La date doit être comprise entre le %(first)s et le %(last)s."
 #: apps/meetings/timing.py:71
 msgid ""
 "This time does not exist in Paris (change to summer time): choose another."
-msgstr ""
-"Cette heure n'existe pas à Paris (passage à l'heure d'été) : choisissez-en "
-"une autre."
+msgstr "Cette heure n'existe pas à Paris (passage à l'heure d'été) : choisissez-en une autre."
 
 #: apps/meetings/timing.py:76
 msgid ""
 "This time happens twice in Paris (change to winter time): choose another."
-msgstr ""
-"Cette heure a lieu deux fois à Paris (retour à l'heure d'hiver) : choisissez-"
-"en une autre."
+msgstr "Cette heure a lieu deux fois à Paris (retour à l'heure d'hiver) : choisissez-en une autre."
 
 #: apps/meetings/views.py:330
 msgid "Meeting created."
@@ -2116,17 +2079,13 @@ msgstr "Action mise à jour."
 msgid ""
 "Public: visible to the CSI members, who are outside the supervision; for any "
 "objective related to an ST product or result, choose Confidential."
-msgstr ""
-"Public : visible par les membres du CSI, extérieurs à l'encadrement ; pour "
-"tout objectif lié à un produit ou un résultat ST, choisissez Confidentiel."
+msgstr "Public : visible par les membres du CSI, extérieurs à l'encadrement ; pour tout objectif lié à un produit ou un résultat ST, choisissez Confidentiel."
 
 #: apps/objectives/forms.py:22
 msgid ""
 "Required: this objective is approved. The reason is kept with the change and "
 "shown to the director."
-msgstr ""
-"Obligatoire : cet objectif est approuvé. Le motif est conservé avec la "
-"modification et montré au directeur."
+msgstr "Obligatoire : cet objectif est approuvé. Le motif est conservé avec la modification et montré au directeur."
 
 #: apps/objectives/forms.py:40 apps/travel/forms.py:72
 #: apps/travel/models.py:105 templates/travel/settings.html:23
@@ -2158,7 +2117,7 @@ msgstr "Motif de la modification"
 
 #: apps/objectives/forms.py:109
 msgid "Why is this objective dropped?"
-msgstr "Pourquoi cet objectif est-il abandonné ?"
+msgstr "Pourquoi cet objectif est-il abandonné ?"
 
 #: apps/objectives/forms.py:118
 msgid "Progress (%)"
@@ -2317,7 +2276,7 @@ msgstr "Un objectif est Public, Interne LIRMM ou Confidentiel."
 #: apps/objectives/services.py:240 apps/objectives/services.py:247
 #: apps/objectives/services.py:427
 msgid "The thesis is finished: its objectives are frozen."
-msgstr "La thèse est terminée : ses objectifs sont figés."
+msgstr "La thèse est terminée : ses objectifs sont figés."
 
 #: apps/objectives/services.py:252
 msgid "This objective was dropped."
@@ -2330,7 +2289,7 @@ msgstr "Cette année appartient à une autre thèse."
 #: apps/objectives/services.py:508 apps/objectives/services.py:656
 #: apps/objectives/services.py:721 apps/objectives/services.py:774
 msgid "The objective changed meanwhile: try again."
-msgstr "L'objectif a été modifié entre-temps : recommencez."
+msgstr "L'objectif a été modifié entre-temps : recommencez."
 
 #: apps/objectives/services.py:560
 msgid "This objective is already approved."
@@ -2360,9 +2319,7 @@ msgstr "Ce document ne peut pas être joint."
 msgid ""
 "An objective with progress cannot go back to “Planned”: keep “In progress” "
 "or set the progress back to zero."
-msgstr ""
-"Un objectif avec un avancement ne peut pas revenir à « Prévu » : gardez « En "
-"cours » ou ramenez l'avancement à zéro."
+msgstr "Un objectif avec un avancement ne peut pas revenir à « Prévu » : gardez « En cours » ou ramenez l'avancement à zéro."
 
 #: apps/objectives/views.py:281
 msgid "Objective created."
@@ -2615,7 +2572,7 @@ msgstr "En attente"
 
 #: apps/travel/choices.py:142
 msgid "Not sent: no longer concerned"
-msgstr "Non envoyé : destinataire plus concerné"
+msgstr "Non envoyé : destinataire plus concerné"
 
 #: apps/travel/forms.py:46 templates/travel/split.html:20
 msgid "Kind"
@@ -2651,7 +2608,7 @@ msgstr "Minimum de jours au LIRMM par mois"
 
 #: apps/travel/forms.py:67
 msgid "Leave empty: no monthly rule."
-msgstr "Laisser vide : pas de règle mensuelle."
+msgstr "Laisser vide : pas de règle mensuelle."
 
 #: apps/travel/forms.py:73 apps/travel/models.py:106
 msgid "ST share (percent)"
@@ -2669,9 +2626,7 @@ msgstr "Justificatifs attendus (jours après le retour)"
 msgid ""
 "Never an address: neither yours nor that of someone hosting you. Sealed at "
 "the mission's level."
-msgstr ""
-"Jamais d'adresse : ni la vôtre, ni celle d'une personne qui vous héberge. "
-"Scellé au niveau de la mission."
+msgstr "Jamais d'adresse : ni la vôtre, ni celle d'une personne qui vous héberge. Scellé au niveau de la mission."
 
 #: apps/travel/forms.py:99
 msgid "Departure"
@@ -2688,8 +2643,7 @@ msgstr "Destination"
 
 #: apps/travel/forms.py:106
 msgid "For another place only: a town or a site, never an address."
-msgstr ""
-"Seulement pour un autre lieu : une ville ou un site, jamais une adresse."
+msgstr "Seulement pour un autre lieu : une ville ou un site, jamais une adresse."
 
 #: apps/travel/forms.py:109 templates/travel/mission.html:10
 #: templates/travel/missions.html:11
@@ -2700,9 +2654,7 @@ msgstr "Payé par"
 msgid ""
 "Paid by ST: readable by the tutor; paid by the LIRMM: readable by the "
 "director."
-msgstr ""
-"Payée par ST : lisible par le tuteur ; payée par le LIRMM : lisible par le "
-"directeur."
+msgstr "Payée par ST : lisible par le tuteur ; payée par le LIRMM : lisible par le directeur."
 
 #: apps/travel/forms.py:125
 msgid "Lodging note"
@@ -2747,7 +2699,7 @@ msgstr "Scellé au niveau de la mission. Par exemple 312,40."
 
 #: apps/travel/forms.py:194
 msgid "Sealed at the mission's level; never in the e-mails."
-msgstr "Scellé au niveau de la mission ; jamais dans les courriels."
+msgstr "Scellé au niveau de la mission ; jamais dans les courriels."
 
 #: apps/travel/forms.py:200
 msgid "Official mission order"
@@ -2929,7 +2881,7 @@ msgstr "notification des déplacements"
 
 #: apps/travel/services.py:119
 msgid "The thesis is finished: its travel data is frozen."
-msgstr "La thèse est terminée : ses déplacements sont figés."
+msgstr "La thèse est terminée : ses déplacements sont figés."
 
 #: apps/travel/services.py:149
 #, python-format
@@ -3037,16 +2989,14 @@ msgstr "Cette mission est close."
 msgid ""
 "A mission approval is pending: withdraw it before changing the dates, the "
 "destination or the payer."
-msgstr ""
-"Une demande d'accord de mission est en attente : retirez-la avant de changer "
-"les dates, la destination ou le payeur."
+msgstr "Une demande d'accord de mission est en attente : retirez-la avant de changer les dates, la destination ou le payeur."
 
 #: apps/travel/services.py:923 apps/travel/services.py:968
 #: apps/travel/services.py:1207 apps/travel/services.py:1315
 #: apps/travel/services.py:1439 apps/travel/services.py:1527
 #: apps/travel/services.py:1639 apps/travel/services.py:1707
 msgid "The mission changed meanwhile: try again."
-msgstr "La mission a changé entre-temps : réessayez."
+msgstr "La mission a changé entre-temps : réessayez."
 
 #: apps/travel/services.py:1069
 msgid "A granted mission approval is needed first."
@@ -3117,7 +3067,7 @@ msgstr "Réglages enregistrés."
 #: apps/travel/views.py:405
 #, python-format
 msgid "Meeting: %(kind)s, %(when)s"
-msgstr "Réunion : %(kind)s, %(when)s"
+msgstr "Réunion : %(kind)s, %(when)s"
 
 #: apps/travel/views.py:411
 #, python-format
@@ -3279,8 +3229,7 @@ msgstr "À décider"
 #: apps/vault/forms.py:14 templates/vault/upload.html:6
 msgid ""
 "The title is not encrypted: do not put any confidential information in it."
-msgstr ""
-"Le titre n'est pas chiffré : n'y mettez aucune information confidentielle."
+msgstr "Le titre n'est pas chiffré : n'y mettez aucune information confidentielle."
 
 #: apps/vault/forms.py:35 apps/vault/forms.py:43
 msgid "File"
@@ -3383,7 +3332,7 @@ msgstr ""
 #: apps/vault/validation.py:111
 #, python-format
 msgid "This type of file is not accepted. Accepted types: %(types)s."
-msgstr "Ce type de fichier n'est pas accepté. Types acceptés : %(types)s."
+msgstr "Ce type de fichier n'est pas accepté. Types acceptés : %(types)s."
 
 #: apps/vault/validation.py:120 apps/vault/views.py:48
 #, python-format
@@ -3421,7 +3370,7 @@ msgstr "Se connecter"
 
 #: templates/account/login.html:20
 msgid "Forgotten password?"
-msgstr "Mot de passe oublié ?"
+msgstr "Mot de passe oublié ?"
 
 #: templates/account/login.html:21
 msgid ""
@@ -3571,9 +3520,7 @@ msgstr "Bonjour,"
 msgid ""
 "You are invited to join a thesis follow-up platform. To accept, open this "
 "link (valid for 72 hours, single use):"
-msgstr ""
-"Vous êtes invité·e à rejoindre une plateforme de suivi de thèse. Pour "
-"accepter, ouvrez ce lien (valable 72 heures, à usage unique) :"
+msgstr "Vous êtes invité·e à rejoindre une plateforme de suivi de thèse. Pour accepter, ouvrez ce lien (valable 72 heures, à usage unique) :"
 
 #: templates/accounts/email/invitation_body.txt:7
 msgid "If you were not expecting this invitation, ignore this message."
@@ -3587,17 +3534,13 @@ msgstr "Invitation à la plateforme de suivi de thèse"
 msgid ""
 "A password reset was requested for your account. To choose a new password, "
 "open this link (single use):"
-msgstr ""
-"Une réinitialisation du mot de passe a été demandée pour votre compte. Pour "
-"choisir un nouveau mot de passe, ouvrez ce lien (à usage unique) :"
+msgstr "Une réinitialisation du mot de passe a été demandée pour votre compte. Pour choisir un nouveau mot de passe, ouvrez ce lien (à usage unique) :"
 
 #: templates/accounts/email/password_reset_body.txt:7
 msgid ""
 "If you did not request it, ignore this message: your password stays "
 "unchanged."
-msgstr ""
-"Si vous n'en êtes pas à l'origine, ignorez ce message : votre mot de passe "
-"reste inchangé."
+msgstr "Si vous n'en êtes pas à l'origine, ignorez ce message : votre mot de passe reste inchangé."
 
 #: templates/accounts/email/password_reset_subject.txt:1
 msgid "Password reset on the thesis platform"
@@ -3619,9 +3562,7 @@ msgstr "Créer mon compte"
 
 #: templates/accounts/invitation_accept.html:12
 msgid "Next step: set up a second authentication factor (mandatory)."
-msgstr ""
-"Étape suivante : configurer un second facteur d'authentification "
-"(obligatoire)."
+msgstr "Étape suivante : configurer un second facteur d'authentification (obligatoire)."
 
 #: templates/accounts/invitation_confirm.html:8
 msgid "Accept the invitation"
@@ -3636,10 +3577,7 @@ msgstr ""
 msgid ""
 "This invitation link cannot be used. It may have expired, already been used "
 "or been replaced. Ask the person who invited you to send a new invitation."
-msgstr ""
-"Ce lien d'invitation ne peut pas être utilisé : il a peut-être expiré, déjà "
-"servi ou été remplacé. Demandez à la personne qui vous a invité·e de vous "
-"envoyer une nouvelle invitation."
+msgstr "Ce lien d'invitation ne peut pas être utilisé : il a peut-être expiré, déjà servi ou été remplacé. Demandez à la personne qui vous a invité·e de vous envoyer une nouvelle invitation."
 
 #: templates/accounts/invitation_link.html:6
 msgid "You have been invited to the thesis platform."
@@ -3652,9 +3590,7 @@ msgstr "Continuer"
 #: templates/accounts/invitation_other_account.html:7
 msgid ""
 "You are signed in with another address; sign out to accept this invitation."
-msgstr ""
-"Vous êtes connecté·e avec une autre adresse ; déconnectez-vous pour accepter "
-"cette invitation."
+msgstr "Vous êtes connecté·e avec une autre adresse ; déconnectez-vous pour accepter cette invitation."
 
 #: templates/accounts/invitation_other_account.html:10
 #: templates/ui/header_tools.html:13
@@ -3754,7 +3690,7 @@ msgstr "Ouvrir le dossier administratif"
 
 #: templates/admin_file/email/notification_body.txt:1
 msgid "An item of the administrative file has changed on the platform:"
-msgstr "Une pièce du dossier administratif a changé sur la plateforme :"
+msgstr "Une pièce du dossier administratif a changé sur la plateforme :"
 
 #: templates/admin_file/email/notification_body.txt:5
 #: templates/admin_file/email/reminder_body.txt:5
@@ -3763,20 +3699,19 @@ msgstr "Une pièce du dossier administratif a changé sur la plateforme :"
 #: templates/objectives/email/summary_body.txt:5
 #: templates/travel/email/notification_body.txt:5
 msgid "This message contains no detail: sign in to see it."
-msgstr ""
-"Ce message ne contient aucun détail : connectez-vous pour le consulter."
+msgstr "Ce message ne contient aucun détail : connectez-vous pour le consulter."
 
 #: templates/admin_file/email/notification_subject.txt:1
 msgid "CIFRE thesis: an item of the administrative file has changed"
-msgstr "Thèse CIFRE : une pièce du dossier administratif a changé"
+msgstr "Thèse CIFRE : une pièce du dossier administratif a changé"
 
 #: templates/admin_file/email/reminder_body.txt:1
 msgid "An item of the administrative file is waiting for you on the platform:"
-msgstr "Une pièce du dossier administratif vous attend sur la plateforme :"
+msgstr "Une pièce du dossier administratif vous attend sur la plateforme :"
 
 #: templates/admin_file/email/reminder_subject.txt:1
 msgid "CIFRE thesis: an item of the administrative file is waiting"
-msgstr "Thèse CIFRE : une pièce du dossier administratif est en attente"
+msgstr "Thèse CIFRE : une pièce du dossier administratif est en attente"
 
 #: templates/admin_file/file.html:4 templates/admin_file/new_item.html:2
 #: templates/admin_file/new_item.html:5
@@ -3785,7 +3720,7 @@ msgstr "Ajouter une pièce personnalisée"
 
 #: templates/admin_file/file.html:5
 msgid "Incomplete file: a mandatory item is no longer validated."
-msgstr "Dossier incomplet : une pièce obligatoire n'est plus validée."
+msgstr "Dossier incomplet : une pièce obligatoire n'est plus validée."
 
 #: templates/admin_file/item_page.html:6
 msgid "Administrative file item"
@@ -3847,22 +3782,18 @@ msgstr "Une pièce jointe existe, mais vous ne pouvez pas la lire."
 msgid ""
 "Validated on %(validated)s, then reopened on %(reopened)s by %(name)s — "
 "reason: %(reason)s"
-msgstr ""
-"Validée le %(validated)s puis rouverte le %(reopened)s par %(name)s — "
-"motif : %(reason)s"
+msgstr "Validée le %(validated)s puis rouverte le %(reopened)s par %(name)s — motif : %(reason)s"
 
 #: templates/admin_file/item_row.html:39
 #, python-format
 msgid "Cancelled approvals (submission %(cycle)s):"
-msgstr "Approbations annulées (dépôt %(cycle)s) :"
+msgstr "Approbations annulées (dépôt %(cycle)s) :"
 
 #: templates/admin_file/item_row.html:46
 #, python-format
 msgid ""
 "Proposed due date: %(date)s, by %(name)s on %(created)s — reason: %(reason)s"
-msgstr ""
-"Échéance proposée : %(date)s, par %(name)s le %(created)s — motif : "
-"%(reason)s"
+msgstr "Échéance proposée : %(date)s, par %(name)s le %(created)s — motif : %(reason)s"
 
 #: templates/admin_file/item_row.html:54
 msgid "Accept"
@@ -4017,27 +3948,27 @@ msgstr "Ajouter l'échéance"
 #: templates/conferences/email/notification_body.txt:1
 msgid ""
 "Something about the conferences and submissions concerns you on the platform:"
-msgstr "Une conférence ou une soumission vous concerne sur la plateforme :"
+msgstr "Une conférence ou une soumission vous concerne sur la plateforme :"
 
 #: templates/conferences/email/notification_subject.txt:1
 msgid "CIFRE thesis: a conference deadline is coming"
-msgstr "Thèse CIFRE : une échéance de conférence approche"
+msgstr "Thèse CIFRE : une échéance de conférence approche"
 
 #: templates/conferences/email/notification_subject.txt:1
 msgid "CIFRE thesis: an ST approval should be requested soon"
-msgstr "Thèse CIFRE : un accord ST est bientôt à demander"
+msgstr "Thèse CIFRE : un accord ST est bientôt à demander"
 
 #: templates/conferences/email/notification_subject.txt:1
 msgid "CIFRE thesis: an ST publication approval awaits your decision"
-msgstr "Thèse CIFRE : un accord de publication ST attend votre décision"
+msgstr "Thèse CIFRE : un accord de publication ST attend votre décision"
 
 #: templates/conferences/email/notification_subject.txt:1
 msgid "CIFRE thesis: an ST publication approval was decided"
-msgstr "Thèse CIFRE : un accord de publication ST a été décidé"
+msgstr "Thèse CIFRE : un accord de publication ST a été décidé"
 
 #: templates/conferences/email/notification_subject.txt:1
 msgid "CIFRE thesis: the ST review period has changed"
-msgstr "Thèse CIFRE : le délai de relecture ST a changé"
+msgstr "Thèse CIFRE : le délai de relecture ST a changé"
 
 #: templates/conferences/policy.html:2 templates/conferences/policy.html:5
 msgid "ST review period"
@@ -4056,13 +3987,11 @@ msgstr ""
 msgid ""
 "The collaboration contract (administrative file) sets this period; requests "
 "already made keep the period they were made with."
-msgstr ""
-"Le contrat de collaboration (dossier administratif) fixe ce délai ; les "
-"demandes déjà faites gardent le délai de leur date."
+msgstr "Le contrat de collaboration (dossier administratif) fixe ce délai ; les demandes déjà faites gardent le délai de leur date."
 
 #: templates/conferences/policy.html:9
 msgid "Collaboration contract:"
-msgstr "Contrat de collaboration :"
+msgstr "Contrat de collaboration :"
 
 #: templates/conferences/policy.html:12
 #: templates/conferences/submission_form.html:8
@@ -4079,7 +4008,7 @@ msgstr "Demande votre second facteur. Le doctorant est prévenu."
 
 #: templates/conferences/submission.html:9
 msgid "ST work: ST's approval required"
-msgstr "Travaux ST : accord de ST nécessaire"
+msgstr "Travaux ST : accord de ST nécessaire"
 
 #: templates/conferences/submission.html:9
 msgid "Not ST work"
@@ -4096,7 +4025,7 @@ msgstr "Modifier"
 
 #: templates/conferences/submission.html:18
 msgid "Not ST work: no approval needed"
-msgstr "Pas des travaux ST : aucun accord nécessaire"
+msgstr "Pas des travaux ST : aucun accord nécessaire"
 
 #: templates/conferences/submission.html:19
 #: templates/conferences/submission.html:71
@@ -4168,7 +4097,7 @@ msgstr "Changer le statut"
 
 #: templates/conferences/submission.html:89
 msgid "Submitted and published: choose the version sent."
-msgstr "Soumis et publié : choisissez la version envoyée."
+msgstr "Soumis et publié : choisissez la version envoyée."
 
 #: templates/conferences/submission.html:94
 msgid "Preprints"
@@ -4192,7 +4121,7 @@ msgstr "Créer la nouvelle soumission"
 
 #: templates/conferences/submission.html:110
 msgid "A new ST approval is required: the earlier one is never reused."
-msgstr "Un nouvel accord ST est nécessaire : l'ancien n'est jamais repris."
+msgstr "Un nouvel accord ST est nécessaire : l'ancien n'est jamais repris."
 
 #: templates/conferences/submission.html:118 templates/meetings/detail.html:182
 #: templates/objectives/detail.html:80 templates/travel/mission.html:88
@@ -4309,7 +4238,7 @@ msgstr "a marqué une version antérieure du compte rendu"
 
 #: templates/meetings/detail.html:41
 msgid "Former attendees, no longer members of the thesis:"
-msgstr "Anciens participants, qui ne font plus partie de la thèse :"
+msgstr "Anciens participants, qui ne font plus partie de la thèse :"
 
 #: templates/meetings/detail.html:52
 msgid "Save the agenda"
@@ -4422,34 +4351,31 @@ msgstr "Dupliquer la réunion"
 msgid ""
 "Copies the type, place, duration, confidentiality, attendees and title; "
 "never the agenda, minutes, decisions, actions, documents, room or video link."
-msgstr ""
-"Copie le type, le lieu, la durée, la confidentialité, les participants et le "
-"titre ; jamais l'ordre du jour, le compte rendu, les décisions, les actions, "
-"les documents, la salle ni le lien de visio."
+msgstr "Copie le type, le lieu, la durée, la confidentialité, les participants et le titre ; jamais l'ordre du jour, le compte rendu, les décisions, les actions, les documents, la salle ni le lien de visio."
 
 #: templates/meetings/email/notification_body.txt:1
 msgid "An action assigned to you is overdue on the platform:"
-msgstr "Une action qui vous est confiée est en retard sur la plateforme :"
+msgstr "Une action qui vous est confiée est en retard sur la plateforme :"
 
 #: templates/meetings/email/notification_body.txt:1
 msgid "A meeting concerns you on the platform:"
-msgstr "Une réunion vous concerne sur la plateforme :"
+msgstr "Une réunion vous concerne sur la plateforme :"
 
 #: templates/meetings/email/notification_subject.txt:1
 msgid "CIFRE thesis: a meeting takes place tomorrow"
-msgstr "Thèse CIFRE : une réunion a lieu demain"
+msgstr "Thèse CIFRE : une réunion a lieu demain"
 
 #: templates/meetings/email/notification_subject.txt:1
 msgid "CIFRE thesis: an action is overdue"
-msgstr "Thèse CIFRE : une action est en retard"
+msgstr "Thèse CIFRE : une action est en retard"
 
 #: templates/meetings/email/notification_subject.txt:1
 msgid "CIFRE thesis: minutes to read"
-msgstr "Thèse CIFRE : un compte rendu à lire"
+msgstr "Thèse CIFRE : un compte rendu à lire"
 
 #: templates/meetings/email/notification_subject.txt:1
 msgid "CIFRE thesis: a meeting has changed"
-msgstr "Thèse CIFRE : une réunion a changé"
+msgstr "Thèse CIFRE : une réunion a changé"
 
 #: templates/meetings/form.html:2 templates/meetings/form.html:6
 msgid "Edit the meeting"
@@ -4708,11 +4634,11 @@ msgstr "Abandonner"
 #: templates/objectives/email/summary_body.txt:1
 msgid ""
 "The weekly summary of the objectives is waiting for you on the platform:"
-msgstr "Le point hebdomadaire des objectifs vous attend sur la plateforme :"
+msgstr "Le point hebdomadaire des objectifs vous attend sur la plateforme :"
 
 #: templates/objectives/email/summary_subject.txt:1
 msgid "CIFRE thesis: the weekly summary of the objectives"
-msgstr "Thèse CIFRE : le point hebdomadaire des objectifs"
+msgstr "Thèse CIFRE : le point hebdomadaire des objectifs"
 
 #: templates/objectives/form.html:2 templates/objectives/form.html:5
 msgid "Edit an objective"
@@ -4722,9 +4648,7 @@ msgstr "Modifier un objectif"
 msgid ""
 "This objective is approved: every change needs a reason, is kept in its "
 "history and is flagged to the director."
-msgstr ""
-"Cet objectif est approuvé : toute modification exige un motif, est conservée "
-"dans son historique et est signalée au directeur."
+msgstr "Cet objectif est approuvé : toute modification exige un motif, est conservée dans son historique et est signalée au directeur."
 
 #: templates/objectives/form.html:18
 msgid "Create the objective"
@@ -4742,7 +4666,7 @@ msgstr "Prévoir une mission"
 #: templates/travel/_rule.html:1
 #, python-format
 msgid "Rule: at least %(n)s."
-msgstr "Règle : au moins %(n)s."
+msgstr "Règle : au moins %(n)s."
 
 #: templates/travel/_rule.html:1
 msgid "Met."
@@ -4756,8 +4680,8 @@ msgstr "Non respectée."
 #, python-format
 msgid "In progress: %(counter)s day at the LIRMM"
 msgid_plural "In progress: %(counter)s days at the LIRMM"
-msgstr[0] "En cours : %(counter)s jour au LIRMM"
-msgstr[1] "En cours : %(counter)s jours au LIRMM"
+msgstr[0] "En cours : %(counter)s jour au LIRMM"
+msgstr[1] "En cours : %(counter)s jours au LIRMM"
 
 #: templates/travel/_rule.html:1
 #, python-format
@@ -4769,7 +4693,7 @@ msgstr[1] "%(counter)s prévus"
 #: templates/travel/_rule.html:1
 #, python-format
 msgid "; rule: at least %(n)s"
-msgstr " ; règle : au moins %(n)s"
+msgstr " ; règle : au moins %(n)s"
 
 #: templates/travel/blocks/dashboard.html:3 templates/travel/split.html:9
 msgid "Days at the LIRMM"
@@ -4814,9 +4738,7 @@ msgstr "Années"
 msgid ""
 "Calendar year of the departure. Committed: the estimates of the missions not "
 "cancelled nor refused; actual: their actual amounts."
-msgstr ""
-"Année civile du départ. Engagé : les estimations des missions ni annulées ni "
-"refusées ; réel : leurs montants réels."
+msgstr "Année civile du départ. Engagé : les estimations des missions ni annulées ni refusées ; réel : leurs montants réels."
 
 #: templates/travel/budget.html:9
 msgid "Committed"
@@ -4852,27 +4774,27 @@ msgstr ""
 
 #: templates/travel/email/notification_body.txt:1
 msgid "Something about the travels concerns you on the platform:"
-msgstr "Un élément de vos déplacements vous concerne sur la plateforme :"
+msgstr "Un élément de vos déplacements vous concerne sur la plateforme :"
 
 #: templates/travel/email/notification_subject.txt:1
 msgid "CIFRE thesis: a mission approval should be requested"
-msgstr "Thèse CIFRE : un accord de mission est à demander"
+msgstr "Thèse CIFRE : un accord de mission est à demander"
 
 #: templates/travel/email/notification_subject.txt:1
 msgid "CIFRE thesis: a mission approval awaits your decision"
-msgstr "Thèse CIFRE : un accord de mission attend votre décision"
+msgstr "Thèse CIFRE : un accord de mission attend votre décision"
 
 #: templates/travel/email/notification_subject.txt:1
 msgid "CIFRE thesis: a mission approval was decided"
-msgstr "Thèse CIFRE : un accord de mission a été décidé"
+msgstr "Thèse CIFRE : un accord de mission a été décidé"
 
 #: templates/travel/email/notification_subject.txt:1
 msgid "CIFRE thesis: expenses of a mission are incomplete"
-msgstr "Thèse CIFRE : les frais d'une mission sont incomplets"
+msgstr "Thèse CIFRE : les frais d'une mission sont incomplets"
 
 #: templates/travel/email/notification_subject.txt:1
 msgid "CIFRE thesis: the ST / LIRMM time settings have changed"
-msgstr "Thèse CIFRE : les réglages du temps ST / LIRMM ont changé"
+msgstr "Thèse CIFRE : les réglages du temps ST / LIRMM ont changé"
 
 #: templates/travel/mission.html:8 templates/travel/missions.html:11
 #: templates/travel/orders.html:9
@@ -4881,23 +4803,23 @@ msgstr "Dates"
 
 #: templates/travel/mission.html:14
 msgid "Place:"
-msgstr "Lieu :"
+msgstr "Lieu :"
 
 #: templates/travel/mission.html:15
 msgid "Conference:"
-msgstr "Conférence :"
+msgstr "Conférence :"
 
 #: templates/travel/mission.html:16
 msgid "Transport:"
-msgstr "Transport :"
+msgstr "Transport :"
 
 #: templates/travel/mission.html:17
 msgid "Lodging:"
-msgstr "Hébergement :"
+msgstr "Hébergement :"
 
 #: templates/travel/mission.html:18
 msgid "Tickets booked:"
-msgstr "Billets réservés :"
+msgstr "Billets réservés :"
 
 #: templates/travel/mission.html:18 templates/travel/mission.html:19
 msgid "yes,no"
@@ -4905,11 +4827,11 @@ msgstr "oui,non"
 
 #: templates/travel/mission.html:18
 msgid "Lodging booked:"
-msgstr "Hébergement réservé :"
+msgstr "Hébergement réservé :"
 
 #: templates/travel/mission.html:19
 msgid "Official mission order obtained:"
-msgstr "Ordre de mission officiel obtenu :"
+msgstr "Ordre de mission officiel obtenu :"
 
 #: templates/travel/mission.html:19
 msgid "the document"
@@ -4917,7 +4839,7 @@ msgstr "le document"
 
 #: templates/travel/mission.html:20
 msgid "ZRR access (administrative file):"
-msgstr "Accès ZRR (dossier administratif) :"
+msgstr "Accès ZRR (dossier administratif) :"
 
 #: templates/travel/mission.html:21
 msgid "Linked meeting"
@@ -4947,8 +4869,7 @@ msgstr "Estimation"
 
 #: templates/travel/mission.html:38
 msgid "Paid by another body: no mission approval in the platform."
-msgstr ""
-"Payée par un autre organisme : pas d'accord de mission dans la plateforme."
+msgstr "Payée par un autre organisme : pas d'accord de mission dans la plateforme."
 
 #: templates/travel/mission.html:39
 msgid "No mission approval requested yet."
@@ -5026,9 +4947,7 @@ msgstr "Modifier la mission"
 
 #: templates/travel/mission_form.html:7
 msgid "Entered by hand: the platform calls no booking or timetable service."
-msgstr ""
-"Saisie à la main : la plateforme n'interroge aucun service de réservation ni "
-"d'horaires."
+msgstr "Saisie à la main : la plateforme n'interroge aucun service de réservation ni d'horaires."
 
 #: templates/travel/missions.html:6
 msgid "Add my missions to my calendar (.ics)"
@@ -5056,7 +4975,7 @@ msgstr "férié"
 
 #: templates/travel/month.html:22
 msgid "Legend:"
-msgstr "Légende :"
+msgstr "Légende :"
 
 #: templates/travel/month.html:26
 msgid "Fill in days"
@@ -5088,11 +5007,11 @@ msgstr "Règles de comptage"
 
 #: templates/travel/settings.html:9
 msgid "Remote work counts for:"
-msgstr "Le télétravail compte pour :"
+msgstr "Le télétravail compte pour :"
 
 #: templates/travel/settings.html:10
 msgid "Conferences count for:"
-msgstr "Les conférences comptent pour :"
+msgstr "Les conférences comptent pour :"
 
 #: templates/travel/settings.html:11
 msgid "Whit Monday is a holiday."
@@ -5257,9 +5176,7 @@ msgstr "Niveau de confidentialité"
 msgid ""
 "Changing the level re-encrypts every version; a recent second factor is "
 "asked."
-msgstr ""
-"Changer le niveau rechiffre toutes les versions ; un second facteur récent "
-"est demandé."
+msgstr "Changer le niveau rechiffre toutes les versions ; un second facteur récent est demandé."
 
 #: templates/vault/document_detail.html:36
 msgid "Change the level"
@@ -5297,9 +5214,7 @@ msgstr "Point de contrôle du journal d'audit de la plateforme."
 #: templates/vault/email/checkpoint_body.txt:8
 msgid ""
 "Keep this message outside the platform: it is used to check that the log"
-msgstr ""
-"Conservez ce message hors de la plateforme : il permet de vérifier que le "
-"journal"
+msgstr "Conservez ce message hors de la plateforme : il permet de vérifier que le journal"
 
 #: templates/vault/email/checkpoint_body.txt:9
 msgid "has not been rewritten (manage.py audit_verify)."

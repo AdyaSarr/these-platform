@@ -63,11 +63,11 @@ def test_y_ticks_every_quarter() -> None:
     chart = line_chart(SERIES, width=340, height=140)
     assert chart is not None
     assert [(t.y, t.label) for t in chart.y_ticks] == [
-        ("108.0", "0 %"),
-        ("85.0", "25 %"),
-        ("62.0", "50 %"),
-        ("39.0", "75 %"),
-        ("16.0", "100 %"),
+        ("108.0", "0\u00a0%"),
+        ("85.0", "25\u00a0%"),
+        ("62.0", "50\u00a0%"),
+        ("39.0", "75\u00a0%"),
+        ("16.0", "100\u00a0%"),
     ]
 
 
@@ -101,10 +101,10 @@ def test_an_accessible_title_and_data_table() -> None:
     assert html.count('<th scope="row">') == 4
     assert html.count('<th scope="col">') == 2
     for label, percent in (
-        ("déc.", "0 %"),
-        ("janv.", "25 %"),
-        ("févr.", "50 %"),
-        ("mars", "100 %"),
+        ("déc.", "0&nbsp;%"),
+        ("janv.", "25&nbsp;%"),
+        ("févr.", "50&nbsp;%"),
+        ("mars", "100&nbsp;%"),
     ):
         assert f'<th scope="row">{label}</th>' in html
         assert f"<td>{percent}</td>" in html

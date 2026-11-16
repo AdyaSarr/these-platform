@@ -294,13 +294,13 @@ def test_the_email_is_a_link_only(team: SimpleNamespace, settings: Any) -> None:
     link = settings.SITE_URL + reverse("objectives:dashboard", kwargs={"thesis_id": team.thesis.pk})
     for message in mail.outbox:
         assert len(message.to) == 1 and not message.cc and not message.bcc
-        assert message.subject == "Thèse CIFRE : le point hebdomadaire des objectifs"
+        assert message.subject == "Thèse CIFRE\u00a0: le point hebdomadaire des objectifs"
         assert message.body == (
-            "Le point hebdomadaire des objectifs vous attend sur la plateforme :\n"
+            "Le point hebdomadaire des objectifs vous attend sur la plateforme\u00a0:\n"
             "\n"
             f"{link}\n"
             "\n"
-            "Ce message ne contient aucun détail : connectez-vous pour le consulter.\n"
+            "Ce message ne contient aucun détail\u00a0: connectez-vous pour le consulter.\n"
         )
         text = message.subject + message.body
         for secret in (title, team.thesis.title, team.director.last_name, team.student.last_name):

@@ -5,7 +5,7 @@
   {% if progress %}
   <ul class="progress-list">
     {% for entry in progress %}
-      <li>{{ entry.update.date|date:"SHORT_DATE_FORMAT" }} — {{ entry.update.progress }} % — {{ entry.update.get_status_display }}
+      <li>{{ entry.update.date|date:"SHORT_DATE_FORMAT" }} — {{ entry.update.progress }}&nbsp;% — {{ entry.update.get_status_display }}
         {% if entry.note.text or entry.note.restricted %}<br>{% include "objectives/_text.html" with value=entry.note %}{% endif %}
         {% if entry.evidence %}<br><a href="{% url 'vault:document' thesis_id=thesis.pk document_id=entry.evidence.pk %}">{% translate "Evidence" %}</a>{% elif entry.hidden %}<br><span class="muted">{% translate "Evidence attached, but you cannot read it." %}</span>{% endif %}
       </li>

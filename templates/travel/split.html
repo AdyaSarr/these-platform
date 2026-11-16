@@ -10,8 +10,8 @@
 {% if full %}
   <div><dt>{% translate "ST side (days)" %}</dt><dd>{{ summary.st_days }}</dd></div>
   <div><dt>{% translate "Laboratory side (days)" %}</dt><dd>{{ summary.lab_days }}</dd></div>
-  <div><dt>{% translate "ST share" %}</dt><dd>{% if st_percent %}{{ st_percent }} %{% else %}—{% endif %}</dd></div>
-  <div><dt>{% translate "Target ST share" %}</dt><dd>{% if summary.target_st_percent is not None %}{{ summary.target_st_percent }} %{% else %}—{% endif %}</dd></div>
+  <div><dt>{% translate "ST share" %}</dt><dd>{% if st_percent %}{{ st_percent }}&nbsp;%{% else %}—{% endif %}</dd></div>
+  <div><dt>{% translate "Target ST share" %}</dt><dd>{% if summary.target_st_percent is not None %}{{ summary.target_st_percent }}&nbsp;%{% else %}—{% endif %}</dd></div>
   <div><dt>{% translate "Gap to the target" %}</dt><dd>{% if gap %}{% blocktranslate %}{{ gap }} points{% endblocktranslate %}{% else %}—{% endif %}</dd>{% if summary.alert %}<dd class="helptext overdue">{% translate "Above the alert threshold." %}</dd>{% endif %}</div>
 {% endif %}
 </dl>

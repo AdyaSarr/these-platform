@@ -151,7 +151,7 @@ def test_upload_form_warns_that_titles_are_not_encrypted(team: SimpleNamespace) 
     page = _client(team.student).get(_url("upload", team.thesis))
     assert page.status_code == 200
     html = page.content.decode().replace("&#x27;", "'")
-    assert "Le titre n'est pas chiffré : n'y mettez aucune information confidentielle." in html
+    assert "Le titre n'est pas chiffré\u00a0: n'y mettez aucune information confidentielle." in html
 
 
 def test_student_uploads_a_document(team: SimpleNamespace) -> None:
