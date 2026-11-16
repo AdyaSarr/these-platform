@@ -439,6 +439,23 @@
   .segment-label { min-width: 9rem; justify-content: center; }
   .segment-disabled { color: var(--muted); }
 
+  /* ---------------------------------------------------------------- « À venir » */
+  /* ui/agenda.html: one line per element, the date first (tabular figures). */
+  .agenda { margin-block-end: var(--space-5); }
+  .agenda h2 { display: flex; align-items: center; gap: var(--space-2); }
+  .agenda-list { margin: 0; padding: 0; list-style: none; }
+  .agenda-item {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--space-1) var(--space-2);
+    padding-block: var(--space-2);
+    border-block-end: 1px solid var(--border);
+  }
+  .agenda-item:last-child { border-block-end: 0; }
+  .agenda-item .icon { align-self: center; color: var(--muted); }
+  .agenda-when { min-width: 8rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+
   /* ---------------------------------------------------------------- style guide */
   .sg-section { margin-bottom: var(--space-6); }
   .sg-row { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; margin-bottom: var(--space-3); }

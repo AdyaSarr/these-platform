@@ -60,7 +60,9 @@ def _line(html: str) -> str | None:
 
 
 def _card_counts(html: str) -> tuple[int, int]:
-    card = re.search(r'data-block="admin_file">(.*?)</section>', html, re.S)
+    # The progress moved from the card to the « Administrative file » tile (frontend
+    # step 8a): the same admin_file.services.progress().
+    card = re.search(r'data-tile="file">(.*?)</li>', html, re.S)
     assert card is not None
     validated, total = re.search(r'<progress value="(\d+)" max="(\d+)"', card.group(1)).groups()  # type: ignore[union-attr]
     return int(validated), int(total)

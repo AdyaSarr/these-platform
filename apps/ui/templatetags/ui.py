@@ -13,6 +13,7 @@ from django.utils import formats, timezone
 from django.utils.safestring import SafeString
 
 from .. import icons
+from ..agenda import Entry, agenda_for
 from ..tabs import tabs_for
 from ..tiles import Tiles, dashboard_tiles
 
@@ -103,3 +104,9 @@ def page_header(parser: Parser, token: Token) -> PageHeaderNode:
 @register.inclusion_tag("ui/tabs.html", takes_context=True)
 def module_tabs(context: Context, module: str) -> dict[str, Any]:
     return tabs_for(context["request"], context["thesis"], module)
+
+
+@register.simple_tag(takes_context=True)
+def dashboard_agenda(context: Context, blocks: list[tuple[Any, dict[str, Any]]]) -> list[Entry]:
+    """The « À venir » card (apps/ui/agenda.py): filtered per viewer, then cut."""
+    return agenda_for(context["request"], context["thesis"], blocks)

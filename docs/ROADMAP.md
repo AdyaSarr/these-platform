@@ -85,3 +85,8 @@ Idées validées, sans module ni date pour l'instant.
   2026-11-14, un échec « CSRF cookie not set » dans Safari venait du réglage
   « Bloquer tous les cookies », pas de la plateforme : la piste `SameSite` n'a pas
   été démontrée, et la prod n'a pas été changée.
+
+- **Activité récente sur le tableau de bord** (écartée de la refonte, étape 8, le
+  2026-11-16) : il faudrait une source d'événements filtrée par lecteur, avec la
+  même règle que « À venir » (filtrer d'abord, couper ensuite). Le journal d'audit
+  ne s'affiche pas : il trace aussi des connexions et des lectures `CONFIDENTIAL`.

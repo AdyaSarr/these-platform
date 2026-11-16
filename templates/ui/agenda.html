@@ -1,0 +1,12 @@
+{% load i18n ui %}{# « À venir » (apps/ui/agenda.py): the next 30 days, filtered per viewer then cut at 8 lines; no sealed text. #}
+<section class="card agenda" aria-labelledby="agenda-title">
+  <h2 id="agenda-title">{% icon "clock" %}{% translate "Coming up" %}</h2>
+  {% if agenda %}
+    <ul class="agenda-list">
+      {% for entry in agenda %}<li class="agenda-item" data-agenda="{{ entry.kind }}"><span class="agenda-when"><span class="agenda-date">{{ entry.day|short_date }}</span>{% if entry.time %} · <span class="agenda-time">{{ entry.time|time:"H:i" }}</span>{% endif %}</span> {% icon entry.icon %} <a href="{{ entry.url }}">{{ entry.label }}</a>{% if entry.detail %} <span class="muted">{{ entry.detail }}</span>{% endif %}</li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p class="muted">{% translate "Nothing planned in the next 30 days." %}</p>
+  {% endif %}
+</section>

@@ -108,8 +108,13 @@ def test_meetings_show_date_and_kind_never_the_title(team: SimpleNamespace) -> N
     lines = _agenda(page)
     assert lines and lines[0][0] == "meeting"
     assert lines[0][1].startswith("28\u00a0janv. · 14:00")  # Paris time
-    assert "Encadrement" in lines[0][1] or "encadrement" in lines[0][1]
-    assert "vous n'y assistez pas" in lines[0][1]
+    from django.utils import translation
+
+    from apps.meetings.models import Meeting
+
+    with translation.override("fr"):
+        assert str(Meeting.Kind.SUPERVISION.label) in lines[0][1]
+    assert "vous n'y participez pas" in lines[0][1]
     assert "Titre fictif" not in page
 
 
@@ -117,6 +122,7 @@ def test_admin_file_items_follow_the_part_each_role_sees(team: SimpleNamespace) 
     from apps.admin_file import services as admin_file
     from apps.admin_file.models import RequiredItem
 
+    admin_file.seed_items(team.thesis)
     seen_by_tutor = set(
         admin_file.visible_items(team.tutor, team.thesis).values_list("pk", flat=True)
     )
@@ -157,3 +163,16 @@ def test_select_is_window_then_sort_then_cut() -> None:
     picked = select(entries, TODAY)
     assert [e.label for e in picked] == ["0", "3", "x4", "x5", "x6", "x7", "x8", "x9"]
     assert select([entry(TODAY + dt.timedelta(days=30), "30")], TODAY)[0].label == "30"
+
+
+@pytest.mark.parametrize(
+    ("days", "text"),
+    [(0, "aujourd'hui"), (1, "demain"), (2, "dans 2 jours"), (21, "dans 21 jours")],
+)
+def test_countdown_of_a_request_date(days: int, text: str) -> None:
+    from django.utils import translation
+
+    from apps.ui.agenda import countdown
+
+    with translation.override("fr"):
+        assert countdown(days) == text

@@ -77,13 +77,16 @@
     </ul>
   {% endif %}
 
-  {# Each block was filtered by its own action in the view: never in this template. #}
+  {% dashboard_agenda blocks as agenda %}
+  {% include "ui/agenda.html" %}
+
+  {# Each block was filtered by its own action in the view: never in this template. A block without a card (block.card False) only feeds the tiles. #}
   <div class="blocks">
-    {% for block, data in blocks %}
+    {% for block, data in blocks %}{% if block.card %}
       <section class="block" data-block="{{ block.key }}">
         <h2>{% block_icon block.key %}{{ block.title }}</h2>
         {% include block.template with data=data %}
       </section>
-    {% endfor %}
+    {% endif %}{% endfor %}
   </div>
 {% endblock %}

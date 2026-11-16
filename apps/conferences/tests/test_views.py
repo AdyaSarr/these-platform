@@ -5,6 +5,7 @@ second factor), restricted content, external links, card and objective fragment.
 from __future__ import annotations
 
 import datetime as dt
+import html as html_module
 import re
 import secrets
 from types import SimpleNamespace
@@ -382,16 +383,24 @@ def test_an_approval_of_another_submission_is_an_audited_refusal(team: SimpleNam
 # =========================================================================== card, objective
 
 
+def _agenda(html: str) -> str:
+    """The « À venir » card of the dashboard (frontend step 8a)."""
+    match = re.search(r'<section class="card agenda".*?</section>', html, re.S)
+    assert match is not None
+    return match.group(0)
+
+
 def test_dashboard_card(team: SimpleNamespace) -> None:
     edition = edition_of(team)
-    deadline_of(team, edition)
+    # Within the 30 days of « À venir » (the default PAPER_DAY is 50 days away).
+    deadline_of(team, edition, day=dt.date(2027, 1, 25))
     submission = submission_of(team, edition=edition)
     services.request_approval(
         submission=submission, user=team.student, version=article_version(team, submission)
     )
     page = reverse("accounts:dashboard", kwargs={"thesis_id": team.thesis.pk})
     tutor = _client(team, "tutor").get(page).content.decode()
-    assert "SFCA 2027" in tutor and "1 accord ST attend votre décision" in tutor
+    assert "SFCA 2027" in _agenda(tutor) and "1 accord ST attend votre décision" in tutor
     student = _client(team, "student").get(page).content.decode()
     assert "accord ST attend" not in student
 
@@ -402,7 +411,11 @@ def test_request_due_on_the_card(team: SimpleNamespace) -> None:
     submission_of(team, edition=edition)
     page = reverse("accounts:dashboard", kwargs={"thesis_id": team.thesis.pk})
     html = _client(team, "student").get(page).content.decode()
-    assert "Accord ST à demander avant le 31/01/2027 (dans 21 jours)" in html
+    line = re.search(r'<li class="agenda-item" data-agenda="request">.*?</li>', _agenda(html), re.S)
+    assert line is not None
+    text = html_module.unescape(re.sub(r"<[^>]+>", " ", line.group(0)))
+    assert "31\u00a0janv." in text and "Demander l'accord de ST" in text and "SFCA" in text
+    assert "dans 21 jours" in text
 
 
 def test_linked_submissions_on_the_objective_page(team: SimpleNamespace) -> None:

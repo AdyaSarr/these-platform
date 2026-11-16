@@ -29,6 +29,9 @@ class DashboardBlock:
     # Dotted path of ``f(request, thesis) -> dict`` giving the block its data,
     # resolved at render time: accounts never imports a later module at load.
     data: str = ""
+    # False: the block only feeds the tiles of the dashboard (apps/ui/tiles.py) and
+    # the « À venir » card; it shows no card of its own.
+    card: bool = True
 
 
 # Each module gives its block template (and its data function, resolved at render time).
@@ -40,6 +43,7 @@ DASHBOARD_BLOCKS: tuple[DashboardBlock, ...] = (
         _("Objectives"),
         "objectives/blocks/dashboard.html",
         data="apps.objectives.services.dashboard_block",
+        card=False,  # the tile and « À venir » show it (frontend step 8a)
     ),
     DashboardBlock(
         "meetings",

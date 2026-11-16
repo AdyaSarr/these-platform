@@ -1872,8 +1872,10 @@ def expenses_incomplete(mission: Mission) -> bool:
 
 
 def dashboard_block(request: Any, thesis: Thesis) -> dict[str, Any]:
-    """The "Travel" card: computed from what the viewer sees (access.py, the levels,
-    budget_payers): a co-supervisor gets the next LIRMM mission and LIRMM days only."""
+    """The "Travel" card: computed from what the viewer sees (access.py, the levels):
+    a co-supervisor gets the next LIRMM mission and LIRMM days only. No budget: it
+    would decrypt amounts on every display of the dashboard; the budgets are in the
+    Budget tab (frontend step 8a)."""
     user = request.user
     today = timezone.localdate()
     upcoming = (
@@ -1896,18 +1898,6 @@ def dashboard_block(request: Any, thesis: Thesis) -> dict[str, Any]:
             for m in Mission.objects.filter(thesis=thesis, status=MissionStatus.DONE)
             if expenses_incomplete(m)
         )
-    budgets: list[dict[str, Any]] = []
-    if budget_payers(user, thesis) and today.year in budget_years(_fresh(thesis)):
-        for line in budget_summary(user, thesis, today.year).values():
-            if line.budget is not None:
-                budgets.append(
-                    {
-                        "payer": Payer(line.payer).label,
-                        "committed": amounts.display(line.committed),
-                        "budget": amounts.display(line.budget),
-                        "over": line.committed > line.budget,
-                    }
-                )
     return {
         "upcoming": upcoming,
         "pending": len(pending_orders_for(user, thesis)),
@@ -1921,5 +1911,4 @@ def dashboard_block(request: Any, thesis: Thesis) -> dict[str, Any]:
         else text_formats.number_format(round(float(summary.gap), 1), 1),
         "month": month,
         "rule": month.rule if month else None,
-        "budgets": budgets,
     }
