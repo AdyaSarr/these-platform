@@ -287,7 +287,10 @@
   /* ---------------------------------------------------------------- confirm
      An irreversible action is a disclosure: the summary only opens the panel,
      the real submit button is inside it (no script, works everywhere). */
-  .confirm { display: inline-block; max-width: 32rem; }
+  /* Panel below its row (page header or .confirm-row), across it; moves nothing. */
+  .confirm { position: relative; display: inline-block; }
+  .page-header, .confirm-row { position: relative; }
+  .page-header .confirm, .confirm-row .confirm { position: static; }
   .confirm > summary { list-style: none; }
   .confirm > summary::-webkit-details-marker { display: none; }
   .confirm > summary.btn {
@@ -307,13 +310,23 @@
     border-color: var(--danger-border);
   }
   .confirm-panel {
-    margin-top: var(--space-2);
+    position: absolute;
+    inset-inline-start: 0;
+    top: calc(100% + var(--space-2));
+    z-index: 20;
+    width: max-content;
+    max-width: min(32rem, calc(100vw - 2rem));
     padding: var(--space-4);
     background: var(--surface);
     border: 1px solid var(--danger-border);
     border-inline-start: 4px solid var(--danger-fg);
     border-radius: var(--radius-sm);
     box-shadow: var(--shadow);
+  }
+  .page-header .confirm-panel, .confirm-row .confirm-panel {
+    inset-inline: 0;
+    width: auto;
+    max-width: none;
   }
   .confirm-panel p { margin-bottom: var(--space-3); }
   .confirm-panel form { margin: 0; }
@@ -352,8 +365,7 @@
   .logout button:hover { background: var(--surface-2); }
 
   /* ---------------------------------------------------------------- page header */
-  /* ui/page_header.html: title and subtitle on the left, actions on the right
-     (the main one last), all wrapping below on a narrow screen. */
+  /* ui/page_header.html: title left, actions right (main one last). */
   .page-header {
     display: flex;
     flex-wrap: wrap;

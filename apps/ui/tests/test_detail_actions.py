@@ -5,7 +5,7 @@
   réunion » is there too, behind its confirmation.
 - A confirmation opens BELOW its row, across the whole row, without moving the
   other actions: its panel is positioned (absolute) against the nearest
-  .confirm-row (the page header, a team card's menu, an invitation's cell), or
+  .confirm-row or the page header (a team card's menu, an invitation's cell), or
   under its own button elsewhere. Checked in a browser on a probe page: the
   actions keep their place and the row its height when the panel opens.
 """
@@ -49,7 +49,7 @@ def _page(team: SimpleNamespace, role: str) -> str:
 
 
 def _header(page: str) -> str:
-    match = re.search(r'<header class="page-header confirm-row">.*?</header>', page, re.S)
+    match = re.search(r'<header class="page-header">.*?</header>', page, re.S)
     assert match is not None
     return match.group(0)
 
@@ -75,7 +75,7 @@ def test_the_writer_gets_buttons_in_the_header(team: SimpleNamespace) -> None:
 
 
 def test_a_reader_gets_the_calendar_only(team: SimpleNamespace) -> None:
-    header = _header(_page(team, "co_supervisor"))
+    header = _header(_page(team, "tutor"))  # not an attendee: reads only
     assert _url(team, "ics") in header
     for name in ("edit", "duplicate", "cancel"):
         assert _url(team, name) not in header, name
@@ -88,21 +88,24 @@ def _css() -> str:
 
 def _rule(selector: str) -> str:
     rules = {sel.strip(): body for sel, body in re.findall(r"([^{}]+)\{([^{}]*)\}", _css())}
-    return rules.get(selector, "")
+    return str(rules.get(selector, ""))
 
 
 def test_a_confirmation_panel_never_moves_its_row() -> None:
     assert re.search(r"position\s*:\s*absolute", _rule(".confirm-panel"))
     assert re.search(r"position\s*:\s*relative", _rule(".confirm"))
-    assert re.search(r"position\s*:\s*relative", _rule(".confirm-row"))
-    assert re.search(r"position\s*:\s*static", _rule(".confirm-row .confirm"))
-    assert re.search(r"inset-inline\s*:\s*0", _rule(".confirm-row .confirm-panel"))
+    # The page header is a row too (CSS only: its markup stays <header class="page-header">).
+    assert re.search(r"position\s*:\s*relative", _rule(".page-header, .confirm-row"))
+    assert re.search(
+        r"position\s*:\s*static", _rule(".page-header .confirm, .confirm-row .confirm")
+    )
+    assert re.search(
+        r"inset-inline\s*:\s*0", _rule(".page-header .confirm-panel, .confirm-row .confirm-panel")
+    )
 
 
 def test_every_confirmation_sits_in_a_row() -> None:
     """Each template that includes the confirmation gives it a .confirm-row."""
-    page_header = (BASE_DIR / "templates" / "ui" / "page_header.html").read_text("utf-8")
-    assert 'class="page-header confirm-row"' in page_header
     team = (BASE_DIR / "templates" / "accounts" / "team.html").read_text("utf-8")
     assert team.count('{% include "ui/confirm.html"') == 2
     assert 'class="menu-panel confirm-row"' in team

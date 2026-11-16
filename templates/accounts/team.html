@@ -21,7 +21,7 @@
         {% if m.role != "PHD_STUDENT" %}{% if can_change_role or can_remove or can_extend and m.role == "CSI_MEMBER" %}
           <details class="menu">
             <summary class="btn btn-secondary btn-sm">{% icon "settings" %}<span>{% translate "Actions" %}</span><span class="visually-hidden"> — {{ m.user.get_full_name|default:m.user.email }}</span></summary>
-            <div class="menu-panel">
+            <div class="menu-panel confirm-row">
               {% if can_change_role %}
                 <form class="menu-form" method="post" action="{% url 'accounts:team_change_role' thesis_id=thesis.pk membership_id=m.pk %}">
                   {% csrf_token %}
@@ -79,7 +79,7 @@
                 <td>{{ inv.get_role_display }}</td>
                 <td>{{ inv.created_at|date:"j F Y H:i" }}</td>
                 <td><span class="delivery delivery-{{ state|lower }}" data-delivery="{{ state }}">{{ state.label }}</span></td>
-                <td class="actions">
+                <td class="actions confirm-row">
                   <form method="post" action="{% url 'accounts:team_resend_invitation' thesis_id=thesis.pk invitation_id=inv.pk %}">
                     {% csrf_token %}
                     <button type="submit">{% translate "Send again" %}</button>

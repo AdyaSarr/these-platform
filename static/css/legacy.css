@@ -32,8 +32,6 @@
   .item-head { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: baseline; }
   .item-head h3 { margin: 0; font-size: 1rem; }
   .status { font-weight: 600; }
-  .status-validated .status { color: var(--success-fg); }
-  .status-rejected .status { color: var(--danger-fg); }
   .warning { border-left: 3px solid var(--danger-fg); padding-left: var(--space-2); }
   .approvals { margin: var(--space-1) 0; padding-left: 1.25rem; }
 

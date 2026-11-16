@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-16 21:34+0100\n"
+"POT-Creation-Date: 2026-11-16 21:51+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -549,7 +549,7 @@ msgstr "Ou un document existant"
 #: templates/conferences/submission.html:8
 #: templates/conferences/submission.html:116
 #: templates/conferences/submissions.html:8 templates/meetings/detail.html:9
-#: templates/meetings/detail.html:178 templates/meetings/list.html:23
+#: templates/meetings/detail.html:177 templates/meetings/list.html:23
 #: templates/objectives/detail.html:13 templates/objectives/detail.html:76
 #: templates/travel/mission.html:11 templates/vault/document_list.html:10
 msgid "Confidentiality"
@@ -1710,12 +1710,12 @@ msgstr "Seulement pour une présentation."
 msgid "Duration"
 msgstr "Durée"
 
-#: apps/meetings/forms.py:90 templates/meetings/detail.html:13
+#: apps/meetings/forms.py:90 templates/meetings/detail.html:21
 msgid "Room or address"
 msgstr "Salle ou adresse"
 
-#: apps/meetings/forms.py:95 templates/meetings/detail.html:14
-#: templates/meetings/detail.html:15
+#: apps/meetings/forms.py:95 templates/meetings/detail.html:22
+#: templates/meetings/detail.html:23
 msgid "Video link"
 msgstr "Lien de visio"
 
@@ -1723,7 +1723,7 @@ msgstr "Lien de visio"
 msgid "https:// address; never copied into the calendar file."
 msgstr "Adresse https:// ; jamais copiée dans le fichier d'agenda."
 
-#: apps/meetings/forms.py:102 templates/meetings/detail.html:29
+#: apps/meetings/forms.py:102 templates/meetings/detail.html:28
 msgid "Attendees"
 msgstr "Participants"
 
@@ -1731,11 +1731,11 @@ msgstr "Participants"
 msgid "Each attendee must be able to read the chosen level."
 msgstr "Chaque participant doit pouvoir lire le niveau choisi."
 
-#: apps/meetings/forms.py:146 templates/meetings/detail.html:46
+#: apps/meetings/forms.py:146 templates/meetings/detail.html:45
 msgid "Agenda"
 msgstr "Ordre du jour"
 
-#: apps/meetings/forms.py:156 templates/meetings/detail.html:65
+#: apps/meetings/forms.py:156 templates/meetings/detail.html:64
 msgid "Minutes"
 msgstr "Compte rendu"
 
@@ -1757,7 +1757,7 @@ msgstr "Personne inconnue."
 
 #: apps/meetings/forms.py:201 apps/objectives/forms.py:120
 #: templates/conferences/submission.html:86
-#: templates/conferences/submissions.html:8 templates/meetings/detail.html:135
+#: templates/conferences/submissions.html:8 templates/meetings/detail.html:134
 #: templates/objectives/dashboard.html:65 templates/travel/mission.html:9
 #: templates/travel/missions.html:11
 msgid "Status"
@@ -3674,7 +3674,7 @@ msgid "Until"
 msgstr "Jusqu'au"
 
 #: templates/accounts/team.html:23 templates/accounts/team.html:71
-#: templates/meetings/detail.html:126
+#: templates/meetings/detail.html:125
 msgid "Actions"
 msgstr "Actions"
 
@@ -3798,7 +3798,7 @@ msgstr "facultative"
 #: templates/admin_file/item_row.html:12
 #: templates/meetings/_objective_actions.html:4
 #: templates/meetings/blocks/dashboard.html:5
-#: templates/meetings/detail.html:130 templates/objectives/dashboard.html:38
+#: templates/meetings/detail.html:129 templates/objectives/dashboard.html:38
 #: templates/objectives/dashboard.html:71
 msgid "overdue"
 msgstr "en retard"
@@ -4091,7 +4091,7 @@ msgstr "Pas des travaux ST"
 msgid "Resubmission of an earlier submission"
 msgstr "Nouvelle soumission d'un article précédent"
 
-#: templates/conferences/submission.html:15 templates/meetings/detail.html:20
+#: templates/conferences/submission.html:15 templates/meetings/detail.html:14
 #: templates/objectives/detail.html:29 templates/travel/mission.html:82
 msgid "Edit"
 msgstr "Modifier"
@@ -4114,18 +4114,18 @@ msgstr "Demande votre second facteur."
 msgid "Concerns ST work"
 msgstr "Concerne des travaux ST"
 
-#: templates/conferences/submission.html:45 templates/meetings/detail.html:161
+#: templates/conferences/submission.html:45 templates/meetings/detail.html:160
 msgid "Unlink"
 msgstr "Délier"
 
-#: templates/conferences/submission.html:49 templates/meetings/detail.html:166
+#: templates/conferences/submission.html:49 templates/meetings/detail.html:165
 #, python-format
 msgid "%(counter)s linked document you may not read."
 msgid_plural "%(counter)s linked documents you may not read."
 msgstr[0] "%(counter)s document lié que vous ne pouvez pas lire."
 msgstr[1] "%(counter)s documents liés que vous ne pouvez pas lire."
 
-#: templates/conferences/submission.html:52 templates/meetings/detail.html:171
+#: templates/conferences/submission.html:52 templates/meetings/detail.html:170
 msgid "Link the document"
 msgstr "Lier le document"
 
@@ -4155,7 +4155,7 @@ msgstr "à demander avant le %(date)s"
 msgid "Withdraw the request"
 msgstr "Retirer la demande"
 
-#: templates/conferences/submission.html:70 templates/meetings/detail.html:120
+#: templates/conferences/submission.html:70 templates/meetings/detail.html:119
 #: templates/travel/mission.html:50
 msgid "Record the decision"
 msgstr "Enregistrer la décision"
@@ -4196,7 +4196,7 @@ msgstr "Créer la nouvelle soumission"
 msgid "A new ST approval is required: the earlier one is never reused."
 msgstr "Un nouvel accord ST est nécessaire : l'ancien n'est jamais repris."
 
-#: templates/conferences/submission.html:118 templates/meetings/detail.html:181
+#: templates/conferences/submission.html:118 templates/meetings/detail.html:180
 #: templates/objectives/detail.html:80 templates/travel/mission.html:88
 msgid "Change the confidentiality"
 msgstr "Changer la confidentialité"
@@ -4245,7 +4245,9 @@ msgstr "La page a expiré"
 #: templates/core/csrf_failure.html:6
 msgid ""
 "Your browser blocks this site's cookies, or the page has expired: reload it."
-msgstr "Votre navigateur bloque les cookies de ce site ou la page a expiré : rechargez-la."
+msgstr ""
+"Votre navigateur bloque les cookies de ce site ou la page a expiré : "
+"rechargez-la."
 
 #: templates/core/csrf_failure.html:7
 msgid "Back to the home page"
@@ -4290,27 +4292,28 @@ msgstr "Aucune de vos actions n'est en retard."
 msgid "Meeting"
 msgstr "Réunion"
 
-#: templates/meetings/detail.html:18 templates/travel/mission.html:5
+#: templates/meetings/detail.html:12 templates/travel/mission.html:5
 msgid "Add to my calendar (.ics)"
 msgstr "Ajouter à mon agenda (.ics)"
 
-#: templates/meetings/detail.html:21 templates/meetings/duplicate.html:12
+#: templates/meetings/detail.html:15 templates/meetings/duplicate.html:12
 msgid "Duplicate"
 msgstr "Dupliquer"
 
-#: templates/meetings/detail.html:23
+#: templates/meetings/detail.html:17
 msgid "Cancel the meeting"
 msgstr "Annuler la réunion"
 
-#: templates/meetings/detail.html:23
+#: templates/meetings/detail.html:17
 msgid "Every attendee will see the meeting cancelled. This cannot be undone."
-msgstr "Chaque participant verra la réunion annulée. Cette action est définitive."
+msgstr ""
+"Chaque participant verra la réunion annulée. Cette action est définitive."
 
-#: templates/meetings/detail.html:23
+#: templates/meetings/detail.html:17
 msgid "Yes, cancel the meeting"
 msgstr "Oui, annuler la réunion"
 
-#: templates/meetings/detail.html:26
+#: templates/meetings/detail.html:25
 msgid ""
 "The calendar file contains the type, date and place only, never the title or "
 "the texts."
@@ -4318,44 +4321,44 @@ msgstr ""
 "Le fichier d'agenda ne contient que le type, la date et le lieu, jamais le "
 "titre ni les textes."
 
-#: templates/meetings/detail.html:33
+#: templates/meetings/detail.html:32
 msgid "approved the minutes"
 msgstr "a approuvé le compte rendu"
 
-#: templates/meetings/detail.html:34
+#: templates/meetings/detail.html:33
 msgid "read the minutes"
 msgstr "a lu le compte rendu"
 
-#: templates/meetings/detail.html:35
+#: templates/meetings/detail.html:34
 msgid "marked an earlier version of the minutes"
 msgstr "a marqué une version antérieure du compte rendu"
 
-#: templates/meetings/detail.html:40
+#: templates/meetings/detail.html:39
 msgid "Former attendees, no longer members of the thesis:"
 msgstr "Anciens participants, qui ne font plus partie de la thèse :"
 
-#: templates/meetings/detail.html:51
+#: templates/meetings/detail.html:50
 msgid "Save the agenda"
 msgstr "Enregistrer l'ordre du jour"
 
-#: templates/meetings/detail.html:54
+#: templates/meetings/detail.html:53
 msgid "Add the open actions and overdue objectives"
 msgstr "Ajouter les actions ouvertes et les objectifs en retard"
 
-#: templates/meetings/detail.html:55
+#: templates/meetings/detail.html:54
 msgid "Only items that every reader of this meeting may read are copied."
 msgstr ""
 "Seuls les éléments que tout lecteur de cette réunion peut lire sont copiés."
 
-#: templates/meetings/detail.html:60
+#: templates/meetings/detail.html:59
 msgid "No agenda."
 msgstr "Pas d'ordre du jour."
 
-#: templates/meetings/detail.html:67
+#: templates/meetings/detail.html:66
 msgid "The minutes of a CSI meeting will be available soon."
 msgstr "Le compte rendu d'une réunion du CSI sera disponible prochainement."
 
-#: templates/meetings/detail.html:69
+#: templates/meetings/detail.html:68
 msgid ""
 "The minutes, decisions and actions can be written from the start of the "
 "meeting."
@@ -4363,73 +4366,73 @@ msgstr ""
 "Le compte rendu, les décisions et les actions se saisissent à partir du "
 "début de la réunion."
 
-#: templates/meetings/detail.html:71
+#: templates/meetings/detail.html:70
 #, python-format
 msgid "Version %(version)s, %(date)s"
 msgstr "Version %(version)s, %(date)s"
 
-#: templates/meetings/detail.html:77
+#: templates/meetings/detail.html:76
 msgid "Save the minutes"
 msgstr "Enregistrer le compte rendu"
 
-#: templates/meetings/detail.html:82
+#: templates/meetings/detail.html:81
 msgid "No minutes yet."
 msgstr "Pas encore de compte rendu."
 
-#: templates/meetings/detail.html:89
+#: templates/meetings/detail.html:88
 msgid "Mark as read"
 msgstr "Marquer comme lu"
 
-#: templates/meetings/detail.html:95
+#: templates/meetings/detail.html:94
 msgid "Approve the minutes"
 msgstr "Approuver le compte rendu"
 
-#: templates/meetings/detail.html:97
+#: templates/meetings/detail.html:96
 msgid "Approving asks for your second factor."
 msgstr "Approuver demande votre second facteur."
 
-#: templates/meetings/detail.html:106
+#: templates/meetings/detail.html:105
 msgid "Decisions"
 msgstr "Décisions"
 
-#: templates/meetings/detail.html:111 templates/meetings/register.html:18
+#: templates/meetings/detail.html:110 templates/meetings/register.html:18
 #, python-format
 msgid "withdrawn on %(date)s"
 msgstr "retirée le %(date)s"
 
-#: templates/meetings/detail.html:112
+#: templates/meetings/detail.html:111
 msgid "Withdraw"
 msgstr "Retirer"
 
-#: templates/meetings/detail.html:116 templates/meetings/register.html:24
+#: templates/meetings/detail.html:115 templates/meetings/register.html:24
 msgid "No decision."
 msgstr "Aucune décision."
 
-#: templates/meetings/detail.html:131
+#: templates/meetings/detail.html:130
 msgid "linked objective"
 msgstr "objectif lié"
 
-#: templates/meetings/detail.html:139
+#: templates/meetings/detail.html:138
 msgid "Update"
 msgstr "Mettre à jour"
 
-#: templates/meetings/detail.html:145
+#: templates/meetings/detail.html:144
 msgid "No action."
 msgstr "Aucune action."
 
-#: templates/meetings/detail.html:149
+#: templates/meetings/detail.html:148
 msgid "Record the action"
 msgstr "Enregistrer l'action"
 
-#: templates/meetings/detail.html:156
+#: templates/meetings/detail.html:155
 msgid "Linked documents"
 msgstr "Documents liés"
 
-#: templates/meetings/detail.html:167
+#: templates/meetings/detail.html:166
 msgid "No linked document."
 msgstr "Aucun document lié."
 
-#: templates/meetings/detail.html:182
+#: templates/meetings/detail.html:181
 msgid ""
 "Asks for your second factor. Every attendee must be able to read the new "
 "level."
