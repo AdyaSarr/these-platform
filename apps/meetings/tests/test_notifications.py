@@ -72,7 +72,7 @@ def test_a_failed_send_is_retried_by_the_daily_run(team: SimpleNamespace, monkey
     def refuse(*args: Any, **kwargs: Any) -> None:
         raise smtplib.SMTPException("refused")
 
-    monkeypatch.setattr(tasks, "send_mail", refuse)
+    monkeypatch.setattr("apps.core.delivery.send_mail", refuse)
     meeting_of(team, attendees=[team.student, team.director])
     row = MeetingNotification.objects.get()
     assert (row.status, row.attempts) == ("FAILED", 1)

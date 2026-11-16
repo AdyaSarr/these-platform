@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-15 21:32+0100\n"
+"POT-Creation-Date: 2026-11-16 00:05+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -83,7 +83,7 @@ msgstr "Nouveau rôle"
 msgid "Days"
 msgstr "Jours"
 
-#: apps/accounts/models.py:33 apps/accounts/models.py:239
+#: apps/accounts/models.py:33 apps/accounts/models.py:244
 msgid "email address"
 msgstr "adresse électronique"
 
@@ -108,7 +108,7 @@ msgstr "statut équipe"
 msgid "date joined"
 msgstr "date d’inscription"
 
-#: apps/accounts/models.py:47 apps/accounts/models.py:142
+#: apps/accounts/models.py:47 apps/accounts/models.py:147
 msgid "user"
 msgstr "utilisateur"
 
@@ -136,8 +136,8 @@ msgstr "nom"
 msgid "kind"
 msgstr "type"
 
-#: apps/accounts/models.py:87 apps/accounts/models.py:148
-#: apps/accounts/models.py:242
+#: apps/accounts/models.py:87 apps/accounts/models.py:153
+#: apps/accounts/models.py:247
 msgid "organization"
 msgstr "organisation"
 
@@ -187,8 +187,8 @@ msgstr "date de fin prévue"
 msgid "status"
 msgstr "statut"
 
-#: apps/accounts/models.py:115 apps/accounts/models.py:145
-#: apps/accounts/models.py:237
+#: apps/accounts/models.py:115 apps/accounts/models.py:150
+#: apps/accounts/models.py:242
 msgid "thesis"
 msgstr "thèse"
 
@@ -196,88 +196,88 @@ msgstr "thèse"
 msgid "theses"
 msgstr "thèses"
 
-#: apps/accounts/models.py:150 apps/accounts/models.py:240
+#: apps/accounts/models.py:155 apps/accounts/models.py:245
 msgid "role"
 msgstr "rôle"
 
-#: apps/accounts/models.py:151
+#: apps/accounts/models.py:156
 msgid "active from"
 msgstr "actif depuis"
 
-#: apps/accounts/models.py:152
+#: apps/accounts/models.py:157
 msgid "active until"
 msgstr "actif jusqu'au"
 
-#: apps/accounts/models.py:157
+#: apps/accounts/models.py:162
 msgid "membership"
 msgstr "appartenance"
 
-#: apps/accounts/models.py:158
+#: apps/accounts/models.py:163
 msgid "memberships"
 msgstr "appartenances"
 
-#: apps/accounts/models.py:222
+#: apps/accounts/models.py:227
 msgid "Queued"
 msgstr "En file d'attente"
 
-#: apps/accounts/models.py:223 apps/admin_file/models.py:286
+#: apps/accounts/models.py:228 apps/admin_file/models.py:290
 #: apps/conferences/models.py:520 apps/meetings/models.py:343
 #: apps/objectives/models.py:356 apps/travel/choices.py:140
 msgid "Sent"
 msgstr "Envoyé"
 
-#: apps/accounts/models.py:224 apps/admin_file/models.py:287
+#: apps/accounts/models.py:229 apps/admin_file/models.py:291
 #: apps/conferences/models.py:521 apps/meetings/models.py:344
 #: apps/objectives/models.py:357 apps/travel/choices.py:141
 msgid "Failed"
 msgstr "Échec"
 
-#: apps/accounts/models.py:227
+#: apps/accounts/models.py:232
 msgid "Being sent"
 msgstr "En cours d'envoi"
 
-#: apps/accounts/models.py:228
+#: apps/accounts/models.py:233
 msgid "Not sent"
 msgstr "Non parti"
 
-#: apps/accounts/models.py:229
+#: apps/accounts/models.py:234
 msgid "Sending failed"
 msgstr "Échec de l'envoi"
 
-#: apps/accounts/models.py:230
+#: apps/accounts/models.py:235
 msgid "Sent, awaiting acceptance"
 msgstr "Envoyée, en attente d'acceptation"
 
-#: apps/accounts/models.py:231 apps/admin_file/models.py:65
+#: apps/accounts/models.py:236 apps/admin_file/models.py:65
 msgid "Expired"
 msgstr "Expirée"
 
-#: apps/accounts/models.py:232 apps/admin_file/models.py:386
+#: apps/accounts/models.py:237 apps/admin_file/models.py:394
 #: apps/conferences/models.py:205
 msgid "Accepted"
 msgstr "Acceptée"
 
-#: apps/accounts/models.py:233
+#: apps/accounts/models.py:238
 msgid "Revoked"
 msgstr "Révoquée"
 
-#: apps/accounts/models.py:245
+#: apps/accounts/models.py:250
 msgid "expires at"
 msgstr "expire le"
 
-#: apps/accounts/models.py:250
+#: apps/accounts/models.py:255
 msgid "used at"
 msgstr "utilisée le"
 
-#: apps/accounts/models.py:251
+#: apps/accounts/models.py:256
 msgid "revoked at"
 msgstr "révoquée le"
 
-#: apps/accounts/models.py:261
+#: apps/accounts/models.py:266
 msgid "invitation"
 msgstr "invitation"
 
-#: apps/accounts/models.py:262
+#: apps/accounts/models.py:267
 msgid "invitations"
 msgstr "invitations"
 
@@ -716,86 +716,91 @@ msgstr "approbation"
 msgid "approvals"
 msgstr "approbations"
 
-#: apps/admin_file/models.py:280
+#: apps/admin_file/models.py:284
 msgid "14 days before"
 msgstr "14 jours avant"
 
-#: apps/admin_file/models.py:281
+#: apps/admin_file/models.py:285
 msgid "3 days before"
 msgstr "3 jours avant"
 
-#: apps/admin_file/models.py:282 templates/objectives/dashboard.html:22
+#: apps/admin_file/models.py:286 templates/objectives/dashboard.html:22
 msgid "Overdue"
 msgstr "En retard"
 
-#: apps/admin_file/models.py:285 apps/admin_file/models.py:385
+#: apps/admin_file/models.py:289 apps/admin_file/models.py:393
 #: apps/conferences/models.py:342 apps/conferences/models.py:519
 #: apps/meetings/models.py:342 apps/objectives/models.py:355
 msgid "Pending"
 msgstr "En attente"
 
-#: apps/admin_file/models.py:305
+#: apps/admin_file/models.py:292 apps/conferences/models.py:522
+#: apps/meetings/models.py:345
+msgid "Not sent: no longer concerned or due"
+msgstr "Non envoyé : destinataire plus concerné ou envoi plus dû"
+
+#: apps/admin_file/models.py:310
 msgid "reminder"
 msgstr "rappel"
 
-#: apps/admin_file/models.py:306
+#: apps/admin_file/models.py:311
 msgid "reminders"
 msgstr "rappels"
 
-#: apps/admin_file/models.py:352
+#: apps/admin_file/models.py:360
 msgid "reopening"
 msgstr "réouverture"
 
-#: apps/admin_file/models.py:353
+#: apps/admin_file/models.py:361
 msgid "reopenings"
 msgstr "réouvertures"
 
-#: apps/admin_file/models.py:387 apps/conferences/models.py:344
+#: apps/admin_file/models.py:395 apps/conferences/models.py:344
 msgid "Refused"
 msgstr "Refusée"
 
-#: apps/admin_file/models.py:388 apps/conferences/models.py:207
+#: apps/admin_file/models.py:396 apps/conferences/models.py:207
 #: apps/conferences/models.py:345
 msgid "Withdrawn"
 msgstr "Retirée"
 
-#: apps/admin_file/models.py:389
+#: apps/admin_file/models.py:397
 msgid "Superseded"
 msgstr "Remplacée"
 
-#: apps/admin_file/models.py:413
+#: apps/admin_file/models.py:421
 msgid "due-date proposal"
 msgstr "proposition d'échéance"
 
-#: apps/admin_file/models.py:414
+#: apps/admin_file/models.py:422
 msgid "due-date proposals"
 msgstr "propositions d'échéance"
 
-#: apps/admin_file/models.py:474
+#: apps/admin_file/models.py:482
 msgid "Item reopened"
 msgstr "Pièce rouverte"
 
-#: apps/admin_file/models.py:475
+#: apps/admin_file/models.py:483
 msgid "Due date proposed"
 msgstr "Échéance proposée"
 
-#: apps/admin_file/models.py:476
+#: apps/admin_file/models.py:484
 msgid "Proposed due date accepted"
 msgstr "Échéance proposée acceptée"
 
-#: apps/admin_file/models.py:477
+#: apps/admin_file/models.py:485
 msgid "Proposed due date refused"
 msgstr "Échéance proposée refusée"
 
-#: apps/admin_file/models.py:478
+#: apps/admin_file/models.py:486
 msgid "Due date changed"
 msgstr "Échéance modifiée"
 
-#: apps/admin_file/models.py:498
+#: apps/admin_file/models.py:506
 msgid "item notification"
 msgstr "notification de pièce"
 
-#: apps/admin_file/models.py:499
+#: apps/admin_file/models.py:507
 msgid "item notifications"
 msgstr "notifications de pièce"
 
@@ -1339,21 +1344,17 @@ msgstr "Délai de relecture ST modifié"
 msgid "Event"
 msgstr "Événement"
 
-#: apps/conferences/models.py:522 apps/meetings/models.py:345
-msgid "Not sent: no longer a member"
-msgstr "Non envoyé : ne fait plus partie de la thèse"
-
 #: apps/conferences/models.py:552
 msgid "conference notification"
 msgstr "notification de conférence"
 
 #: apps/conferences/services.py:112 apps/meetings/services.py:105
-#: apps/objectives/services.py:153 apps/travel/services.py:695
+#: apps/objectives/services.py:153 apps/travel/services.py:706
 msgid "This text is invalid."
 msgstr "Ce texte n'est pas valide."
 
 #: apps/conferences/services.py:115 apps/meetings/services.py:108
-#: apps/objectives/services.py:156 apps/travel/services.py:698
+#: apps/objectives/services.py:156 apps/travel/services.py:709
 msgid "The text contains a control character."
 msgstr "Le texte contient un caractère de contrôle."
 
@@ -1363,7 +1364,7 @@ msgstr "Le texte contient un caractère de contrôle."
 msgid "Between %(min)d and %(max)d characters."
 msgstr "Entre %(min)d et %(max)d caractères."
 
-#: apps/conferences/services.py:127 apps/travel/services.py:704
+#: apps/conferences/services.py:127 apps/travel/services.py:715
 msgid "One line only."
 msgstr "Une seule ligne."
 
@@ -1372,7 +1373,7 @@ msgid "The address must start with https://."
 msgstr "L'adresse doit commencer par https://."
 
 #: apps/conferences/services.py:143 apps/meetings/services.py:135
-#: apps/travel/services.py:710
+#: apps/travel/services.py:721
 msgid "Unknown confidentiality level."
 msgstr "Niveau de confidentialité inconnu."
 
@@ -1443,8 +1444,8 @@ msgstr "Cette édition existe déjà."
 msgid "This deadline was cancelled."
 msgstr "Cette échéance a été annulée."
 
-#: apps/conferences/services.py:472 apps/travel/services.py:586
-#: apps/travel/services.py:607 apps/travel/services.py:614
+#: apps/conferences/services.py:472 apps/travel/services.py:597
+#: apps/travel/services.py:618 apps/travel/services.py:625
 #, python-format
 msgid "Between 0 and %(max)d days."
 msgstr "Entre 0 et %(max)d jours."
@@ -1506,7 +1507,7 @@ msgstr ""
 msgid "A request is already pending."
 msgstr "Une demande est déjà en attente."
 
-#: apps/conferences/services.py:1114 apps/travel/services.py:1287
+#: apps/conferences/services.py:1114 apps/travel/services.py:1298
 #: apps/travel/views.py:790
 msgid "Grant or refuse."
 msgstr "Accordez ou refusez."
@@ -1930,7 +1931,7 @@ msgstr "Rappel la veille"
 msgid "Overdue action"
 msgstr "Action en retard"
 
-#: apps/meetings/models.py:376
+#: apps/meetings/models.py:377
 msgid "meeting notification"
 msgstr "notification de réunion"
 
@@ -2299,7 +2300,7 @@ msgstr "points hebdomadaires"
 msgid "A reason of at least %(min)d characters is required."
 msgstr "Un motif d'au moins %(min)d caractères est obligatoire."
 
-#: apps/objectives/services.py:186 apps/travel/services.py:1506
+#: apps/objectives/services.py:186 apps/travel/services.py:1517
 msgid "Unknown category."
 msgstr "Catégorie inconnue."
 
@@ -2946,7 +2947,7 @@ msgstr "Le premier jour ne peut pas être après le dernier."
 msgid "At most %(n)d days at once."
 msgstr "%(n)d jours au plus à la fois."
 
-#: apps/travel/services.py:320 apps/travel/services.py:629
+#: apps/travel/services.py:320 apps/travel/services.py:640
 msgid "Unknown CIFRE year."
 msgstr "Année CIFRE inconnue."
 
@@ -2958,79 +2959,79 @@ msgstr "Mois inconnu."
 msgid "This month is outside the thesis."
 msgstr "Ce mois est hors de la thèse."
 
-#: apps/travel/services.py:570
+#: apps/travel/services.py:581
 msgid "Unknown side."
 msgstr "Côté inconnu."
 
-#: apps/travel/services.py:572 apps/travel/services.py:767
-#: apps/travel/services.py:1478
+#: apps/travel/services.py:583 apps/travel/services.py:778
+#: apps/travel/services.py:1489
 msgid "Yes or no."
 msgstr "Oui ou non."
 
-#: apps/travel/services.py:578
+#: apps/travel/services.py:589
 #, python-format
 msgid "Between 1 and %(max)d points."
 msgstr "Entre 1 et %(max)d points."
 
-#: apps/travel/services.py:630
+#: apps/travel/services.py:641
 msgid "Between 0 and 100."
 msgstr "Entre 0 et 100."
 
-#: apps/travel/services.py:701
+#: apps/travel/services.py:712
 #, python-format
 msgid "At most %(max)d characters."
 msgstr "%(max)d caractères au plus."
 
-#: apps/travel/services.py:718
+#: apps/travel/services.py:729
 msgid "The person who decides for this payer must be able to read the mission."
 msgstr "La personne qui décide pour ce payeur doit pouvoir lire la mission."
 
-#: apps/travel/services.py:725 apps/travel/views.py:376
+#: apps/travel/services.py:736 apps/travel/views.py:376
 msgid "Unknown linked object."
 msgstr "Objet lié inconnu."
 
-#: apps/travel/services.py:734
+#: apps/travel/services.py:745
 msgid "The return must not be before the departure."
 msgstr "Le retour ne peut pas précéder le départ."
 
-#: apps/travel/services.py:736
+#: apps/travel/services.py:747
 #, python-format
 msgid "At most %(n)d days."
 msgstr "%(n)d jours au plus."
 
-#: apps/travel/services.py:739
+#: apps/travel/services.py:750
 msgid "Unknown destination."
 msgstr "Destination inconnue."
 
-#: apps/travel/services.py:741 apps/travel/services.py:807
+#: apps/travel/services.py:752 apps/travel/services.py:818
 msgid "Unknown payer."
 msgstr "Payeur inconnu."
 
-#: apps/travel/services.py:743
+#: apps/travel/services.py:754
 msgid "Unknown lodging."
 msgstr "Hébergement inconnu."
 
-#: apps/travel/services.py:751
+#: apps/travel/services.py:762
 msgid "Choose one or more means of transport."
 msgstr "Choisissez un ou plusieurs moyens de transport."
 
-#: apps/travel/services.py:754
+#: apps/travel/services.py:765
 msgid "Name the place (a town, a site)."
 msgstr "Indiquez le lieu (une ville, un site)."
 
-#: apps/travel/services.py:757
+#: apps/travel/services.py:768
 msgid "A place is named for another destination only."
 msgstr "Un lieu ne s'indique que pour une autre destination."
 
-#: apps/travel/services.py:761
+#: apps/travel/services.py:772
 msgid "A conference only for a conference trip."
 msgstr "Une conférence seulement pour un déplacement en conférence."
 
-#: apps/travel/services.py:869
+#: apps/travel/services.py:880
 msgid "This mission is closed."
 msgstr "Cette mission est close."
 
-#: apps/travel/services.py:894
+#: apps/travel/services.py:905
 msgid ""
 "A mission approval is pending: withdraw it before changing the dates, the "
 "destination or the payer."
@@ -3038,67 +3039,67 @@ msgstr ""
 "Une demande d'accord de mission est en attente : retirez-la avant de changer "
 "les dates, la destination ou le payeur."
 
-#: apps/travel/services.py:912 apps/travel/services.py:957
-#: apps/travel/services.py:1196 apps/travel/services.py:1304
-#: apps/travel/services.py:1428 apps/travel/services.py:1516
-#: apps/travel/services.py:1628 apps/travel/services.py:1696
+#: apps/travel/services.py:923 apps/travel/services.py:968
+#: apps/travel/services.py:1207 apps/travel/services.py:1315
+#: apps/travel/services.py:1439 apps/travel/services.py:1527
+#: apps/travel/services.py:1639 apps/travel/services.py:1707
 msgid "The mission changed meanwhile: try again."
 msgstr "La mission a changé entre-temps : réessayez."
 
-#: apps/travel/services.py:1058
+#: apps/travel/services.py:1069
 msgid "A granted mission approval is needed first."
 msgstr "Il faut d'abord un accord de mission obtenu."
 
-#: apps/travel/services.py:1061
+#: apps/travel/services.py:1072
 msgid "The mission is not over yet."
 msgstr "La mission n'est pas encore terminée."
 
-#: apps/travel/services.py:1164
+#: apps/travel/services.py:1175
 msgid "This mission approval is already decided."
 msgstr "Cette demande d'accord est déjà décidée."
 
-#: apps/travel/services.py:1175
+#: apps/travel/services.py:1186
 msgid "No mission approval for another body."
 msgstr "Pas d'accord de mission pour un autre organisme."
 
-#: apps/travel/services.py:1177 apps/travel/services.py:1193
+#: apps/travel/services.py:1188 apps/travel/services.py:1204
 msgid "A mission approval is already pending."
 msgstr "Une demande d'accord de mission est déjà en attente."
 
-#: apps/travel/services.py:1183 apps/travel/services.py:1473
-#: apps/travel/services.py:1725 apps/travel/views.py:730
+#: apps/travel/services.py:1194 apps/travel/services.py:1484
+#: apps/travel/services.py:1736 apps/travel/views.py:730
 msgid "An amount in euros, such as 123,45."
 msgstr "Un montant en euros, par exemple 123,45."
 
-#: apps/travel/services.py:1187
+#: apps/travel/services.py:1198
 msgid "Nobody active can decide for this payer and read the mission."
 msgstr "Personne d'actif ne peut décider pour ce payeur et lire la mission."
 
-#: apps/travel/services.py:1289
+#: apps/travel/services.py:1300
 msgid "Choose a reason for the refusal."
 msgstr "Choisissez un motif de refus."
 
-#: apps/travel/services.py:1291
+#: apps/travel/services.py:1302
 msgid "A grant has no reason."
 msgstr "Un accord n'a pas de motif."
 
-#: apps/travel/services.py:1480
+#: apps/travel/services.py:1491
 msgid "A flat rate only for meals or other expenses."
 msgstr "Un forfait seulement pour les repas ou les autres dépenses."
 
-#: apps/travel/services.py:1681
+#: apps/travel/services.py:1692
 msgid "Only a mission done can be reimbursed."
 msgstr "Seule une mission effectuée peut être remboursée."
 
-#: apps/travel/services.py:1686
+#: apps/travel/services.py:1697
 msgid "Every expense line needs its actual amount."
 msgstr "Chaque ligne de frais doit avoir son montant réel."
 
-#: apps/travel/services.py:1690
+#: apps/travel/services.py:1701
 msgid "Every expense line needs a receipt, unless it is a flat rate."
 msgstr "Chaque ligne de frais doit avoir un justificatif, sauf un forfait."
 
-#: apps/travel/services.py:1722 apps/travel/services.py:1790
+#: apps/travel/services.py:1733 apps/travel/services.py:1801
 msgid "This year is outside the thesis."
 msgstr "Cette année est hors de la thèse."
 
@@ -5186,3 +5187,6 @@ msgstr ""
 #: templates/vault/upload.html:9
 msgid "Store"
 msgstr "Déposer"
+
+#~ msgid "Not sent: no longer a member"
+#~ msgstr "Non envoyé : ne fait plus partie de la thèse"

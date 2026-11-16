@@ -16,7 +16,7 @@ from django.core.management import call_command
 
 from apps.accounts import services as accounts
 from apps.accounts.models import Membership
-from apps.conferences import reminders, services, tasks
+from apps.conferences import reminders, services
 from apps.conferences.models import ConferenceNotification
 from apps.conferences.tests.helpers import (
     NOW,
@@ -190,7 +190,7 @@ def test_a_failed_send_is_retried_by_the_daily_run(team: SimpleNamespace, monkey
     def refuse(*args: Any, **kwargs: Any) -> None:
         raise smtplib.SMTPException("refused")
 
-    monkeypatch.setattr(tasks, "send_mail", refuse)
+    monkeypatch.setattr("apps.core.delivery.send_mail", refuse)
     edition = edition_of(team)
     deadline_of(team, edition)
     submission_of(team, edition=edition)

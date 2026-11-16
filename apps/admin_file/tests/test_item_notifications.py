@@ -33,7 +33,7 @@ def _changed_due_date() -> ItemNotification:
         validator_roles=[Role.INDUSTRIAL_TUTOR],
         due_date=dt.date(2028, 6, 1),  # far: no reminder window, even under TEST_CLOCK
     )
-    with mock.patch("apps.admin_file.tasks.send_mail", side_effect=smtplib.SMTPException("no")):
+    with mock.patch("apps.core.delivery.send_mail", side_effect=smtplib.SMTPException("no")):
         services.update_due_date(item=item, user=team.tutor, due_date=dt.date(2028, 7, 1))
     return ItemNotification.objects.get()
 
@@ -49,7 +49,7 @@ def test_a_failed_notification_is_retried_by_the_daily_run() -> None:
 
 def test_retries_stop_at_the_limit() -> None:
     note = _changed_due_date()
-    with mock.patch("apps.admin_file.tasks.send_mail", side_effect=OSError("down")):
+    with mock.patch("apps.core.delivery.send_mail", side_effect=OSError("down")):
         for _ in range(MAX_ATTEMPTS + 2):
             reminders.run()
     note.refresh_from_db()

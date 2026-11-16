@@ -121,7 +121,11 @@ lier un document ni télécharger le `.ics`.
 8. Courriels (un lien seulement, règle 7) : convocation, changement de date ou de
    lieu, annulation, compte rendu à lire, rappel la veille (date de Paris),
    action en retard (J+1, à l'assigné, une fois). Commande quotidienne
-   `meetings_reminders` (timer systemd).
+   `meetings_reminders` (timer systemd). **Revérifiés à l'envoi**
+   (`core.delivery`) : thèse ouverte ; membre interne actif qui lit le niveau de
+   la réunion, encore participant (ou l'assigné, pour une action) ; réunion non
+   annulée ; rappel du même début, avant celui-ci ; action encore ouverte, de même
+   échéance et même assigné. Une annulation reste due. Sinon `SKIPPED`.
 9. Carte « Réunions » du tableau de bord : prochaine réunion visible, actions en
    retard (toutes et les miennes).
 10. Fiche d'un objectif : fragment « Actions liées ».

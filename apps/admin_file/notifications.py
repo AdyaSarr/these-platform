@@ -16,12 +16,98 @@ from django.db import transaction
 from django.utils import timezone
 
 from apps.accounts.models import User
+from apps.accounts.permissions import can, roles_of
 from apps.accounts.roles import Role
+from apps.core import delivery
 
-from .models import ItemNotification, RequiredItem
-from .reminders import MAX_ATTEMPTS, active_members
+from .models import (
+    SECTION_READ_ACTION,
+    DueDateProposal,
+    ItemApproval,
+    ItemNotification,
+    ItemReopening,
+    ItemStatus,
+    ReminderLog,
+    RequiredItem,
+    Section,
+)
+from .reminders import MAX_ATTEMPTS, active_members, recipients
 
 Kind = ItemNotification.Kind
+STUDENT_DECISIONS = frozenset({Kind.DUE_ACCEPTED, Kind.DUE_REFUSED})
+
+# --------------------------------------------------------------------------- send-time check
+# Checked by the sending tasks under the row's lock (apps.core.delivery): the
+# state may have changed since the row was queued.
+
+
+def _proposal(row: ItemNotification) -> DueDateProposal | None:
+    return DueDateProposal.objects.filter(pk=row.event_id, item_id=row.item_id).first()
+
+
+def concerned(row: ReminderLog | ItemNotification) -> bool:
+    """The recipient still holds, on an active account and membership, the role
+    the e-mail is for, and still reads the item's section."""
+    user, item = row.recipient, row.item
+    roles = roles_of(user, item.thesis)
+    if not roles or not can(user, SECTION_READ_ACTION[Section(item.section)], item):
+        return False
+    validators = {Role(r) for r in item.validator_roles}
+    if isinstance(row, ReminderLog):  # the student, or a validator, by the item's state
+        return Role.PHD_STUDENT in roles or bool(roles & validators)
+    if row.kind == Kind.REOPENED:  # the author of a cancelled approval, in its role
+        reopening = ItemReopening.objects.filter(pk=row.event_id, item=item).first()
+        if reopening is None:
+            return False
+        role = (
+            ItemApproval.objects.filter(item=item, cycle=reopening.cycle, user_id=user.pk)
+            .values_list("role", flat=True)
+            .first()
+        )
+        return role is not None and Role(role) in roles
+    if row.kind == Kind.DUE_PROPOSED:  # a validator, never the proposal's author
+        proposal = _proposal(row)
+        return (
+            proposal is not None and proposal.proposed_by_id != user.pk and bool(roles & validators)
+        )
+    if row.kind in STUDENT_DECISIONS:  # the proposal's author, still the student
+        proposal = _proposal(row)
+        return (
+            proposal is not None
+            and proposal.proposed_by_id == user.pk
+            and Role.PHD_STUDENT in roles
+        )
+    if row.kind == Kind.DUE_CHANGED:
+        return Role.PHD_STUDENT in roles
+    return False
+
+
+def still_due(row: ReminderLog | ItemNotification) -> bool:
+    """The item still calls for this e-mail. A reminder: same due date, and the
+    recipient is still one the item's state calls (the student of an awaited item,
+    a validator whose role has not approved, never the submitter). An event that
+    happened (a decision, a direct change) stays due; a reopening until the item
+    is validated again; a proposal while it waits for a decision."""
+    item = row.item
+    if isinstance(row, ReminderLog):
+        if item.due_date is None or item.due_date != row.due_date:
+            return False
+        return any(u.pk == row.recipient_id for u in recipients(item, timezone.now()))
+    if row.kind == Kind.REOPENED:
+        return item.status != ItemStatus.VALIDATED
+    if row.kind == Kind.DUE_PROPOSED:
+        proposal = _proposal(row)
+        return proposal is not None and proposal.status == DueDateProposal.Status.PENDING
+    return row.kind in STUDENT_DECISIONS or row.kind == Kind.DUE_CHANGED
+
+
+def skip_reason(row: ReminderLog | ItemNotification) -> str | None:
+    return delivery.skip_reason(
+        row, thesis_open=row.item.thesis.is_open, concerned=concerned, still_due=still_due
+    )
+
+
+# --------------------------------------------------------------------------- queueing
 
 
 def _queue(notification: ItemNotification) -> None:

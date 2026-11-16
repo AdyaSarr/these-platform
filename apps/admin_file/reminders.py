@@ -58,7 +58,9 @@ def active_members(item: RequiredItem, roles: Iterable[Role], at: dt.datetime) -
     return list(User.objects.filter(pk__in=user_ids).order_by("pk"))
 
 
-def _recipients(item: RequiredItem, at: dt.datetime) -> list[User]:
+def recipients(item: RequiredItem, at: dt.datetime) -> list[User]:
+    """Who the item's state calls a reminder for: at queue time, and again at send
+    time (notifications.still_due)."""
     status = ItemStatus(item.status)
     if status in (ItemStatus.TODO, ItemStatus.REJECTED):
         return active_members(item, [Role.PHD_STUDENT], at)
@@ -121,7 +123,7 @@ def run(today: dt.date | None = None) -> dict[str, int]:
         if kind is None:
             continue
         counts["items"] += 1
-        for recipient in _recipients(item, at):
+        for recipient in recipients(item, at):
             with transaction.atomic():
                 reminder = _claim(item, kind, recipient)
                 if reminder is not None:

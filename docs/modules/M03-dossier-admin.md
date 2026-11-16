@@ -57,6 +57,17 @@ La thèse passe à `ACTIVE` quand toutes les pièces obligatoires sont validées
    pièce (`permissions.register_document_restriction`), en plus du niveau.
 6. Rappels J-14, J-3 et J+1 (en retard), en dates à Paris, une fois chacun
    (timer systemd quotidien, tâches Celery, courriel sans contenu).
+   **Revérifiés à l'envoi** (branche `notifications-still-due`, `core.delivery`) :
+   thèse ouverte, destinataire encore concerné (compte et adhésion actifs, rôle du
+   courriel, droit de lecture de la section) et pièce encore attendue (même
+   échéance ; doctorant d'une pièce `TODO` ou `REJECTED`, validateur dont le rôle
+   n'a pas approuvé, jamais l'auteur du dépôt) ; sinon `SKIPPED` (migration 0006).
+   Notifications d'événement : `REOPENED` due jusqu'à la revalidation,
+   `DUE_PROPOSED` tant que la proposition attend ; les décisions et
+   `DUE_CHANGED` restent dues. Un rappel `FAILED` repris le lendemain part si la
+   pièce est toujours attendue. Une ligne restée `PENDING` avant la migration
+   reste inerte (la commande ne reprend que les `FAILED`) ; tests dans
+   `test_still_due.py`.
 7. Pièces personnalisées : libellé en clair avec avertissement, niveau
    `CONFIDENTIAL` par défaut, validateurs qui voient la section et lisent le niveau.
 

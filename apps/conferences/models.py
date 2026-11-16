@@ -519,7 +519,7 @@ class NotificationStatus(models.TextChoices):
     PENDING = "PENDING", _("Pending")
     SENT = "SENT", _("Sent")
     FAILED = "FAILED", _("Failed")
-    SKIPPED = "SKIPPED", _("Not sent: no longer a member")
+    SKIPPED = "SKIPPED", _("Not sent: no longer concerned or due")
 
 
 class ConferenceNotification(TimeStampedModel):

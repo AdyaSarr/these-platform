@@ -112,6 +112,11 @@ la contourner.
   chaque service du coffre s'appelle dans **sa propre** transaction, jamais
   plusieurs dans un même `transaction.atomic()` englobant.
 - Chaque objet métier appartient à une `Thesis` ; toute requête est filtrée par thèse.
+- **Toute notification par courriel passe par `apps.core.delivery.deliver_once`**,
+  qui revérifie à l'envoi, sous le verrou de la ligne : thèse ouverte,
+  `concerned(row)` et `still_due(row)` (dans le `notifications.py` du module) ;
+  sinon `SKIPPED`, journalisé avec l'identifiant et un code fixe seulement. Le
+  message n'est construit qu'après cette décision. Un test statique le vérifie.
 - Tests avec pytest et factory-boy ; pour chaque vue, au moins un test autorisé et un
   test refusé par rôle concerné.
 - Un test qui enchaîne une opération journalisée (connexion, invitation...) puis une

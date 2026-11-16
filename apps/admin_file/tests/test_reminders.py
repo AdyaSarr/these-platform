@@ -190,7 +190,7 @@ def test_a_new_due_date_gets_new_reminders() -> None:
 def test_failed_sending_is_retried_up_to_the_limit() -> None:
     team = make_team()
     item_of(team, due_date=dt.date(2026, 12, 15))
-    with mock.patch("apps.admin_file.tasks.send_mail", side_effect=smtplib.SMTPException("no")):
+    with mock.patch("apps.core.delivery.send_mail", side_effect=smtplib.SMTPException("no")):
         for day in range(1, MAX_ATTEMPTS + 3):
             _run(f"2026-12-{day:02d}T09:00:00+00:00")
     log = ReminderLog.objects.get()
@@ -204,7 +204,7 @@ def test_failed_sending_is_retried_up_to_the_limit() -> None:
 def test_a_failure_then_a_success() -> None:
     team = make_team()
     item_of(team, due_date=dt.date(2026, 12, 15))
-    with mock.patch("apps.admin_file.tasks.send_mail", side_effect=OSError("down")):
+    with mock.patch("apps.core.delivery.send_mail", side_effect=OSError("down")):
         _run("2026-12-01T09:00:00+00:00")
     _run("2026-12-02T09:00:00+00:00")
     log = ReminderLog.objects.get()
@@ -299,7 +299,7 @@ def test_logs_hold_no_label_code_or_body(
 
     out = io.StringIO()
     with (
-        mock.patch("apps.admin_file.tasks.send_mail", side_effect=fake_send_mail),
+        mock.patch("apps.core.delivery.send_mail", side_effect=fake_send_mail),
         _at("2026-12-01T09:00:00+00:00"),
     ):
         call_command("admin_file_reminders", stdout=out)
