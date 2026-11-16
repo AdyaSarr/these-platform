@@ -8,7 +8,7 @@
   <div><dt>{% translate "Dates" %}</dt><dd>{{ mission.start_date|date:"d/m/Y" }} – {{ mission.end_date|date:"d/m/Y" }}</dd></div>
   <div><dt>{% translate "Status" %}</dt><dd>{{ mission.get_status_display }}</dd></div>
   <div><dt>{% translate "Paid by" %}</dt><dd>{{ mission.get_payer_display }}</dd></div>
-  <div><dt>{% translate "Confidentiality" %}</dt><dd>{{ mission.get_level_display }}</dd></div>
+  <div><dt>{% translate "Confidentiality" %}</dt><dd>{% level_badge mission.level %}</dd></div>
 </dl>
 <ul>
   {% if mission.destination == "OTHER" %}<li>{% translate "Place:" %} {% include "conferences/_text.html" with value=texts.destination_detail %}</li>{% endif %}

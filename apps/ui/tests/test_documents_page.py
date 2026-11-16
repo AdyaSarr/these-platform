@@ -84,7 +84,7 @@ def test_a_real_styled_table(team: SimpleNamespace) -> None:
     headers = re.findall(r'<th scope="col"[^>]*>', page)
     assert len(headers) == 4
     # The level is a badge: a word with an icon, never a colour alone.
-    assert re.search(r'<span class="badge badge-\w+">.*?Public</span>', page, re.S)
+    assert re.search(r'<span class="badge badge-\w+ level-badge"[^>]*>.*?Public</span>', page, re.S)
 
 
 def test_repeated_titles_are_numbered_in_storing_order(team: SimpleNamespace) -> None:

@@ -5,7 +5,7 @@
 {% page_header %}{% include "conferences/_text.html" with value=texts.title %}{% subtitle %}
   {{ submission.venue.acronym }}{% if submission.edition %} {{ submission.edition.year }}{% endif %} ({{ submission.venue.get_kind_display }}) ·
   <strong>{{ submission.get_status_display }}</strong> ·
-  {% translate "Confidentiality" %} : {{ submission.get_level_display }} ·
+  {% translate "Confidentiality" %} : {% level_badge submission.level %} ·
   {% if submission.st_work %}{% translate "ST work: ST's approval required" %}{% else %}{% translate "Not ST work" %}{% endif %}
 {% endpage_header %}
 {% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}

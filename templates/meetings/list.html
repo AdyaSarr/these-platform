@@ -28,7 +28,7 @@
       <td>{{ meeting.get_kind_display }}{% if mine %} <span class="mark">{% translate "you attend" %}</span>{% endif %}{% if meeting.is_cancelled %} <strong class="overdue">{% translate "cancelled" %}</strong>{% endif %}</td>
       <td><a href="{% url 'meetings:detail' thesis_id=thesis.pk meeting_id=meeting.pk %}">{% include "meetings/_text.html" with value=title %}</a></td>
       <td>{{ meeting.get_location_display }}</td>
-      <td>{{ meeting.get_level_display }}</td>
+      <td>{% level_badge meeting.level %}</td>
     </tr>
   {% endfor %}
   </tbody>

@@ -35,10 +35,17 @@ def numbered_titles(documents: Iterable[Any]) -> dict[Any, str]:
     return labels
 
 
-# Level badges: a word and an icon (ui/badge.html), the tone only adds to them.
+# Level badges (ui/level_badge.html): the word, an icon of its own per level (ST and
+# LIRMM told apart at a glance), the tone only adds to them.
 LEVEL_TONES = {
     "PUBLIC": "neutral",
     "INTERNAL_LIRMM": "info",
     "INTERNAL_ST": "info",
     "CONFIDENTIAL": "warning",
+}
+LEVEL_ICONS = {
+    "PUBLIC": "globe",
+    "INTERNAL_LIRMM": "flask-conical",
+    "INTERNAL_ST": "factory",
+    "CONFIDENTIAL": "lock",
 }

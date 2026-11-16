@@ -12,7 +12,7 @@
   {% for document, label in rows %}
     <tr>
       <td class="document-title"><a href="{% url 'vault:document' thesis_id=thesis.pk document_id=document.pk %}">{{ label }}</a></td>
-      <td>{% include "ui/badge.html" with tone=document.confidentiality|level_tone label=document.get_confidentiality_display %}</td>
+      <td>{% level_badge document.confidentiality %}</td>
       <td class="num">{{ document.current_version }}</td>
       <td>{{ document.updated_at|date:"SHORT_DATETIME_FORMAT" }}</td>
     </tr>

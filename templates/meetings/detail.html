@@ -6,7 +6,7 @@
   {{ meeting.get_kind_display }}{% if meeting.presentation_venue %} — {{ meeting.get_presentation_venue_display }}{% endif %} ·
   {% include "meetings/_when.html" %} ·
   {{ meeting.get_location_display }} ·
-  {% translate "Confidentiality" %} : {{ meeting.get_level_display }}
+  {% translate "Confidentiality" %} : {% level_badge meeting.level %}
   {% if meeting.is_cancelled %}· <strong class="overdue">{% translate "cancelled" %}</strong>{% endif %}
 {% endpage_header %}
 {% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
@@ -158,7 +158,7 @@
   {% if documents %}
   <ul>
     {% for document, link in documents %}
-      <li><a href="{% url 'vault:document' thesis_id=thesis.pk document_id=document.pk %}">{{ document.title }}</a> ({{ document.get_confidentiality_display }})
+      <li><a href="{% url 'vault:document' thesis_id=thesis.pk document_id=document.pk %}">{{ document.title }}</a> {% level_badge document.confidentiality %}
         {% if can_write %}<form method="post" action="{% url 'meetings:unlink_document' thesis_id=thesis.pk meeting_id=meeting.pk link_id=link.pk %}">{% csrf_token %}<button type="submit">{% translate "Unlink" %}</button></form>{% endif %}
       </li>
     {% endfor %}

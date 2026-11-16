@@ -2,7 +2,7 @@
 {% block title %}{% document_label document %}{% endblock %}
 {% block content %}
 {% url 'vault:documents' thesis_id=thesis.pk as documents_url %}
-{% document_label document as label %}{% page_header parent_url=documents_url parent_label=_("All documents") %}{{ label }}{% subtitle %}{% include "ui/badge.html" with tone=document.confidentiality|level_tone label=document.get_confidentiality_display %}{% endpage_header %}
+{% document_label document as label %}{% page_header parent_url=documents_url parent_label=_("All documents") %}{{ label }}{% subtitle %}{% level_badge document.confidentiality %}{% endpage_header %}
 
 <h2>{% translate "Versions" %}</h2>
 <table>

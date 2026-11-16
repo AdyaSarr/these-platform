@@ -10,7 +10,7 @@
   {{ objective.get_category_display }} ·
   {% translate "Due date" %} : {{ objective.due_date|date:"SHORT_DATE_FORMAT" }} ·
   {% translate "Weight" %} : {{ objective.weight }} ·
-  {% translate "Confidentiality" %} : {{ objective.get_level_display }}
+  {% translate "Confidentiality" %} : {% level_badge objective.level %}
 </p>
 <p>
   <strong>{{ objective.get_status_display }}</strong> ({{ objective.progress }} %)

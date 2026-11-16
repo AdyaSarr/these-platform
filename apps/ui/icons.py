@@ -28,6 +28,8 @@ ICON_NAMES: tuple[str, ...] = (
     "inbox", "bell", "chevron-right",
     # Page header, segmented controls (step 2)
     "plus", "settings", "calendar-plus", "chevron-left",
+    # Confidentiality levels (ui/level_badge.html)
+    "globe", "flask-conical", "factory", "lock",
 )  # fmt: skip
 
 _OPEN = (

@@ -10,7 +10,7 @@
   {% for submission, title in rows %}
     <tr><td><a href="{% url 'conferences:submission' thesis_id=thesis.pk submission_id=submission.pk %}">{% include "conferences/_text.html" with value=title %}</a></td>
       <td>{{ submission.venue.acronym }}{% if submission.edition %} {{ submission.edition.year }}{% endif %}</td>
-      <td>{{ submission.get_status_display }}</td><td>{{ submission.get_level_display }}</td></tr>
+      <td>{{ submission.get_status_display }}</td><td>{% level_badge submission.level %}</td></tr>
   {% endfor %}
   </tbody>
 </table>

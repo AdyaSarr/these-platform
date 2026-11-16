@@ -14,7 +14,7 @@ from django.utils.safestring import SafeString
 
 from .. import icons
 from ..agenda import Entry, agenda_for
-from ..documents import LEVEL_TONES, numbered_titles
+from ..documents import LEVEL_ICONS, LEVEL_TONES, numbered_titles
 from ..tabs import tabs_for
 from ..tiles import Tiles, dashboard_tiles
 
@@ -130,6 +130,18 @@ def document_label(context: Context, document: Any) -> str:
     return numbered_titles(readable).get(document.pk, str(document.title))
 
 
-@register.filter
-def level_tone(level: str) -> str:
-    return LEVEL_TONES.get(str(level), "neutral")
+@register.inclusion_tag("ui/level_badge.html")
+def level_badge(value: Any) -> dict[str, Any]:
+    """The badge of a confidentiality level; nothing for a value outside the list."""
+    from apps.core.confidentiality import ConfidentialityLevel
+
+    try:
+        level = ConfidentialityLevel(value)
+    except ValueError:
+        return {"level": None}
+    return {
+        "level": level.value,
+        "label": level.label,
+        "tone": LEVEL_TONES[level.value],
+        "icon": LEVEL_ICONS[level.value],
+    }
