@@ -57,13 +57,17 @@ def _crawl(client: Client, start: str, prefix: str, role: Role) -> dict[str, int
         response = client.get(url)
         seen[url] = response.status_code
         assert response.status_code < 500, (role, url)
+        if response.status_code in (301, 302) and response["Location"].startswith(prefix):
+            queue.append(response["Location"])  # e.g. a CSI member: dashboard -> CSI file
         if response.status_code != 200 or "text/html" not in response.get("Content-Type", ""):
             continue
         page = response.content.decode()
         _assert_csp_clean(page, f"{role} {url}")
         if "<html" in page:
             assert nav_keys(page) == expected_nav, (role, url)
-            assert len(re.findall(r'aria-current="page"', page)) <= 1, (role, url)
+            sidebar = re.search(r'<nav id="sidebar".*?</nav>', page, re.S)
+            assert sidebar is not None, (role, url)
+            assert len(re.findall(r'aria-current="page"', sidebar.group(0))) <= 1, (role, url)
         queue.extend(_links(page, prefix) - seen.keys())
     assert len(seen) < MAX_PAGES, "the crawl did not finish"
     return seen

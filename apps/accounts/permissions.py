@@ -354,6 +354,9 @@ def _authorize(request: HttpRequest, action: Action, thesis_id: Any) -> Thesis:
     if thesis is None or not can(request.user, action, thesis):
         _audit_denial(request, action, thesis, thesis_id)
         raise PermissionDenied
+    # For the layout (apps/ui/navigation.py): set only once the guard said yes, so a
+    # refused page never shows the sidebar nor the thesis title.
+    request.thesis = thesis  # type: ignore[attr-defined]
     return thesis
 
 

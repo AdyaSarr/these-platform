@@ -10,7 +10,7 @@ plus tard. Cocher une note quand elle est faite.
       invitez-le »).
 - [ ] **Dossier admin** : distinguer « en retard » (à déposer) de « en attente de
       validation depuis X jours » (déposée).
-- [ ] **Tableau de bord** : espace insécable avant « % » ; seul « Ouvrir le
+- [x] **Tableau de bord** : espace insécable avant « % » ; seul « Ouvrir le
       dossier » doit être un lien, pas toute la phrase.
 - [ ] **Échec CSRF** : la page affichée est la page brute de Django. Prévoir une
       page à nous (`CSRF_FAILURE_VIEW`) qui dit simplement « Votre navigateur

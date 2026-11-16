@@ -5,7 +5,7 @@
 {% if data.missing_receipts %}<p class="overdue">{% blocktranslate count counter=data.missing_receipts %}{{ counter }} mission with missing receipts{% plural %}{{ counter }} missions with missing receipts{% endblocktranslate %}</p>{% endif %}
 <dl class="stats">
   <div><dt>{% translate "Days at the LIRMM" %}</dt><dd>{{ data.summary.lirmm_days }}</dd><dd class="helptext">{% blocktranslate with n=data.summary.cifre_year %}CIFRE year {{ n }}{% endblocktranslate %}</dd></div>
-  {% if data.full and data.st_percent is not None %}<div><dt>{% translate "ST share" %}</dt><dd>{{ data.st_percent }} %</dd></div>{% endif %}
+  {% if data.full and data.st_percent is not None %}<div><dt>{% translate "ST share" %}</dt><dd>{{ data.st_percent }}&nbsp;%</dd></div>{% endif %}
   {% if data.full and data.gap is not None %}<div><dt>{% translate "Gap to the target" %}</dt><dd>{% blocktranslate with gap=data.gap %}{{ gap }} points{% endblocktranslate %}</dd>{% if data.summary.alert %}<dd class="helptext overdue">{% translate "Above the alert threshold." %}</dd>{% endif %}</div>{% endif %}
 </dl>
 {% if data.rule %}<p>{% include "travel/_rule.html" with rule=data.rule %}</p>{% endif %}

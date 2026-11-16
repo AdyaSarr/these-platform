@@ -62,6 +62,7 @@ _TOTP_ROUTES = [
 
 urlpatterns: list[URLPattern | URLResolver] = [
     path("", include("apps.core.urls")),
+    path("ui/", include("apps.ui.urls")),
     # Every page of a thesis lives under /t/<id>/ and is guarded by permissions.py.
     path("t/<uuid:thesis_id>/", include("apps.accounts.urls")),
     path("t/<uuid:thesis_id>/documents/", include("apps.vault.urls")),

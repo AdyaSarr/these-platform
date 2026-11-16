@@ -1,0 +1,5 @@
+{% load ui %}{# tone = success | warning | danger | info; the icon and the title carry the state too. #}
+<div class="alert alert-{{ tone|default:'info' }}"{% if tone == "danger" %} role="alert"{% endif %}>
+  {% if tone == "success" %}{% icon "circle-check" %}{% elif tone == "warning" %}{% icon "triangle-alert" %}{% elif tone == "danger" %}{% icon "octagon-alert" %}{% else %}{% icon "info" %}{% endif %}
+  <div>{% if title %}<p class="alert-title">{{ title }}</p>{% endif %}<p>{{ message }}</p></div>
+</div>

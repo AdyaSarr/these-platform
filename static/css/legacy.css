@@ -1,0 +1,71 @@
+/* Styles of the module pages from before the redesign, on the new tokens.
+   Kept (same class names) until step 2 restyles each module with the components;
+   the components layer wins over this one. Colour never carries a state alone:
+   a word, a marker or a dash too. */
+
+@layer legacy {
+  .stack { display: grid; gap: var(--space-4); max-width: 26rem; padding: 0; list-style: none; }
+  .stack label { display: block; font-weight: 550; margin-bottom: var(--space-1); }
+
+  /* Team (M1) */
+  .actions { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+  .actions form { display: flex; gap: var(--space-2); align-items: center; margin: 0; }
+  .delivery-not_sent, .delivery-failed { color: var(--error); font-weight: 600; }
+
+  /* The old danger button: was red text on the accent (docs/ui-notes.md). */
+  button.danger {
+    color: var(--danger-solid-fg);
+    background: var(--danger-solid);
+    border-color: var(--danger-solid);
+  }
+  button.danger:hover { background: var(--danger-solid-hover); }
+
+  /* Administrative file (M3) */
+  .item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-3) var(--space-4);
+    margin-bottom: var(--space-3);
+    box-shadow: var(--shadow-sm);
+  }
+  .item-head { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: baseline; }
+  .item-head h3 { margin: 0; font-size: 1rem; }
+  .status { font-weight: 600; }
+  .status-validated .status { color: var(--success-fg); }
+  .status-rejected .status { color: var(--danger-fg); }
+  .warning { border-left: 3px solid var(--danger-fg); padding-left: var(--space-2); }
+  .approvals { margin: var(--space-1) 0; padding-left: 1.25rem; }
+
+  /* Objectives (M4) */
+  .overdue { color: var(--overdue); font-weight: 600; }
+  .restricted {
+    color: var(--restricted-fg);
+    background: var(--restricted-bg);
+    border-radius: 4px;
+    padding: 0 0.375rem;
+    font-style: italic;
+  }
+  .mark { color: var(--warning-fg); background: var(--warning-bg); border-radius: 4px; padding: 0 0.375rem; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: var(--space-2); }
+  .stats div {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-2) var(--space-3);
+  }
+  .stats dt { color: var(--muted); font-size: var(--text-sm); }
+  .stats dd { margin: 0; font-size: 1.4rem; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .stats dd.helptext { font-size: 0.85rem; font-weight: normal; color: var(--muted); }
+  .years { display: flex; flex-wrap: wrap; gap: var(--space-2); list-style: none; padding: 0; }
+  .revisions, .progress-list, .comment-list { padding-left: 1.25rem; }
+
+  /* .chart-svg, .chart-grid, .chart-line, .chart-dot, .chart-tick: in base.css. */
+  .chart-data { border-collapse: collapse; margin-top: var(--space-2); }
+  .chart-data th, .chart-data td { border-bottom: 1px solid var(--border); padding: 0.2rem 0.6rem; text-align: left; }
+
+  /* TOTP QR code (inline SVG): dark modules on a fixed white background in both
+     themes, or an authenticator app could not read it in dark mode. */
+  .qr { display: inline-block; background: #ffffff; padding: 0.75rem; border-radius: 6px; }
+  .qr svg { display: block; width: 12rem; height: auto; }
+}

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-16 00:05+0100\n"
+"POT-Creation-Date: 2026-11-16 12:05+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -394,38 +394,43 @@ msgstr "Invitation révoquée."
 msgid "Active"
 msgstr "Active"
 
-#: apps/accounts/views.py:36 templates/accounts/team.html:3
-#: templates/accounts/team.html:6
+#: apps/accounts/views.py:36 apps/ui/navigation.py:48
+#: templates/accounts/team.html:3 templates/accounts/team.html:6
 msgid "Team"
 msgstr "Équipe"
 
-#: apps/accounts/views.py:40 templates/objectives/dashboard.html:2
-#: templates/objectives/dashboard.html:4 templates/objectives/detail.html:4
+#: apps/accounts/views.py:40 apps/ui/navigation.py:38
+#: templates/objectives/dashboard.html:2 templates/objectives/dashboard.html:4
+#: templates/objectives/detail.html:4
 msgid "Objectives"
 msgstr "Objectifs"
 
-#: apps/accounts/views.py:47 templates/meetings/detail.html:4
-#: templates/meetings/list.html:2 templates/meetings/list.html:4
-#: templates/meetings/register.html:5
+#: apps/accounts/views.py:47 apps/ui/navigation.py:40
+#: templates/meetings/detail.html:4 templates/meetings/list.html:2
+#: templates/meetings/list.html:4 templates/meetings/register.html:5
 msgid "Meetings"
 msgstr "Réunions"
 
-#: apps/accounts/views.py:54 templates/conferences/deadlines.html:2
+#: apps/accounts/views.py:54 apps/ui/navigation.py:42
+#: templates/conferences/deadlines.html:2
 #: templates/conferences/deadlines.html:4 templates/conferences/policy.html:4
 #: templates/conferences/submissions.html:5 templates/conferences/venue.html:4
 msgid "Conferences"
 msgstr "Conférences"
 
-#: apps/accounts/views.py:61 templates/travel/_links.html:3
+#: apps/accounts/views.py:61 apps/ui/navigation.py:44
+#: templates/travel/_links.html:3
 msgid "Travel"
 msgstr "Déplacements"
 
-#: apps/accounts/views.py:68 templates/conferences/submission.html:42
+#: apps/accounts/views.py:68 apps/ui/navigation.py:46
+#: templates/conferences/submission.html:42
 #: templates/vault/document_list.html:2 templates/vault/document_list.html:4
 msgid "Documents"
 msgstr "Documents"
 
 #: apps/accounts/views.py:77 apps/admin_file/services.py:278
+#: apps/ui/navigation.py:36 templates/accounts/dashboard.html:34
 #: templates/admin_file/file.html:2 templates/admin_file/file.html:4
 #: templates/admin_file/item_page.html:4 templates/admin_file/new_item.html:5
 msgid "Administrative file"
@@ -3194,6 +3199,15 @@ msgstr "Vérifiez le budget."
 msgid "Budget saved."
 msgstr "Budget enregistré."
 
+#: apps/ui/navigation.py:34
+msgid "Home"
+msgstr "Accueil"
+
+#: apps/ui/navigation.py:49 templates/accounts/csi_file.html:3
+#: templates/accounts/csi_file.html:5
+msgid "CSI file"
+msgstr "Dossier CSI"
+
 #: apps/vault/forms.py:14 templates/vault/upload.html:6
 msgid ""
 "The title is not encrypted: do not put any confidential information in it."
@@ -3352,10 +3366,6 @@ msgstr ""
 msgid "See the team"
 msgstr "Voir l'équipe"
 
-#: templates/accounts/csi_file.html:3 templates/accounts/csi_file.html:5
-msgid "CSI file"
-msgstr "Dossier CSI"
-
 #: templates/accounts/csi_file.html:7
 msgid "The CSI file will be available in a later module."
 msgstr "Le dossier CSI sera disponible dans un prochain module."
@@ -3364,15 +3374,20 @@ msgstr "Le dossier CSI sera disponible dans un prochain module."
 msgid "Objectives (read only)"
 msgstr "Objectifs (lecture seule)"
 
-#: templates/accounts/dashboard.html:8
+#: templates/accounts/dashboard.html:6
+#, python-format
+msgid "Hello %(name)s"
+msgstr "Bonjour %(name)s"
+
+#: templates/accounts/dashboard.html:11
 msgid "CIFRE effective date"
 msgstr "Date d'effet CIFRE"
 
-#: templates/accounts/dashboard.html:9
+#: templates/accounts/dashboard.html:12
 msgid "First enrolment"
 msgstr "Première inscription"
 
-#: templates/accounts/dashboard.html:14
+#: templates/accounts/dashboard.html:19
 #, python-format
 msgid ""
 "The thesis will become “%(status)s” when the mandatory items of the "
@@ -3381,9 +3396,123 @@ msgstr ""
 "La thèse passera « %(status)s » quand les pièces obligatoires du dossier "
 "administratif seront validées"
 
-#: templates/accounts/dashboard.html:16
+#: templates/accounts/dashboard.html:21
 msgid "that you see"
 msgstr "que vous voyez"
+
+#: templates/accounts/dashboard.html:22 templates/accounts/dashboard.html:38
+msgid "Open the file"
+msgstr "Ouvrir le dossier"
+
+#: templates/accounts/dashboard.html:30
+msgid "At a glance"
+msgstr "En un coup d'œil"
+
+#: templates/accounts/dashboard.html:37
+#: templates/admin_file/blocks/dashboard.html:4
+#: templates/admin_file/file.html:10
+#, python-format
+msgid "%(validated)s / %(total)s mandatory items validated"
+msgstr "%(validated)s / %(total)s pièces obligatoires validées"
+
+#: templates/accounts/dashboard.html:43
+#: templates/objectives/blocks/dashboard.html:4
+#: templates/objectives/dashboard.html:18
+msgid "Weighted attainment"
+msgstr "Taux d'atteinte pondéré"
+
+#: templates/accounts/dashboard.html:45
+#: templates/objectives/blocks/dashboard.html:3
+#: templates/objectives/dashboard.html:11 templates/objectives/detail.html:9
+#, python-format
+msgid "Year %(number)s"
+msgstr "Année %(number)s"
+
+#: templates/accounts/dashboard.html:45
+#: templates/objectives/blocks/dashboard.html:5
+#, python-format
+msgid "%(overdue)s overdue, %(drafts)s awaiting approval"
+msgstr "%(overdue)s en retard, %(drafts)s en attente d'approbation"
+
+#: templates/accounts/dashboard.html:45
+msgid "No objective yet."
+msgstr "Aucun objectif pour l'instant."
+
+#: templates/accounts/dashboard.html:46
+#: templates/objectives/blocks/dashboard.html:7
+msgid "Open the objectives"
+msgstr "Ouvrir les objectifs"
+
+#: templates/accounts/dashboard.html:51
+#: templates/meetings/blocks/dashboard.html:3
+msgid "Next meeting"
+msgstr "Prochaine réunion"
+
+#: templates/accounts/dashboard.html:55
+#: templates/meetings/blocks/dashboard.html:3
+msgid "you do not attend"
+msgstr "vous n'y participez pas"
+
+#: templates/accounts/dashboard.html:56
+msgid "See the meeting"
+msgstr "Voir la réunion"
+
+#: templates/accounts/dashboard.html:59
+#: templates/meetings/blocks/dashboard.html:8
+msgid "No upcoming meeting."
+msgstr "Aucune réunion à venir."
+
+#: templates/accounts/dashboard.html:60
+#: templates/meetings/blocks/dashboard.html:18
+msgid "Open the meetings"
+msgstr "Ouvrir les réunions"
+
+#: templates/accounts/dashboard.html:67
+msgid "To deal with"
+msgstr "À traiter"
+
+#: templates/accounts/dashboard.html:71
+#, python-format
+msgid "%(counter)s overdue objective"
+msgid_plural "%(counter)s overdue objectives"
+msgstr[0] "%(counter)s objectif en retard"
+msgstr[1] "%(counter)s objectifs en retard"
+
+#: templates/accounts/dashboard.html:71
+#: templates/meetings/blocks/dashboard.html:10
+#, python-format
+msgid "%(counter)s overdue action"
+msgid_plural "%(counter)s overdue actions"
+msgstr[0] "%(counter)s action en retard"
+msgstr[1] "%(counter)s actions en retard"
+
+#: templates/accounts/dashboard.html:71
+#: templates/conferences/blocks/dashboard.html:10
+#, python-format
+msgid "%(counter)s ST approval awaits your decision"
+msgid_plural "%(counter)s ST approvals await your decision"
+msgstr[0] "%(counter)s accord ST attend votre décision"
+msgstr[1] "%(counter)s accords ST attendent votre décision"
+
+#: templates/accounts/dashboard.html:71
+#: templates/travel/blocks/dashboard.html:4
+#, python-format
+msgid "%(counter)s mission approval awaits your decision"
+msgid_plural "%(counter)s mission approvals await your decision"
+msgstr[0] "%(counter)s accord de mission attend votre décision"
+msgstr[1] "%(counter)s accords de mission attendent votre décision"
+
+#: templates/accounts/dashboard.html:71
+#: templates/travel/blocks/dashboard.html:5
+#, python-format
+msgid "%(counter)s mission with missing receipts"
+msgid_plural "%(counter)s missions with missing receipts"
+msgstr[0] "%(counter)s mission avec des justificatifs manquants"
+msgstr[1] "%(counter)s missions avec des justificatifs manquants"
+
+#: templates/accounts/dashboard.html:74
+msgid "Nothing to report"
+msgstr "Rien à signaler"
 
 #: templates/accounts/email/invitation_body.txt:1
 #: templates/accounts/email/password_reset_body.txt:1
@@ -3479,7 +3608,7 @@ msgstr ""
 "Vous êtes connecté·e avec une autre adresse ; déconnectez-vous pour accepter "
 "cette invitation."
 
-#: templates/accounts/invitation_other_account.html:10 templates/base.html:21
+#: templates/accounts/invitation_other_account.html:10 templates/base.html:58
 msgid "Log out"
 msgstr "Se déconnecter"
 
@@ -3551,12 +3680,6 @@ msgstr "Retirer"
 #: templates/accounts/team.html:105
 msgid "No pending invitation."
 msgstr "Aucune invitation en attente."
-
-#: templates/admin_file/blocks/dashboard.html:4
-#: templates/admin_file/file.html:10
-#, python-format
-msgid "%(validated)s / %(total)s mandatory items validated"
-msgstr "%(validated)s / %(total)s pièces obligatoires validées"
 
 #: templates/admin_file/blocks/dashboard.html:6
 msgid "Open the administrative file"
@@ -3692,9 +3815,41 @@ msgstr "Proposer cette échéance"
 msgid "Add the item"
 msgstr "Ajouter la pièce"
 
-#: templates/base.html:9 templates/base.html:16
+#: templates/base.html:10 templates/base.html:27 templates/base.html:42
 msgid "CIFRE thesis"
 msgstr "Thèse CIFRE"
+
+#: templates/base.html:21
+msgid "Skip to content"
+msgstr "Aller au contenu"
+
+#: templates/base.html:25
+msgid "Main navigation"
+msgstr "Navigation principale"
+
+#: templates/base.html:28
+msgid "Close the menu"
+msgstr "Fermer le menu"
+
+#: templates/base.html:40
+msgid "Menu"
+msgstr "Menu"
+
+#: templates/base.html:47
+msgid "Theme"
+msgstr "Thème"
+
+#: templates/base.html:50
+msgid "Follow the system"
+msgstr "Suivre le système"
+
+#: templates/base.html:51
+msgid "Light theme"
+msgstr "Thème clair"
+
+#: templates/base.html:52
+msgid "Dark theme"
+msgstr "Thème sombre"
 
 #: templates/conferences/_deadline.html:1
 msgid "Paris"
@@ -3722,13 +3877,6 @@ msgid "ST approval to request by %(date)s (in %(counter)s day)"
 msgid_plural "ST approval to request by %(date)s (in %(counter)s days)"
 msgstr[0] "Accord ST à demander avant le %(date)s (dans %(counter)s jour)"
 msgstr[1] "Accord ST à demander avant le %(date)s (dans %(counter)s jours)"
-
-#: templates/conferences/blocks/dashboard.html:10
-#, python-format
-msgid "%(counter)s ST approval awaits your decision"
-msgid_plural "%(counter)s ST approvals await your decision"
-msgstr[0] "%(counter)s accord ST attend votre décision"
-msgstr[1] "%(counter)s accords ST attendent votre décision"
 
 #: templates/conferences/blocks/dashboard.html:11
 msgid "Open the conferences"
@@ -4034,7 +4182,7 @@ msgstr "Ajouter l'édition"
 msgid "Edit the venue"
 msgstr "Modifier la conférence ou revue"
 
-#: templates/core/home.html:3 templates/core/home.html:5
+#: templates/core/home.html:3 templates/core/home.html:7
 #: templates/travel/_nav.html:1
 msgid "Dashboard"
 msgstr "Tableau de bord"
@@ -4044,11 +4192,11 @@ msgstr "Tableau de bord"
 msgid "Welcome, %(name)s."
 msgstr "Bienvenue, %(name)s."
 
-#: templates/core/home.html:8
+#: templates/core/home.html:11
 msgid "My theses"
 msgstr "Mes thèses"
 
-#: templates/core/home.html:15
+#: templates/core/home.html:19
 msgid ""
 "You do not have access to any thesis. Access is granted by invitation only."
 msgstr ""
@@ -4065,29 +4213,6 @@ msgstr "Actions liées"
 #: templates/meetings/_objective_actions_slot.html:5
 msgid "Show the linked actions"
 msgstr "Afficher les actions liées"
-
-#: templates/meetings/blocks/dashboard.html:3
-msgid "Next meeting"
-msgstr "Prochaine réunion"
-
-#: templates/meetings/blocks/dashboard.html:3
-msgid "you do not attend"
-msgstr "vous n'y participez pas"
-
-#: templates/meetings/blocks/dashboard.html:8
-msgid "No upcoming meeting."
-msgstr "Aucune réunion à venir."
-
-#: templates/meetings/blocks/dashboard.html:10
-#, python-format
-msgid "%(counter)s overdue action"
-msgid_plural "%(counter)s overdue actions"
-msgstr[0] "%(counter)s action en retard"
-msgstr[1] "%(counter)s actions en retard"
-
-#: templates/meetings/blocks/dashboard.html:18
-msgid "Open the meetings"
-msgstr "Ouvrir les réunions"
 
 #: templates/meetings/detail.html:2 templates/meetings/register.html:12
 msgid "Meeting"
@@ -4406,26 +4531,6 @@ msgstr "Avancement moyen pondéré"
 msgid "No progress to show yet."
 msgstr "Aucun avancement à afficher pour l'instant."
 
-#: templates/objectives/blocks/dashboard.html:3
-#: templates/objectives/dashboard.html:11 templates/objectives/detail.html:9
-#, python-format
-msgid "Year %(number)s"
-msgstr "Année %(number)s"
-
-#: templates/objectives/blocks/dashboard.html:4
-#: templates/objectives/dashboard.html:18
-msgid "Weighted attainment"
-msgstr "Taux d'atteinte pondéré"
-
-#: templates/objectives/blocks/dashboard.html:5
-#, python-format
-msgid "%(overdue)s overdue, %(drafts)s awaiting approval"
-msgstr "%(overdue)s en retard, %(drafts)s en attente d'approbation"
-
-#: templates/objectives/blocks/dashboard.html:7
-msgid "Open the objectives"
-msgstr "Ouvrir les objectifs"
-
 #: templates/objectives/dashboard.html:8
 msgid "CIFRE years"
 msgstr "Années CIFRE"
@@ -4640,29 +4745,15 @@ msgstr " ; règle : au moins %(n)s"
 
 #: templates/travel/blocks/dashboard.html:2
 msgid "Next mission:"
-msgstr "Prochaine mission :"
+msgstr "Prochaine mission :"
 
 #: templates/travel/blocks/dashboard.html:3
 msgid "No mission to come."
 msgstr "Aucune mission à venir."
 
 #: templates/travel/blocks/dashboard.html:4
-#, python-format
-msgid "%(counter)s mission approval awaits your decision"
-msgid_plural "%(counter)s mission approvals await your decision"
-msgstr[0] "%(counter)s accord de mission attend votre décision"
-msgstr[1] "%(counter)s accords de mission attendent votre décision"
-
-#: templates/travel/blocks/dashboard.html:4
 msgid "see"
 msgstr "voir"
-
-#: templates/travel/blocks/dashboard.html:5
-#, python-format
-msgid "%(counter)s mission with missing receipts"
-msgid_plural "%(counter)s missions with missing receipts"
-msgstr[0] "%(counter)s mission avec des justificatifs manquants"
-msgstr[1] "%(counter)s missions avec des justificatifs manquants"
 
 #: templates/travel/blocks/dashboard.html:7 templates/travel/split.html:9
 msgid "Days at the LIRMM"
@@ -4694,7 +4785,7 @@ msgstr "Au-delà du seuil d'alerte."
 #: templates/travel/blocks/dashboard.html:12
 #, python-format
 msgid "Budget %(payer)s: %(committed)s committed of %(budget)s"
-msgstr "Budget %(payer)s : %(committed)s engagés sur %(budget)s"
+msgstr "Budget %(payer)s : %(committed)s engagés sur %(budget)s"
 
 #: templates/travel/blocks/dashboard.html:12 templates/travel/budget.html:13
 msgid "above the budget"

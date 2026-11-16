@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "apps.meetings",
     "apps.conferences",
     "apps.travel",
+    "apps.ui",  # visual layer: navigation, theme, icons (presentation only)
     # Authentication: sign-in, password reset, mandatory second factor (M1).
     "allauth",
     "allauth.account",
@@ -82,6 +83,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "apps.ui.context_processors.ui",
             ],
         },
     },

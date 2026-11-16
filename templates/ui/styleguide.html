@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% load ui %}
+{# Developer page, DEBUG only (apps/ui/views.py): fictitious content, not translated. #}
+{% block title %}Guide de style{% endblock %}
+{% block content %}
+  <div class="page-head">
+    <p class="greeting">Page de développement, visible seulement en DEBUG</p>
+    <h1>Guide de style</h1>
+    <p class="muted">Chaque composant de <code>templates/ui/</code>, avec des données fictives. Basculez le thème dans l’en-tête pour vérifier le mode sombre.</p>
+  </div>
+
+  <section class="sg-section" data-component="buttons">
+    <h2>Boutons</h2>
+    <div class="sg-row">
+      <button type="button">Principal</button>
+      <button type="button" class="btn btn-secondary">Secondaire</button>
+      <button type="button" class="btn btn-ghost">Discret</button>
+      <button type="button" class="btn btn-danger">{% icon "triangle-alert" %}Danger</button>
+      <button type="button" disabled>Désactivé</button>
+      <button type="button" class="btn btn-secondary btn-sm">Petit</button>
+      <a class="btn btn-secondary" href="#main">Lien en bouton</a>
+    </div>
+  </section>
+
+  <section class="sg-section" data-component="cards">
+    <h2>Cartes</h2>
+    <div class="blocks">
+      <div class="block">
+        <h2>{% block_icon "meetings" %}Réunions</h2>
+        <p>Prochaine réunion&nbsp;: 18 nov. 2026 — point mensuel fictif.</p>
+        <p><a class="block-link" href="#main">Ouvrir les réunions {% icon "chevron-right" %}</a></p>
+      </div>
+      <div class="card">
+        <h3 class="card-title">{% icon "file-lock" %}Carte simple</h3>
+        <p>Une carte regroupe un contenu court et une action.</p>
+        <div class="card-foot"><a href="#main">Action de la carte</a></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sg-section" data-component="tiles">
+    <h2>Tuiles chiffrées</h2>
+    <ul class="tiles">
+      <li class="tile"><span class="tile-label">{% icon "folder-open" %}Dossier administratif</span><span class="tile-value">70&nbsp;%</span><progress value="7" max="10" aria-hidden="true"></progress><p class="tile-detail">7 / 10 pièces obligatoires validées</p><a href="#main">Ouvrir le dossier</a></li>
+      <li class="tile"><span class="tile-label">{% icon "target" %}Taux d’atteinte pondéré</span><span class="tile-value">42&nbsp;%</span><p class="tile-detail">Année 1 · 2 en retard</p><a href="#main">Ouvrir les objectifs</a></li>
+      <li class="tile"><span class="tile-label">{% icon "calendar-days" %}Prochaine réunion</span><span class="tile-value">18 nov.</span><p class="tile-detail">14:00 · Point avec le tuteur</p><a href="#main">Voir la réunion</a></li>
+      <li class="tile tile-alerts"><span class="tile-label">{% icon "bell" %}À traiter</span><span class="tile-value">3</span><div class="tile-detail"><ul><li>2 objectifs en retard</li><li>1 action en retard</li></ul></div></li>
+    </ul>
+  </section>
+
+  <section class="sg-section" data-component="badges">
+    <h2>Badges de statut</h2>
+    <div class="sg-row">
+      {% include "ui/badge.html" with tone="success" label="Validée" %}
+      {% include "ui/badge.html" with tone="warning" label="En attente" %}
+      {% include "ui/badge.html" with tone="danger" label="En retard" %}
+      {% include "ui/badge.html" with tone="info" label="Déposée" %}
+      {% include "ui/badge.html" with tone="neutral" label="Brouillon" %}
+    </div>
+  </section>
+
+  <section class="sg-section" data-component="tables">
+    <h2>Tableau</h2>
+    <div class="table-wrap">
+      <table class="table">
+        <caption class="visually-hidden">Pièces fictives du dossier</caption>
+        <thead><tr><th scope="col">Pièce</th><th scope="col">Statut</th><th scope="col" class="num">Jours</th></tr></thead>
+        <tbody>
+          <tr><td>Convention CIFRE fictive</td><td>{% include "ui/badge.html" with tone="success" label="Validée" %}</td><td class="num">0</td></tr>
+          <tr><td>Inscription fictive</td><td>{% include "ui/badge.html" with tone="warning" label="En attente" %}</td><td class="num">12</td></tr>
+          <tr><td>Attestation fictive</td><td>{% include "ui/badge.html" with tone="danger" label="En retard" %}</td><td class="num">31</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="sg-section" data-component="forms">
+    <h2>Formulaire</h2>
+    <form class="card" method="post" action="{% url 'ui:styleguide' %}">
+      {% csrf_token %}
+      <ul class="errorlist nonfield"><li>Le formulaire contient une erreur.</li></ul>
+      <div class="field">
+        <label for="sg-title">Titre <span class="required-mark" aria-hidden="true">*</span></label>
+        <input id="sg-title" name="title" type="text" aria-describedby="sg-title-help" required>
+        <span class="helptext" id="sg-title-help">N’y mettez aucune information confidentielle.</span>
+      </div>
+      <div class="field">
+        <label for="sg-date">Échéance</label>
+        <input id="sg-date" name="due" type="date" aria-invalid="true" aria-describedby="sg-date-error">
+        <ul class="errorlist" id="sg-date-error"><li>Saisissez une date valide.</li></ul>
+      </div>
+      <div class="field">
+        <label for="sg-level">Niveau</label>
+        <select id="sg-level" name="level"><option>Public</option><option>Interne LIRMM</option></select>
+      </div>
+      <div class="field">
+        <label for="sg-notes">Notes</label>
+        <textarea id="sg-notes" name="notes"></textarea>
+      </div>
+      <div class="sg-row"><input id="sg-check" type="checkbox" name="check"><label for="sg-check">Case à cocher</label></div>
+      <div class="btn-row"><button type="submit">Enregistrer</button><a class="btn btn-ghost" href="#main">Annuler</a></div>
+    </form>
+  </section>
+
+  <section class="sg-section" data-component="alerts">
+    <h2>Alertes</h2>
+    <div class="stack">
+      {% include "ui/alert.html" with tone="info" message="La thèse passera « En cours » quand les pièces seront validées." %}
+      {% include "ui/alert.html" with tone="success" title="Enregistré" message="La pièce a été déposée." %}
+      {% include "ui/alert.html" with tone="warning" message="L’échéance est dans 3 jours." %}
+      {% include "ui/alert.html" with tone="danger" title="Erreur" message="La pièce a changé, rechargez la page." %}
+    </div>
+  </section>
+
+  <section class="sg-section" data-component="progress">
+    <h2>Barre de progression</h2>
+    {% include "ui/progress.html" with value=3 max=10 label="3 / 10 pièces validées" %}
+  </section>
+
+  <section class="sg-section" data-component="empty">
+    <h2>État vide</h2>
+    {% include "ui/empty.html" with message="Aucune réunion prévue." %}
+  </section>
+
+  <section class="sg-section" data-component="confirm">
+    <h2>Action irréversible</h2>
+    {% url 'ui:styleguide' as here %}
+    {% include "ui/confirm.html" with action=here label="Annuler la réunion" confirm_label="Confirmer l’annulation" message="Les participants seront prévenus. Cette action est irréversible." %}
+  </section>
+
+  <section class="sg-section" data-component="icons">
+    <h2>Icônes</h2>
+    <ul class="sg-row">{% for name in icon_names %}<li class="badge badge-neutral">{% icon name %}{{ name }}</li>{% endfor %}</ul>
+  </section>
+
+  <section class="sg-section" data-component="typography">
+    <h2>Typographie</h2>
+    <h3>Titre de niveau 3</h3>
+    <p>Texte courant en Inter, avec ses espaces insécables&nbsp;: «&nbsp;guillemets&nbsp;», 42&nbsp;%, 120&nbsp;€, une question&#8239;? Une exclamation&#8239;! <a href="#main">Un lien</a>, <strong>du gras</strong>, <em>de l’italique</em>, <code>du code</code>.</p>
+    <p class="muted">Texte secondaire.</p>
+  </section>
+{% endblock %}

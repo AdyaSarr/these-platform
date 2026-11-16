@@ -1,7 +1,7 @@
 {% load i18n %}{# data = conferences.services.dashboard_block: no title. #}
 {% if data.deadlines %}
 <ul>
-  {% for d in data.deadlines %}<li>{{ d.deadline.edition.venue.acronym }} {{ d.deadline.edition.year }} — {{ d.deadline.get_kind_display }} : {% include "conferences/_deadline.html" %}</li>{% endfor %}
+  {% for d in data.deadlines %}<li>{{ d.deadline.edition.venue.acronym }} {{ d.deadline.edition.year }} — {{ d.deadline.get_kind_display }}&nbsp;: {% include "conferences/_deadline.html" %}</li>{% endfor %}
 </ul>
 {% else %}<p class="muted">{% translate "No upcoming deadline for a submission in progress." %}</p>{% endif %}
 {% for submission, due, days in data.request_dues %}

@@ -25,8 +25,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC = BASE_DIR / "static"
 CSS_DIR = STATIC / "css"
 VENDOR = STATIC / "vendor"
-CSS_FILES = ["base.css", "layout.css", "components.css", "legacy.css"]
-LAYERS = "@layer reset, tokens, base, layout, components, legacy, utilities;"
+# Link order = layer order. legacy (the styles of the modules before the redesign)
+# comes before components: a later layer wins whatever the specificity.
+CSS_FILES = ["base.css", "layout.css", "legacy.css", "components.css"]
+LAYERS = "@layer reset, tokens, base, layout, legacy, components, utilities;"
 
 # --------------------------------------------------------------------------- templates
 

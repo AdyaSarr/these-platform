@@ -10,6 +10,7 @@ from django.test import Client
 from django.urls import reverse
 
 from apps.accounts.roles import Role
+from apps.accounts.tests.factories import UserFactory
 
 from .helpers import signed_in
 
@@ -73,7 +74,8 @@ def test_get_is_not_allowed(client: Client) -> None:
 
 def test_like_a_browser_with_the_csrf_token_of_the_page() -> None:
     browser = Client(enforce_csrf_checks=True)
-    page = browser.get(reverse("account_login"))
+    browser.force_login(UserFactory.create())
+    page = browser.get(reverse("core:home"))
     token = re.search(
         r'action="/ui/theme/".*?name="csrfmiddlewaretoken" value="([^"]+)"',
         page.content.decode(),
@@ -82,7 +84,7 @@ def test_like_a_browser_with_the_csrf_token_of_the_page() -> None:
     assert token is not None
     response = browser.post(
         reverse("ui:theme"),
-        {"csrfmiddlewaretoken": token.group(1), "theme": "dark", "next": "/accounts/login/"},
+        {"csrfmiddlewaretoken": token.group(1), "theme": "dark", "next": "/"},
         HTTP_ORIGIN=ORIGIN,
     )
     assert response.status_code == 302
@@ -115,11 +117,30 @@ def test_no_theme_attribute_outside_the_list(client: Client, value: str) -> None
 
 
 def test_the_current_choice_is_pressed(client: Client) -> None:
+    client.force_login(UserFactory.create())
     client.cookies["theme"] = "dark"
-    html = client.get(reverse("account_login")).content.decode()
+    html = client.get(reverse("core:home")).content.decode()
     pressed = re.findall(r'<button [^>]*name="theme" value="(\w+)"[^>]*aria-pressed="true"', html)
     assert pressed == ["dark"]
     assert len(re.findall(r'name="theme" value="(?:auto|light|dark)"', html)) == 3
+
+
+def test_the_toggle_is_for_signed_in_users_only(client: Client) -> None:
+    """An anonymous page (sign-in, invitation) carries a single CSRF token, the one
+    of hx-headers: the invalid-invitation pages stay identical byte for byte
+    (apps/accounts/tests/test_invitations.py). Their theme follows the system, or
+    the cookie already set."""
+    html = client.get(reverse("account_login")).content.decode()
+    assert 'action="/ui/theme/"' not in html
+
+
+@pytest.mark.parametrize("path", ["/invitation/sometoken/", "/accounts/login/", "/"])
+def test_next_never_copies_a_path_outside_a_thesis(path: str) -> None:
+    from django.test import RequestFactory
+
+    from apps.ui.theme import back_to
+
+    assert back_to(RequestFactory().get(path)) == "/"
 
 
 def test_next_is_the_path_without_the_query_string() -> None:

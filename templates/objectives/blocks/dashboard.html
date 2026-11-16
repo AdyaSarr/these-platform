@@ -1,7 +1,7 @@
 {% load i18n %}{# data = objectives.services.dashboard_block: counts only, no title. #}
 {% if data.year %}
 <p>{% blocktranslate with number=data.year.number %}Year {{ number }}{% endblocktranslate %} ·
-  {% translate "Weighted attainment" %} : {% if data.attainment is None %}—{% else %}{{ data.attainment }} %{% endif %}</p>
+  {% translate "Weighted attainment" %}&nbsp;: {% if data.attainment is None %}—{% else %}{{ data.attainment }}&nbsp;%{% endif %}</p>
 <p>{% blocktranslate with overdue=data.overdue drafts=data.drafts %}{{ overdue }} overdue, {{ drafts }} awaiting approval{% endblocktranslate %}</p>
 {% endif %}
 <p><a href="{% url 'objectives:dashboard' thesis_id=thesis.pk %}">{% translate "Open the objectives" %}</a></p>

@@ -1,0 +1,211 @@
+/* Page layout: sidebar (thesis pages only), sticky header, main column.
+
+   Mobile menu: the sidebar is an HTML popover opened by a native button
+   (popovertarget), no script. Browsers without popover support ignore the
+   attribute: there the sidebar stays expanded above the content and the menu
+   button stays hidden. Every rule that hides the sidebar or shows the button
+   is inside @supports selector(:popover-open) (tests/test_ui_static.py). */
+
+@layer layout {
+  .skip-link {
+    position: absolute;
+    inset-inline-start: var(--space-4);
+    inset-block-start: -10rem;
+    z-index: 100;
+    padding: var(--space-2) var(--space-4);
+    background: var(--accent);
+    color: var(--accent-fg);
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .skip-link:focus { inset-block-start: var(--space-3); }
+
+  .app { min-height: 100vh; }
+  .app-with-nav { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .main-col { min-width: 0; display: flex; flex-direction: column; }
+
+  /* ----------------------------------------------------------------- sidebar */
+
+  /* Reset of the browser's popover box: in flow, always visible by default. */
+  .sidebar {
+    display: block;
+    position: static;
+    inset: auto;
+    margin: 0;
+    width: auto;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    padding: var(--space-4);
+    color: var(--nav-fg);
+    background: var(--sidebar-bg);
+    border: 0;
+    border-block-end: 1px solid var(--border);
+  }
+
+  .sidebar-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    margin-block-end: var(--space-3);
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--fg);
+    font-weight: 700;
+    text-decoration: none;
+    letter-spacing: -0.01em;
+  }
+  .brand .icon { color: var(--accent); width: 1.5rem; height: 1.5rem; }
+
+  .nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 2.5rem;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    color: var(--nav-fg);
+    font-weight: 500;
+    text-decoration: none;
+    border-inline-start: 3px solid transparent;
+  }
+  .nav-link .icon { flex: none; width: 1.25rem; height: 1.25rem; }
+  .nav-link:hover { background: var(--surface-2); color: var(--fg); }
+
+  /* Current page: background, bar and weight, not colour alone (WCAG 1.4.1). */
+  .nav-link[aria-current="page"] {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    border-inline-start-color: var(--accent);
+    font-weight: 650;
+  }
+
+  /* Without popover support these buttons would do nothing: hidden. */
+  .nav-toggle { display: none; }
+  .nav-close { display: none; }
+
+  @media (min-width: 64rem) {
+    .app-with-nav { grid-template-columns: var(--sidebar-width) minmax(0, 1fr); }
+    .sidebar {
+      position: sticky;
+      inset-block-start: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: var(--space-5) var(--space-3);
+      border-block-end: 0;
+      border-inline-end: 1px solid var(--border);
+    }
+    .sidebar-head { padding-inline: var(--space-3); margin-block-end: var(--space-5); }
+    .nav-list { flex-direction: column; flex-wrap: nowrap; }
+  }
+
+  @supports selector(:popover-open) {
+    @media (max-width: 63.99rem) {
+      .nav-toggle, .nav-close {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-2);
+        min-width: 2.75rem;
+        min-height: 2.75rem;
+        padding: var(--space-2) var(--space-3);
+        color: var(--fg);
+        background: var(--surface);
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+      }
+      .sidebar:not(:popover-open) { display: none; }
+      .sidebar:popover-open {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: min(20rem, 85vw);
+        height: 100%;
+        overflow-y: auto;
+        border-block-end: 0;
+        border-inline-end: 1px solid var(--border);
+        box-shadow: var(--shadow);
+      }
+      .sidebar:popover-open .nav-list { flex-direction: column; flex-wrap: nowrap; }
+      .sidebar::backdrop { background: rgb(15 17 22 / 0.45); }
+    }
+  }
+
+  /* ----------------------------------------------------------------- header */
+
+  .site-header {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 10;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: var(--header-height);
+    padding: var(--space-3) var(--space-4);
+    background: var(--surface);
+    border-block-end: 1px solid var(--border);
+  }
+
+  .header-thesis {
+    flex: 1 1 12rem;
+    min-width: 0;
+    margin: 0;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .header-spacer { flex: 1 1 auto; }
+
+  .header-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+    margin-inline-start: auto;
+  }
+
+  .logout { display: flex; gap: var(--space-3); align-items: center; margin: 0; }
+  .who { color: var(--muted); font-size: var(--text-sm); }
+
+  @media (max-width: 40rem) {
+    .who { display: none; }
+  }
+
+  /* ----------------------------------------------------------------- content */
+
+  .content {
+    width: 100%;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: var(--space-5) var(--space-4) var(--space-7);
+  }
+  .content:focus { outline: none; }
+
+  @media (min-width: 64rem) {
+    .site-header { padding-inline: var(--space-6); }
+    .content { padding: var(--space-6) var(--space-6) var(--space-7); }
+  }
+
+  /* Pages outside a thesis (sign-in, second factor, list of theses). */
+  .app-plain .content { max-width: 40rem; }
+
+  .page-head { margin-block-end: var(--space-5); }
+  .page-head h1 { margin-block-end: var(--space-1); }
+}

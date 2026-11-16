@@ -1,163 +1,286 @@
-/* Minimal base styles. No inline styles anywhere: the CSP forbids them. */
+/* Design system of the platform, hand-written (no build step).
+   No inline style anywhere: the CSP forbids it (docs/decisions.md).
 
-:root {
-  --bg: #ffffff;
-  --fg: #1d1f23;
-  --muted: #5d636e;
-  --border: #d7dae0;
-  --accent: #1f5fae;
-  --accent-fg: #ffffff;
-  --error: #b42318;
-  /* Objectives (M4): chart and states; contrasts checked by test_chart_contrast.py. */
-  --chart-line: #1f5fae;
-  --chart-dot: #1f5fae;
-  --chart-grid: #c3c8d0;
-  --overdue: #b42318;
-  --warning-fg: #7a2e0e;
-  --warning-bg: #fffaeb;
-  --restricted-fg: #3d434d;
-  --restricted-bg: #eef0f3;
-  color-scheme: light dark;
+   Cascade layers: a later layer wins over an earlier one whatever the selector
+   specificity, so the order below is the whole priority scheme.
+   - legacy: the styles of the modules before the redesign, kept until step 2
+     restyles each module; components win over them.
+
+   Colour tokens are #rrggbb only: tests/test_design_tokens.py and
+   apps/objectives/tests/test_chart_contrast.py read them from this file and check
+   WCAG AA contrast in both themes. The dark values are written twice, under
+   prefers-color-scheme (no choice, or "auto") and under [data-theme="dark"] (the
+   toggle, apps/ui/theme.py); a test keeps both blocks identical. */
+
+@layer reset, tokens, base, layout, legacy, components, utilities;
+
+@layer reset {
+  *, *::before, *::after { box-sizing: border-box; }
+  body, h1, h2, h3, h4, p, figure, blockquote, dl, dd { margin: 0; }
+  img, svg { max-width: 100%; }
+  input, button, textarea, select { font: inherit; color: inherit; }
+  :target { scroll-margin-top: 5rem; }
 }
 
-@media (prefers-color-scheme: dark) {
+@layer tokens {
   :root {
-    --bg: #15171a;
-    --fg: #e6e8eb;
-    --muted: #9aa1ac;
-    --border: #33373d;
-    --accent: #6ea8f0;
-    --accent-fg: #0d1014;
+    color-scheme: light dark;
+
+    /* Surfaces and text */
+    --bg: #f6f7fb;
+    --surface: #ffffff;
+    --surface-2: #eff1f6;
+    --fg: #161a26;
+    --muted: #4f5669;
+    --border: #e1e4ec;
+    --border-strong: #848b9c;
+    --link: #4338ca;
+    --sidebar-bg: #ffffff;
+    --nav-fg: #363d4f;
+
+    /* Accents: indigo (main), turquoise (secondary) */
+    --accent: #4f46e5;
+    --accent-hover: #4338ca;
+    --accent-fg: #ffffff;
+    --accent-soft: #eceeff;
+    --accent-strong: #3730a3;
+    --accent-2: #0d9488;
+    --accent-2-soft: #e3f6f3;
+    --accent-2-strong: #0b6b63;
+    --focus: #4f46e5;
+
+    /* States: text, background, border */
+    --success-fg: #14653a;
+    --success-bg: #e9f8ef;
+    --success-border: #a9dfbf;
+    --warning-fg: #8a4706;
+    --warning-bg: #fff5e0;
+    --warning-border: #f1cf8b;
+    --danger-fg: #b42318;
+    --danger-bg: #fdeeec;
+    --danger-border: #f3b8b1;
+    --info-fg: #1d54a0;
+    --info-bg: #ebf3ff;
+    --info-border: #b5cdf2;
+    --danger-solid: #c42b2b;
+    --danger-solid-hover: #a32222;
+    --danger-solid-fg: #ffffff;
+    --progress-track: #e2e5ee;
+    --progress-fill: #4f46e5;
+
+    /* Tokens of the modules (M4: chart and objective states) */
+    --error: #b42318;
+    --overdue: #b42318;
+    --chart-line: #4f46e5;
+    --chart-dot: #4f46e5;
+    --chart-grid: #c3c8d0;
+    --restricted-fg: #3d434d;
+    --restricted-bg: #eceef2;
+
+    /* Shape, depth, rhythm */
+    --radius-sm: 0.375rem;
+    --radius: 0.75rem;
+    --radius-lg: 1rem;
+    --shadow-sm: 0 1px 2px rgb(16 24 40 / 0.06);
+    --shadow: 0 1px 3px rgb(16 24 40 / 0.08), 0 4px 12px rgb(16 24 40 / 0.05);
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.5rem;
+    --space-6: 2rem;
+    --space-7: 3rem;
+    --font: "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --text-sm: 0.875rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.375rem;
+    --text-2xl: 1.75rem;
+    --sidebar-width: 16rem;
+    --header-height: 4rem;
+    --duration: 150ms;
+  }
+
+  :root[data-theme="light"] { color-scheme: light; }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0e1016;
+      --surface: #161922;
+      --surface-2: #1e222d;
+      --fg: #e8eaf1;
+      --muted: #a4abbc;
+      --border: #2a2f3c;
+      --border-strong: #6f778c;
+      --link: #a5b4fc;
+      --sidebar-bg: #12141b;
+      --nav-fg: #cdd2e0;
+      --accent: #818cf8;
+      --accent-hover: #a5b4fc;
+      --accent-fg: #0e1016;
+      --accent-soft: #262a4d;
+      --accent-strong: #c7d2fe;
+      --accent-2: #2dd4bf;
+      --accent-2-soft: #0f2f2c;
+      --accent-2-strong: #5eead4;
+      --focus: #a5b4fc;
+      --success-fg: #86efac;
+      --success-bg: #0f2a1b;
+      --success-border: #22543a;
+      --warning-fg: #fcd34d;
+      --warning-bg: #2b2210;
+      --warning-border: #6a5114;
+      --danger-fg: #fca5a5;
+      --danger-bg: #2e1517;
+      --danger-border: #6d2b2f;
+      --info-fg: #93c5fd;
+      --info-bg: #12233b;
+      --info-border: #2a4b77;
+      --danger-solid: #f87171;
+      --danger-solid-hover: #fca5a5;
+      --danger-solid-fg: #1a0a0a;
+      --progress-track: #2d3240;
+      --progress-fill: #818cf8;
+      --error: #f97066;
+      --overdue: #f97066;
+      --chart-line: #818cf8;
+      --chart-dot: #818cf8;
+      --chart-grid: #464b53;
+      --restricted-fg: #c9ced6;
+      --restricted-bg: #262a30;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0e1016;
+    --surface: #161922;
+    --surface-2: #1e222d;
+    --fg: #e8eaf1;
+    --muted: #a4abbc;
+    --border: #2a2f3c;
+    --border-strong: #6f778c;
+    --link: #a5b4fc;
+    --sidebar-bg: #12141b;
+    --nav-fg: #cdd2e0;
+    --accent: #818cf8;
+    --accent-hover: #a5b4fc;
+    --accent-fg: #0e1016;
+    --accent-soft: #262a4d;
+    --accent-strong: #c7d2fe;
+    --accent-2: #2dd4bf;
+    --accent-2-soft: #0f2f2c;
+    --accent-2-strong: #5eead4;
+    --focus: #a5b4fc;
+    --success-fg: #86efac;
+    --success-bg: #0f2a1b;
+    --success-border: #22543a;
+    --warning-fg: #fcd34d;
+    --warning-bg: #2b2210;
+    --warning-border: #6a5114;
+    --danger-fg: #fca5a5;
+    --danger-bg: #2e1517;
+    --danger-border: #6d2b2f;
+    --info-fg: #93c5fd;
+    --info-bg: #12233b;
+    --info-border: #2a4b77;
+    --danger-solid: #f87171;
+    --danger-solid-hover: #fca5a5;
+    --danger-solid-fg: #1a0a0a;
+    --progress-track: #2d3240;
+    --progress-fill: #818cf8;
     --error: #f97066;
-    --chart-line: #6ea8f0;
-    --chart-dot: #6ea8f0;
-    --chart-grid: #464b53;
     --overdue: #f97066;
-    --warning-fg: #fedf89;
-    --warning-bg: #2b2114;
+    --chart-line: #818cf8;
+    --chart-dot: #818cf8;
+    --chart-grid: #464b53;
     --restricted-fg: #c9ced6;
     --restricted-bg: #262a30;
   }
 }
 
-*, *::before, *::after { box-sizing: border-box; }
+@layer base {
+  /* Inter (OFL-1.1, static/vendor/inter/OFL.txt): Latin subset only, the rest
+     falls back to the system font. */
+  @font-face {
+    font-family: "Inter Variable";
+    font-style: normal;
+    font-display: swap;
+    font-weight: 100 900;
+    src: url("../vendor/inter/inter-latin-wght-normal.woff2") format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  }
 
-body {
-  margin: 0;
-  background: var(--bg);
-  color: var(--fg);
-  font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  @font-face {
+    font-family: "Inter Variable";
+    font-style: italic;
+    font-display: swap;
+    font-weight: 100 900;
+    src: url("../vendor/inter/inter-latin-wght-italic.woff2") format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+  }
+
+  html {
+    scroll-padding-top: calc(var(--header-height) + var(--space-4)); /* WCAG 2.4.11 */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font);
+    font-size: 1rem;
+    line-height: 1.55;
+    font-feature-settings: "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4 { line-height: 1.25; font-weight: 650; letter-spacing: -0.01em; }
+  h1 { font-size: var(--text-2xl); }
+  h2 { font-size: var(--text-xl); }
+  h3 { font-size: var(--text-lg); }
+  h4 { font-size: 1rem; }
+  p, ul, ol, dl, table { margin-block: 0 var(--space-4); }
+  h1, h2, h3 { margin-block: 0 var(--space-3); }
+
+  a { color: var(--link); text-underline-offset: 0.18em; text-decoration-thickness: 1px; }
+  a:hover { text-decoration-thickness: 2px; }
+
+  strong, b { font-weight: 650; }
+  small { font-size: var(--text-sm); }
+  code, kbd { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.9em; }
+  hr { border: 0; border-top: 1px solid var(--border); margin-block: var(--space-5); }
+
+  ::selection { background: var(--accent-soft); color: var(--fg); }
+
+  /* Visible focus everywhere, keyboard only (WCAG 2.4.7, 1.4.11). */
+  :focus-visible {
+    outline: 3px solid var(--focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  [hidden] { display: none !important; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
 }
 
-a { color: var(--accent); }
-
-.site-header {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--border);
+/* Progress chart of the objectives (M4, apps/objectives/charts.py): here, next to
+   its colour tokens, because apps/objectives/tests/test_chart_contrast.py reads
+   this file. The line is solid with dot markers, the grid dashed: never the
+   colour alone. */
+@layer legacy {
+  .chart-svg { width: 100%; height: auto; max-width: 40rem; }
+  .chart-grid { stroke: var(--chart-grid); stroke-width: 1; stroke-dasharray: 4 4; }
+  .chart-line { stroke: var(--chart-line); stroke-width: 2.5; }
+  .chart-dot { fill: var(--chart-dot); stroke: var(--bg); stroke-width: 1.5; }
+  .chart-tick { fill: var(--muted); font-size: 12px; }
 }
-
-.brand { font-weight: 600; text-decoration: none; color: var(--fg); }
-
-.logout { display: flex; gap: 0.75rem; align-items: center; margin: 0; }
-.who { color: var(--muted); font-size: 0.9rem; }
-
-.content { max-width: 60rem; margin: 0 auto; padding: 1.5rem 1rem; }
-
-.muted { color: var(--muted); }
-
-.stack { display: grid; gap: 1rem; max-width: 24rem; }
-.stack label { display: block; font-weight: 500; margin-bottom: 0.25rem; }
-
-input[type="email"], input[type="password"], input[type="text"] {
-  width: 100%;
-  padding: 0.5rem 0.625rem;
-  font: inherit;
-  color: inherit;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-}
-
-button {
-  padding: 0.5rem 1rem;
-  font: inherit;
-  color: var(--accent-fg);
-  background: var(--accent);
-  border: 0;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
-.errorlist { color: var(--error); margin: 0; padding-left: 1.25rem; }
-
-/* Thesis dashboard and team page (M1). */
-.blocks { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr)); }
-.block { border: 1px solid var(--border); border-radius: 0.5rem; padding: 0.75rem 1rem; }
-.block h2 { margin-top: 0; font-size: 1.1rem; }
-.table { border-collapse: collapse; width: 100%; }
-.table th, .table td { border-bottom: 1px solid var(--border); padding: 0.4rem 0.5rem; text-align: left; }
-@media (max-width: 40rem) { .table { display: block; overflow-x: auto; } }
-
-/* Messages and team actions (M1). */
-.messages { list-style: none; padding: 0; margin: 0 0 1rem; }
-.message { border: 1px solid var(--border); border-radius: 0.375rem; padding: 0.5rem 0.75rem; margin-bottom: 0.5rem; }
-.message-error { border-color: var(--error); color: var(--error); }
-.actions { display: flex; flex-wrap: wrap; gap: 0.25rem; }
-.actions form { display: flex; gap: 0.25rem; align-items: center; }
-button.danger { border-color: var(--error); color: var(--error); }
-.delivery-not_sent, .delivery-failed { color: var(--error); font-weight: 600; }
-
-/* Administrative file (M3). Status by class only: no inline style (CSP). */
-.item { border: 1px solid var(--border); border-radius: 0.5rem; padding: 0.75rem 1rem; margin-bottom: 0.75rem; }
-.item-head { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: baseline; }
-.item-head h3 { margin: 0; font-size: 1rem; }
-.status { font-weight: 600; }
-.status-validated .status { color: var(--accent); }
-.status-rejected .status, .overdue { color: var(--error); }
-.warning { border-left: 3px solid var(--error); padding-left: 0.5rem; }
-.approvals { margin: 0.25rem 0; padding-left: 1.25rem; }
-
-/* Objectives (M4). Colour never carries a state alone: a word, a marker or a dash too. */
-textarea {
-  width: 100%;
-  padding: 0.5rem 0.625rem;
-  font: inherit;
-  color: inherit;
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-}
-.helptext { display: block; color: var(--muted); font-size: 0.9rem; }
-.overdue { color: var(--overdue); font-weight: 600; }
-.restricted {
-  color: var(--restricted-fg);
-  background: var(--restricted-bg);
-  border-radius: 4px;
-  padding: 0 0.375rem;
-  font-style: italic;
-}
-.mark { color: var(--warning-fg); background: var(--warning-bg); border-radius: 4px; padding: 0 0.375rem; }
-.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: 0.5rem; }
-.stats div { border: 1px solid var(--border); border-radius: 0.5rem; padding: 0.5rem 0.75rem; }
-.stats dt { color: var(--muted); font-size: 0.9rem; }
-.stats dd { margin: 0; font-size: 1.4rem; font-weight: 600; }
-.years { display: flex; flex-wrap: wrap; gap: 0.5rem; list-style: none; padding: 0; }
-.chart-svg { width: 100%; height: auto; max-width: 40rem; }
-.chart-grid { stroke: var(--chart-grid); stroke-width: 1; stroke-dasharray: 4 4; }
-.chart-line { stroke: var(--chart-line); stroke-width: 2.5; }
-.chart-dot { fill: var(--chart-dot); stroke: var(--bg); stroke-width: 1.5; }
-.chart-tick { fill: var(--muted); font-size: 12px; }
-.chart-data { border-collapse: collapse; margin-top: 0.5rem; }
-.chart-data th, .chart-data td { border-bottom: 1px solid var(--border); padding: 0.2rem 0.6rem; text-align: left; }
-.revisions, .progress-list, .comment-list { padding-left: 1.25rem; }
-
-/* TOTP QR code (inline SVG): dark modules on a fixed white background in both
-   themes, or an authenticator app could not read it in dark mode. */
-.qr { display: inline-block; background: #ffffff; padding: 0.75rem; border-radius: 6px; }
-.qr svg { display: block; width: 12rem; height: auto; }
-.stats dd.helptext { font-size: 0.85rem; font-weight: normal; color: var(--muted); }

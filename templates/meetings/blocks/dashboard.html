@@ -1,6 +1,6 @@
 {% load i18n %}{# data = meetings.services.dashboard_block #}
 {% if data.next_meeting %}
-<p>{% translate "Next meeting" %}{% if not data.next_is_mine %} <span class="muted">({% translate "you do not attend" %})</span>{% endif %} :
+<p>{% translate "Next meeting" %}{% if not data.next_is_mine %} <span class="muted">({% translate "you do not attend" %})</span>{% endif %}&nbsp;:
   <a href="{% url 'meetings:detail' thesis_id=thesis.pk meeting_id=data.next_meeting.pk %}">{% include "meetings/_when.html" with meeting=data.next_meeting %}</a>
   — {{ data.next_meeting.get_kind_display }}, {{ data.next_meeting.get_location_display }}</p>
 <p>{% include "meetings/_text.html" with value=data.next_title %}</p>

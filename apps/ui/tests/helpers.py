@@ -37,3 +37,9 @@ def nav_keys(html: str) -> list[str]:
     """The data-nav keys of the sidebar links, in order."""
     match = re.search(r'<nav id="sidebar"[^>]*>(.*?)</nav>', html, re.S)
     return re.findall(r'data-nav="([\w-]+)"', match.group(1)) if match else []
+
+
+def without_sidebar(html: str) -> str:
+    """The page without its sidebar: for a test about the content of a page, which
+    the navigation (links to every module the role may open) must not satisfy."""
+    return re.sub(r'<nav id="sidebar".*?</nav>', "", html, count=1, flags=re.S)

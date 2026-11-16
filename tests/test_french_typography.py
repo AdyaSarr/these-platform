@@ -32,6 +32,17 @@ REDESIGNED = [
     *sorted(str(p.relative_to(TEMPLATES)) for p in (TEMPLATES / "ui").rglob("*.html")),
 ]
 
+# Texts asserted verbatim, ordinary space included, by an existing test: kept as
+# they are (CLAUDE.md: existing assertions unchanged), to settle with the developer
+# in step 2. template -> exact source fragments, each with the test that asserts it.
+KEPT: dict[str, list[str]] = {
+    "accounts/dashboard.html": [
+        # apps/admin_file/tests/test_setup_explanation.py::test_dates_in_french
+        '{% translate "CIFRE effective date" %} :',
+        '{% translate "First enrolment" %} :',
+    ],
+}
+
 # An ordinary space before a high punctuation sign; "%(name)s" is a placeholder.
 LOOSE_SPACE = re.compile(r"[ \t\n](?:[;:?!€]|%(?!\())")
 BAD_QUOTES = re.compile(r"[\"“”]")
@@ -41,6 +52,10 @@ def _text_of(source: str) -> str:
     """What a reader sees: no tags, no template syntax, no comments."""
     source = re.sub(r"\{%\s*comment\s*%\}.*?\{%\s*endcomment\s*%\}", "", source, flags=re.S)
     source = re.sub(r"\{#.*?#\}", "", source, flags=re.S)
+    # The English msgid of a blocktranslate is not shown: its French is checked below.
+    source = re.sub(
+        r"\{%\s*blocktranslate\b.*?\{%\s*endblocktranslate\s*%\}", "", source, flags=re.S
+    )
     source = re.sub(r"\{%.*?%\}|\{\{.*?\}\}", "", source, flags=re.S)
     return re.sub(r"<[^>]*>", "", source, flags=re.S)
 
@@ -68,7 +83,11 @@ def _french(singular: str, plural: str | None) -> list[str]:
 
 @pytest.mark.parametrize("name", REDESIGNED)
 def test_template_text(name: str) -> None:
-    text = _text_of((TEMPLATES / name).read_text(encoding="utf-8"))
+    source = (TEMPLATES / name).read_text(encoding="utf-8")
+    for fragment in KEPT.get(name, []):
+        assert fragment in source, (name, fragment)  # an exception that is gone: remove it
+        source = source.replace(fragment, "")
+    text = _text_of(source)
     assert not LOOSE_SPACE.findall(text), (name, LOOSE_SPACE.findall(text))
     assert not BAD_QUOTES.findall(text), name
 

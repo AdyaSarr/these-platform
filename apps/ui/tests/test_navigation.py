@@ -42,10 +42,24 @@ def test_items_in_order() -> None:
     assert [item.key for item in _nav()] == EXPECTED_ORDER
 
 
-def test_each_item_requires_exactly_the_action_of_the_page_it_opens() -> None:
+def test_whoever_sees_an_item_may_open_its_page() -> None:
     for item in _nav():
         url = reverse(item.url_name, kwargs={"thesis_id": uuid.uuid4()})
-        assert _required_action(url) == item.action, item.key
+        guard = _required_action(url)
+        for role, actions in ROLE_ACTIONS.items():
+            if item.action in actions:
+                assert guard in actions, (item.key, role)
+
+
+def test_an_item_shows_no_more_than_the_dashboard_card_of_its_module() -> None:
+    """Same action as the module's card: the sidebar never adds a module the
+    dashboard hides (the document list itself only requires VIEW_THESIS)."""
+    from apps.accounts.views import DASHBOARD_BLOCKS
+
+    cards = {block.key: block.action for block in DASHBOARD_BLOCKS}
+    for item in _nav():
+        if item.key in cards:
+            assert item.action == cards[item.key], item.key
 
 
 def _page_of(role: Role) -> str:
