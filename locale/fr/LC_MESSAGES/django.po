@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-16 19:01+0100\n"
+"POT-Creation-Date: 2026-11-16 19:07+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -50,16 +50,15 @@ msgid "The two passwords do not match."
 msgstr "Les deux mots de passe ne correspondent pas."
 
 #: apps/accounts/forms.py:58 templates/account/login.html:10
-#: templates/accounts/team.html:11 templates/accounts/team.html:73
+#: templates/accounts/team.html:16 templates/accounts/team.html:67
 msgid "Email address"
 msgstr "Adresse électronique"
 
-#: apps/accounts/forms.py:59 templates/accounts/team.html:12
-#: templates/accounts/team.html:74
+#: apps/accounts/forms.py:59 templates/accounts/team.html:68
 msgid "Role"
 msgstr "Rôle"
 
-#: apps/accounts/forms.py:61 templates/accounts/team.html:13
+#: apps/accounts/forms.py:61 templates/accounts/team.html:17
 msgid "Organization"
 msgstr "Organisation"
 
@@ -1006,7 +1005,7 @@ msgstr "Type"
 msgid "Acronym"
 msgstr "Sigle"
 
-#: apps/conferences/forms.py:94 templates/accounts/team.html:10
+#: apps/conferences/forms.py:94
 msgid "Name"
 msgstr "Nom"
 
@@ -3667,40 +3666,49 @@ msgstr "Se déconnecter"
 msgid "You already have an account. Sign in to accept the invitation."
 msgstr "Vous avez déjà un compte. Connectez-vous pour accepter l'invitation."
 
-#: templates/accounts/team.html:14
+#: templates/accounts/team.html:18
 msgid "Since"
 msgstr "Depuis"
 
-#: templates/accounts/team.html:15
+#: templates/accounts/team.html:19
 msgid "Until"
 msgstr "Jusqu'au"
 
-#: templates/accounts/team.html:16 templates/accounts/team.html:77
+#: templates/accounts/team.html:23 templates/accounts/team.html:71
 #: templates/meetings/detail.html:127
 msgid "Actions"
 msgstr "Actions"
 
-#: templates/accounts/team.html:35
+#: templates/accounts/team.html:30
 msgid "Change role"
 msgstr "Changer le rôle"
 
-#: templates/accounts/team.html:42
+#: templates/accounts/team.html:38
 msgid "Extend"
 msgstr "Prolonger"
 
-#: templates/accounts/team.html:48
+#: templates/accounts/team.html:43
+#, python-format
+msgid "%(name)s will lose access to this thesis at once."
+msgstr "%(name)s perdra immédiatement l'accès à cette thèse."
+
+#: templates/accounts/team.html:44
 msgid "Remove"
 msgstr "Retirer"
 
-#: templates/accounts/team.html:60
+#: templates/accounts/team.html:44
+msgid "Remove from the team"
+msgstr "Retirer de l'équipe"
+
+#: templates/accounts/team.html:54
 msgid "Invite someone"
 msgstr "Inviter une personne"
 
-#: templates/accounts/team.html:64
+#: templates/accounts/team.html:58
 msgid "Send the invitation"
 msgstr "Envoyer l'invitation"
 
-#: templates/accounts/team.html:66
+#: templates/accounts/team.html:60
 msgid ""
 "Inviting, changing a role, removing or extending a member asks for your "
 "second factor if you have not used it in the last 10 minutes."
@@ -3708,27 +3716,27 @@ msgstr ""
 "Inviter, changer un rôle, retirer ou prolonger un membre demande votre "
 "second facteur si vous ne l'avez pas utilisé depuis 10 minutes."
 
-#: templates/accounts/team.html:68
+#: templates/accounts/team.html:62
 msgid "Pending invitations"
 msgstr "Invitations en attente"
 
-#: templates/accounts/team.html:75
+#: templates/accounts/team.html:69
 msgid "Invited on"
 msgstr "Invitée le"
 
-#: templates/accounts/team.html:76
+#: templates/accounts/team.html:70
 msgid "E-mail"
 msgstr "Courriel"
 
-#: templates/accounts/team.html:91
+#: templates/accounts/team.html:85
 msgid "Send again"
 msgstr "Renvoyer"
 
-#: templates/accounts/team.html:95 templates/vault/document_detail.html:46
+#: templates/accounts/team.html:89 templates/vault/document_detail.html:46
 msgid "Revoke"
 msgstr "Retirer"
 
-#: templates/accounts/team.html:104
+#: templates/accounts/team.html:98
 msgid "No pending invitation."
 msgstr "Aucune invitation en attente."
 

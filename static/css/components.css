@@ -457,6 +457,38 @@
   .agenda-item .icon { align-self: center; color: var(--muted); }
   .agenda-when { min-width: 8rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 
+  /* ---------------------------------------------------------------- team */
+  /* One card per member (accounts/team.html): nothing truncated, long addresses wrap. */
+  .members {
+    display: grid;
+    align-items: start;
+    gap: var(--space-4);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+    margin: 0 0 var(--space-6);
+    padding: 0;
+    list-style: none;
+  }
+  .member-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-block-end: var(--space-3); }
+  .member-name { margin: 0; font-size: var(--text-lg); overflow-wrap: anywhere; }
+  .member-facts { display: grid; gap: var(--space-2); margin: 0 0 var(--space-3); }
+  .member-facts dt { color: var(--muted); font-size: var(--text-sm); }
+  .member-facts dd { margin: 0; overflow-wrap: anywhere; }
+
+  /* An actions menu: a <details>, the panel below its summary (no script). */
+  .menu > summary { list-style: none; }
+  .menu > summary::-webkit-details-marker { display: none; }
+  .menu-panel {
+    display: grid;
+    gap: var(--space-4);
+    margin-block-start: var(--space-2);
+    padding: var(--space-3);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  .menu-form { display: grid; gap: var(--space-2); margin: 0; }
+  .menu-form button { justify-self: start; }
+
   /* ---------------------------------------------------------------- style guide */
   .sg-section { margin-bottom: var(--space-6); }
   .sg-row { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; margin-bottom: var(--space-3); }

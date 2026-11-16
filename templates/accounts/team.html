@@ -4,57 +4,51 @@
 {% block content %}
   {% page_header %}{% translate "Team" %}{% endpage_header %}
   {# Management controls are shown to right holders only; the views re-check (403). #}
-  <table class="table">
-    <thead>
-      <tr>
-        <th scope="col">{% translate "Name" %}</th>
-        <th scope="col">{% translate "Email address" %}</th>
-        <th scope="col">{% translate "Role" %}</th>
-        <th scope="col">{% translate "Organization" %}</th>
-        <th scope="col">{% translate "Since" %}</th>
-        <th scope="col">{% translate "Until" %}</th>
-        {% if can_change_role or can_remove or can_extend %}<th scope="col">{% translate "Actions" %}</th>{% endif %}
-      </tr>
-    </thead>
-    <tbody>
-      {% for m in memberships %}
-        <tr>
-          <td>{{ m.user.get_full_name|default:"—" }}</td>
-          <td>{{ m.user.email }}</td>
-          <td>{{ m.get_role_display }}</td>
-          <td>{{ m.organization.name }}</td>
-          <td>{{ m.active_from|date:"j F Y" }}</td>
-          <td>{% if m.active_until %}<time data-until="{{ m.active_until|date:'c' }}">{{ m.active_until|date:"j F Y" }}</time>{% else %}—{% endif %}</td>
-          {% if can_change_role or can_remove or can_extend %}
-            <td class="actions">
-              {% if m.role != "PHD_STUDENT" %}
-                {% if can_change_role %}
-                  <form method="post" action="{% url 'accounts:team_change_role' thesis_id=thesis.pk membership_id=m.pk %}">
-                    {% csrf_token %}
-                    {{ role_form.role }}
-                    <button type="submit">{% translate "Change role" %}</button>
-                  </form>
-                {% endif %}
-                {% if can_extend and m.role == "CSI_MEMBER" %}
-                  <form method="post" action="{% url 'accounts:team_extend' thesis_id=thesis.pk membership_id=m.pk %}">
-                    {% csrf_token %}
-                    {{ extend_form.days }}
-                    <button type="submit">{% translate "Extend" %}</button>
-                  </form>
-                {% endif %}
-                {% if can_remove %}
-                  <form method="post" action="{% url 'accounts:team_remove' thesis_id=thesis.pk membership_id=m.pk %}">
-                    {% csrf_token %}
-                    <button type="submit" class="danger">{% translate "Remove" %}</button>
-                  </form>
-                {% endif %}
+  {# One card per member; the actions in a menu (<details>, no script); « Remove » behind a confirmation. #}
+  <ul class="members">
+    {% for m in memberships %}
+      <li class="card member" data-member="{{ m.pk }}">
+        <div class="member-head">
+          <h2 class="member-name">{{ m.user.get_full_name|default:m.user.email }}</h2>
+          {% include "ui/badge.html" with tone="neutral" label=m.get_role_display %}
+        </div>
+        <dl class="member-facts">
+          <div><dt>{% translate "Email address" %}</dt><dd>{{ m.user.email }}</dd></div>
+          <div><dt>{% translate "Organization" %}</dt><dd>{{ m.organization.name|default:"—" }}</dd></div>
+          <div><dt>{% translate "Since" %}</dt><dd>{{ m.active_from|date:"j F Y" }}</dd></div>
+          {% if m.active_until %}<div><dt>{% translate "Until" %}</dt><dd><time data-until="{{ m.active_until|date:'c' }}">{{ m.active_until|date:"j F Y" }}</time></dd></div>{% endif %}
+        </dl>
+        {% if m.role != "PHD_STUDENT" %}{% if can_change_role or can_remove or can_extend and m.role == "CSI_MEMBER" %}
+          <details class="menu">
+            <summary class="btn btn-secondary btn-sm">{% icon "settings" %}<span>{% translate "Actions" %}</span><span class="visually-hidden"> — {{ m.user.get_full_name|default:m.user.email }}</span></summary>
+            <div class="menu-panel">
+              {% if can_change_role %}
+                <form class="menu-form" method="post" action="{% url 'accounts:team_change_role' thesis_id=thesis.pk membership_id=m.pk %}">
+                  {% csrf_token %}
+                  <label for="role-{{ m.pk }}">{{ role_form.role.label }}</label>
+                  <select name="role" id="role-{{ m.pk }}">{% for value, label in role_form.fields.role.choices %}<option value="{{ value }}"{% if value == m.role %} selected{% endif %}>{{ label }}</option>{% endfor %}</select>
+                  <button type="submit" class="btn btn-sm">{% translate "Change role" %}</button>
+                </form>
               {% endif %}
-            </td>
-          {% endif %}
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+              {% if can_extend and m.role == "CSI_MEMBER" %}
+                <form class="menu-form" method="post" action="{% url 'accounts:team_extend' thesis_id=thesis.pk membership_id=m.pk %}">
+                  {% csrf_token %}
+                  <label for="days-{{ m.pk }}">{{ extend_form.days.label }}</label>
+                  <input type="number" name="days" id="days-{{ m.pk }}" min="1" max="90" value="{{ extend_form.days.initial }}">
+                  <button type="submit" class="btn btn-sm">{% translate "Extend" %}</button>
+                </form>
+              {% endif %}
+              {% if can_remove %}
+                {% url 'accounts:team_remove' thesis_id=thesis.pk membership_id=m.pk as remove_url %}
+                {% blocktranslate asvar remove_message with name=m.user.get_full_name|default:m.user.email %}{{ name }} will lose access to this thesis at once.{% endblocktranslate %}
+                {% include "ui/confirm.html" with label=_("Remove") message=remove_message action=remove_url confirm_label=_("Remove from the team") %}
+              {% endif %}
+            </div>
+          </details>
+        {% endif %}{% endif %}
+      </li>
+    {% endfor %}
+  </ul>
 
   {% if can_invite %}
     <h2>{% translate "Invite someone" %}</h2>
