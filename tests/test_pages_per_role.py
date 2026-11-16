@@ -1,6 +1,10 @@
 """Every page each role can reach renders without error, under the strict CSP, with
 the sidebar of that role and nothing more.
 
+Every full page also has the common structure (apps/ui/tests/test_page_structure.py):
+one <h1>, in the page header; no link back to the thesis dashboard in the content
+(the sidebar does it); no bar of links separated by dots.
+
 The thesis is the fictitious demonstration thesis (apps/demo/scenario.py: every
 module filled through its services). For each role the test follows, from the
 dashboard, every link and htmx GET to a page of that thesis, as a reader would.
@@ -36,6 +40,20 @@ ROLES = [
 ]
 
 
+LINK_BAR = re.compile(r"</a>\s*(?:·|&middot;|&#183;)\s*<a\b")
+
+
+def _assert_structure(page: str, prefix: str, where: object) -> None:
+    main = re.search(r"<main\b.*?</main>", page, re.S)
+    assert main is not None, where
+    content = main.group(0)
+    assert len(re.findall(r"<h1\b", content)) == 1, where
+    header = re.search(r'<header class="page-header">.*?</header>', content, re.S)
+    assert header is not None and "<h1" in header.group(0), where
+    assert f'href="{prefix}"' not in content, where  # the dashboard: the sidebar links it
+    assert not LINK_BAR.search(content), (where, LINK_BAR.search(content))
+
+
 def _links(html: str, prefix: str) -> set[str]:
     return {
         url
@@ -68,6 +86,7 @@ def _crawl(client: Client, start: str, prefix: str, role: Role) -> dict[str, int
             sidebar = re.search(r'<nav id="sidebar".*?</nav>', page, re.S)
             assert sidebar is not None, (role, url)
             assert len(re.findall(r'aria-current="page"', sidebar.group(0))) <= 1, (role, url)
+            _assert_structure(page, prefix, (role, url))
         queue.extend(_links(page, prefix) - seen.keys())
     assert len(seen) < MAX_PAGES, "the crawl did not finish"
     return seen

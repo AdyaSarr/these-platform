@@ -123,7 +123,10 @@ def test_header_shows_the_thesis_title_to_a_member() -> None:
 def test_the_current_item_is_marked(url_name: str, current: str) -> None:
     client, thesis = signed_in(Role.PHD_STUDENT)
     html = client.get(reverse(url_name, kwargs={"thesis_id": thesis.pk})).content.decode()
-    marked = re.findall(r'<a [^>]*aria-current="page"[^>]*>', html)
+    # In the sidebar: the module's tabs and segmented controls mark their own.
+    sidebar = re.search(r'<nav id="sidebar".*?</nav>', html, re.S)
+    assert sidebar is not None
+    marked = re.findall(r'<a [^>]*aria-current="page"[^>]*>', sidebar.group(0))
     assert len(marked) == 1, marked
     assert f'data-nav="{current}"' in marked[0]
 
