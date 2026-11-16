@@ -51,7 +51,11 @@ def test_an_all_day_event_with_labels_only(team: SimpleNamespace) -> None:
         lodging_note=secrets[2],
         payer="OTHER",
     )
-    services.add_expense(mission=mission, user=team.student, category="TRANSPORT", estimated="777")
+    # « 777,13 »: a comma, which no UUID of a URL in the file can contain (« 777 »
+    # alone matched a thesis id one day: fb777...).
+    services.add_expense(
+        mission=mission, user=team.student, category="TRANSPORT", estimated="777,13"
+    )
     response = _one(team, mission)
     assert response.status_code == 200
     assert response["Content-Type"].startswith("text/calendar")
@@ -59,7 +63,7 @@ def test_an_all_day_event_with_labels_only(team: SimpleNamespace) -> None:
     body = response.content.decode()
     for secret in secrets:
         assert secret not in body
-    assert "777" not in body and "Hôtel" not in body
+    assert "777,13" not in body and "777.13" not in body and "Hôtel" not in body
     (event,) = _events(body)
     assert "DTSTART;VALUE=DATE:20270208\r\n" in event
     assert "DTEND;VALUE=DATE:20270211\r\n" in event  # exclusive end
