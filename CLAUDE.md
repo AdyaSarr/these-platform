@@ -38,7 +38,8 @@ Django ou au web en une phrase quand tu les introduis.
 ## Commandes
 
 ```bash
-docker compose up -d db redis                 # services locaux
+docker compose up -d db db-test redis         # services locaux (db-test : base des tests,
+                                              # en mémoire, sans fsync ; TEST_DATABASE_URL)
 uv sync                                       # dépendances
 uv run python manage.py migrate
 uv run python manage.py runserver
