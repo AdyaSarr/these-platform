@@ -30,6 +30,8 @@ ICON_NAMES: tuple[str, ...] = (
     "plus", "settings", "calendar-plus", "chevron-left",
     # Confidentiality levels (ui/level_badge.html)
     "globe", "flask-conical", "factory", "lock",
+    # Page-header actions of the detail pages
+    "pencil", "copy",
 )  # fmt: skip
 
 _OPEN = (
