@@ -345,6 +345,7 @@ def test_the_command_prints_counts_only(team: SimpleNamespace) -> None:
 # =========================================================================== concurrency
 
 
+@pytest.mark.serial
 def test_two_simultaneous_runs_send_each_reminder_once(team: SimpleNamespace) -> None:
     import threading
 
@@ -362,6 +363,7 @@ def test_two_simultaneous_runs_send_each_reminder_once(team: SimpleNamespace) ->
     assert len(_to(team.student)) == 1
 
 
+@pytest.mark.serial
 def test_two_simultaneous_sendings_send_once(team: SimpleNamespace) -> None:
     import threading
 

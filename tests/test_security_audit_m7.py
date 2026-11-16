@@ -235,6 +235,7 @@ def test_every_travel_route_refuses_an_object_of_another_thesis(team: SimpleName
 # --------------------------------------------------------------------------- 3. concurrency
 
 
+@pytest.mark.serial
 def test_two_simultaneous_requests_leave_one_pending(team: SimpleNamespace) -> None:
     mission = mission_of(team)
     barrier = threading.Barrier(2, timeout=5)

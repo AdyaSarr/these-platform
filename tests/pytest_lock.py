@@ -12,6 +12,14 @@ turns the lock off.
 
 ``flock`` belongs to the open file description: closing it, or the death of the
 process (even ``kill -9``), releases the lock. A stale file never blocks a run.
+
+Under pytest-xdist (scripts/test_all.sh) the lock is held by the CONTROLLER only, in
+pytest_configure, before any worker starts: every ``test_<name>_gwN`` database
+derives from the same configured database, so its one lock covers them all, and a
+second session, whatever its ``-n``, stops at once. The workers never take it (they
+would block each other): each checks, before its database is created, that its
+parent holds it (check_held). Each worker writes the tests it runs, in order, to
+``var/pytest-order/<digest>/gwN.txt`` (order_dir), protected by the same lock.
 """
 
 from __future__ import annotations
@@ -29,6 +37,10 @@ MESSAGE = "Une autre exécution de pytest utilise déjà la base de test ; atten
 
 class LockHeldError(Exception):
     """Another process holds the lock."""
+
+
+class LockNotHeldError(Exception):
+    """The lock a worker relies on is not held by its controller."""
 
 
 # The lock of this pytest session, set by the root conftest. Computed once, before
@@ -75,3 +87,34 @@ def release(fd: int) -> None:
         fcntl.flock(fd, fcntl.LOCK_UN)
     finally:
         os.close(fd)
+
+
+def check_held(path: Path, *, holder_pid: int) -> None:
+    """Check, without taking it, that the lock ``path`` is held by ``holder_pid``.
+
+    The probe is a separate open file description: if the lock turns out to be
+    free, the probe takes and drops it at once, and closing it never releases the
+    lock of another description.
+    """
+    try:
+        fd = os.open(path, os.O_RDONLY)
+    except FileNotFoundError:
+        raise LockNotHeldError(f"{path.name}: no lock file") from None
+    try:
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            pass  # held by someone: check who below
+        else:
+            fcntl.flock(fd, fcntl.LOCK_UN)
+            raise LockNotHeldError(f"{path.name}: nobody holds it")
+        written = os.read(fd, 32).strip()
+    finally:
+        os.close(fd)
+    if written != str(holder_pid).encode():
+        raise LockNotHeldError(f"{path.name}: held by {written.decode(errors='replace')!r}")
+
+
+def order_dir(lock: Path) -> Path:
+    """Where the workers of the session holding ``lock`` write the order of their tests."""
+    return VAR_DIR / "pytest-order" / lock.stem.removeprefix("pytest-")

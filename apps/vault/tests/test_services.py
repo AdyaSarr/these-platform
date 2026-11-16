@@ -333,6 +333,7 @@ def test_download_name_is_rebuilt_from_the_title(title: str, mime: str, expected
 # --------------------------------------------------------------------------- open: one snapshot
 
 
+@pytest.mark.serial
 def test_concurrent_level_change_never_causes_a_false_integrity_failure() -> None:
     """open() reads the version AND its document in one query: a change_level()
     committed while open() is running cannot pair the old DEK with the new level.

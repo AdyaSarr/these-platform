@@ -388,6 +388,7 @@ def test_rotation_and_retirement_keep_meeting_texts_readable(
 # --------------------------------------------------------------------------- concurrency
 
 
+@pytest.mark.serial
 def test_two_simultaneous_minutes_saves_keep_one(team: SimpleNamespace) -> None:
     meeting = _meeting(team)
     barrier = threading.Barrier(2, timeout=5)
@@ -407,6 +408,7 @@ def test_two_simultaneous_minutes_saves_keep_one(team: SimpleNamespace) -> None:
     assert AuditEvent.objects.filter(action="MEETING_MINUTES_UPDATED").count() == 1
 
 
+@pytest.mark.serial
 def test_two_simultaneous_approvals_mark_once(team: SimpleNamespace) -> None:
     meeting = _meeting(team)
     services.save_minutes(meeting=meeting, user=team.student, minutes="CR fictif", version=0)
@@ -428,6 +430,7 @@ def test_two_simultaneous_approvals_mark_once(team: SimpleNamespace) -> None:
     assert MinutesAcknowledgement.objects.count() == 1
 
 
+@pytest.mark.serial
 def test_two_simultaneous_reminder_runs_send_once(team: SimpleNamespace, time_machine: Any) -> None:
     _meeting(team)
     mail.outbox.clear()

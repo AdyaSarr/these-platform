@@ -471,6 +471,7 @@ def test_a_reactivated_account_gets_no_reminder_of_a_window_left_pending() -> No
 
 
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.serial
 def test_two_simultaneous_sendings_of_a_row_no_longer_due_skip_it_once(
     caplog: pytest.LogCaptureFixture,
 ) -> None:

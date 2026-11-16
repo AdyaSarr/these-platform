@@ -510,6 +510,7 @@ def test_conflict_at_acceptance_keeps_invitation(invite: Invite, student: Member
 
 
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.serial
 def test_concurrent_acceptances_succeed_only_once() -> None:
     """Two simultaneous acceptances of one invitation: exactly one wins (row lock)."""
     student = MembershipFactory.create(role=Role.PHD_STUDENT)

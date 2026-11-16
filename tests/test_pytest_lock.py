@@ -16,6 +16,9 @@ import pytest
 from tests import pytest_lock
 from tests.pytest_child import run_pytest
 
+# Child pytest runs and timings: alone, after the parallel phase (scripts/test_all.sh).
+pytestmark = pytest.mark.serial
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 HOLDER = """
@@ -52,21 +55,11 @@ def test_a_second_session_stops_at_once() -> None:
     same database must stop before running any test (hence before creating or
     flushing the test database)."""
     start = time.monotonic()
-    result = subprocess.run(  # nosec B603
-        [
-            sys.executable,
-            "-m",
-            "pytest",
-            "-q",
-            "-p",
-            "no:randomly",
-            "apps/travel/tests/test_holidays.py::test_public_holidays_of_2027",
-        ],
-        cwd=BASE_DIR,
-        capture_output=True,
-        text=True,
-        timeout=120,
-        check=False,
+    result = run_pytest(
+        "-q",
+        "-p",
+        "no:randomly",
+        "apps/travel/tests/test_holidays.py::test_public_holidays_of_2027",
     )
     output = result.stdout + result.stderr
     assert result.returncode == 3, output[-2000:]

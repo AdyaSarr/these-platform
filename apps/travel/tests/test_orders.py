@@ -240,6 +240,7 @@ def test_a_decided_order_is_history(team: SimpleNamespace) -> None:
         MissionOrder.objects.filter(pk=order.pk).delete()
 
 
+@pytest.mark.serial
 def test_two_simultaneous_decisions_decide_once(team: SimpleNamespace) -> None:
     order = _request(team, mission_of(team))
     outcomes: list[str] = []

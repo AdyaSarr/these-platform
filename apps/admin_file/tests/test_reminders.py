@@ -370,6 +370,7 @@ def test_no_second_reminder_across_the_time_changes() -> None:
 
 
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.serial
 def test_two_concurrent_runs_send_each_reminder_once(monkeypatch: pytest.MonkeyPatch) -> None:
     """The timer and a manual run at the same moment: every claim is attempted by
     both runs at once (barrier); the unique constraint of ReminderLog lets one win."""

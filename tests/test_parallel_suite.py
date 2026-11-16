@@ -16,6 +16,9 @@ import pytest
 from tests import pytest_lock
 from tests.pytest_child import BASE_DIR, FAKE_DATABASE, child_env, run_pytest
 
+# Child pytest runs and timings: alone, after the parallel phase (scripts/test_all.sh).
+pytestmark = pytest.mark.serial
+
 PURE_TEST = "apps/demo/tests/test_demo_db.py::test_only_demo_names_are_accepted"  # 9 cases
 SEED = "1234"
 
@@ -95,3 +98,19 @@ def test_a_serial_test_fails_in_a_worker_and_the_replay_is_printed() -> None:
     assert re.search(
         rf"--randomly-dont-reorganize @{re.escape(str(folder))}/gw[01]\.txt", output
     ), output[-3000:]
+
+
+def test_a_session_without_workers_keeps_the_orders_of_the_last_parallel_one(
+    parallel_run: tuple[str, int, Path],
+) -> None:
+    """scripts/test_all.sh runs its serial phase after the parallel one: the replay
+    printed by the parallel phase must still find its files."""
+    _, _, folder = parallel_run
+    before = {f.name: f.read_text() for f in folder.glob("gw*.txt")}
+    assert before
+    result = run_pytest(
+        "-p", "no:xdist", "-p", "no:randomly", f"{PURE_TEST}[theses]",
+        env=_env("parallel_check"),
+    )  # fmt: skip
+    assert result.returncode == 0, (result.stdout + result.stderr)[-2000:]
+    assert {f.name: f.read_text() for f in folder.glob("gw*.txt")} == before
