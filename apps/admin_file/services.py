@@ -449,6 +449,7 @@ def approve(*, item: RequiredItem, user: User) -> RequiredItem:
         if complete:
             locked.status = final
             locked.validated_at = timezone.now()
+            locked.submitted_at = None  # CHECK admin_file_item_submitted_at_status
             locked.save()
             thesis = locked.thesis
             if thesis.status == Thesis.Status.SETUP and _all_mandatory_validated(thesis):
