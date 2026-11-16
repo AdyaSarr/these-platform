@@ -184,6 +184,8 @@ SESSION_COOKIE_AGE = 8 * 3600
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Strict"
 CSRF_COOKIE_SAMESITE = "Strict"
+# Our page, without technical detail nor anything of the request (docs/ui-notes.md).
+CSRF_FAILURE_VIEW = "apps.core.views.csrf_failure"
 
 # --------------------------------------------------------------------------- security headers
 X_FRAME_OPTIONS = "DENY"

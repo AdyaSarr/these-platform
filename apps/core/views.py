@@ -3,7 +3,7 @@ from typing import Any
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import DatabaseError, connection
 from django.http import HttpRequest, HttpResponse, JsonResponse
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_GET
 from django.views.generic import TemplateView
@@ -38,3 +38,12 @@ def health(request: HttpRequest) -> JsonResponse:
     except DatabaseError:
         return JsonResponse({"status": "unavailable"}, status=503)
     return JsonResponse({"status": "ok"})
+
+
+def csrf_failure(request: HttpRequest, reason: str = "") -> HttpResponse:
+    """Our page for a refused form (CSRF_FAILURE_VIEW): the sentence of
+    docs/ui-notes.md, status 403. ``reason`` is never shown (Django logs it
+    already), and nothing of the request is copied into the page: the theme form
+    comes back to "/" (apps/ui/context_processors.py)."""
+    request.ui_echo_nothing = True  # type: ignore[attr-defined]
+    return render(request, "core/csrf_failure.html", status=403)

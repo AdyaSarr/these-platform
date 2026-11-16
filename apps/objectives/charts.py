@@ -14,7 +14,9 @@ from fractions import Fraction
 
 from .stats import as_percent
 
-MARGIN_LEFT, MARGIN_RIGHT, MARGIN_TOP, MARGIN_BOTTOM = 40, 16, 16, 32
+# Wide enough for « 100 % » on the left and half of « janv. 2027 » on the right
+# (apps/ui/tests/test_chart_margins.py; docs/ui-notes.md: « nov. 20: » was cut).
+MARGIN_LEFT, MARGIN_RIGHT, MARGIN_TOP, MARGIN_BOTTOM = 48, 44, 16, 32
 TICKS = (Fraction(0), Fraction(1, 4), Fraction(1, 2), Fraction(3, 4), Fraction(1))
 
 

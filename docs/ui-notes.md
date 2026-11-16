@@ -12,13 +12,13 @@ plus tard. Cocher une note quand elle est faite.
       validation depuis X jours » (déposée).
 - [x] **Tableau de bord** : espace insécable avant « % » ; seul « Ouvrir le
       dossier » doit être un lien, pas toute la phrase.
-- [ ] **Échec CSRF** : la page affichée est la page brute de Django. Prévoir une
+- [x] **Échec CSRF** : la page affichée est la page brute de Django. Prévoir une
       page à nous (`CSRF_FAILURE_VIEW`) qui dit simplement « Votre navigateur
       bloque les cookies de ce site ou la page a expiré : rechargez-la », sans
       détail technique.
-- Graphique objectifs : la dernière étiquette de l'axe est coupée (« nov. 20: ») ; élargir le viewBox ou les marges.
+- [x] Graphique objectifs : la dernière étiquette de l'axe est coupée (« nov. 20: ») ; élargir le viewBox ou les marges.
 - [x] Dossier admin : le bouton « Rouvrir » prend toute la largeur et le formulaire d'échéance le chevauche ; aligner les actions sur une ligne.
 
 ## Tour visuel M5a (2026-11-14)
 
-- [ ] Réunion : bouton "Annuler la réunion" illisible (texte rouge sur fond bleu) ; prévoir un style "danger" lisible et une confirmation.
+- [x] Réunion : bouton "Annuler la réunion" illisible (texte rouge sur fond bleu) ; prévoir un style "danger" lisible et une confirmation.

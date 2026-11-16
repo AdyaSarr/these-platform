@@ -19,9 +19,8 @@
   {% if can_write %}
     <a href="{% url 'meetings:edit' thesis_id=thesis.pk meeting_id=meeting.pk %}">{% translate "Edit" %}</a>
     <a href="{% url 'meetings:duplicate' thesis_id=thesis.pk meeting_id=meeting.pk %}">{% translate "Duplicate" %}</a>
-    <form method="post" action="{% url 'meetings:cancel' thesis_id=thesis.pk meeting_id=meeting.pk %}">
-      {% csrf_token %}<button type="submit" class="danger">{% translate "Cancel the meeting" %}</button>
-    </form>
+    {% url 'meetings:cancel' thesis_id=thesis.pk meeting_id=meeting.pk as cancel_url %}
+    {% include "ui/confirm.html" with label=_("Cancel the meeting") message=_("Every attendee will see the meeting cancelled. This cannot be undone.") action=cancel_url confirm_label=_("Yes, cancel the meeting") %}
   {% endif %}
 </div>
 <p class="muted">{% translate "The calendar file contains the type, date and place only, never the title or the texts." %}</p>

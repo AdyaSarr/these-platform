@@ -21,13 +21,13 @@ SERIES = [
 def test_coordinates_of_a_simple_series() -> None:
     chart = line_chart(SERIES, width=340, height=140)
     assert isinstance(chart, LineChart)
-    # Plot box: left 40, right 340 - 16 = 324, top 16, bottom 140 - 32 = 108 (height 92).
-    assert (chart.left, chart.right, chart.top, chart.bottom) == ("40.0", "324.0", "16.0", "108.0")
+    # Plot box: left 48, right 340 - 44 = 296, top 16, bottom 140 - 32 = 108 (height 92).
+    assert (chart.left, chart.right, chart.top, chart.bottom) == ("48.0", "296.0", "16.0", "108.0")
     xs = [p.x for p in chart.points]
     ys = [p.y for p in chart.points]
-    assert xs == ["40.0", "134.7", "229.3", "324.0"]  # 284 / 3 apart, rounded half up
+    assert xs == ["48.0", "130.7", "213.3", "296.0"]  # 248 / 3 apart, rounded half up
     assert ys == ["108.0", "85.0", "62.0", "16.0"]  # 108 - v * 92
-    assert chart.segments == ("40.0,108.0 134.7,85.0 229.3,62.0 324.0,16.0",)
+    assert chart.segments == ("48.0,108.0 130.7,85.0 213.3,62.0 296.0,16.0",)
     assert [p.percent for p in chart.points] == [0, 25, 50, 100]
 
 
@@ -44,7 +44,7 @@ def test_a_missing_value_breaks_the_line() -> None:
 def test_a_single_point_is_centred() -> None:
     chart = line_chart([("mars", Fraction(3, 10))], width=340, height=140)
     assert chart is not None
-    assert chart.points[0].x == "182.0"  # (40 + 324) / 2
+    assert chart.points[0].x == "172.0"  # (48 + 296) / 2
     assert chart.segments == ()
 
 

@@ -71,8 +71,14 @@ def test_a_signed_in_failure_copies_nothing_of_the_request() -> None:
 def test_no_technical_detail(extra: dict[str, str]) -> None:
     browser = Client(enforce_csrf_checks=True)
     page = _refused(browser, reverse("account_login"), **extra).content.decode()
-    for detail in ("CSRF", "csrf_token", "Referer", "Origin", "ailleurs.example.org", "Forbidden"):
-        assert detail not in page.replace("csrfmiddlewaretoken", ""), detail
+    # What a reader sees: the title and the main content (the layout's htmx header
+    # X-CSRFToken is no detail shown to anyone).
+    title = re.search(r"<title>.*?</title>", page, re.S)
+    main = re.search(r"<main\b.*?</main>", page, re.S)
+    assert title is not None and main is not None
+    shown = title.group(0) + main.group(0)
+    for detail in ("CSRF", "csrf", "Referer", "Origin", "ailleurs.example.org", "Forbidden"):
+        assert detail not in shown, detail
 
 
 # --------------------------------------------------------------------------- 2

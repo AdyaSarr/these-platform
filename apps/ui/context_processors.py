@@ -17,7 +17,8 @@ from .theme import THEMES, back_to, theme_of
 def ui(request: HttpRequest) -> dict[str, Any]:
     return {
         "ui_theme": theme_of(request),
-        "ui_next": back_to(request),
+        # A refused form (apps.core.views.csrf_failure) copies nothing of the request.
+        "ui_next": "/" if getattr(request, "ui_echo_nothing", False) else back_to(request),
         "ui_themes": THEMES,
         "ui_nav": SimpleLazyObject(lambda: nav_for(request)),
         "ui_thesis": SimpleLazyObject(lambda: thesis_for_header(request)),
