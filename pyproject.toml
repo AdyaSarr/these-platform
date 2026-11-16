@@ -34,6 +34,7 @@ dev = [
     "icalendar>=7.3.0",
     "python-dateutil>=2.9",
     "types-python-dateutil>=2.9",
+    "pytest-xdist>=3.8",
 ]
 
 [tool.uv]
@@ -100,6 +101,7 @@ testpaths = ["tests", "apps"]
 markers = [
     "without_vault_keys: do not create version 1 of the KEK domains (conftest.py)",
     "merge_gate: must pass before a module is merged into main, not before (CLAUDE.md)",
+    "serial: runs alone, after the parallel phase of scripts/test_all.sh (threads, timeouts, child pytest runs)",
 ]
 python_files = ["test_*.py"]
 
