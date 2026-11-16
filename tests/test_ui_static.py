@@ -268,6 +268,53 @@ def test_layout_has_the_popover_fallback() -> None:
     assert re.search(r"\.sidebar:not\(:popover-open\)\s*\{[^}]*display\s*:\s*none", body)
 
 
+NARROW = "@media (max-width: 63.99rem)"
+WIDE = "@media (min-width: 64rem)"
+
+
+def _media_rules(css: str, prelude: str) -> list[tuple[str, str]]:
+    return _rules("".join(_remove_blocks(css, prelude)[1]))
+
+
+def _hides(rules: list[tuple[str, str]], selector: str) -> bool:
+    return any(sel == selector and re.search(r"display\s*:\s*none", body) for sel, body in rules)
+
+
+def test_header_height_is_fixed_and_known_to_scroll_padding() -> None:
+    """One line of a fixed height, the --header-height that scroll-padding-top
+    adds: a sticky header never hides the title the page scrolls to (WCAG 2.4.11)."""
+    css = _strip_css_comments(_css("layout.css"))
+    top = _remove_blocks(_remove_blocks(css, NARROW)[0], WIDE)[0]
+    header = [body for sel, body in _rules(top) if sel == ".site-header"]
+    assert len(header) == 1
+    assert re.search(r"flex-wrap\s*:\s*nowrap", header[0])
+    assert re.search(r"(?<![-\w])height\s*:\s*var\(--header-height\)", header[0])
+    assert not re.search(r"min-height|padding(-block)?\s*:\s*var\(--space-[4-7]\)", header[0])
+    base = _strip_css_comments(_css("base.css"))
+    assert re.search(r"scroll-padding-top\s*:\s*calc\(var\(--header-height\)", base)
+    # No other rule of the header changes its height or lets it wrap.
+    for sel, body in _rules(css):
+        if sel.endswith(".site-header") and body != header[0]:
+            assert not re.search(r"(?<![-\w])(min-)?height\s*:|flex-wrap\s*:\s*wrap", body), sel
+
+
+def test_narrow_screen_moves_the_tools_into_the_menu() -> None:
+    css = _strip_css_comments(_css("layout.css"))
+    outside, _ = _remove_blocks(css, POPOVER_SUPPORTS)
+    narrow = _media_rules(outside, NARROW)
+    wide = _media_rules(outside, WIDE)
+    # Outside @supports: also true without popover support, where the sidebar
+    # is shown expanded and holds the tools.
+    assert _hides(narrow, ".app-with-nav .header-tools")
+    assert _hides(narrow, ".app-with-nav .header-thesis")
+    assert _hides(wide, ".nav-tools")
+    assert _hides(wide, ".header-brand")
+    # Nothing hides the menu's copy on a narrow screen, popover or not.
+    for sel, body in _rules(css):
+        if ".nav-tools" in sel and re.search(r"display\s*:\s*none", body):
+            assert (sel, body) in wide, sel
+
+
 def test_the_popover_fallback_scan_sees_what_it_must() -> None:
     css = ".nav-toggle { display: none; } @supports x { .a { b: c; } } .d { e: f; }"
     outside, inside = _remove_blocks(css, "@supports x")

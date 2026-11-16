@@ -1,5 +1,6 @@
 """Light / dark toggle: a POST form (no script), a cookie from a closed list,
-HttpOnly, SameSite=Lax, Secure where the session cookie is; never an open redirect."""
+HttpOnly, SameSite=Lax, Secure where the session cookie is; never an open redirect.
+Dark by default (no cookie, or a value outside the list); "auto" follows the system."""
 
 from __future__ import annotations
 
@@ -23,7 +24,7 @@ def _post(client: Client, **data: str):  # type: ignore[no-untyped-def]
     return client.post(reverse("ui:theme"), data, HTTP_ORIGIN=ORIGIN)
 
 
-@pytest.mark.parametrize("choice", ["light", "dark"])
+@pytest.mark.parametrize("choice", ["auto", "light", "dark"])
 def test_choice_sets_the_cookie_and_returns_to_the_page(client: Client, choice: str) -> None:
     response = _post(client, theme=choice, next="/accounts/login/")
     assert response.status_code == 302
@@ -43,12 +44,12 @@ def test_cookie_is_secure_where_the_session_cookie_is(client: Client, settings) 
     assert response.cookies["theme"]["secure"] is True
 
 
-def test_auto_removes_the_cookie(client: Client) -> None:
+def test_auto_is_stored_since_no_cookie_means_dark(client: Client) -> None:
     client.cookies["theme"] = "dark"
     response = _post(client, theme="auto", next="/")
     assert response.status_code == 302
-    assert response.cookies["theme"].value == ""
-    assert response.cookies["theme"]["max-age"] == 0
+    assert response.cookies["theme"].value == "auto"
+    assert int(response.cookies["theme"]["max-age"]) == 365 * 24 * 3600
 
 
 @pytest.mark.parametrize("value", ["", "blue", "dark ", "DARK", '"><script>'])
@@ -108,20 +109,33 @@ def test_the_page_carries_the_chosen_theme(client: Client, choice: str) -> None:
     assert f'data-theme="{choice}"' in _html_tag(client, reverse("account_login"))
 
 
-@pytest.mark.parametrize("value", ["auto", "", "blue", '"><script>alert(1)</script>'])
-def test_no_theme_attribute_outside_the_list(client: Client, value: str) -> None:
+def test_dark_by_default_without_a_cookie(client: Client) -> None:
+    assert 'data-theme="dark"' in _html_tag(client, reverse("account_login"))
+
+
+def test_auto_follows_the_system(client: Client) -> None:
+    """No attribute: the prefers-color-scheme block of base.css decides."""
+    client.cookies["theme"] = "auto"
+    assert "data-theme" not in _html_tag(client, reverse("account_login"))
+
+
+@pytest.mark.parametrize("value", ["", "blue", "AUTO", '"><script>alert(1)</script>'])
+def test_a_cookie_outside_the_list_means_the_default(client: Client, value: str) -> None:
     client.cookies["theme"] = value
-    tag = _html_tag(client, reverse("account_login"))
-    assert "data-theme" not in tag
+    assert re.search(r'data-theme="dark"', _html_tag(client, reverse("account_login")))
     assert "<script>alert" not in client.get(reverse("account_login")).content.decode()
 
 
-def test_the_current_choice_is_pressed(client: Client) -> None:
+@pytest.mark.parametrize(
+    ("cookie", "pressed"), [(None, "dark"), ("auto", "auto"), ("light", "light")]
+)
+def test_the_current_choice_is_pressed(client: Client, cookie: str | None, pressed: str) -> None:
     client.force_login(UserFactory.create())
-    client.cookies["theme"] = "dark"
+    if cookie:
+        client.cookies["theme"] = cookie
     html = client.get(reverse("core:home")).content.decode()
-    pressed = re.findall(r'<button [^>]*name="theme" value="(\w+)"[^>]*aria-pressed="true"', html)
-    assert pressed == ["dark"]
+    found = re.findall(r'<button [^>]*name="theme" value="(\w+)"[^>]*aria-pressed="true"', html)
+    assert found == [pressed]
     assert len(re.findall(r'name="theme" value="(?:auto|light|dark)"', html)) == 3
 
 
