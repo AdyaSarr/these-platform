@@ -7,16 +7,21 @@ alert count adds up counts the blocks already display, nothing else.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
-# (block key, data key, alert key): the counts that call for attention.
-ALERT_SOURCES = (
-    ("objectives", "overdue", "objectives_overdue"),
-    ("meetings", "overdue_count", "actions_overdue"),
-    ("conferences", "pending", "conference_decisions"),
-    ("travel", "pending", "mission_decisions"),
-    ("travel", "missing_receipts", "missing_receipts"),
+# (block key, count read from the block's data, alert key): what falls to THE
+# VIEWER only (apps/ui/tests/test_alerts_mine.py): their overdue actions (the list
+# of the Meetings card, not every overdue action of the thesis), the approvals
+# they decide (both counts are per decider in their services), their missing
+# receipts (counted for the student only, travel.services.dashboard_block). The
+# overdue objectives stay in the Objectives tile.
+ALERT_SOURCES: tuple[tuple[str, Callable[[dict[str, Any]], int], str], ...] = (
+    ("meetings", lambda d: len(d.get("my_overdue") or []), "actions_overdue"),
+    ("conferences", lambda d: int(d.get("pending") or 0), "conference_decisions"),
+    ("travel", lambda d: int(d.get("pending") or 0), "mission_decisions"),
+    ("travel", lambda d: int(d.get("missing_receipts") or 0), "missing_receipts"),
 )
 
 
@@ -41,11 +46,7 @@ def dashboard_tiles(blocks: list[tuple[Any, dict[str, Any]]]) -> Tiles:
     data = {block.key: values for block, values in blocks}
     alerts = None
     if any(key in data for key, _, _ in ALERT_SOURCES):
-        parts = [
-            (name, int(data[key].get(field_name) or 0))
-            for key, field_name, name in ALERT_SOURCES
-            if key in data
-        ]
+        parts = [(name, count(data[key])) for key, count, name in ALERT_SOURCES if key in data]
         parts = [(name, count) for name, count in parts if count]
         alerts = Alerts(total=sum(count for _, count in parts), parts=parts)
     return Tiles(

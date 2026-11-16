@@ -315,6 +315,13 @@ def test_narrow_screen_moves_the_tools_into_the_menu() -> None:
             assert (sel, body) in wide, sel
 
 
+def test_cards_keep_their_natural_height() -> None:
+    """A short card is never stretched to the height of the tallest of its row."""
+    css = _strip_css_comments(_css("components.css"))
+    blocks = [body for sel, body in _rules(css) if sel == ".blocks"]
+    assert blocks and re.search(r"align-items\s*:\s*start", blocks[0]), blocks
+
+
 def test_the_popover_fallback_scan_sees_what_it_must() -> None:
     css = ".nav-toggle { display: none; } @supports x { .a { b: c; } } .d { e: f; }"
     outside, inside = _remove_blocks(css, "@supports x")

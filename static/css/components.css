@@ -128,6 +128,7 @@
 
   .blocks {
     display: grid;
+    align-items: start; /* each card keeps its natural height */
     gap: var(--space-5);
     grid-template-columns: repeat(auto-fill, minmax(min(100%, 20rem), 1fr));
   }

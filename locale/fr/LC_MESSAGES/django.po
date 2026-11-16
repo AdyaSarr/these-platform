@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-16 18:24+0100\n"
+"POT-Creation-Date: 2026-11-16 19:01+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3531,13 +3531,6 @@ msgstr "Ouvrir les réunions"
 #: templates/accounts/dashboard.html:66
 msgid "To deal with"
 msgstr "À traiter"
-
-#: templates/accounts/dashboard.html:70
-#, python-format
-msgid "%(counter)s overdue objective"
-msgid_plural "%(counter)s overdue objectives"
-msgstr[0] "%(counter)s objectif en retard"
-msgstr[1] "%(counter)s objectifs en retard"
 
 #: templates/accounts/dashboard.html:70
 #, python-format

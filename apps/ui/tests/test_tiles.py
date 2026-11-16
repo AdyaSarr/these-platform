@@ -51,19 +51,21 @@ def test_meeting_tile() -> None:
     assert _tiles([("meetings", data)]).meeting == data
 
 
-def test_alerts_add_up_only_the_counts_of_the_blocks_shown() -> None:
+def test_alerts_add_up_only_what_falls_to_the_viewer() -> None:
+    """My overdue actions (not every overdue action of the thesis), the approvals I
+    decide, my missing receipts; the overdue objectives are in their own tile."""
+    mine = [(object(), {"title": "x"})] * 2
     tiles = _tiles(
         [
             ("objectives", {"year": object(), "attainment": None, "drafts": 5, "overdue": 2}),
-            ("meetings", {"next_meeting": None, "overdue_count": 3, "my_overdue": []}),
+            ("meetings", {"next_meeting": None, "overdue_count": 3, "my_overdue": mine}),
             ("conferences", {"deadlines": [], "request_dues": [], "pending": 1}),
             ("travel", {"pending": 0, "missing_receipts": 4}),
         ]
     )
-    assert tiles.alerts.total == 2 + 3 + 1 + 4
+    assert tiles.alerts.total == 2 + 1 + 4
     assert tiles.alerts.parts == [
-        ("objectives_overdue", 2),
-        ("actions_overdue", 3),
+        ("actions_overdue", 2),
         ("conference_decisions", 1),
         ("missing_receipts", 4),
     ]
@@ -74,7 +76,7 @@ def test_alerts_without_any_count_block() -> None:
 
 
 def test_alerts_with_nothing_to_report() -> None:
-    alerts = _tiles([("objectives", {})]).alerts
+    alerts = _tiles([("travel", {})]).alerts
     assert alerts is not None and alerts.total == 0 and alerts.parts == []
 
 
