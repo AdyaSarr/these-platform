@@ -264,6 +264,7 @@ def test_every_conference_route_refuses_an_object_of_another_thesis(team: Simple
 # --------------------------------------------------------------------------- concurrency
 
 
+@pytest.mark.serial
 def test_two_simultaneous_decisions_decide_once(team: SimpleNamespace) -> None:
     submission = submission_of(team)
     approval = services.request_approval(
@@ -291,6 +292,7 @@ def test_two_simultaneous_decisions_decide_once(team: SimpleNamespace) -> None:
     )
 
 
+@pytest.mark.serial
 def test_two_simultaneous_requests_leave_one_pending(team: SimpleNamespace) -> None:
     submission = submission_of(team)
     version = article_version(team, submission)

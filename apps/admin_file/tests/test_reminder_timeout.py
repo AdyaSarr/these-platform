@@ -51,6 +51,7 @@ def silent_smtp() -> Iterator[int]:
         conn.close()
 
 
+@pytest.mark.serial
 def test_a_stuck_smtp_server_times_out_and_releases_the_row(
     settings: pytest.FixtureRequest, silent_smtp: int
 ) -> None:

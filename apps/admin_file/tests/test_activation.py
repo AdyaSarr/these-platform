@@ -138,6 +138,7 @@ def test_activation_is_atomic_with_the_last_validation(monkeypatch: pytest.Monke
 
 
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.serial
 def test_racing_last_validations_activate_exactly_once(monkeypatch: pytest.MonkeyPatch) -> None:
     """Two directors validate the last two mandatory items at the same time.
 

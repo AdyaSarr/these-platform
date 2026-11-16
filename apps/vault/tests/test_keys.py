@@ -631,6 +631,7 @@ class Pids:
 
 
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.serial
 def test_rotation_waits_for_an_uncommitted_wrap_then_refuses_to_retire(counters: None) -> None:
     """An uncommitted wrap under v1 is invisible to other connections: without the
     shared lock, rotation would create v2 and retire v1 while a row under v1 is
@@ -671,6 +672,7 @@ def test_rotation_waits_for_an_uncommitted_wrap_then_refuses_to_retire(counters:
 
 
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.serial
 def test_retire_waits_for_transactions_holding_the_shared_lock(counters: None) -> None:
     v1 = _create_v1()
     keys.new_version(C)
@@ -703,6 +705,7 @@ ROTATION_GIVE_UP_BOUND = 5.0  # > the test's 1.5 s exclusive timeout, < the 10 s
 
 
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.serial
 def test_waiting_rotation_gives_up_and_does_not_freeze_wraps(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -754,6 +757,7 @@ def test_waiting_rotation_gives_up_and_does_not_freeze_wraps(
 
 
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.serial
 def test_concurrent_rotations_are_serialized() -> None:
     _create_v1()
     results: list[str] = []
@@ -768,6 +772,7 @@ def test_concurrent_rotations_are_serialized() -> None:
 
 
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.serial
 def test_concurrent_vault_init_creates_each_version_once() -> None:
     start = threading.Barrier(2)
 

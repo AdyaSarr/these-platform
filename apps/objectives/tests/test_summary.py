@@ -229,6 +229,7 @@ def test_once_per_week_and_recipient(team: SimpleNamespace) -> None:
     assert set(WeeklySummaryLog.objects.values_list("week_start", flat=True)) == {D(2027, 3, 15)}
 
 
+@pytest.mark.serial
 def test_two_concurrent_runs_send_once(
     team: SimpleNamespace, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -375,6 +376,7 @@ def silent_smtp() -> Iterator[int]:
         conn.close()
 
 
+@pytest.mark.serial
 def test_a_stuck_smtp_server_times_out_and_releases_the_row(
     team: SimpleNamespace, settings: Any, silent_smtp: int
 ) -> None:

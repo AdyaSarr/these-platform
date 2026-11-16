@@ -431,6 +431,7 @@ def test_a_concurrent_change_is_detected(team: SimpleNamespace, monkeypatch: Any
     assert response.status_code == 409
 
 
+@pytest.mark.serial
 def test_two_simultaneous_approvals_approve_once(team: SimpleNamespace) -> None:
     objective = _objective(team)
     barrier = threading.Barrier(2, timeout=5)

@@ -49,14 +49,24 @@ les autres modules dépendent.
 
 ## Tests
 
-L'ordre des tests est tiré au hasard à chaque exécution (`pytest-randomly`) : un
-test qui dépend d'un autre finit par échouer. Pour garder la trace d'un échec
-isolé (la graine et le nom du test), lancer la suite ainsi :
+La suite complète tourne en deux phases, avec la même graine (`scripts/test_all.sh`) :
+d'abord en parallèle (pytest-xdist, une base `test_<nom>_gwN` par worker) tous les
+tests sauf ceux marqués `serial`, puis seuls ceux marqués `serial` (threads, délais,
+pytest enfants). Le code de sortie est celui de la première phase en échec :
 
 ```bash
-mkdir -p var
-uv run pytest -p randomly 2>&1 | tee var/last-pytest.log   # var/ est ignoré par Git
+scripts/test_all.sh > var/last-pytest.log 2>&1; echo "pytest exit=$?"   # var/ est ignoré par Git
+PYTEST_WORKERS=8 PYTEST_SEED=1234 scripts/test_all.sh                   # réglages
+scripts/test_all.sh apps/travel -x                                      # arguments passés aux deux phases
 ```
+
+`uv run pytest` seul tourne en série (pas de `-n` par défaut), comme avant.
+
+L'ordre des tests est tiré au hasard à chaque exécution (`pytest-randomly`) : un
+test qui dépend d'un autre finit par échouer. Sous xdist, chaque worker écrit les
+tests qu'il a lancés, dans l'ordre, dans `var/pytest-order/<empreinte>/gwN.txt` ;
+après un échec, la fin de la sortie donne la commande qui rejoue ce worker seul :
+`uv run pytest -p no:xdist --randomly-seed=<graine> --randomly-dont-reorganize @var/pytest-order/<empreinte>/gwN.txt`.
 
 La graine figure en tête du journal (`Using --randomly-seed=…`, masqué par `-q`) et
 en dernière ligne avant le bilan (`pytest-randomly: replay with --randomly-seed=…`,
@@ -70,9 +80,9 @@ horaire explicite ; l'horloge continue d'avancer, les voyages dans le temps des
 tests s'imbriquent dedans) :
 
 ```bash
-TEST_CLOCK=2026-11-13T23:30:00+00:00 uv run pytest   # 00 h 30 le lendemain à Paris (hiver)
-TEST_CLOCK=2027-07-01T00:30:00+02:00 uv run pytest   # 00 h 30 à Paris (été), 22 h 30 UTC
-TEST_CLOCK=2027-06-15T12:00:00+00:00 uv run pytest   # après tous les instants figés des tests
+TEST_CLOCK=2026-11-13T23:30:00+00:00 scripts/test_all.sh   # 00 h 30 le lendemain à Paris (hiver)
+TEST_CLOCK=2027-07-01T00:30:00+02:00 scripts/test_all.sh   # 00 h 30 à Paris (été), 22 h 30 UTC
+TEST_CLOCK=2027-06-15T12:00:00+00:00 scripts/test_all.sh   # après tous les instants figés des tests
 ```
 
 ## Vérifier la configuration de prod en local

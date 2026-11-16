@@ -216,6 +216,7 @@ def test_seq_starts_at_one(seq: int) -> None:
 
 
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.serial
 def test_concurrent_direct_inserts_never_fork_the_chain() -> None:
     """The INSERT trigger takes the audit-log advisory lock: a second direct INSERT
     waits for the first to commit, then sees it and is refused; it never waits on
@@ -254,6 +255,7 @@ def test_concurrent_direct_inserts_never_fork_the_chain() -> None:
 
 
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.serial
 def test_concurrent_audits_build_one_contiguous_chain() -> None:
     start = threading.Barrier(4)
 

@@ -67,6 +67,7 @@ def test_reset_after_an_exception_in_the_same_thread() -> None:
     assert "source" not in audit(AuditAction.THESIS_CREATED).details_json
 
 
+@pytest.mark.serial
 def test_an_exception_in_one_thread_tags_nothing_in_another() -> None:
     """Thread A fails inside the context; thread B, then the main thread, look
     afterwards: neither is tagged."""
@@ -95,6 +96,7 @@ def test_an_exception_in_one_thread_tags_nothing_in_another() -> None:
     assert "source" not in audit(AuditAction.THESIS_CREATED).details_json
 
 
+@pytest.mark.serial
 def test_other_threads_are_not_tagged_while_the_context_is_open() -> None:
     seen: list[object] = []
 

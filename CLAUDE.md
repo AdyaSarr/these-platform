@@ -42,7 +42,8 @@ docker compose up -d db redis                 # services locaux
 uv sync                                       # dépendances
 uv run python manage.py migrate
 uv run python manage.py runserver
-uv run pytest                                 # tests
+scripts/test_all.sh                           # suite complète : phase parallèle puis série
+uv run pytest <chemin>::<test>                # un fichier ou un test, en série (pas de -n)
 uv run ruff check . && uv run ruff format --check .
 uv run mypy apps
 uv run bandit -r apps -ll
@@ -131,6 +132,13 @@ la contourner.
   un formulaire POST ne répond jamais `Referrer-Policy: no-referrer` (le
   navigateur enverrait `Origin: null`) ; « null » n'est jamais ajouté à
   `CSRF_TRUSTED_ORIGINS`.
+- Un test qui démarre des threads, ouvre un socket d'écoute ou lance un pytest
+  enfant porte `@pytest.mark.serial` (test statique `tests/test_serial_marker.py`) :
+  il tourne seul, dans la phase série de `scripts/test_all.sh`, et échoue s'il est
+  lancé dans un worker xdist. Un pytest enfant passe par `tests/pytest_child.py`
+  (environnement sans `PYTEST_XDIST_*`). Un échec de la phase parallèle affiche la
+  commande qui rejoue seul, dans le même ordre, le worker fautif
+  (`var/pytest-order/`).
 - Migrations relues et commitées avec le code qui les utilise.
 - Commits : `<module>: <verbe à l'impératif> ...` (ex. `objectives: add weighted completion rate`).
 
@@ -146,13 +154,19 @@ Un module = une conversation = un ou plusieurs commits.
   doit donner `exit=0`, en plus de la suite complète. Les tests marqués
   `merge_gate` (exclus par défaut) ne passent qu'en fin de module.
 - **Pour décider d'un commit, ne jamais se fier au code de sortie d'une commande
-  pipée.** Lancer : `uv run pytest -q > var/last-pytest.log 2>&1; echo "pytest exit=$?"`
-  — puis lire `tail` du fichier. Un commit n'est fait que si `exit=0` et que la
-  ligne de résumé ne contient ni `failed` ni `error`. Hors commits `wip … (red)`,
-  rouges par construction.
+  pipée.** Lancer : `scripts/test_all.sh > var/last-pytest.log 2>&1; echo "pytest exit=$?"`
+  — puis lire `tail` du fichier. Un commit n'est fait que si `exit=0`, que les
+  **deux** lignes de résumé (phase parallèle, puis phase série) sont présentes sans
+  `failed` ni `error`, et que la dernière ligne est
+  `test_all: exit=0 parallel=0 serial=0 seed=…`. Vaut pour **tout** commit, même
+  jugé inoffensif (dépendance, documentation) ; seuls les commits `wip … (red)`,
+  rouges par construction, font exception. Workers : `PYTEST_WORKERS` (4 par
+  défaut) ; graine : `PYTEST_SEED`.
 - **Ne jamais lancer pytest pendant qu'une autre exécution tourne** ; le verrou
-  l'empêche de toute façon (un verrou par base de test,
-  `var/pytest-<empreinte>.lock`, `tests/pytest_lock.py`).
+  l'empêche de toute façon (un verrou par base de test configurée,
+  `var/pytest-<empreinte>.lock`, `tests/pytest_lock.py`). Sous xdist, le
+  contrôleur le tient pour toutes les bases `_gwN` ; chaque worker vérifie qu'il
+  est tenu par son parent avant de créer sa base.
 - N'écris aucun fichier tant que le plan n'est pas validé explicitement.
 - Écris les tests des critères d'acceptation avant le code.
 - Lance les tests après chaque étape et montre le résultat.

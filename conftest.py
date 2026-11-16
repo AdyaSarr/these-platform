@@ -3,13 +3,17 @@
 Fails the whole run early, with an actionable message, when PostgreSQL is not
 reachable (tests run on PostgreSQL only, see docs/decisions.md), or when another
 pytest run already uses the test database (tests/pytest_lock.py).
+
+Under pytest-xdist (scripts/test_all.sh): the controller holds the lock, the workers
+check it, record the order of their tests for a replay, and refuse the tests marked
+serial (they run alone, in the second phase of the script).
 """
 
 import datetime as dt
 import os
 from collections.abc import Generator
 from pathlib import Path
-from typing import Any
+from typing import IO, Any
 
 import pytest
 import time_machine
@@ -24,24 +28,39 @@ DB_UNREACHABLE_MESSAGE = (
 )
 
 
-def pytest_terminal_summary(terminalreporter: Any, exitstatus: int, config: pytest.Config) -> None:
-    """Print pytest-randomly's seed at the END, in every mode.
+SERIAL_MESSAGE = (
+    "Test marqué serial lancé dans un worker xdist : il doit tourner seul. "
+    "Lancez la suite avec scripts/test_all.sh (phase série), ou ce test sans -n."
+)
+WORKER_LOCK_MESSAGE = "Worker xdist : le verrou de la session n'est pas tenu par son contrôleur"
+NO_SESSION_LOCK_MESSAGE = "Le verrou de la session n'a pas été pris (pytest_configure)."
 
-    Its own header line is hidden by -q, and the end of the output is what a
-    `tail` keeps: without this, a run failing at random could not be replayed.
-    """
-    seed = getattr(config.option, "randomly_seed", None)
-    if isinstance(seed, int):
-        terminalreporter.write_line(f"pytest-randomly: replay with --randomly-seed={seed}")
+_LOCK_FD = pytest.StashKey[int]()
+_ORDER_FILE = pytest.StashKey[IO[str]]()
+# In the controller: the workers that ran a failing test, for the replay.
+_failed_workers: set[str] = set()
+
+# Options with which pytest runs no test: no lock is taken, so they stay usable
+# while a run is in progress.
+_NO_RUN_OPTIONS = ("help", "version", "collectonly", "showfixtures", "show_fixtures_per_test",
+                   "markers")  # fmt: skip
 
 
-@pytest.fixture(scope="session", autouse=True)
-def _pytest_lock() -> Generator[None]:
-    """One run at a time per test database: an exclusive, non-blocking flock on
-    var/pytest-<digest>.lock (tests/pytest_lock.py), released at the end of the
-    session (or by the death of the process).
-    django_db_modify_db_settings depends on it: the lock is held before the test
-    database is created, whatever order pytest picks for autouse fixtures."""
+def _is_worker(config: pytest.Config) -> bool:
+    # config.workerinput, never the PYTEST_XDIST_* variables: a child pytest started
+    # by a test inherits them without being a worker.
+    return hasattr(config, "workerinput")
+
+
+def pytest_configure(config: pytest.Config) -> None:
+    """The lock of the session (tests/pytest_lock.py), taken by the process that owns
+    the session: the xdist controller, or the only process without xdist. Taken here,
+    before xdist starts any worker and before any test database is created."""
+    if _is_worker(config):
+        _start_worker(config)
+        return
+    if any(getattr(config.option, name, False) for name in _NO_RUN_OPTIONS):
+        return
     from django.conf import settings
 
     path = pytest_lock.path_for(settings.DATABASES["default"])
@@ -49,12 +68,114 @@ def _pytest_lock() -> Generator[None]:
         fd = pytest_lock.acquire(path)
     except pytest_lock.LockHeldError:
         pytest.exit(pytest_lock.MESSAGE, returncode=3)
+    config.stash[_LOCK_FD] = fd
     pytest_lock.set_session_lock(path)
-    try:
-        yield
-    finally:
+    # A session with workers replaces the orders of the previous one (which may have
+    # had more workers); a session without keeps them: the serial phase of
+    # scripts/test_all.sh must not delete the files the parallel phase points to.
+    if getattr(config.option, "numprocesses", None):
+        for stale in pytest_lock.order_dir(path).glob("gw*.txt"):
+            stale.unlink()
+
+
+def _start_worker(config: pytest.Config) -> None:
+    held = config.workerinput.get("pytest_lock")  # type: ignore[attr-defined]
+    if held is None:  # the controller runs no test (e.g. --collect-only)
+        return
+    path = Path(held)
+    pytest_lock.set_session_lock(path)
+    folder = pytest_lock.order_dir(path)
+    folder.mkdir(parents=True, exist_ok=True)
+    worker = config.workerinput["workerid"]  # type: ignore[attr-defined]
+    config.stash[_ORDER_FILE] = (folder / f"{worker}.txt").open("w", buffering=1)
+
+
+def pytest_unconfigure(config: pytest.Config) -> None:
+    order = config.stash.get(_ORDER_FILE, None)
+    if order is not None:
+        order.close()
+    fd = config.stash.get(_LOCK_FD, None)
+    if fd is not None:
+        del config.stash[_LOCK_FD]
         pytest_lock.set_session_lock(None)
         pytest_lock.release(fd)
+
+
+@pytest.hookimpl(optionalhook=True)
+def pytest_configure_node(node: Any) -> None:
+    """xdist, in the controller, for each worker: which lock it relies on, and who
+    holds it."""
+    path = pytest_lock.session_lock()
+    if path is not None:
+        node.workerinput["pytest_lock"] = str(path)
+        node.workerinput["pytest_lock_holder"] = os.getpid()
+
+
+@pytest.hookimpl(tryfirst=True)
+def pytest_runtest_setup(item: pytest.Item) -> None:
+    """In a worker: record the test in the order file, then refuse a serial test
+    before any fixture (its database included) is set up: an omission of the
+    script cannot pass for a green test."""
+    if not _is_worker(item.config):
+        return
+    order = item.config.stash.get(_ORDER_FILE, None)
+    if order is not None:
+        order.write(item.nodeid + "\n")
+    if item.get_closest_marker("serial"):
+        pytest.fail(SERIAL_MESSAGE, pytrace=False)
+
+
+def pytest_runtest_logreport(report: pytest.TestReport) -> None:
+    node = getattr(report, "node", None)  # set by xdist on the reports of a worker
+    if report.failed and node is not None:
+        _failed_workers.add(node.gateway.id)
+
+
+def pytest_terminal_summary(terminalreporter: Any, exitstatus: int, config: pytest.Config) -> None:
+    """Print pytest-randomly's seed at the END, in every mode, and under xdist how to
+    replay, alone and in the same order, each worker that ran a failing test.
+
+    Its own header line is hidden by -q, and the end of the output is what a
+    `tail` keeps: without this, a run failing at random could not be replayed.
+    """
+    seed = getattr(config.option, "randomly_seed", None)
+    path = pytest_lock.session_lock()
+    if isinstance(seed, int) and path is not None:
+        folder = pytest_lock.order_dir(path).relative_to(pytest_lock.VAR_DIR.parent)
+        for worker in sorted(_failed_workers):
+            terminalreporter.write_line(
+                f"pytest-randomly: replay {worker} with: uv run pytest -p no:xdist "
+                f"--randomly-seed={seed} --randomly-dont-reorganize @{folder}/{worker}.txt"
+            )
+    if isinstance(seed, int):
+        terminalreporter.write_line(f"pytest-randomly: replay with --randomly-seed={seed}")
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _pytest_lock(request: pytest.FixtureRequest) -> None:
+    """The lock of the session is held (pytest_configure). In a worker: checked to be
+    held by its controller, the parent process, and to be the lock of the database
+    this worker derives its own from.
+    django_db_modify_db_settings depends on it: the check precedes the creation of
+    the test database, whatever order pytest picks for autouse fixtures."""
+    config = request.config
+    if not _is_worker(config):
+        if pytest_lock.session_lock() is None:  # taken in pytest_configure
+            pytest.exit(NO_SESSION_LOCK_MESSAGE, returncode=3)
+        return
+    from django.conf import settings
+
+    held = config.workerinput.get("pytest_lock")  # type: ignore[attr-defined]
+    holder = config.workerinput.get("pytest_lock_holder")  # type: ignore[attr-defined]
+    try:
+        if held is None or holder != os.getppid():
+            raise pytest_lock.LockNotHeldError("no lock from the parent")
+        # Settings as configured: this fixture runs before the _gwN suffix is added.
+        if Path(held) != pytest_lock.path_for(settings.DATABASES["default"]):
+            raise pytest_lock.LockNotHeldError("the lock of another database")
+        pytest_lock.check_held(Path(held), holder_pid=holder)
+    except pytest_lock.LockNotHeldError as exc:
+        pytest.exit(f"{WORKER_LOCK_MESSAGE} ({exc}).", returncode=3)
 
 
 @pytest.fixture(scope="session", autouse=True)
