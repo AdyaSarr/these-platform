@@ -68,3 +68,16 @@ def require_master_key(value: str) -> None:
             "MASTER_KEY must be 32 random bytes encoded in base64 "
             '(python -c "import os,base64;print(base64.b64encode(os.urandom(32)).decode())").'
         )
+
+
+LOCAL_DATABASE_HOSTS = frozenset({"127.0.0.1", "localhost", "::1"})
+
+
+def require_local_database(name: str, database: dict[str, object]) -> None:
+    """The database described by the variable ``name`` (a DATABASES entry) must be on
+    this machine, reached over TCP: the tests create and drop databases there."""
+    if database.get("HOST") not in LOCAL_DATABASE_HOSTS:
+        raise ImproperlyConfigured(
+            f"{name} must name a local server (127.0.0.1, localhost or [::1]): "
+            f"the tests create and drop databases on it ({_SEE})."
+        )
