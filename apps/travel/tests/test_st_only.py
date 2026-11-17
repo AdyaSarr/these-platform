@@ -118,6 +118,16 @@ def test_the_dashboard_block_is_not_the_full_one(team: SimpleNamespace) -> None:
     assert block["pending_orders"] == [] and block["pending"] == 0
 
 
+def test_no_monthly_lirmm_rule(team: SimpleNamespace) -> None:
+    """The rule counts LIRMM days, which this viewer does not see: not shown (it
+    would always read 0 and "not met"); the LIRMM co-supervisor gets it."""
+    services.set_rules(
+        thesis=team.thesis, user=team.director, recent_mfa=True, min_lab_days_per_month=3
+    )
+    assert services.month_rule(team.st_co_supervisor, team.thesis, 2027, 1) is None
+    assert services.month_rule(team.co_supervisor, team.thesis, 2027, 1) is not None
+
+
 def test_no_decision_and_no_budget(team: SimpleNamespace) -> None:
     mission = mission_of(team, destination="ROUSSET", payer="ST")
     services.request_order(mission=mission, user=team.student, estimated_total="1")

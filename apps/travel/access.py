@@ -2,10 +2,14 @@
 
 - the student and the industrial tutor (the employer): every kind, leave included;
 - the director: every kind, a leave day shown as "unavailable";
-- a co-supervisor: LIRMM days only (any other day looks like a blank one);
+- the LIRMM co-supervisor: LIRMM days only (any other day looks like a blank one);
+- the company co-supervisor: Rousset days only, the exact mirror (remote work,
+  conferences, LIRMM days and leave look like blank days);
 - anyone else: nothing.
 
-A user with several roles on the thesis gets the widest view. The rows are
+A user with several roles on the thesis gets the widest view. LIRMM_ONLY and
+ST_ONLY never meet: one person holds roles of one side of the supervision only
+(database constraint accounts_membership_one_supervision_side). The rows are
 filtered here (PresenceDay.objects.visible_to) and the counters are computed from
 the filtered rows (services.split_summary): what is not fetched cannot leak.
 """
@@ -25,8 +29,9 @@ class PresenceAccess(IntEnum):
 
     NONE = 0
     LIRMM_ONLY = 1
-    NO_LEAVE = 2
-    FULL = 3
+    ST_ONLY = 2
+    NO_LEAVE = 3
+    FULL = 4
 
 
 _ROLE_ACCESS = {
@@ -34,6 +39,7 @@ _ROLE_ACCESS = {
     Role.INDUSTRIAL_TUTOR: PresenceAccess.FULL,
     Role.DIRECTOR: PresenceAccess.NO_LEAVE,
     Role.CO_SUPERVISOR: PresenceAccess.LIRMM_ONLY,
+    Role.INDUSTRIAL_CO_SUPERVISOR: PresenceAccess.ST_ONLY,
 }
 
 
@@ -67,3 +73,8 @@ def mission_document_restriction(user: Any, document: Any) -> bool:
     thesis = document.thesis
     visible = Mission.objects.visible_to(user, thesis).filter(pk=mission.pk).exists()
     return visible and can_access_level(user, thesis, ConfidentialityLevel(mission.level))
+
+
+# The one kind of day, and the one destination, a restricted view shows.
+ONLY_KIND = {PresenceAccess.LIRMM_ONLY: "LIRMM", PresenceAccess.ST_ONLY: "ROUSSET"}
+RESTRICTED = frozenset(ONLY_KIND)

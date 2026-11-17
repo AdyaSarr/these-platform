@@ -50,8 +50,8 @@ ICS = Role.INDUSTRIAL_CO_SUPERVISOR
 
 @pytest.fixture
 def team() -> SimpleNamespace:
-    team = make_team()
-    team.ics = MembershipFactory.create(thesis=team.thesis, role=ICS, user__mfa=False).user
+    team = make_team(mfa=True)  # the pages need a second factor (MFA middleware)
+    team.ics = MembershipFactory.create(thesis=team.thesis, role=ICS, user__mfa=True).user
     return team
 
 
@@ -188,13 +188,19 @@ def test_an_internal_member_who_attends_internal_st_meetings(team: SimpleNamespa
     assert _client(team.ics).get(detail).status_code == 200
 
 
-def test_no_internal_lirmm_meeting(team: SimpleNamespace) -> None:
-    meeting = meeting_of(team, level=L.INTERNAL_LIRMM, attendees=[team.student, team.director])
-    detail = _url(team, "meetings:detail", meeting_id=meeting.pk)
-    unknown = _url(team, "meetings:detail", meeting_id=uuid.uuid4())
+def test_an_internal_lirmm_meeting_stays_restricted(team: SimpleNamespace) -> None:
+    """The M5a rule of a reader without the level (as the LIRMM co-supervisor before
+    an INTERNAL_ST meeting): the meeting is listed, its texts are restricted."""
+    title = "TEMOIN-FUITE-REUNION-LABO"
+    meeting = meeting_of(
+        team, level=L.INTERNAL_LIRMM, title=title, attendees=[team.student, team.director]
+    )
     client = _client(team.ics)
-    assert client.get(detail).status_code == client.get(unknown).status_code != 200
-    with pytest.raises((ValidationError, PermissionDenied)):
+    detail = client.get(_url(team, "meetings:detail", meeting_id=meeting.pk)).content.decode()
+    listing = client.get(_url(team, "meetings:list")).content.decode()
+    for html in (detail, listing):
+        assert title not in html and "Contenu restreint" in html
+    with pytest.raises((ValidationError, PermissionDenied)):  # never an attendee of it
         meeting_of(team, level=L.INTERNAL_LIRMM, attendees=[team.student, team.ics])
 
 

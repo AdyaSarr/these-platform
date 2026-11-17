@@ -7,7 +7,8 @@ twice (WeeklySummaryLog's unique constraint), as the reminders of M3.
 - The week is computed on DATES in Paris: ``week_start`` is the Monday of
   today's date in Paris, and the summarised week the seven days before it
   (Monday 00:00 to Monday 00:00, Paris time: 167 or 169 hours across a change).
-- Recipients: active DIRECTOR, CO_SUPERVISOR, INDUSTRIAL_TUTOR of a SETUP or
+- Recipients: active DIRECTOR, CO_SUPERVISOR, INDUSTRIAL_TUTOR,
+  INDUSTRIAL_CO_SUPERVISOR of a SETUP or
   ACTIVE thesis (never the student, the CSI member or a guest).
 - Sent only if there is something for THIS recipient, on the objectives whose
   level they may read: activity during the week (objective created or changed,
@@ -40,7 +41,12 @@ from .models import (
     WeeklySummaryLog,
 )
 
-RECIPIENT_ROLES = (Role.DIRECTOR, Role.CO_SUPERVISOR, Role.INDUSTRIAL_TUTOR)
+RECIPIENT_ROLES = (
+    Role.DIRECTOR,
+    Role.CO_SUPERVISOR,
+    Role.INDUSTRIAL_TUTOR,
+    Role.INDUSTRIAL_CO_SUPERVISOR,
+)
 OPEN_THESIS = (Thesis.Status.SETUP, Thesis.Status.ACTIVE)
 MAX_ATTEMPTS = 3
 

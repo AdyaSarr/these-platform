@@ -7,7 +7,7 @@ days corrected (journaled), missions elsewhere (the LIRMM, a conference, another
 place, with their orders, receipts and sealed texts), documents at
 INTERNAL_LIRMM. Every surface shown to the company co-supervisor must be
 byte-for-byte identical in both worlds: then nothing they see (a counter, a count
-of cells, a CSS class, a link, the state of the monthly LIRMM rule) can tell the
+of cells, a CSS class, a link) can tell the
 hidden days apart.
 
 Same surfaces as the LIRMM test, walked from the URL configuration; the test is
@@ -79,7 +79,7 @@ def _rousset(team: SimpleNamespace) -> list[Mission]:
     for day in ST_DAYS:
         assert holidays.is_working_day(day)
         PresenceDay.objects.create(thesis=team.thesis, day=day, kind="ROUSSET")
-    services.set_rules(  # the monthly LIRMM rule: its state must not reach this viewer
+    services.set_rules(  # the monthly LIRMM rule is set (not shown to this viewer)
         thesis=team.thesis, user=team.director, recent_mfa=True, min_lab_days_per_month=3
     )
     meeting_of(team)

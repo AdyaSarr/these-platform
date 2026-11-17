@@ -16,6 +16,7 @@
 from __future__ import annotations
 
 import datetime as dt
+from typing import Any
 
 import pytest
 import time_machine
@@ -155,14 +156,31 @@ def student() -> Membership:
     return MembershipFactory.create(role=R.PHD_STUDENT)
 
 
-def _invite(student: Membership, email: str, role: Role) -> Invitation:
-    return services.create_invitation(
-        thesis=student.thesis,
-        email=email,
-        role=role,
-        organization=OrganizationFactory.create(),
-        by=student.user,
-    )
+@pytest.fixture
+def send(django_capture_on_commit_callbacks: Any) -> Any:
+    return django_capture_on_commit_callbacks
+
+
+def _invite(student: Membership, email: str, role: Role, send: Any = None) -> Invitation:
+    """An invitation; ``send`` (the fixture) also sends it, as acceptance requires."""
+    if send is None:
+        return services.create_invitation(
+            thesis=student.thesis,
+            email=email,
+            role=role,
+            organization=OrganizationFactory.create(),
+            by=student.user,
+        )
+    with send(execute=True):
+        inv = services.create_invitation(
+            thesis=student.thesis,
+            email=email,
+            role=role,
+            organization=OrganizationFactory.create(),
+            by=student.user,
+        )
+    inv.refresh_from_db()
+    return inv
 
 
 @pytest.mark.parametrize("pair", CROSS_BOTH_ORDERS, ids=_ids)
@@ -187,12 +205,12 @@ def test_an_invitation_on_the_same_side_is_accepted(
 
 @pytest.mark.parametrize("pair", CROSS_BOTH_ORDERS, ids=_ids)
 def test_the_acceptance_is_refused_clearly_and_keeps_the_invitation(
-    student: Membership, pair: tuple[Role, Role]
+    student: Membership, pair: tuple[Role, Role], send: Any
 ) -> None:
     """The other side was given after the invitation was sent."""
     held, invited = pair
     person = UserFactory.create(email="plus-tard@example.org")
-    inv = _invite(student, person.email, invited)
+    inv = _invite(student, person.email, invited, send)
     MembershipFactory.create(user=person, thesis=student.thesis, role=held)
     with pytest.raises(TeamError) as refused:
         services.accept_invitation(inv.pk, user=person)
@@ -305,9 +323,9 @@ def test_inviting_the_student_to_the_csi_keeps_the_csi_message(student: Membersh
     assert "CSI" in str(refused.value)
 
 
-def test_the_acceptance_by_the_student_is_refused_clearly(student: Membership) -> None:
+def test_the_acceptance_by_the_student_is_refused_clearly(student: Membership, send: Any) -> None:
     """The invitation went to an address the student takes afterwards."""
-    inv = _invite(student, "nouvelle-adresse@example.org", R.DIRECTOR)
+    inv = _invite(student, "nouvelle-adresse@example.org", R.DIRECTOR, send)
     student.user.email = "nouvelle-adresse@example.org"
     student.user.save(update_fields=["email"])
     with pytest.raises(TeamError) as refused:

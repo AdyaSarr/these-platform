@@ -105,8 +105,11 @@ STUDENT = Person(Role.PHD_STUDENT, "Alix", "Exemple", "alix.exemple@example.org"
 DIRECTOR = Person(Role.DIRECTOR, "Camille", "Fictif", "camille.fictif@example.org", LAB)
 CO_SUPERVISOR = Person(Role.CO_SUPERVISOR, "Noé", "Démo", "noe.demo@example.org", LAB)
 TUTOR = Person(Role.INDUSTRIAL_TUTOR, "Sacha", "Témoin", "sacha.temoin@example.org", COMPANY)
+COMPANY_CO_SUPERVISOR = Person(
+    Role.INDUSTRIAL_CO_SUPERVISOR, "Maé", "Essai", "mae.essai@example.org", COMPANY
+)
 CSI = Person(Role.CSI_MEMBER, "Lou", "Modèle", "lou.modele@example.org", UNIVERSITY)
-PEOPLE = (STUDENT, DIRECTOR, CO_SUPERVISOR, TUTOR, CSI)
+PEOPLE = (STUDENT, DIRECTOR, CO_SUPERVISOR, TUTOR, COMPANY_CO_SUPERVISOR, CSI)
 
 
 # --------------------------------------------------------------------------- objectives
@@ -152,6 +155,7 @@ MONTHLY_PROGRESS: dict[int, dict[str, tuple[int, str]]] = {
 RECENT_PROGRESS = {"counter": (50, _IP), "training": (50, _IP)}
 DIRECTOR_COMMENT = "Commentaire fictif : bonne piste, à confirmer."
 CO_SUPERVISOR_COMMENT = "Commentaire fictif : prévoir un second scénario."
+COMPANY_CO_SUPERVISOR_COMMENT = "Commentaire fictif : cadrer le périmètre avec l'équipe."
 CHARTER_REJECTION = "Signature du directeur manquante en page 2 (document fictif)."
 CONTRACT_REOPENING = "Avenant fictif au contrat (démonstration)."
 DUE_DATE_PROPOSAL = "Convention en attente de l'école doctorale (fictif)."
@@ -191,7 +195,7 @@ TUTOR_MEETING: dict[str, object] = {
     "level": Level.INTERNAL_ST,
     "title": "Point mensuel avec le tuteur (fictif)",
     "location_detail": "Salle fictive B",
-    "attendees": [Role.PHD_STUDENT, Role.INDUSTRIAL_TUTOR],
+    "attendees": [Role.PHD_STUDENT, Role.INDUSTRIAL_TUTOR, Role.INDUSTRIAL_CO_SUPERVISOR],
 }
 TUTOR_AGENDA = "1. Accès au banc fictif\n2. Calendrier des mesures fictives"
 TUTOR_MINUTES = (
@@ -917,7 +921,11 @@ class _Run:
         s, at, end = self.step, self.at, self.month_end
         director, tutor = Role.DIRECTOR, Role.INDUSTRIAL_TUTOR
         s("thesis", at(0, 1, 9), self.create_thesis)
-        s("team", at(0, 2, 10), lambda: self.invite(DIRECTOR, CO_SUPERVISOR, TUTOR))
+        s(
+            "team",
+            at(0, 2, 10),
+            lambda: self.invite(DIRECTOR, CO_SUPERVISOR, TUTOR, COMPANY_CO_SUPERVISOR),
+        )
         s(
             "file-1",
             at(0, 3, 9),
@@ -1136,6 +1144,13 @@ class _Run:
             "co-supervisor-comment",
             at(4, 10, 11),
             lambda: self.comment(Role.CO_SUPERVISOR, "bench", CO_SUPERVISOR_COMMENT),
+        )
+        s(
+            "company-co-supervisor-comment",
+            at(4, 11, 11),
+            lambda: self.comment(
+                Role.INDUSTRIAL_CO_SUPERVISOR, "paper", COMPANY_CO_SUPERVISOR_COMMENT
+            ),
         )
         s("contract-reopened", at(4, 12, 10), self.reopen_contract)
         s("mission-sfca-back", at(4, 13, 10), self.conference_back)

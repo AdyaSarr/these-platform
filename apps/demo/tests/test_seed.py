@@ -244,7 +244,7 @@ def test_conferences_and_submissions(demo: scenario.SeedResult) -> None:
 
 def test_no_credential_was_generated(demo: scenario.SeedResult) -> None:
     users = list(User.objects.all())
-    assert len(users) == 5
+    assert len(users) == 6
     assert not any(u.has_usable_password() for u in users)
     assert not Authenticator.objects.exists()
     for user in users:
@@ -264,7 +264,7 @@ def test_every_address_is_at_example_org(demo: scenario.SeedResult) -> None:
 
 
 def test_every_invitation_was_consumed(demo: scenario.SeedResult) -> None:
-    assert Invitation.objects.count() == 5
+    assert Invitation.objects.count() == 6
     assert not Invitation.objects.filter(used_at__isnull=True).exists()
     assert mail.outbox == []  # nothing left in the in-memory mailbox
 
@@ -337,7 +337,7 @@ def dt_later(*, days: int) -> Any:
 def test_command_prints_each_link_once_and_nowhere_else(run: dict[str, Any]) -> None:
     stdout = run["stdout"]
     urls = re.findall(r"https?://\S+", stdout)
-    assert len(urls) == 5 and len(set(urls)) == 5
+    assert len(urls) == 6 and len(set(urls)) == 6
     assert "/invitation/" not in stdout  # invitation tokens never shown
     # /accounts/password/reset/key/<uidb36>-<key>/: the key is the secret part.
     keys = [urlsplit(u).path.rstrip("/").rsplit("/", 1)[-1].split("-", 1)[1] for u in urls]

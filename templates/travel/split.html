@@ -6,7 +6,7 @@
 <nav class="segmented" aria-label="{% translate 'CIFRE years' %}">{% for n, link in years %}<a class="segment" href="{{ link }}"{% if n == summary.cifre_year %} aria-current="page"{% endif %}>{% blocktranslate %}Year {{ n }}{% endblocktranslate %}</a>{% endfor %}</nav>
 <p class="muted">{% blocktranslate with first=summary.first|date:"d/m/Y" last=summary.last|date:"d/m/Y" %}Working days from {{ first }} to {{ last }}.{% endblocktranslate %}</p>
 <dl class="stats">
-  <div><dt>{% translate "Days at the LIRMM" %}</dt><dd>{{ summary.lirmm_days }}</dd></div>
+  {% if summary.rousset_days is not None %}<div><dt>{% translate "Days at Rousset" %}</dt><dd>{{ summary.rousset_days }}</dd>{% else %}<div><dt>{% translate "Days at the LIRMM" %}</dt><dd>{{ summary.lirmm_days }}</dd>{% endif %}</div>
 {% if full %}
   <div><dt>{% translate "ST side (days)" %}</dt><dd>{{ summary.st_days }}</dd></div>
   <div><dt>{% translate "Laboratory side (days)" %}</dt><dd>{{ summary.lab_days }}</dd></div>

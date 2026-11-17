@@ -18,7 +18,7 @@ from django.db.models import F, Q
 from django.utils.translation import gettext_lazy as _
 
 from apps.accounts.permissions import Action
-from apps.accounts.roles import Role
+from apps.accounts.roles import ROLE_MAX_LENGTH, Role
 from apps.core.confidentiality import ConfidentialityLevel
 from apps.core.models import TimeStampedModel
 
@@ -125,7 +125,8 @@ class RequiredItem(TimeStampedModel):
     label = models.CharField(_("label"), max_length=120, blank=True)
     section = models.CharField(_("section"), max_length=10, choices=Section.choices)
     validator_roles = ArrayField(
-        models.CharField(max_length=20, choices=Role.choices), verbose_name=_("validated by")
+        models.CharField(max_length=ROLE_MAX_LENGTH, choices=Role.choices),
+        verbose_name=_("validated by"),
     )
     default_level = models.CharField(
         _("default level"), max_length=20, choices=ConfidentialityLevel.choices
@@ -245,7 +246,7 @@ class ItemApproval(TimeStampedModel):
         RequiredItem, on_delete=models.PROTECT, related_name="approvals", editable=False
     )
     cycle = models.PositiveIntegerField(editable=False)
-    role = models.CharField(max_length=20, choices=Role.choices, editable=False)
+    role = models.CharField(max_length=ROLE_MAX_LENGTH, choices=Role.choices, editable=False)
     user = models.ForeignKey(
         "accounts.User", on_delete=models.PROTECT, related_name="+", editable=False
     )

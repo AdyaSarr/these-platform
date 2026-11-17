@@ -16,7 +16,7 @@ from django.utils.translation import gettext_lazy as _
 from apps.core.confidentiality import ConfidentialityLevel
 from apps.core.models import TimeStampedModel
 
-from .access import PresenceAccess, presence_access
+from .access import ONLY_KIND, RESTRICTED, PresenceAccess, presence_access
 from .choices import (
     FLAT_RATE_CATEGORIES,
     Destination,
@@ -61,8 +61,8 @@ class PresenceDayQuerySet(models.QuerySet["PresenceDay"]):
         rows = self.filter(thesis=thesis)
         if access is PresenceAccess.NONE:
             return rows.none()
-        if access is PresenceAccess.LIRMM_ONLY:
-            return rows.filter(kind=PresenceKind.LIRMM)
+        if access in RESTRICTED:
+            return rows.filter(kind=ONLY_KIND[access])
         return rows
 
 
@@ -193,13 +193,13 @@ class TravelPolicy(TimeStampedModel):
 class MissionQuerySet(models.QuerySet["Mission"]):
     def visible_to(self, user: Any, thesis: Any) -> MissionQuerySet:
         """The missions of ``thesis`` ``user`` may see (access.py): a co-supervisor
-        sees the missions to the LIRMM only."""
+        sees the missions to the LIRMM only (LIRMM) or to Rousset only (company)."""
         access = presence_access(user, thesis)
         rows = self.filter(thesis=thesis)
         if access is PresenceAccess.NONE:
             return rows.none()
-        if access is PresenceAccess.LIRMM_ONLY:
-            return rows.filter(destination=Destination.LIRMM)
+        if access in RESTRICTED:  # Destination LIRMM / ROUSSET share the kinds' codes
+            return rows.filter(destination=ONLY_KIND[access])
         return rows
 
 

@@ -37,6 +37,7 @@ ROLES = [
     Role.DIRECTOR,
     Role.CO_SUPERVISOR,
     Role.INDUSTRIAL_TUTOR,
+    Role.INDUSTRIAL_CO_SUPERVISOR,
     Role.CSI_MEMBER,
 ]
 

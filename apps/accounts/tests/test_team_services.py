@@ -62,9 +62,17 @@ def test_guest_and_csi_can_be_combined() -> None:
     MembershipFactory.create(user=m.user, thesis=m.thesis, role=Role.GUEST)
 
 
-def test_two_supervision_roles_can_be_combined() -> None:
-    m = MembershipFactory.create(role=Role.DIRECTOR)
-    MembershipFactory.create(user=m.user, thesis=m.thesis, role=Role.INDUSTRIAL_TUTOR)
+@pytest.mark.parametrize(
+    "pair",
+    [
+        (Role.DIRECTOR, Role.CO_SUPERVISOR),
+        (Role.INDUSTRIAL_TUTOR, Role.INDUSTRIAL_CO_SUPERVISOR),
+    ],
+)
+def test_two_roles_of_one_side_can_be_combined(pair: tuple[Role, Role]) -> None:
+    """One side of the supervision per person (test_supervision_sides.py)."""
+    m = MembershipFactory.create(role=pair[0])
+    MembershipFactory.create(user=m.user, thesis=m.thesis, role=pair[1])
 
 
 def test_former_director_can_become_csi_after_leaving() -> None:
@@ -243,14 +251,14 @@ def test_change_role_into_csi_conflicting_with_other_role_fails_atomically(
     student: Membership,
 ) -> None:
     director = _member(student, Role.DIRECTOR)
-    tutor = MembershipFactory.create(
-        user=director.user, thesis=student.thesis, role=Role.INDUSTRIAL_TUTOR
+    co_sup = MembershipFactory.create(
+        user=director.user, thesis=student.thesis, role=Role.CO_SUPERVISOR
     )
     with pytest.raises(TeamError):
         services.change_role(director, Role.CSI_MEMBER, by=student.user)
     director.refresh_from_db()
     assert director.active_until is None  # nothing was closed
-    assert tutor.pk in Membership.objects.active().values_list("pk", flat=True)
+    assert co_sup.pk in Membership.objects.active().values_list("pk", flat=True)
 
 
 @time_machine.travel(NOW, tick=False)
