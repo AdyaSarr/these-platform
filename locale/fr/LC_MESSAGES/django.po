@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-17 17:15+0100\n"
+"POT-Creation-Date: 2026-11-17 18:09+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -219,14 +219,14 @@ msgstr "appartenances"
 msgid "Queued"
 msgstr "En file d'attente"
 
-#: apps/accounts/models.py:273 apps/activity/choices.py:99
+#: apps/accounts/models.py:273 apps/activity/choices.py:100
 #: apps/admin_file/models.py:301 apps/conferences/models.py:520
 #: apps/meetings/models.py:343 apps/objectives/models.py:356
 #: apps/travel/choices.py:140
 msgid "Sent"
 msgstr "Envoyé"
 
-#: apps/accounts/models.py:274 apps/activity/choices.py:100
+#: apps/accounts/models.py:274 apps/activity/choices.py:101
 #: apps/admin_file/models.py:302 apps/conferences/models.py:521
 #: apps/meetings/models.py:344 apps/objectives/models.py:357
 #: apps/travel/choices.py:141
@@ -253,7 +253,7 @@ msgstr "Envoyée, en attente d'acceptation"
 msgid "Expired"
 msgstr "Expirée"
 
-#: apps/accounts/models.py:282 apps/admin_file/models.py:405
+#: apps/accounts/models.py:282 apps/admin_file/models.py:416
 #: apps/conferences/models.py:205
 msgid "Accepted"
 msgstr "Acceptée"
@@ -411,42 +411,42 @@ msgstr "Invitation révoquée."
 msgid "Active"
 msgstr "Active"
 
-#: apps/accounts/views.py:42 apps/activity/views.py:32 apps/ui/navigation.py:48
+#: apps/accounts/views.py:42 apps/activity/views.py:33 apps/ui/navigation.py:50
 #: templates/accounts/team.html:3 templates/accounts/team.html:5
 msgid "Team"
 msgstr "Équipe"
 
-#: apps/accounts/views.py:49 apps/activity/views.py:28 apps/ui/navigation.py:38
+#: apps/accounts/views.py:49 apps/activity/views.py:29 apps/ui/navigation.py:40
 #: templates/objectives/dashboard.html:2 templates/objectives/dashboard.html:4
 #: templates/objectives/detail.html:5
 msgid "Objectives"
 msgstr "Objectifs"
 
-#: apps/accounts/views.py:57 apps/activity/views.py:29 apps/ui/navigation.py:40
+#: apps/accounts/views.py:57 apps/activity/views.py:30 apps/ui/navigation.py:42
 #: apps/ui/tabs.py:57 apps/ui/tabs.py:59 templates/meetings/list.html:2
 #: templates/meetings/list.html:5
 msgid "Meetings"
 msgstr "Réunions"
 
-#: apps/accounts/views.py:64 apps/activity/views.py:30 apps/ui/navigation.py:42
+#: apps/accounts/views.py:64 apps/activity/views.py:31 apps/ui/navigation.py:44
 #: apps/ui/tabs.py:64 templates/conferences/deadlines.html:2
 #: templates/conferences/deadlines.html:5
 msgid "Conferences"
 msgstr "Conférences"
 
-#: apps/accounts/views.py:71 apps/activity/views.py:31 apps/ui/navigation.py:44
+#: apps/accounts/views.py:71 apps/activity/views.py:32 apps/ui/navigation.py:46
 #: apps/ui/tabs.py:79 templates/travel/_links.html:3
 msgid "Travel"
 msgstr "Déplacements"
 
-#: apps/accounts/views.py:78 apps/activity/views.py:26 apps/ui/navigation.py:46
+#: apps/accounts/views.py:78 apps/activity/views.py:27 apps/ui/navigation.py:48
 #: templates/conferences/submission.html:40
 #: templates/vault/document_list.html:2 templates/vault/document_list.html:4
 msgid "Documents"
 msgstr "Documents"
 
-#: apps/accounts/views.py:87 apps/activity/views.py:27
-#: apps/admin_file/services.py:279 apps/ui/navigation.py:36
+#: apps/accounts/views.py:87 apps/activity/views.py:28
+#: apps/admin_file/services.py:279 apps/ui/navigation.py:38
 #: templates/accounts/dashboard.html:32 templates/admin_file/file.html:2
 #: templates/admin_file/file.html:4 templates/admin_file/item_page.html:6
 #: templates/admin_file/new_item.html:5
@@ -573,54 +573,71 @@ msgstr "Rôle modifié"
 msgid "Member left"
 msgstr "Départ d'un membre"
 
-#: apps/activity/choices.py:79 apps/activity/views.py:80
+#: apps/activity/choices.py:39
+msgid "Objective overdue"
+msgstr "Objectif en retard"
+
+#: apps/activity/choices.py:80 apps/activity/views.py:96
+#: templates/activity/digest.html:10
 msgid "Information"
 msgstr "Informations"
 
-#: apps/activity/choices.py:80
+#: apps/activity/choices.py:81 apps/activity/views.py:98
 msgid "Asks you to act"
 msgstr "Vous demande d'agir"
 
-#: apps/activity/choices.py:81
+#: apps/activity/choices.py:82 apps/activity/views.py:101
 msgid "Deadline reminders"
 msgstr "Rappels d'échéance"
 
-#: apps/activity/choices.py:85
+#: apps/activity/choices.py:86
 msgid "At once, one e-mail per element"
 msgstr "Immédiatement, un courriel par élément"
 
-#: apps/activity/choices.py:86 apps/activity/choices.py:93
+#: apps/activity/choices.py:87 apps/activity/choices.py:94
 msgid "Daily digest"
 msgstr "Résumé quotidien"
 
-#: apps/activity/choices.py:87
+#: apps/activity/choices.py:88
 msgid "Weekly digest (Monday)"
 msgstr "Résumé hebdomadaire (le lundi)"
 
-#: apps/activity/choices.py:88
+#: apps/activity/choices.py:89
 msgid "No e-mail: the Activity page only"
 msgstr "Aucun courriel : la page Activité seulement"
 
-#: apps/activity/choices.py:92
+#: apps/activity/choices.py:93
 msgid "One element"
 msgstr "Un élément"
 
-#: apps/activity/choices.py:94
+#: apps/activity/choices.py:95
 msgid "Weekly digest"
 msgstr "Résumé hebdomadaire"
 
-#: apps/activity/choices.py:98 apps/admin_file/models.py:300
-#: apps/admin_file/models.py:404 apps/conferences/models.py:342
+#: apps/activity/choices.py:99 apps/admin_file/models.py:300
+#: apps/admin_file/models.py:415 apps/conferences/models.py:342
 #: apps/conferences/models.py:519 apps/meetings/models.py:342
 #: apps/objectives/models.py:355
 msgid "Pending"
 msgstr "En attente"
 
-#: apps/activity/choices.py:101 apps/admin_file/models.py:303
+#: apps/activity/choices.py:102 apps/admin_file/models.py:303
 #: apps/conferences/models.py:522 apps/meetings/models.py:345
 #: apps/objectives/models.py:358
 msgid "Not sent: no longer concerned or due"
 msgstr "Non envoyé : destinataire plus concerné ou envoi plus dû"
+
+#: apps/activity/choices.py:103 apps/admin_file/models.py:304
+#: apps/conferences/models.py:523 apps/meetings/models.py:346
+#: apps/travel/choices.py:143
+msgid "Waiting for a digest"
+msgstr "En attente d'un résumé"
+
+#: apps/activity/choices.py:104 apps/admin_file/models.py:305
+#: apps/conferences/models.py:524 apps/meetings/models.py:347
+#: apps/travel/choices.py:144
+msgid "Sent in a digest"
+msgstr "Envoyé dans un résumé"
 
 #: apps/activity/labels.py:76
 #, python-format
@@ -636,15 +653,15 @@ msgstr "Action pour le %(date)s · %(meeting)s"
 msgid "A member"
 msgstr "Un membre"
 
-#: apps/activity/preferences.py:72
+#: apps/activity/preferences.py:82
 msgid "Unknown frequency."
 msgstr "Fréquence inconnue."
 
-#: apps/activity/preferences.py:77
-msgid "These e-mails stay immediate for now: they ask you to act."
-msgstr "Ces courriels restent immédiats pour l'instant : ils vous demandent d'agir."
+#: apps/activity/preferences.py:85
+msgid "This frequency is not possible for these e-mails: they ask you to act."
+msgstr "Cette fréquence n'est pas possible pour ces courriels : ils vous demandent d'agir."
 
-#: apps/activity/views.py:54
+#: apps/activity/views.py:55
 msgid "Everything"
 msgstr "Tout"
 
@@ -944,68 +961,68 @@ msgstr "3 jours avant"
 msgid "Overdue"
 msgstr "En retard"
 
-#: apps/admin_file/models.py:321
+#: apps/admin_file/models.py:332
 msgid "reminder"
 msgstr "rappel"
 
-#: apps/admin_file/models.py:322
+#: apps/admin_file/models.py:333
 msgid "reminders"
 msgstr "rappels"
 
-#: apps/admin_file/models.py:371
+#: apps/admin_file/models.py:382
 msgid "reopening"
 msgstr "réouverture"
 
-#: apps/admin_file/models.py:372
+#: apps/admin_file/models.py:383
 msgid "reopenings"
 msgstr "réouvertures"
 
-#: apps/admin_file/models.py:406 apps/conferences/models.py:344
+#: apps/admin_file/models.py:417 apps/conferences/models.py:344
 msgid "Refused"
 msgstr "Refusée"
 
-#: apps/admin_file/models.py:407 apps/conferences/models.py:207
+#: apps/admin_file/models.py:418 apps/conferences/models.py:207
 #: apps/conferences/models.py:345
 msgid "Withdrawn"
 msgstr "Retirée"
 
-#: apps/admin_file/models.py:408
+#: apps/admin_file/models.py:419
 msgid "Superseded"
 msgstr "Remplacée"
 
-#: apps/admin_file/models.py:432
+#: apps/admin_file/models.py:443
 msgid "due-date proposal"
 msgstr "proposition d'échéance"
 
-#: apps/admin_file/models.py:433
+#: apps/admin_file/models.py:444
 msgid "due-date proposals"
 msgstr "propositions d'échéance"
 
-#: apps/admin_file/models.py:493
+#: apps/admin_file/models.py:504
 msgid "Item reopened"
 msgstr "Pièce rouverte"
 
-#: apps/admin_file/models.py:494
+#: apps/admin_file/models.py:505
 msgid "Due date proposed"
 msgstr "Échéance proposée"
 
-#: apps/admin_file/models.py:495
+#: apps/admin_file/models.py:506
 msgid "Proposed due date accepted"
 msgstr "Échéance proposée acceptée"
 
-#: apps/admin_file/models.py:496
+#: apps/admin_file/models.py:507
 msgid "Proposed due date refused"
 msgstr "Échéance proposée refusée"
 
-#: apps/admin_file/models.py:497
+#: apps/admin_file/models.py:508
 msgid "Due date changed"
 msgstr "Échéance modifiée"
 
-#: apps/admin_file/models.py:517
+#: apps/admin_file/models.py:537
 msgid "item notification"
 msgstr "notification de pièce"
 
-#: apps/admin_file/models.py:518
+#: apps/admin_file/models.py:538
 msgid "item notifications"
 msgstr "notifications de pièce"
 
@@ -1541,7 +1558,7 @@ msgstr "Délai de relecture ST modifié"
 msgid "Event"
 msgstr "Événement"
 
-#: apps/conferences/models.py:552
+#: apps/conferences/models.py:563
 msgid "conference notification"
 msgstr "notification de conférence"
 
@@ -2128,7 +2145,7 @@ msgstr "Rappel la veille"
 msgid "Overdue action"
 msgstr "Action en retard"
 
-#: apps/meetings/models.py:377
+#: apps/meetings/models.py:388
 msgid "meeting notification"
 msgstr "notification de réunion"
 
@@ -3110,7 +3127,7 @@ msgstr "payeur"
 msgid "travel budget"
 msgstr "budget des déplacements"
 
-#: apps/travel/models.py:584
+#: apps/travel/models.py:593
 msgid "travel notification"
 msgstr "notification des déplacements"
 
@@ -3414,7 +3431,12 @@ msgstr "Échéance d'objectif"
 msgid "Home"
 msgstr "Accueil"
 
-#: apps/ui/navigation.py:49 templates/accounts/csi_file.html:3
+#: apps/ui/navigation.py:36 templates/activity/feed.html:2
+#: templates/activity/feed.html:4
+msgid "Activity"
+msgstr "Activité"
+
+#: apps/ui/navigation.py:51 templates/accounts/csi_file.html:3
 #: templates/accounts/csi_file.html:5
 msgid "CSI file"
 msgstr "Dossier CSI"
@@ -3954,9 +3976,25 @@ msgstr "Non lus"
 msgid "Nothing new."
 msgstr "Rien de nouveau."
 
-#: templates/activity/_bell.html:1
+#: templates/activity/_bell.html:1 templates/activity/digest.html:14
 msgid "All the activity"
 msgstr "Toute l'activité"
+
+#: templates/activity/digest.html:2 templates/activity/digest.html:4
+msgid "Digest"
+msgstr "Résumé"
+
+#: templates/activity/digest.html:4
+msgid "What this e-mail was about, as it stands now."
+msgstr "Ce dont parlait ce courriel, tel que c'est aujourd'hui."
+
+#: templates/activity/digest.html:6
+msgid "For you"
+msgstr "Pour vous"
+
+#: templates/activity/digest.html:13
+msgid "Nothing left to deal with here."
+msgstr "Plus rien à traiter ici."
 
 #: templates/activity/email/body.txt:1
 msgid "Something on the platform asks for you:"
@@ -3975,7 +4013,6 @@ msgstr "Du nouveau vous concerne sur la plateforme :"
 #: templates/admin_file/email/reminder_body.txt:5
 #: templates/conferences/email/notification_body.txt:5
 #: templates/meetings/email/notification_body.txt:5
-#: templates/objectives/email/summary_body.txt:5
 #: templates/travel/email/notification_body.txt:5
 msgid "This message contains no detail: sign in to see it."
 msgstr ""
@@ -3992,10 +4029,6 @@ msgstr "Votre résumé d'activité sur la plateforme"
 #: templates/activity/email/subject.txt:1
 msgid "Something new on the platform"
 msgstr "Du nouveau sur la plateforme"
-
-#: templates/activity/feed.html:2 templates/activity/feed.html:4
-msgid "Activity"
-msgstr "Activité"
 
 #: templates/activity/feed.html:4
 msgid "What happened on the thesis, among what you can read."
@@ -4037,10 +4070,17 @@ msgstr "Pour cette thèse seulement."
 #: templates/activity/preferences.html:6
 msgid ""
 "Information: a new document, piece, submission, mission, objective, comment "
-"or team change you can read. Each e-mail holds a link only."
-msgstr "Informations : un nouveau document, une pièce, une soumission, une mission, un objectif, un commentaire ou un changement dans l'équipe que vous pouvez lire. Chaque courriel ne contient qu'un lien."
+"or team change you can read."
+msgstr "Informations : un nouveau document, une pièce, une soumission, une mission, un objectif, un commentaire ou un changement dans l'équipe que vous pouvez lire."
 
-#: templates/activity/preferences.html:7 templates/conferences/policy.html:12
+#: templates/activity/preferences.html:7
+msgid ""
+"Asks you to act (approvals to decide, pieces to validate, minutes to "
+"approve, an action assigned to you) and deadline reminders cannot be turned "
+"off: you only choose how often. Each e-mail holds a link only."
+msgstr "Ce qui vous demande d'agir (accords à décider, pièces à valider, comptes rendus à approuver, action qui vous est assignée) et les rappels d'échéance ne peuvent pas être coupés : vous choisissez seulement leur fréquence. Chaque courriel ne contient qu'un lien."
+
+#: templates/activity/preferences.html:8 templates/conferences/policy.html:12
 #: templates/conferences/submission_form.html:8
 #: templates/conferences/venue.html:21 templates/conferences/venue_form.html:8
 #: templates/meetings/form.html:14 templates/objectives/form.html:18
@@ -4049,18 +4089,7 @@ msgstr "Informations : un nouveau document, une pièce, une soumission, une mis
 msgid "Save"
 msgstr "Enregistrer"
 
-#: templates/activity/preferences.html:8
-msgid "Always sent at once, for now"
-msgstr "Toujours envoyés immédiatement, pour l'instant"
-
 #: templates/activity/preferences.html:9
-msgid ""
-"What asks you to act (ST approvals, mission approvals, pieces to validate, a "
-"refused piece, an action assigned to you) and the reminders of your own "
-"deadlines stay immediate e-mails for now: they cannot be turned off."
-msgstr "Ce qui vous demande d'agir (accords ST, accords de mission, pièces à valider, pièce refusée, action qui vous est assignée) et les rappels de vos propres échéances restent des courriels immédiats pour l'instant : ils ne peuvent pas être désactivés."
-
-#: templates/activity/preferences.html:10
 msgid "Back to the activity"
 msgstr "Retour à l'activité"
 
@@ -5028,15 +5057,6 @@ msgstr "Un objectif abandonné reste visible, avec son motif."
 #: templates/objectives/detail.html:92
 msgid "Drop"
 msgstr "Abandonner"
-
-#: templates/objectives/email/summary_body.txt:1
-msgid ""
-"The weekly summary of the objectives is waiting for you on the platform:"
-msgstr "Le point hebdomadaire des objectifs vous attend sur la plateforme :"
-
-#: templates/objectives/email/summary_subject.txt:1
-msgid "CIFRE thesis: the weekly summary of the objectives"
-msgstr "Thèse CIFRE : le point hebdomadaire des objectifs"
 
 #: templates/objectives/form.html:2 templates/objectives/form.html:5
 msgid "Edit an objective"

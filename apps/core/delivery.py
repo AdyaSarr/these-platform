@@ -25,10 +25,13 @@ logger = logging.getLogger(__name__)
 THESIS_CLOSED = "thesis_closed"
 NOT_CONCERNED = "not_concerned"
 NOT_DUE = "not_due"
+NOT_WANTED = "not_wanted"  # M11b: the recipient chose « feed only » for it
 # The only words a skip may log: never a label, a title, an address or a reason.
-SKIP_REASONS = frozenset({THESIS_CLOSED, NOT_CONCERNED, NOT_DUE})
+SKIP_REASONS = frozenset({THESIS_CLOSED, NOT_CONCERNED, NOT_DUE, NOT_WANTED})
+# M11b: route(row) may answer DEFER: the row waits for the recipient's next digest.
+DEFER = "defer"
 
-_DONE = ("SENT", "SKIPPED")
+_DONE = ("SENT", "SKIPPED", "DEFERRED", "DIGESTED")
 
 
 def skip_reason(
@@ -58,6 +61,7 @@ def deliver_once(
     message: Callable[[Any], tuple[str, str]],
     select_related: Sequence[str] = (),
     lock_of: Sequence[str] = (),
+    route: Callable[[Any], str | None] | None = None,
 ) -> None:
     """E-mail the row ``row_id`` of ``model`` (status, attempts, sent_at, recipient).
 
@@ -82,6 +86,22 @@ def deliver_once(
             row.status = "SKIPPED"
             row.save(update_fields=["status", "updated_at"])
             logger.info("%s skipped (%s, %s)", label, row.pk, reason)
+            return
+        # M11b, after the checks: the recipient's preference may have changed since
+        # the row was queued. A digest frequency defers it (never lost); « feed
+        # only » skips it.
+        decision = route(row) if route is not None else None
+        if decision == DEFER:
+            row.status = "DEFERRED"
+            row.save(update_fields=["status", "updated_at"])
+            logger.info("%s deferred (%s)", label, row.pk)
+            return
+        if decision is not None:
+            if decision not in SKIP_REASONS:
+                raise ValueError("a skip is logged with a fixed code only")
+            row.status = "SKIPPED"
+            row.save(update_fields=["status", "updated_at"])
+            logger.info("%s skipped (%s, %s)", label, row.pk, decision)
             return
         subject, body = message(row)
         row.attempts += 1

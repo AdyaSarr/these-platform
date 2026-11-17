@@ -9,6 +9,7 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from django.urls import reverse
 
+from apps.activity import routing
 from apps.core.delivery import deliver_once
 
 from .models import MeetingNotification
@@ -62,4 +63,5 @@ def send_meeting_notification(notification_id: str) -> None:
         skip_reason=skip_reason,
         message=_message,
         select_related=("meeting__thesis", "recipient"),
+        route=routing.route_at_send("meetings"),
     )

@@ -27,6 +27,7 @@ __all__ = [
     "Bell",
     "Row",
     "bell",
+    "digest_page",
     "feed",
     "frequency_of",
     "mark_all_read",
@@ -141,6 +142,41 @@ def open_event(user: Any, thesis: Thesis, event_id: Any) -> str:
     return target_of(event, obj)
 
 
+@dataclass(frozen=True)
+class DigestPage:
+    digest: ActivityNotification
+    items: list[tuple[str, str]]  # (name, page) of the gathered rows still holding
+    rows: list[Row]  # the Informations of its period still readable
+
+
+def digest_page(user: Any, thesis: Thesis, digest_id: Any) -> DigestPage:
+    """The « Résumé » of one digest e-mail, recomputed now; its recipient only
+    (anyone else, or an unknown id: the same refusal)."""
+    from .notifications import digest_rows, period
+    from .routing import describe
+
+    digest = (
+        ActivityNotification.objects.filter(pk=digest_id, thesis_id=thesis.pk, recipient_id=user.pk)
+        .exclude(kind="EVENT")
+        .first()
+        if user.is_authenticated
+        else None
+    )
+    if digest is None or digest.period_start is None:
+        raise _deny(user, thesis, "digest")
+    items = [
+        describe(source, row)
+        for source, row in digest_rows(digest)
+        if source.skip_reason(row) is None
+    ]
+    rows: list[Row] = []
+    if digest.includes_info:
+        first, end = period(digest.kind, digest.period_start)
+        events = _ordered(user, thesis).filter(created_at__gte=first, created_at__lt=end)
+        rows = _rows(user, list(events[:200]))
+    return DigestPage(digest=digest, items=items, rows=rows)
+
+
 def mark_all_read(user: Any, thesis: Thesis) -> int:
     """Every event ``user`` reads on ``thesis`` is marked read."""
     unread = _unread(user, _ordered(user, thesis)).values_list("pk", flat=True)
@@ -166,4 +202,8 @@ def purge(now: dt.datetime | None = None) -> int:
         digests = ActivityNotification.objects.filter(event__isnull=True, created_at__lt=cutoff)
         removed_digests, _ = digests.delete()
         removed, _ = Event.objects.filter(created_at__lt=cutoff).delete()
-    return removed + removed_digests
+        # M11b: the history of the former Monday summary (objectives) goes too.
+        from apps.objectives.models import WeeklySummaryLog
+
+        old_summaries, _ = WeeklySummaryLog.objects.filter(created_at__lt=cutoff).delete()
+    return removed + removed_digests + old_summaries

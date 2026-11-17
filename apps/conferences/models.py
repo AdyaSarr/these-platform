@@ -520,6 +520,8 @@ class NotificationStatus(models.TextChoices):
     SENT = "SENT", _("Sent")
     FAILED = "FAILED", _("Failed")
     SKIPPED = "SKIPPED", _("Not sent: no longer concerned or due")
+    DEFERRED = "DEFERRED", _("Waiting for a digest")
+    DIGESTED = "DIGESTED", _("Sent in a digest")
 
 
 class ConferenceNotification(TimeStampedModel):
@@ -547,6 +549,15 @@ class ConferenceNotification(TimeStampedModel):
     )
     attempts = models.PositiveSmallIntegerField(default=0)
     sent_at = models.DateTimeField(null=True, blank=True)
+
+    # M11b: the digest that sent this row (DIGESTED), kept for the history.
+    digest = models.ForeignKey(
+        "activity.ActivityNotification",
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="+",
+        editable=False,
+    )
 
     class Meta:
         verbose_name = _("conference notification")

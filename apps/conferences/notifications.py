@@ -19,6 +19,7 @@ from django.utils import timezone
 from apps.accounts.models import Membership, Thesis, User
 from apps.accounts.permissions import Action, can, can_access_level, roles_of
 from apps.accounts.roles import Role
+from apps.activity import routing
 from apps.core import delivery
 from apps.core.confidentiality import ConfidentialityLevel
 from apps.meetings.members import internal_member_ids, is_internal_member
@@ -183,7 +184,12 @@ def _queue(row: ConferenceNotification) -> None:
     from .tasks import send_conference_notification
 
     row_id = str(row.pk)  # the broker sees this id only
-    transaction.on_commit(lambda: send_conference_notification.delay(row_id))
+
+    def send() -> None:
+        transaction.on_commit(lambda: send_conference_notification.delay(row_id))
+
+    # M11b: immediate, deferred to a digest, or not wanted (the preference).
+    routing.dispatch(row, "conferences", send)
 
 
 def notify(

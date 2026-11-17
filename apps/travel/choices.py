@@ -140,3 +140,5 @@ class NotificationStatus(models.TextChoices):
     SENT = "SENT", _("Sent")
     FAILED = "FAILED", _("Failed")
     SKIPPED = "SKIPPED", _("Not sent: no longer concerned")
+    DEFERRED = "DEFERRED", _("Waiting for a digest")
+    DIGESTED = "DIGESTED", _("Sent in a digest")

@@ -280,7 +280,7 @@ class ItemApproval(TimeStampedModel):
 
 
 # Spelled out (not .values): a constraint must not change when an enum does.
-_SEND_STATUSES = ["PENDING", "SENT", "FAILED", "SKIPPED"]
+_SEND_STATUSES = ["PENDING", "SENT", "FAILED", "SKIPPED", "DEFERRED", "DIGESTED"]  # M11b: digests
 
 
 class ReminderLog(TimeStampedModel):
@@ -301,6 +301,8 @@ class ReminderLog(TimeStampedModel):
         SENT = "SENT", _("Sent")
         FAILED = "FAILED", _("Failed")
         SKIPPED = "SKIPPED", _("Not sent: no longer concerned or due")
+        DEFERRED = "DEFERRED", _("Waiting for a digest")
+        DIGESTED = "DIGESTED", _("Sent in a digest")
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     item = models.ForeignKey(
@@ -316,6 +318,15 @@ class ReminderLog(TimeStampedModel):
     )
     attempts = models.PositiveSmallIntegerField(default=0, editable=False)
     sent_at = models.DateTimeField(null=True, editable=False)
+
+    # M11b: the digest that sent this row (DIGESTED), kept for the history.
+    digest = models.ForeignKey(
+        "activity.ActivityNotification",
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="+",
+        editable=False,
+    )
 
     class Meta:
         verbose_name = _("reminder")
@@ -512,6 +523,15 @@ class ItemNotification(TimeStampedModel):
     )
     attempts = models.PositiveSmallIntegerField(default=0, editable=False)
     sent_at = models.DateTimeField(null=True, editable=False)
+
+    # M11b: the digest that sent this row (DIGESTED), kept for the history.
+    digest = models.ForeignKey(
+        "activity.ActivityNotification",
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="+",
+        editable=False,
+    )
 
     class Meta:
         verbose_name = _("item notification")

@@ -11,6 +11,7 @@ from typing import Any
 
 from django import forms
 from django.core.exceptions import ValidationError
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse, HttpResponseBase
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -20,7 +21,7 @@ from django.views import View
 from apps.accounts.permissions import Action, ThesisPermissionRequiredMixin
 
 from . import services
-from .choices import MODULES, Category, Frequency
+from .choices import MODULES, Category, Frequency, allowed_frequencies
 
 MODULE_LABELS = {
     "documents": _("Documents"),
@@ -76,8 +77,32 @@ class ReadAllView(_Mixin, View):
         return redirect("activity:feed", thesis_id=self.thesis.pk)
 
 
+class DigestView(_Mixin, View):
+    """The « Résumé » a digest e-mail links to: its recipient only."""
+
+    def get(self, request: HttpRequest, thesis_id: Any, digest_id: Any) -> HttpResponse:
+        page = services.digest_page(request.user, self.thesis, digest_id)
+        return render(request, "activity/digest.html", {"thesis": self.thesis, "page": page})
+
+
+def _choices(category: str) -> list[tuple[str, Any]]:
+    allowed = allowed_frequencies(category)
+    return [(value, label) for value, label in Frequency.choices if value in allowed]
+
+
 class PreferencesForm(forms.Form):
-    info = forms.ChoiceField(label=_("Information"), choices=Frequency.choices)
+    """M11b: the three categories; the service refuses what is not allowed too."""
+
+    info = forms.ChoiceField(label=_("Information"), choices=_choices(Category.INFO))
+    action = forms.ChoiceField(
+        label=_("Asks you to act"), choices=_choices(Category.ACTION), required=False
+    )
+    deadline = forms.ChoiceField(
+        label=_("Deadline reminders"), choices=_choices(Category.DEADLINE), required=False
+    )
+
+
+FIELDS = (("info", Category.INFO), ("action", Category.ACTION), ("deadline", Category.DEADLINE))
 
 
 class PreferencesView(_Mixin, View):
@@ -85,16 +110,23 @@ class PreferencesView(_Mixin, View):
         return render(request, "activity/preferences.html", {"thesis": self.thesis, "form": form})
 
     def get(self, request: HttpRequest, thesis_id: Any) -> HttpResponse:
-        current = services.frequency_of(request.user, self.thesis, Category.INFO)
-        return self._render(request, PreferencesForm(initial={"info": current}))
+        initial = {
+            name: services.frequency_of(request.user, self.thesis, category)
+            for name, category in FIELDS
+        }
+        return self._render(request, PreferencesForm(initial=initial))
 
     def post(self, request: HttpRequest, thesis_id: Any) -> HttpResponseBase:
         form = PreferencesForm(request.POST)
         if form.is_valid():
             try:
-                services.set_preference(
-                    request.user, self.thesis, Category.INFO, form.cleaned_data["info"]
-                )
+                with transaction.atomic():
+                    for name, category in FIELDS:
+                        wanted = form.cleaned_data[name]  # absent: unchanged
+                        if wanted and wanted != services.frequency_of(
+                            request.user, self.thesis, category
+                        ):
+                            services.set_preference(request.user, self.thesis, category, wanted)
             except ValidationError as error:
                 form.add_error(None, error)
             else:

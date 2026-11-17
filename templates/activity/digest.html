@@ -1,0 +1,15 @@
+{% extends "base.html" %}{% load i18n ui %}
+{% block title %}{% translate "Digest" %}{% endblock %}
+{% block content %}
+{% page_header %}{% translate "Digest" %}{% subtitle %}{% translate "What this e-mail was about, as it stands now." %}{% endpage_header %}
+{% if page.items %}
+<h2>{% translate "For you" %}</h2>
+<ul class="alert-list">{% for name, url in page.items %}<li class="digest-item"><a href="{{ url }}">{{ name }}</a></li>{% endfor %}</ul>
+{% endif %}
+{% if page.rows %}
+<h2>{% translate "Information" %}</h2>
+<ul class="alert-list">{% for row in page.rows %}<li class="activity-item"><a href="{% url 'activity:open' thesis_id=thesis.pk event_id=row.event.pk %}">{{ row.event.get_kind_display }}</a> · {{ row.name }} · {{ row.event.created_at|short_date }}</li>{% endfor %}</ul>
+{% endif %}
+{% if not page.items and not page.rows %}<p class="muted">{% translate "Nothing left to deal with here." %}</p>{% endif %}
+<p><a href="{% url 'activity:feed' thesis_id=thesis.pk %}">{% translate "All the activity" %}</a></p>
+{% endblock %}

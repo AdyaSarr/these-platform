@@ -23,7 +23,7 @@ from apps.activity.tests import helpers as h
 pytestmark = pytest.mark.django_db(transaction=True)
 
 C, F = Category, Frequency
-ALLOWED = {
+ALLOWED: dict[str, set[str]] = {
     C.INFO: {F.IMMEDIATE, F.DAILY, F.WEEKLY, F.FEED_ONLY},
     C.ACTION: {F.IMMEDIATE, F.DAILY, F.WEEKLY},
     C.DEADLINE: {F.IMMEDIATE, F.DAILY},

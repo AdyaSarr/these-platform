@@ -108,6 +108,8 @@ SCENARIOS = [_m3_reminder, _m5a_invitation, _m6_request, _m7_order, _m11a_piece]
 def test_a_row_is_born_deferred_and_digested_once(
     team: SimpleNamespace, scenario: Any, time_machine: Any
 ) -> None:
+    for member in (team.student, team.director, team.tutor):  # one digest per row here
+        services.set_preference(member, team.thesis, C.INFO, F.FEED_ONLY)
     mail.outbox.clear()
     user, row = scenario(team)
     assert row.status == "DEFERRED"
@@ -249,12 +251,9 @@ def test_a_row_that_no_longer_holds_is_skipped_at_build(
     time_machine.move_to(TOMORROW, tick=True)
     digests.run()
     row.refresh_from_db()
-    assert row.status == "SKIPPED"
-    assert (
-        not ActivityNotification.objects.filter(recipient=team.director)
-        .exclude(kind="EVENT")
-        .exists()
-    )
+    assert row.status == "SKIPPED"  # the invitation no longer holds
+    cancelled = row.meeting.notifications.get(recipient=team.director, kind="CANCELLED")
+    assert cancelled.status == "DIGESTED"  # the cancellation itself does
 
 
 def test_a_digest_whose_rows_fell_meanwhile_is_skipped(
@@ -304,8 +303,8 @@ def test_the_page_names_and_links_what_still_holds(
                                                 "meeting_id": row.meeting_id})  # fmt: skip
     assert detail in html and "TEMOIN-FUITE" not in html
     meetings.cancel_meeting(meeting=row.meeting, user=team.student)
-    html = h.client_for(team.director).get(h.url(team, "digest", digest_id=digest.pk))
-    assert detail not in html.content.decode()  # recomputed at display
+    again = h.client_for(team.director).get(h.url(team, "digest", digest_id=digest.pk))
+    assert detail not in again.content.decode()  # recomputed at display
 
 
 @pytest.mark.parametrize("role", [r for r in h.ROLE_ATTRS if r is not Role.DIRECTOR],

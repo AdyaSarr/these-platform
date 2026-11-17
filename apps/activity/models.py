@@ -34,8 +34,13 @@ class Event(TimeStampedModel):
     kind = models.CharField(max_length=32, choices=EventKind.choices, editable=False)
     object_type = models.CharField(max_length=24, choices=ObjectType.choices, editable=False)
     object_id = models.UUIDField(editable=False)
+    # None: written by the system (an overdue objective, M11b).
     actor = models.ForeignKey(
-        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+", editable=False
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        related_name="+",
+        editable=False,
     )
 
     class Meta:
@@ -71,9 +76,16 @@ class NotificationPreference(TimeStampedModel):
             models.UniqueConstraint(
                 fields=["user", "thesis", "category"], name="activity_one_preference"
             ),
-            # M11a: only « informations » is stored (services.set_preference).
+            # M11b (choices.allowed_frequencies): « feed only » for Informations
+            # only, never « weekly » for Échéances.
             models.CheckConstraint(
-                condition=Q(category=Category.INFO), name="activity_preference_info_only"
+                condition=Q(category=Category.INFO)
+                | (Q(category=Category.ACTION) & ~Q(frequency=Frequency.FEED_ONLY))
+                | (
+                    Q(category=Category.DEADLINE)
+                    & Q(frequency__in=[Frequency.IMMEDIATE, Frequency.DAILY])
+                ),
+                name="activity_preference_frequencies",
             ),
         ]
 
@@ -95,6 +107,13 @@ class ActivityNotification(TimeStampedModel):
         Event, on_delete=models.CASCADE, null=True, related_name="+", editable=False
     )
     cycle = models.PositiveIntegerField(null=True, editable=False)  # an M3 piece's cycle
+    # M11b: the category of an element (EVENT); the digest that sent it (DIGESTED);
+    # for a digest, whether it covers the feed's Informations of its period.
+    category = models.CharField(max_length=16, choices=Category.choices, blank=True, editable=False)
+    digest = models.ForeignKey(
+        "self", on_delete=models.SET_NULL, null=True, related_name="+", editable=False
+    )
+    includes_info = models.BooleanField(default=False, editable=False)
     period_start = models.DateField(null=True, editable=False)  # a digest's first day (Paris)
     status = models.CharField(
         max_length=10, choices=NotificationStatus.choices, default=NotificationStatus.PENDING

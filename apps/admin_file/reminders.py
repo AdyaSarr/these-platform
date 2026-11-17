@@ -26,6 +26,7 @@ from django.utils import timezone
 
 from apps.accounts.models import Membership, Thesis, User
 from apps.accounts.roles import Role
+from apps.activity import routing
 
 from .models import ItemApproval, ItemStatus, ReminderLog, RequiredItem
 
@@ -104,7 +105,12 @@ def _queue(reminder: ReminderLog) -> None:
     from .tasks import send_reminder_email
 
     reminder_id = str(reminder.pk)  # the broker sees this id only
-    transaction.on_commit(lambda: send_reminder_email.delay(reminder_id))
+
+    def send() -> None:
+        transaction.on_commit(lambda: send_reminder_email.delay(reminder_id))
+
+    # M11b: immediate, deferred to a digest, or not wanted (the preference).
+    routing.dispatch(reminder, "admin_file.reminder", send)
 
 
 def run(today: dt.date | None = None) -> dict[str, int]:
