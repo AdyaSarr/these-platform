@@ -1,9 +1,10 @@
-"""Preferences per (person, thesis), category « informations » only in M11a.
+"""Preferences per (person, thesis), category « informations ».
 
-Defaults: daily digest for the student, weekly for the supervisors and the CSI
-member; nothing for a guest. What asks the person to act (ST approvals, mission
-approvals, M3 validations, a refused piece, an assigned action) and their own
-deadline reminders can never be « feed only »: refused by the SERVICE.
+Defaults: daily digest for the student, weekly for the supervisors, « feed
+only » for the CSI member (who may change it); nothing for a guest. What asks
+the person to act (ST approvals, mission approvals, M3 validations, a refused
+piece, an assigned action) and their own deadline reminders can never be « feed
+only »: refused by the SERVICE.
 """
 
 from __future__ import annotations
@@ -36,7 +37,7 @@ def team() -> SimpleNamespace:
         (Role.CO_SUPERVISOR, Frequency.WEEKLY),
         (Role.INDUSTRIAL_TUTOR, Frequency.WEEKLY),
         (Role.INDUSTRIAL_CO_SUPERVISOR, Frequency.WEEKLY),
-        (Role.CSI_MEMBER, Frequency.WEEKLY),
+        (Role.CSI_MEMBER, Frequency.FEED_ONLY),
         (Role.GUEST, None),
     ],
 )

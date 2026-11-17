@@ -22,6 +22,7 @@ from apps.accounts.permissions import Action, ThesisPermissionRequiredMixin
 
 from . import services
 from .choices import MODULES, Category, Frequency, allowed_frequencies
+from .models import NotificationPreference
 
 MODULE_LABELS = {
     "documents": _("Documents"),
@@ -123,9 +124,13 @@ class PreferencesView(_Mixin, View):
                 with transaction.atomic():
                     for name, category in FIELDS:
                         wanted = form.cleaned_data[name]  # absent: unchanged
-                        if wanted and wanted != services.frequency_of(
-                            request.user, self.thesis, category
-                        ):
+                        stored = NotificationPreference.objects.filter(
+                            user_id=str(request.user.pk), thesis=self.thesis, category=category
+                        ).exists()
+                        current = services.frequency_of(request.user, self.thesis, category)
+                        # A choice made on the page is kept, even equal to the default:
+                        # a later change of the defaults does not change it.
+                        if wanted and (wanted != current or not stored):
                             services.set_preference(request.user, self.thesis, category, wanted)
             except ValidationError as error:
                 form.add_error(None, error)

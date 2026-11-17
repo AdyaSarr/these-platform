@@ -20,24 +20,26 @@ from apps.accounts.roles import Role
 from .choices import Category, Frequency
 from .models import NotificationPreference
 
-SUPERVISION_AND_CSI = frozenset(
+SUPERVISION = frozenset(
     {
         Role.DIRECTOR,
         Role.CO_SUPERVISOR,
         Role.INDUSTRIAL_TUTOR,
         Role.INDUSTRIAL_CO_SUPERVISOR,
-        Role.CSI_MEMBER,
     }
 )
 
 
 def default_frequency(roles: frozenset[Role]) -> Frequency | None:
-    """Daily digest for the student, weekly for the supervision and the CSI;
-    nothing for a guest (who reads no event)."""
+    """Daily digest for the student, weekly for the supervision; « feed only » for
+    the CSI member (independent and yearly: no weekly follow-up by e-mail; they may
+    change it); nothing for a guest (who reads no event)."""
     if Role.PHD_STUDENT in roles:
         return Frequency.DAILY
-    if roles & SUPERVISION_AND_CSI:
+    if roles & SUPERVISION:
         return Frequency.WEEKLY
+    if Role.CSI_MEMBER in roles:
+        return Frequency.FEED_ONLY
     return None
 
 

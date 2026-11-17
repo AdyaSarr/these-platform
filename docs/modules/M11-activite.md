@@ -126,7 +126,8 @@ ancienne et nouvelle fréquence).
 | Rôle | Défaut « informations » |
 |---|---|
 | `PHD_STUDENT` | résumé quotidien |
-| `DIRECTOR`, `CO_SUPERVISOR`, `INDUSTRIAL_TUTOR`, `INDUSTRIAL_CO_SUPERVISOR`, `CSI_MEMBER` | résumé hebdomadaire |
+| `DIRECTOR`, `CO_SUPERVISOR`, `INDUSTRIAL_TUTOR`, `INDUSTRIAL_CO_SUPERVISOR` | résumé hebdomadaire |
+| `CSI_MEMBER` | fil seulement (modifiable ; décision du 2026-11-17) |
 | `GUEST` | rien (aucun événement lisible) |
 
 **Ne peuvent jamais être en « fil seulement »** (fréquence modifiable en M11b, fixe
@@ -227,7 +228,7 @@ Plan validé le 2026-11-17.
 
 | Catégorie | Fréquences permises | Défaut |
 |---|---|---|
-| Informations (`INFO`) | immédiat, quotidien, hebdomadaire, fil seulement | quotidien (doctorant), hebdomadaire (encadrants, CSI) |
+| Informations (`INFO`) | immédiat, quotidien, hebdomadaire, fil seulement | quotidien (doctorant), hebdomadaire (encadrants), fil seulement (CSI) |
 | À faire (`ACTION`) | immédiat, quotidien, hebdomadaire | immédiat |
 | Échéances (`DEADLINE`) | immédiat, quotidien | immédiat |
 
