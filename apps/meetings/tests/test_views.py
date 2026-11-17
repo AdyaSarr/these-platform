@@ -421,7 +421,7 @@ def test_dashboard_card(team: SimpleNamespace, time_machine: Any) -> None:
     # Not opened any more: the tile shows the next meeting's date and kind only, the
     # dashboard opens sealed texts once (frontend step 8a).
     assert title not in html
-    assert "1 action en retard" in html
+    assert "1 action de réunion en retard" in html
     assert "Action en retard fictive" in html
 
 

@@ -126,9 +126,9 @@ def test_the_co_supervisor_has_nothing_to_report(team: SimpleNamespace) -> None:
 
 
 def _tile(page: str) -> str:
-    tile = re.search(r'data-tile="alerts">.*?</li>\s*</ul>\s*</li>', page, re.S)
-    assert tile is not None
-    return tile.group(0)
+    # From the tile to the « À venir » card, which follows the tiles.
+    assert 'data-tile="alerts"' in page
+    return page.split('data-tile="alerts"', 1)[1].split('<section class="card agenda"', 1)[0]
 
 
 def _plain(fragment: str) -> str:

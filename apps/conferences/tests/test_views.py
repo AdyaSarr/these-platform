@@ -400,9 +400,11 @@ def test_dashboard_card(team: SimpleNamespace) -> None:
     )
     page = reverse("accounts:dashboard", kwargs={"thesis_id": team.thesis.pk})
     tutor = _client(team, "tutor").get(page).content.decode()
-    assert "SFCA 2027" in _agenda(tutor) and "1 accord ST attend votre décision" in tutor
+    assert "SFCA 2027" in _agenda(tutor) and "1 accord ST à décider" in tutor
     student = _client(team, "student").get(page).content.decode()
-    assert "accord ST attend" not in student
+    # The negative looks for a text that exists: the same words on the tutor's page.
+    assert "accord ST à décider" in tutor
+    assert "accord ST à décider" not in student
 
 
 def test_request_due_on_the_card(team: SimpleNamespace) -> None:

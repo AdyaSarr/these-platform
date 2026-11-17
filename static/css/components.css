@@ -512,6 +512,10 @@
   .segment-label { min-width: 9rem; justify-content: center; }
   .segment-disabled { color: var(--muted); }
 
+  .alert-list, .alert-list ul { margin: 0; padding: 0; list-style: none; }
+  .alert-list > li + li { margin-block-start: var(--space-2); }
+  .alert-list ul li { font-size: var(--text-sm); }
+
   /* ---------------------------------------------------------------- « À venir » */
   /* ui/agenda.html: one line per element, the date first (tabular figures). */
   .agenda { margin-block-end: var(--space-5); }

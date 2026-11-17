@@ -1891,17 +1891,22 @@ def dashboard_block(request: Any, thesis: Thesis) -> dict[str, Any]:
         if _month_in_bounds(_fresh(thesis), today.year, today.month)
         else None
     )
-    missing = 0
+    missing: list[Mission] = []
     if can(user, Action.TRAVEL_WRITE, thesis):
-        missing = sum(
-            1
-            for m in Mission.objects.filter(thesis=thesis, status=MissionStatus.DONE)
+        missing = [
+            m
+            for m in Mission.objects.filter(thesis=thesis, status=MissionStatus.DONE).order_by(
+                "start_date", "pk"
+            )
             if expenses_incomplete(m)
-        )
+        ]
+    orders = pending_orders_for(user, thesis)
     return {
         "upcoming": upcoming,
-        "pending": len(pending_orders_for(user, thesis)),
-        "missing_receipts": missing,
+        "pending": len(orders),
+        "pending_orders": orders,  # one line and link each in « À traiter »
+        "missing_receipts": len(missing),
+        "missing_missions": missing,
         "summary": summary,
         "full": summary.access is not PresenceAccess.LIRMM_ONLY,
         "st_percent": None if summary.st_percent is None else round(float(summary.st_percent)),

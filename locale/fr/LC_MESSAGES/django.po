@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-17 11:22+0100\n"
+"POT-Creation-Date: 2026-11-17 11:32+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -875,7 +875,7 @@ msgstr "L'échéance ne peut pas dépasser la fin prévue de la thèse."
 msgid "A mandatory item of the catalogue keeps a due date."
 msgstr "Une pièce obligatoire du catalogue garde une échéance."
 
-#: apps/admin_file/services.py:931 apps/conferences/services.py:1049
+#: apps/admin_file/services.py:931 apps/conferences/services.py:1051
 msgid "No industrial tutor in the team: invite them first."
 msgstr ""
 "Aucun·e tuteur·rice industriel·le dans l'équipe : invitez-le·la d'abord."
@@ -1452,11 +1452,11 @@ msgstr "Cette échéance a été annulée."
 msgid "Between 0 and %(max)d days."
 msgstr "Entre 0 et %(max)d jours."
 
-#: apps/conferences/services.py:781 apps/conferences/services.py:1283
+#: apps/conferences/services.py:783 apps/conferences/services.py:1285
 msgid "This submission is closed."
 msgstr "Cette soumission est close."
 
-#: apps/conferences/services.py:790
+#: apps/conferences/services.py:792
 msgid ""
 "ST's approval was requested for this target: submit elsewhere instead (a new "
 "submission, a new approval)."
@@ -1464,77 +1464,77 @@ msgstr ""
 "L'accord de ST a été demandé pour cette cible : soumettez plutôt ailleurs "
 "(une nouvelle soumission, un nouvel accord)."
 
-#: apps/conferences/services.py:809 apps/conferences/services.py:863
-#: apps/conferences/services.py:1128 apps/conferences/services.py:1293
+#: apps/conferences/services.py:811 apps/conferences/services.py:865
+#: apps/conferences/services.py:1130 apps/conferences/services.py:1295
 msgid "The submission changed meanwhile: try again."
 msgstr "La soumission a été modifiée entre-temps : recommencez."
 
-#: apps/conferences/services.py:906
+#: apps/conferences/services.py:908
 msgid "An ST approval is pending: decide it first."
 msgstr "Un accord ST est en attente : décidez-le d'abord."
 
-#: apps/conferences/services.py:928 apps/meetings/services.py:1216
+#: apps/conferences/services.py:930 apps/meetings/services.py:1216
 msgid "This document is already linked."
 msgstr "Ce document est déjà lié."
 
-#: apps/conferences/services.py:950 apps/meetings/services.py:1235
+#: apps/conferences/services.py:952 apps/meetings/services.py:1235
 msgid "This document is no longer linked."
 msgstr "Ce document n'est plus lié."
 
-#: apps/conferences/services.py:969
+#: apps/conferences/services.py:971
 msgid "Choose a version of a document linked to this submission."
 msgstr "Choisissez une version d'un document lié à cette soumission."
 
-#: apps/conferences/services.py:987
+#: apps/conferences/services.py:989
 msgid "ST's approval of this exact version is required first."
 msgstr "L'accord de ST sur cette version exacte est d'abord nécessaire."
 
-#: apps/conferences/services.py:1038
+#: apps/conferences/services.py:1040
 msgid "Unknown purpose."
 msgstr "Objet inconnu."
 
-#: apps/conferences/services.py:1042
+#: apps/conferences/services.py:1044
 msgid "This submission does not concern ST work: no approval is needed."
 msgstr ""
 "Cette soumission ne concerne pas des travaux ST : aucun accord n'est "
 "nécessaire."
 
-#: apps/conferences/services.py:1054
+#: apps/conferences/services.py:1056
 msgid "The industrial tutor cannot read this document: change its level first."
 msgstr ""
 "Le tuteur industriel ne peut pas lire ce document : changez d'abord son "
 "niveau."
 
-#: apps/conferences/services.py:1064
+#: apps/conferences/services.py:1066
 msgid "A request is already pending."
 msgstr "Une demande est déjà en attente."
 
-#: apps/conferences/services.py:1114 apps/travel/services.py:1298
+#: apps/conferences/services.py:1116 apps/travel/services.py:1298
 #: apps/travel/views.py:790
 msgid "Grant or refuse."
 msgstr "Accordez ou refusez."
 
-#: apps/conferences/services.py:1116
+#: apps/conferences/services.py:1118
 msgid "A refusal needs its reason."
 msgstr "Un refus a besoin de son motif."
 
-#: apps/conferences/services.py:1118
+#: apps/conferences/services.py:1120
 msgid "A grant has no refusal reason."
 msgstr "Un accord n'a pas de motif de refus."
 
-#: apps/conferences/services.py:1126 apps/conferences/services.py:1168
+#: apps/conferences/services.py:1128 apps/conferences/services.py:1170
 msgid "This request was already decided."
 msgstr "Cette demande a déjà été décidée."
 
-#: apps/conferences/services.py:1215
+#: apps/conferences/services.py:1217
 msgid "The document has a newer version than the one ST approved."
 msgstr "Le document a une version plus récente que celle que ST a accordée."
 
-#: apps/conferences/services.py:1273
+#: apps/conferences/services.py:1275
 msgid "Unknown platform."
 msgstr "Plateforme inconnue."
 
-#: apps/conferences/services.py:1280
+#: apps/conferences/services.py:1282
 msgid "The date of a preprint is today or earlier."
 msgstr "La date d'une prépublication est aujourd'hui ou avant."
 
@@ -3530,35 +3530,40 @@ msgstr "Ouvrir les réunions"
 msgid "To deal with"
 msgstr "À traiter"
 
-#: templates/accounts/dashboard.html:69
+#: templates/accounts/dashboard.html:72
 #, python-format
-msgid "%(counter)s overdue action"
-msgid_plural "%(counter)s overdue actions"
-msgstr[0] "%(counter)s action en retard"
-msgstr[1] "%(counter)s actions en retard"
+msgid "%(counter)s overdue meeting action"
+msgid_plural "%(counter)s overdue meeting actions"
+msgstr[0] "%(counter)s action de réunion en retard"
+msgstr[1] "%(counter)s actions de réunion en retard"
 
-#: templates/accounts/dashboard.html:69
+#: templates/accounts/dashboard.html:72
 #, python-format
-msgid "%(counter)s ST approval awaits your decision"
-msgid_plural "%(counter)s ST approvals await your decision"
-msgstr[0] "%(counter)s accord ST attend votre décision"
-msgstr[1] "%(counter)s accords ST attendent votre décision"
+msgid "%(counter)s ST approval to decide"
+msgid_plural "%(counter)s ST approvals to decide"
+msgstr[0] "%(counter)s accord ST à décider"
+msgstr[1] "%(counter)s accords ST à décider"
 
-#: templates/accounts/dashboard.html:69
+#: templates/accounts/dashboard.html:72
 #, python-format
-msgid "%(counter)s mission approval awaits your decision"
-msgid_plural "%(counter)s mission approvals await your decision"
-msgstr[0] "%(counter)s accord de mission attend votre décision"
-msgstr[1] "%(counter)s accords de mission attendent votre décision"
+msgid "%(counter)s mission approval to decide"
+msgid_plural "%(counter)s mission approvals to decide"
+msgstr[0] "%(counter)s accord de mission à décider"
+msgstr[1] "%(counter)s accords de mission à décider"
 
-#: templates/accounts/dashboard.html:69
+#: templates/accounts/dashboard.html:72
 #, python-format
 msgid "%(counter)s mission with missing receipts"
 msgid_plural "%(counter)s missions with missing receipts"
 msgstr[0] "%(counter)s mission avec des justificatifs manquants"
 msgstr[1] "%(counter)s missions avec des justificatifs manquants"
 
-#: templates/accounts/dashboard.html:72
+#: templates/accounts/dashboard.html:75
+msgctxt "before a date"
+msgid "due"
+msgstr "échéance"
+
+#: templates/accounts/dashboard.html:86
 msgid "Nothing to report"
 msgstr "Rien à signaler"
 

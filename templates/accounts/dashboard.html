@@ -65,9 +65,23 @@
           <span class="tile-label">{% icon "bell" %}{% translate "To deal with" %}</span>
           <span class="tile-value">{{ tiles.alerts.total }}</span>
           {% if tiles.alerts.parts %}
-            <div class="tile-detail"><ul>
-              {% for name, counter in tiles.alerts.parts %}<li>{% if name == "actions_overdue" %}{% blocktranslate count counter=counter %}{{ counter }} overdue action{% plural %}{{ counter }} overdue actions{% endblocktranslate %}{% elif name == "conference_decisions" %}{% blocktranslate count counter=counter %}{{ counter }} ST approval awaits your decision{% plural %}{{ counter }} ST approvals await your decision{% endblocktranslate %}{% elif name == "mission_decisions" %}{% blocktranslate count counter=counter %}{{ counter }} mission approval awaits your decision{% plural %}{{ counter }} mission approvals await your decision{% endblocktranslate %}{% elif name == "missing_receipts" %}{% blocktranslate count counter=counter %}{{ counter }} mission with missing receipts{% plural %}{{ counter }} missions with missing receipts{% endblocktranslate %}{% endif %}</li>{% endfor %}
-            </ul></div>
+            {# One explicit line per kind, then one link per element (review A); a sealed title was opened by the Meetings card. #}
+            <ul class="tile-detail alert-list">
+              {% for name, counter, items in tiles.alerts.parts %}
+                <li>
+                  <strong>{% if name == "actions_overdue" %}{% blocktranslate count counter=counter %}{{ counter }} overdue meeting action{% plural %}{{ counter }} overdue meeting actions{% endblocktranslate %}{% elif name == "conference_decisions" %}{% blocktranslate count counter=counter %}{{ counter }} ST approval to decide{% plural %}{{ counter }} ST approvals to decide{% endblocktranslate %}{% elif name == "mission_decisions" %}{% blocktranslate count counter=counter %}{{ counter }} mission approval to decide{% plural %}{{ counter }} mission approvals to decide{% endblocktranslate %}{% elif name == "missing_receipts" %}{% blocktranslate count counter=counter %}{{ counter }} mission with missing receipts{% plural %}{{ counter }} missions with missing receipts{% endblocktranslate %}{% endif %}</strong>
+                  <ul>
+                    {% for item in items %}
+                      {% if name == "actions_overdue" %}{% with action=item.0 title=item.1 %}<li><a href="{% url 'meetings:detail' thesis_id=thesis.pk meeting_id=action.meeting_id %}">{% include "meetings/_text.html" with value=title %}</a> · {% translate "due" context "before a date" %} {{ action.due_date|short_date }}</li>{% endwith %}
+                      {% elif name == "conference_decisions" %}<li><a href="{% url 'conferences:submission' thesis_id=thesis.pk submission_id=item.submission_id %}">{{ item.submission.venue.acronym }}{% if item.submission.edition %} {{ item.submission.edition.year }}{% endif %}</a> · {{ item.get_purpose_display }}</li>
+                      {% elif name == "mission_decisions" %}<li><a href="{% url 'travel:mission' thesis_id=thesis.pk mission_id=item.mission_id %}">{{ item.snapshot_start|short_date }} – {{ item.snapshot_end|short_date }}</a> · {{ item.get_snapshot_destination_display }}</li>
+                      {% elif name == "missing_receipts" %}<li><a href="{% url 'travel:mission' thesis_id=thesis.pk mission_id=item.pk %}">{{ item.start_date|short_date }} – {{ item.end_date|short_date }}</a> · {{ item.get_destination_display }}</li>
+                      {% endif %}
+                    {% endfor %}
+                  </ul>
+                </li>
+              {% endfor %}
+            </ul>
           {% else %}
             <p class="tile-detail">{% include "ui/badge.html" with tone="success" label=_("Nothing to report") %}</p>
           {% endif %}

@@ -7,28 +7,27 @@ alert count adds up counts the blocks already display, nothing else.
 
 from __future__ import annotations
 
-from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
 
-# (block key, count read from the block's data, alert key): what falls to THE
-# VIEWER only (apps/ui/tests/test_alerts_mine.py): their overdue actions (the list
-# of the Meetings card, not every overdue action of the thesis), the approvals
-# they decide (both counts are per decider in their services), their missing
-# receipts (counted for the student only, travel.services.dashboard_block). The
-# overdue objectives stay in the Objectives tile.
-ALERT_SOURCES: tuple[tuple[str, Callable[[dict[str, Any]], int], str], ...] = (
-    ("meetings", lambda d: len(d.get("my_overdue") or []), "actions_overdue"),
-    ("conferences", lambda d: int(d.get("pending") or 0), "conference_decisions"),
-    ("travel", lambda d: int(d.get("pending") or 0), "mission_decisions"),
-    ("travel", lambda d: int(d.get("missing_receipts") or 0), "missing_receipts"),
+# What falls to THE VIEWER only (apps/ui/tests/test_alerts_mine.py): their
+# overdue actions (the list of the Meetings card, titles already opened there),
+# the approvals they decide, their missing receipts; each element gets a line and
+# a link (review A). The overdue objectives stay in the Objectives tile.
+ALERT_SOURCES: tuple[tuple[str, str, str], ...] = (
+    # (block key, list of the block's data, alert key): the count is its length.
+    ("meetings", "my_overdue", "actions_overdue"),  # (action, title opened by the card)
+    ("conferences", "pending_approvals", "conference_decisions"),
+    ("travel", "pending_orders", "mission_decisions"),
+    ("travel", "missing_missions", "missing_receipts"),
 )
 
 
 @dataclass(frozen=True)
 class Alerts:
     total: int
-    parts: list[tuple[str, int]] = field(default_factory=list)
+    # (alert key, count, elements): a line and a link per element (review A).
+    parts: list[tuple[str, int, list[Any]]] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -46,9 +45,12 @@ def dashboard_tiles(blocks: list[tuple[Any, dict[str, Any]]]) -> Tiles:
     data = {block.key: values for block, values in blocks}
     alerts = None
     if any(key in data for key, _, _ in ALERT_SOURCES):
-        parts = [(name, count(data[key])) for key, count, name in ALERT_SOURCES if key in data]
-        parts = [(name, count) for name, count in parts if count]
-        alerts = Alerts(total=sum(count for _, count in parts), parts=parts)
+        parts = [
+            (name, len(items), items)
+            for key, list_key, name in ALERT_SOURCES
+            if key in data and (items := list(data[key].get(list_key) or []))
+        ]
+        alerts = Alerts(total=sum(count for _, count, _ in parts), parts=parts)
     return Tiles(
         file=data["admin_file"]["progress"] if "admin_file" in data else None,
         objectives=data.get("objectives"),

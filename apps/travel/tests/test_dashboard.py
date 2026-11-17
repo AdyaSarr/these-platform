@@ -90,8 +90,11 @@ def test_the_co_supervisor_sees_the_next_lirmm_mission_only(team: SimpleNamespac
 def test_pending_approvals_for_the_decider(team: SimpleNamespace) -> None:
     order_mission = mission_of(team, payer="ST")
     services.request_order(mission=order_mission, user=team.student, estimated_total="1")
-    assert "1 accord de mission attend votre décision" in _page(team, "tutor")
-    assert "attend votre décision" not in _page(team, "director")
+    tutor = _page(team, "tutor")
+    assert "1 accord de mission à décider" in tutor
+    # The negative looks for a text that exists: the same words on the tutor's page.
+    assert "accord de mission à décider" in tutor
+    assert "accord de mission à décider" not in _page(team, "director")
 
 
 def test_the_split_alert_but_not_for_the_co_supervisor(team: SimpleNamespace) -> None:

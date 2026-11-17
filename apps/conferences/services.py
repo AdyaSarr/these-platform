@@ -658,12 +658,14 @@ def dashboard_block(request: Any, thesis: Thesis) -> dict[str, Any]:
         deadline_display(d) for d in upcoming_deadlines(user, thesis) if d.edition_id in targeted
     ][:5]
     today = timezone.localdate()
+    pending = pending_approvals(user, thesis)  # the tutor's only
     return {
         "deadlines": deadlines,
         "request_dues": [
             (s, due, (due - today).days) for s, due in request_due_dates(thesis) if due >= today
         ][:3],
-        "pending": len(pending_approvals(user, thesis)),
+        "pending": len(pending),
+        "pending_approvals": pending,  # one line and link each in « À traiter »
     }
 
 
