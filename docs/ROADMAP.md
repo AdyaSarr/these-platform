@@ -19,6 +19,10 @@ critères d'acceptation de la fiche tous validés.
 | [x] | M11b — Courriels existants sous les préférences, résumé M4 fondu dans le résumé hebdomadaire | `modules/M11-activite.md` | M11a | en cours |
 | [ ] | Suppression de la table `WeeklySummaryLog` (migration séparée, après la conservation de 13 mois) | `modules/M11-activite.md` | M11b | 2028 |
 | [x] | M12 — Flux iCal personnel à jeton | `modules/M12-ical.md` | M5a, M7, M11 | en cours |
+| [ ] | M13a — Fin de thèse : cycle de vie (`DEFENDED`, `CLOSED`), gardes de statut, accès | `modules/M13-fin-de-these.md` | M1–M12 | en cours |
+| [ ] | M13b — Export complet par le doctorant | `modules/M13-fin-de-these.md` (à compléter) | M13a | à planifier |
+| [ ] | Fournisseur de clés OpenBao (transit), clés destructibles | à écrire | M2 | avant M13c |
+| [ ] | M13c — Conservation après `CLOSED` et destruction (effacement des clés, puis des lignes ; journal d'audit conservé et vérifiable) | `modules/M13-fin-de-these.md` (à compléter) | M13b, fournisseur OpenBao, réponses Q8–Q10 (`specs/questions-fin-de-these.md`) | à planifier |
 | [ ] | M8 — Rapports CSI et ANRT | `modules/M08-rapports.md` | M4, M5, M9 | avant mars 2028 |
 | [ ] | M9 — Portfolio, formations, publications | `modules/M09-portfolio.md` | M2 | été 2027 |
 | [ ] | M10 — Bout en bout et signatures post-quantiques | `modules/M10-e2e-pq.md` | M2 | 2028 |
@@ -63,7 +67,8 @@ Idées validées, sans module ni date pour l'instant.
   d'une compromission du mot de passe. Envoi par Celery avec l'identifiant de
   l'utilisateur seulement, au plus un courriel par période de blocage.
 
-- **Passages en `DEFENDED` et `CLOSED`** (aucun code ne les fait aujourd'hui :
+- **Passages en `DEFENDED` et `CLOSED`** (devenu M13a, M13b et M13c, fiche
+  `modules/M13-fin-de-these.md` ; texte d'origine ci-dessous) (aucun code ne les fait aujourd'hui :
   seul `SETUP → ACTIVE` existe, à la validation de la dernière pièce obligatoire
   du dossier administratif, M3).
   - *Qui* : le directeur, avec ré-authentification par second facteur et
