@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-16 21:51+0100\n"
+"POT-Creation-Date: 2026-11-17 11:02+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -550,7 +550,7 @@ msgstr "Ou un document existant"
 #: templates/conferences/submission.html:116
 #: templates/conferences/submissions.html:8 templates/meetings/detail.html:9
 #: templates/meetings/detail.html:177 templates/meetings/list.html:23
-#: templates/objectives/detail.html:13 templates/objectives/detail.html:76
+#: templates/objectives/detail.html:13 templates/objectives/detail.html:75
 #: templates/travel/mission.html:11 templates/vault/document_list.html:10
 msgid "Confidentiality"
 msgstr "Confidentialité"
@@ -560,7 +560,7 @@ msgid "Give a new file or an existing document, not both."
 msgstr "Donnez un nouveau fichier ou un document existant, pas les deux."
 
 #: apps/admin_file/forms.py:69 apps/admin_file/forms.py:99
-#: templates/admin_file/item_row.html:32 templates/objectives/detail.html:52
+#: templates/admin_file/item_row.html:32 templates/objectives/detail.html:51
 msgid "Reason"
 msgstr "Motif"
 
@@ -3890,7 +3890,7 @@ msgstr "Déposer"
 msgid "Withdraw the submission"
 msgstr "Retirer le dépôt"
 
-#: templates/admin_file/item_row.html:98 templates/objectives/detail.html:32
+#: templates/admin_file/item_row.html:98 templates/objectives/detail.html:31
 msgid "Approve"
 msgstr "Approuver"
 
@@ -4087,14 +4087,14 @@ msgstr "Travaux ST : accord de ST nécessaire"
 msgid "Not ST work"
 msgstr "Pas des travaux ST"
 
-#: templates/conferences/submission.html:12
-msgid "Resubmission of an earlier submission"
-msgstr "Nouvelle soumission d'un article précédent"
-
-#: templates/conferences/submission.html:15 templates/meetings/detail.html:14
-#: templates/objectives/detail.html:29 templates/travel/mission.html:82
+#: templates/conferences/submission.html:10 templates/meetings/detail.html:14
+#: templates/objectives/detail.html:5 templates/travel/mission.html:5
 msgid "Edit"
 msgstr "Modifier"
+
+#: templates/conferences/submission.html:13
+msgid "Resubmission of an earlier submission"
+msgstr "Nouvelle soumission d'un article précédent"
 
 #: templates/conferences/submission.html:18
 msgid "Not ST work: no approval needed"
@@ -4103,9 +4103,9 @@ msgstr "Pas des travaux ST : aucun accord nécessaire"
 #: templates/conferences/submission.html:19
 #: templates/conferences/submission.html:71
 #: templates/conferences/submission.html:119
-#: templates/objectives/dashboard.html:85 templates/objectives/detail.html:40
-#: templates/objectives/detail.html:81 templates/travel/mission.html:51
-#: templates/travel/mission.html:89 templates/travel/settings.html:18
+#: templates/objectives/dashboard.html:85 templates/objectives/detail.html:39
+#: templates/objectives/detail.html:80 templates/travel/mission.html:51
+#: templates/travel/mission.html:91 templates/travel/settings.html:18
 #: templates/travel/settings.html:29 templates/travel/settings.html:39
 msgid "Asks for your second factor."
 msgstr "Demande votre second facteur."
@@ -4197,7 +4197,7 @@ msgid "A new ST approval is required: the earlier one is never reused."
 msgstr "Un nouvel accord ST est nécessaire : l'ancien n'est jamais repris."
 
 #: templates/conferences/submission.html:118 templates/meetings/detail.html:180
-#: templates/objectives/detail.html:80 templates/travel/mission.html:88
+#: templates/objectives/detail.html:79 templates/travel/mission.html:90
 msgid "Change the confidentiality"
 msgstr "Changer la confidentialité"
 
@@ -4699,35 +4699,35 @@ msgstr "approuvé le %(date)s"
 msgid "draft, awaiting approval"
 msgstr "brouillon, en attente d'approbation"
 
-#: templates/objectives/detail.html:37
+#: templates/objectives/detail.html:36
 msgid "Acknowledge"
 msgstr "Prendre connaissance"
 
-#: templates/objectives/detail.html:46
+#: templates/objectives/detail.html:45
 msgid "History"
 msgstr "Historique"
 
-#: templates/objectives/detail.html:57
+#: templates/objectives/detail.html:56
 msgid "No change since approval."
 msgstr "Aucune modification depuis l'approbation."
 
-#: templates/objectives/detail.html:67
+#: templates/objectives/detail.html:66
 msgid "Comments of the supervision"
 msgstr "Commentaires de l'encadrement"
 
-#: templates/objectives/detail.html:69
+#: templates/objectives/detail.html:68
 msgid "Show the comments"
 msgstr "Afficher les commentaires"
 
-#: templates/objectives/detail.html:88
+#: templates/objectives/detail.html:87
 msgid "Drop this objective"
 msgstr "Abandonner cet objectif"
 
-#: templates/objectives/detail.html:92
+#: templates/objectives/detail.html:91
 msgid "A dropped objective stays visible, with its reason."
 msgstr "Un objectif abandonné reste visible, avec son motif."
 
-#: templates/objectives/detail.html:93
+#: templates/objectives/detail.html:92
 msgid "Drop"
 msgstr "Abandonner"
 
@@ -5042,9 +5042,19 @@ msgstr "Déposer l'ordre de mission officiel"
 msgid "Mark as done"
 msgstr "Marquer comme effectuée"
 
-#: templates/travel/mission.html:84
+#: templates/travel/mission.html:85
 msgid "Cancel the mission"
 msgstr "Annuler la mission"
+
+#: templates/travel/mission.html:85
+msgid ""
+"The mission will be cancelled; its approvals and expenses stay in its "
+"history. This cannot be undone."
+msgstr "La mission sera annulée ; ses accords et ses frais restent dans son historique. Cette action est définitive."
+
+#: templates/travel/mission.html:85
+msgid "Yes, cancel the mission"
+msgstr "Oui, annuler la mission"
 
 #: templates/travel/mission_form.html:2 templates/travel/mission_form.html:5
 msgid "Edit the mission"

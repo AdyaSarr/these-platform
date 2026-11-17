@@ -2,7 +2,7 @@
 {% block title %}{% translate "Mission" %}{% endblock %}
 {% block content %}
 {% module_tabs "travel" %}
-{% page_header %}{% translate "Mission" %} — {{ mission.get_destination_display }}{% actions %}{% url 'travel:mission_ics' thesis_id=thesis.pk mission_id=mission.pk as ics_url %}{% include "ui/action.html" with url=ics_url label=_("Add to my calendar (.ics)") icon="calendar-plus" %}{% endpage_header %}
+{% page_header %}{% translate "Mission" %} — {{ mission.get_destination_display }}{% actions %}{% url 'travel:mission_ics' thesis_id=thesis.pk mission_id=mission.pk as ics_url %}{% include "ui/action.html" with url=ics_url label=_("Add to my calendar (.ics)") icon="calendar-plus" %}{% if writer %}{% url 'travel:edit_mission' thesis_id=thesis.pk mission_id=mission.pk as edit_url %}{% include "ui/action.html" with url=edit_url label=_("Edit") icon="pencil" %}{% endif %}{% endpage_header %}
 {% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
 <dl class="stats">
   <div><dt>{% translate "Dates" %}</dt><dd>{{ mission.start_date|date:"d/m/Y" }} – {{ mission.end_date|date:"d/m/Y" }}</dd></div>
@@ -79,9 +79,11 @@
   <button type="submit">{% translate "Store the official mission order" %}</button></form>
 {% endif %}
 {% if writer %}
-<p class="actions"><a href="{% url 'travel:edit_mission' thesis_id=thesis.pk mission_id=mission.pk %}">{% translate "Edit" %}</a>
-  <form method="post" action="{% url 'travel:mission_done' thesis_id=thesis.pk mission_id=mission.pk %}">{% csrf_token %}<button type="submit">{% translate "Mark as done" %}</button></form>
-  <form method="post" action="{% url 'travel:cancel_mission' thesis_id=thesis.pk mission_id=mission.pk %}">{% csrf_token %}<button type="submit" class="danger">{% translate "Cancel the mission" %}</button></form></p>
+<div class="actions confirm-row">
+  <form method="post" action="{% url 'travel:mission_done' thesis_id=thesis.pk mission_id=mission.pk %}">{% csrf_token %}<button type="submit" class="btn btn-secondary">{% translate "Mark as done" %}</button></form>
+  {% url 'travel:cancel_mission' thesis_id=thesis.pk mission_id=mission.pk as cancel_url %}
+  {% include "ui/confirm.html" with label=_("Cancel the mission") message=_("The mission will be cancelled; its approvals and expenses stay in its history. This cannot be undone.") action=cancel_url confirm_label=_("Yes, cancel the mission") %}
+</div>
 {% endif %}
 {% if level_form %}
 <form class="stack" method="post" action="{% url 'travel:mission_level' thesis_id=thesis.pk mission_id=mission.pk %}">{% csrf_token %}{% with form=level_form %}{% include "conferences/_form.html" %}{% endwith %}

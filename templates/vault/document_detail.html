@@ -14,7 +14,7 @@
       <td>{{ version.size|filesizeformat }}</td>
       <td>{{ version.mime_type }}</td>
       <td>{{ version.created_at|date:"SHORT_DATETIME_FORMAT" }}</td>
-      <td><a href="{% url 'vault:download' thesis_id=thesis.pk version_id=version.pk %}">{% translate "Download" %}</a></td>
+      <td><a class="btn btn-ghost btn-sm" href="{% url 'vault:download' thesis_id=thesis.pk version_id=version.pk %}">{% icon "download" %}<span>{% translate "Download" %}</span></a></td>
     </tr>
   {% endfor %}
   </tbody>

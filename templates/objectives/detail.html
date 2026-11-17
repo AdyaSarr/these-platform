@@ -2,7 +2,7 @@
 {% block title %}{% translate "Objective" %}{% endblock %}
 {% block content %}
 {% url 'objectives:dashboard' thesis_id=thesis.pk as objectives_url %}{% with year=objective.year.number|stringformat:"d" %}{% with parent=objectives_url|add:"?year="|add:year %}
-{% page_header parent_url=parent parent_label=_("Objectives") %}{% include "objectives/_text.html" with value=texts.title %}{% endpage_header %}{% endwith %}{% endwith %}
+{% page_header parent_url=parent parent_label=_("Objectives") %}{% include "objectives/_text.html" with value=texts.title %}{% actions %}{% if can_write %}{% url 'objectives:edit' thesis_id=thesis.pk objective_id=objective.pk as edit_url %}{% include "ui/action.html" with url=edit_url label=_("Edit") icon="pencil" %}{% endif %}{% endpage_header %}{% endwith %}{% endwith %}
 {% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
 
 <p class="muted">
@@ -26,7 +26,6 @@
 <p>{% include "objectives/_text.html" with value=texts.success_criterion %}</p>
 
 <div class="actions">
-  {% if can_write %}<a href="{% url 'objectives:edit' thesis_id=thesis.pk objective_id=objective.pk %}">{% translate "Edit" %}</a>{% endif %}
   {% if can_approve %}
     <form method="post" action="{% url 'objectives:approve' thesis_id=thesis.pk objective_id=objective.pk %}">
       {% csrf_token %}<button type="submit">{% translate "Approve" %}</button>
@@ -66,7 +65,7 @@
 <section aria-labelledby="comments-title">
   <h2 id="comments-title">{% translate "Comments of the supervision" %}</h2>
   <div hx-get="{% url 'objectives:comments' thesis_id=thesis.pk objective_id=objective.pk %}" hx-trigger="load" hx-swap="innerHTML">
-    <p><a href="{% url 'objectives:comments' thesis_id=thesis.pk objective_id=objective.pk %}">{% translate "Show the comments" %}</a></p>
+    <p><a class="btn btn-ghost btn-sm" href="{% url 'objectives:comments' thesis_id=thesis.pk objective_id=objective.pk %}">{% icon "chevron-right" %}<span>{% translate "Show the comments" %}</span></a></p>
   </div>
 </section>
 {% endif %}
