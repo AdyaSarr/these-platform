@@ -16,8 +16,9 @@ critères d'acceptation de la fiche tous validés.
 | | **MVP — mise en service avec les encadrants** | | M0–M6 | **mars 2027** |
 | [x] | M7 — Déplacements et temps ST / LIRMM | `modules/M07-deplacements.md` | M1 | printemps 2027 |
 | [x] | M11a — Activité et notifications : fil, cloche, préférences « informations » | `modules/M11-activite.md` | M2–M7 | après le frontend |
-| [ ] | M11b — Courriels existants sous les préférences, résumé M4 fondu dans le résumé hebdomadaire | `modules/M11-activite.md` | M11a | en cours |
+| [x] | M11b — Courriels existants sous les préférences, résumé M4 fondu dans le résumé hebdomadaire | `modules/M11-activite.md` | M11a | en cours |
 | [ ] | Suppression de la table `WeeklySummaryLog` (migration séparée, après la conservation de 13 mois) | `modules/M11-activite.md` | M11b | 2028 |
+| [ ] | M12 — Flux iCal personnel à jeton | `modules/M12-ical.md` | M5a, M7, M11 | en cours |
 | [ ] | M8 — Rapports CSI et ANRT | `modules/M08-rapports.md` | M4, M5, M9 | avant mars 2028 |
 | [ ] | M9 — Portfolio, formations, publications | `modules/M09-portfolio.md` | M2 | été 2027 |
 | [ ] | M10 — Bout en bout et signatures post-quantiques | `modules/M10-e2e-pq.md` | M2 | 2028 |
@@ -36,7 +37,7 @@ Idées validées, sans module ni date pour l'instant.
   max, validation stricte, jamais de YAML ; une saisie manuelle n'est jamais écrasée.
   À décider avec l'hébergement validé (sortie réseau du serveur).
 
-- **Flux iCal personnel à jeton révocable** (après M5a ; retiré de M5 le
+- **Flux iCal personnel à jeton révocable** (devenu M12, fiche `modules/M12-ical.md` ; après M5a ; retiré de M5 le
   2026-11-14) : URL secrète par utilisateur, ne contenant que type, date et lieu
   (jamais titre, ordre du jour ni compte rendu), jeton haché en base, révocation
   (ancien jeton → 404), journalisé. M5a ne propose que le `.ics` par réunion,
