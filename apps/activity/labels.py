@@ -122,6 +122,8 @@ def name_of(event: Event, obj: Any) -> str:
         return _mission(obj.mission)
     if t == T.MEMBERSHIP:
         return joined(obj.user.get_full_name() or _("A member"), obj.get_role_display())
+    if t == T.FEED:
+        return _("expires %(date)s") % {"date": short_date(obj.expires_on)}
     raise ValueError(t)
 
 
@@ -154,4 +156,6 @@ def target_of(event: Event, obj: Any) -> str:
         return reverse("travel:mission", kwargs={**kw, "mission_id": obj.mission_id})
     if t == T.MEMBERSHIP:
         return reverse("accounts:team", kwargs=kw)
+    if t == T.FEED:
+        return reverse("activity:preferences", kwargs=kw)
     raise ValueError(t)

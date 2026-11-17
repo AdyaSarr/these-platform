@@ -108,7 +108,17 @@ FIELDS = (("info", Category.INFO), ("action", Category.ACTION), ("deadline", Cat
 
 class PreferencesView(_Mixin, View):
     def _render(self, request: HttpRequest, form: PreferencesForm) -> HttpResponse:
-        return render(request, "activity/preferences.html", {"thesis": self.thesis, "form": form})
+        from apps.feeds.services import block
+
+        return render(
+            request,
+            "activity/preferences.html",
+            {
+                "thesis": self.thesis,
+                "form": form,
+                "calendar_feed": block(request.user, self.thesis),
+            },
+        )
 
     def get(self, request: HttpRequest, thesis_id: Any) -> HttpResponse:
         initial = {

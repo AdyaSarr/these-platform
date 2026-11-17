@@ -118,6 +118,8 @@ def category_for(event: Event, user: Any, obj: Any = None) -> str:
             return Category.ACTION  # to acknowledge (director)
     if event.kind == K.OBJECTIVE_OVERDUE and Role.PHD_STUDENT in roles_of(user, event.thesis):
         return Category.DEADLINE
+    if event.kind == K.CALENDAR_FEED_EXPIRING:
+        return Category.DEADLINE  # only its owner reads it (readers.RULES)
     return Category.INFO
 
 
@@ -221,6 +223,8 @@ def still_due(row: ActivityNotification) -> bool:
         return _pending_acknowledgement(obj)
     if row.category == Category.DEADLINE and event.kind == K.OBJECTIVE_OVERDUE:
         return objective_overdue(obj, timezone.localdate())
+    if event.kind == K.CALENDAR_FEED_EXPIRING:  # M12: still live, not yet expired
+        return bool(obj.revoked_at is None and obj.expires_on >= timezone.localdate())
     if EMAIL_OF[event.kind] == "INFO":
         return not EventRead.objects.filter(event=event, user_id=row.recipient_id).exists()
     if event.kind == K.ITEM_SUBMITTED:

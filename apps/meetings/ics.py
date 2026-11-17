@@ -16,40 +16,13 @@ from django.conf import settings
 from django.utils import translation
 from django.utils.translation import gettext as _
 
+from apps.core.ics import CRLF as CRLF
+from apps.core.ics import MAX_OCTETS as MAX_OCTETS
+from apps.core.ics import escape as escape
+from apps.core.ics import fold as fold
+from apps.core.ics import utc as _utc
+
 from .models import Meeting
-
-CRLF = "\r\n"
-MAX_OCTETS = 75
-
-
-def escape(text: str) -> str:
-    """TEXT value (RFC 5545 §3.3.11): backslash, semicolon, comma, newline."""
-    return (
-        text.replace("\\", "\\\\")
-        .replace(";", "\\;")
-        .replace(",", "\\,")
-        .replace("\r\n", "\\n")
-        .replace("\n", "\\n")
-    )
-
-
-def fold(line: str) -> str:
-    """Fold at 75 octets (RFC 5545 §3.1), never inside a UTF-8 sequence."""
-    out: list[str] = []
-    current, size, limit = "", 0, MAX_OCTETS
-    for char in line:
-        width = len(char.encode())
-        if size + width > limit:
-            out.append(current)
-            current, size, limit = "", 0, MAX_OCTETS - 1  # the leading space counts
-        current += char
-        size += width
-    out.append(current)
-    return (CRLF + " ").join(out)
-
-
-def _utc(instant: dt.datetime) -> str:
-    return instant.astimezone(dt.UTC).strftime("%Y%m%dT%H%M%SZ")
 
 
 def summary(meeting: Meeting) -> str:

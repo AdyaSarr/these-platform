@@ -6,5 +6,6 @@
   <p class="muted">{% translate "Information: a new document, piece, submission, mission, objective, comment or team change you can read." %}</p>
   <p class="muted">{% translate "Asks you to act (approvals to decide, pieces to validate, minutes to approve, an action assigned to you) and deadline reminders cannot be turned off: you only choose how often. Each e-mail holds a link only." %}</p>
   <button type="submit" class="btn-primary">{% translate "Save" %}</button></form>
+{% if calendar_feed %}{% include "feeds/_block.html" %}{% endif %}
 <p><a href="{% url 'activity:feed' thesis_id=thesis.pk %}">{% translate "Back to the activity" %}</a></p>
 {% endblock %}

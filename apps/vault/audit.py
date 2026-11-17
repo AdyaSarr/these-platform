@@ -194,6 +194,10 @@ class AuditAction(StrEnum):
     # Activity (M11a): codes only, never a title or an address.
     ACTIVITY_PREFERENCE_CHANGED = "ACTIVITY_PREFERENCE_CHANGED"  # category, old, new
     ACTIVITY_ACCESS_DENIED = "ACTIVITY_ACCESS_DENIED"  # operation, reason
+    # Personal iCal feed (M12): a reason code only, never the token nor its hash.
+    CALENDAR_FEED_CREATED = "CALENDAR_FEED_CREATED"
+    CALENDAR_FEED_REGENERATED = "CALENDAR_FEED_REGENERATED"
+    CALENDAR_FEED_REVOKED = "CALENDAR_FEED_REVOKED"  # reason
     # The log itself (M2).
     AUDIT_CHECKPOINT_CREATED = "AUDIT_CHECKPOINT_CREATED"
     AUDIT_PUBLIC_KEY_EXPORTED = "AUDIT_PUBLIC_KEY_EXPORTED"

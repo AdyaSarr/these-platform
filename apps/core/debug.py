@@ -20,3 +20,16 @@ if TYPE_CHECKING:
 class AlwaysSafeExceptionReporterFilter(SafeExceptionReporterFilter):
     def is_active(self, request: HttpRequest | None) -> bool:
         return True
+
+    def masked_path(self, request: HttpRequest) -> str:
+        """The request's path, the token of an iCal feed masked (M12)."""
+        from .logging import mask
+
+        return str(mask(request.path))
+
+    def get_safe_request_meta(self, request: HttpRequest) -> dict[str, object]:
+        """META with the token of an iCal feed masked in every value (M12)."""
+        from .logging import mask
+
+        meta = super().get_safe_request_meta(request)
+        return {key: mask(value) for key, value in meta.items()}
