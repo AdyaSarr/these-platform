@@ -59,15 +59,17 @@ def test_alerts_add_up_only_what_falls_to_the_viewer() -> None:
         [
             ("objectives", {"year": object(), "attainment": None, "drafts": 5, "overdue": 2}),
             ("meetings", {"next_meeting": None, "overdue_count": 3, "my_overdue": mine}),
-            ("conferences", {"deadlines": [], "request_dues": [], "pending": 1}),
-            ("travel", {"pending": 0, "missing_receipts": 4}),
+            ("conferences", {"pending": 1, "pending_approvals": ["approval"]}),
+            ("travel", {"pending": 0, "pending_orders": [], "missing_receipts": 4,
+                        "missing_missions": ["m1", "m2", "m3", "m4"]}),
         ]
-    )
+    )  # fmt: skip
     assert tiles.alerts.total == 2 + 1 + 4
+    # Each part names its elements, for a line and a link each (review A).
     assert tiles.alerts.parts == [
-        ("actions_overdue", 2),
-        ("conference_decisions", 1),
-        ("missing_receipts", 4),
+        ("actions_overdue", 2, mine),
+        ("conference_decisions", 1, ["approval"]),
+        ("missing_receipts", 4, ["m1", "m2", "m3", "m4"]),
     ]
 
 

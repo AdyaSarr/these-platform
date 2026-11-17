@@ -120,3 +120,63 @@ def test_the_co_supervisor_has_nothing_to_report(team: SimpleNamespace) -> None:
     tile = re.search(r'data-tile="alerts">.*?</li>', page, re.S)
     assert tile is not None and "Rien à signaler" in tile.group(0)
     assert "Aucune de vos actions n'est en retard." in page
+
+
+# --------------------------------------------------------------------------- explicit lines
+
+
+def _tile(page: str) -> str:
+    tile = re.search(r'data-tile="alerts">.*?</li>\s*</ul>\s*</li>', page, re.S)
+    assert tile is not None
+    return tile.group(0)
+
+
+def _plain(fragment: str) -> str:
+    return re.sub(r"[ \t\r\n]+", " ", re.sub(r"<[^>]+>", " ", fragment)).strip()
+
+
+def test_my_overdue_actions_are_named_with_a_link(team: SimpleNamespace) -> None:
+    from apps.meetings.models import ActionItem
+
+    tile = _tile(_page(team, "student"))
+    assert "1 action de réunion en retard" in _plain(tile)
+    action = ActionItem.objects.get(assignee=team.student)
+    meeting = reverse(
+        "meetings:detail", kwargs={"thesis_id": team.thesis.pk, "meeting_id": action.meeting_id}
+    )
+    line = re.search(rf'<a href="{meeting}">(.*?)</a>(.*?)</li>', tile, re.S)
+    assert line is not None
+    assert "Action fictive" in _plain(line.group(1))
+    assert "15\u00a0janv." in _plain(line.group(2))
+
+
+def test_decisions_and_receipts_link_to_their_element(team: SimpleNamespace) -> None:
+    from apps.conferences.models import StApproval
+    from apps.travel.models import Mission, MissionOrder
+
+    kw = {"thesis_id": team.thesis.pk}
+    tutor = _tile(_page(team, "tutor"))
+    order = MissionOrder.objects.get(thesis=team.thesis, decision="PENDING")
+    approval = StApproval.objects.get(thesis=team.thesis)
+    assert "1 accord de mission à décider" in _plain(tutor)
+    assert (
+        f'href="{reverse("travel:mission", kwargs={**kw, "mission_id": order.mission_id})}"'
+        in tutor
+    )
+    assert "1 accord ST à décider" in _plain(tutor)
+    submission = reverse(
+        "conferences:submission", kwargs={**kw, "submission_id": approval.submission_id}
+    )
+    assert f'href="{submission}"' in tutor
+    student = _tile(_page(team, "student"))
+    done = Mission.objects.get(thesis=team.thesis, status="DONE")
+    assert "1 mission avec des justificatifs manquants" in _plain(student)
+    assert f'href="{reverse("travel:mission", kwargs={**kw, "mission_id": done.pk})}"' in student
+
+
+def test_the_tile_opens_sealed_texts_no_more(team: SimpleNamespace) -> None:
+    from apps.vault.models import AuditEvent
+
+    last = AuditEvent.objects.order_by("-seq").values_list("seq", flat=True).first()
+    _page(team, "student")
+    assert AuditEvent.objects.filter(seq__gt=last, action="SEALED_TEXT_READ").count() <= 1
