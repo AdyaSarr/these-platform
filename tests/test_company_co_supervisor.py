@@ -22,7 +22,6 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client
 from django.urls import reverse
-from django.utils import timezone
 
 from apps.accounts.models import Membership
 from apps.accounts.permissions import can_access_document
@@ -37,7 +36,6 @@ from apps.conferences.tests.helpers import article_version, submission_of
 from apps.core.confidentiality import ConfidentialityLevel as L
 from apps.meetings.members import INTERNAL_ROLES, is_internal_member
 from apps.meetings.tests.helpers import meeting_of
-from apps.objectives import summary
 from apps.travel import services as travel
 from apps.travel.tests.helpers import mission_of
 from apps.vault import services as vault
@@ -88,11 +86,6 @@ def test_the_team_page_is_read_and_the_invitation_refused(team: SimpleNamespace)
 
 def test_the_objectives_are_read(team: SimpleNamespace) -> None:
     assert _client(team.ics).get(_url(team, "objectives:dashboard")).status_code == 200
-
-
-def test_the_weekly_summary_goes_to_the_company_co_supervisor(team: SimpleNamespace) -> None:
-    assert ICS in summary.RECIPIENT_ROLES
-    assert team.ics in summary._recipients(team.thesis, timezone.now())
 
 
 # --------------------------------------------------------------------------- documents

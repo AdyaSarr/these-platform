@@ -38,6 +38,15 @@ _RELATED: dict[str, tuple[str, ...]] = {
 }
 
 
+SEPARATOR = " · "
+
+
+def joined(*parts: Any) -> str:
+    """The parts that say something, separated: never a separator followed (or
+    preceded) by nothing."""
+    return SEPARATOR.join(str(p) for p in parts if p is not None and str(p).strip())
+
+
 def objects_of(events: Iterable[Event]) -> dict[Any, Any]:
     """{object id: object} of ``events``, one query per type of object."""
     by_type: dict[str, set[Any]] = defaultdict(set)
@@ -89,9 +98,9 @@ def name_of(event: Event, obj: Any) -> str:
     if t == T.DOCUMENT_GRANT:
         return str(obj.document.title)
     if t == T.MEETING_DOCUMENT:
-        return f"{obj.document.title} · {_meeting(obj.meeting)}"
+        return joined(obj.document.title, _meeting(obj.meeting))
     if t == T.SUBMISSION_DOCUMENT:
-        return f"{obj.document.title} · {_submission(obj.submission)}"
+        return joined(obj.document.title, _submission(obj.submission))
     if t == T.ITEM:
         return label_of(obj)
     if t == T.OBJECTIVE:
@@ -112,7 +121,7 @@ def name_of(event: Event, obj: Any) -> str:
     if t == T.ORDER:
         return _mission(obj.mission)
     if t == T.MEMBERSHIP:
-        return f"{obj.user.get_full_name() or _('A member')} · {obj.get_role_display()}"
+        return joined(obj.user.get_full_name() or _("A member"), obj.get_role_display())
     raise ValueError(t)
 
 

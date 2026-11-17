@@ -109,23 +109,25 @@ def test_the_current_state_decides(team: SimpleNamespace) -> None:
 # --------------------------------------------------------------------------- option B
 
 
-@pytest.mark.parametrize(
-    ("make", "kind"),
-    [
-        (h.meeting, "MEETING_PLANNED"),
-        (h.submission, "SUBMISSION_CREATED"),
-        (h.objective, "OBJECTIVE_CREATED"),
-    ],
-    ids=["meeting", "submission", "objective"],
-)
-@pytest.mark.parametrize("level", list(L))
-def test_the_list_rule_and_the_level(team: SimpleNamespace, make: Any, kind: str,
-                                     level: L) -> None:  # fmt: skip
-    from apps.accounts.permissions import LEVEL_ROLES, ROLE_ACTIONS, Action
+def _cases() -> list[Any]:
+    """Every level for meetings and submissions; for objectives, their own levels
+    (never INTERNAL_ST: apps/objectives/tests/test_objective_levels.py)."""
     from apps.objectives.models import OBJECTIVE_LEVELS
 
-    if kind == "OBJECTIVE_CREATED" and level not in OBJECTIVE_LEVELS:
-        pytest.skip("an objective is never INTERNAL_ST (M4)")
+    out = []
+    for make, kind, levels in (
+        (h.meeting, "MEETING_PLANNED", list(L)),
+        (h.submission, "SUBMISSION_CREATED", list(L)),
+        (h.objective, "OBJECTIVE_CREATED", list(OBJECTIVE_LEVELS)),
+    ):
+        out += [pytest.param(make, kind, level, id=f"{kind}-{level}") for level in levels]
+    return out
+
+
+@pytest.mark.parametrize(("make", "kind", "level"), _cases())
+def test_the_list_rule_and_the_level(team: SimpleNamespace, make: Any, kind: str, level: L) -> None:
+    from apps.accounts.permissions import LEVEL_ROLES, ROLE_ACTIONS, Action
+
     make(team, level)
     action = {
         "MEETING_PLANNED": Action.MEETING_READ,
@@ -179,8 +181,9 @@ def test_a_comment_needs_the_comment_right_and_the_level(team: SimpleNamespace) 
     ("section", "expected"),
     [("CIFRE", {R.DIRECTOR, R.INDUSTRIAL_TUTOR}), ("ACADEMIC", {R.DIRECTOR})],
 )
-def test_an_item_follows_the_section_right(team: SimpleNamespace, section: str,
-                                           expected: set[Role]) -> None:  # fmt: skip
+def test_an_item_follows_the_section_right(
+    team: SimpleNamespace, section: str, expected: set[Role]
+) -> None:
     h.item(team, section, [R.DIRECTOR])
     assert _readers(team, _event("ITEM_SUBMITTED")) == expected
 
@@ -193,8 +196,9 @@ def test_an_item_follows_the_section_right(team: SimpleNamespace, section: str,
         ("CONFERENCE", "LIRMM", {R.DIRECTOR, R.INDUSTRIAL_TUTOR}),
     ],
 )
-def test_a_mission_follows_visible_to(team: SimpleNamespace, destination: str, payer: str,
-                                      expected: set[Role]) -> None:  # fmt: skip
+def test_a_mission_follows_visible_to(
+    team: SimpleNamespace, destination: str, payer: str, expected: set[Role]
+) -> None:
     h.mission(team, destination, payer, start=h.D(2027, 2, 9))
     assert _readers(team, _event("MISSION_PLANNED")) == expected
 

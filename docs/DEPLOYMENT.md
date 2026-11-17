@@ -255,25 +255,12 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       (mission annulée, accord décidé, justificatif déposé entre-temps : rien
       n'est envoyé). *Vérifier* : la sortie ne contient que des nombres.
 
-- [ ] **Résumé hebdomadaire des objectifs (M4) : un timer le lundi.**
-      *Timer systemd* (utilisateur du serveur), chaque lundi à 08 h 00 Europe/Paris
-      (`OnCalendar=Mon *-*-* 08:00:00 Europe/Paris`, `Persistent=true` pour
-      rattraper un lundi manqué) :
-      ```
-      manage.py objectives_weekly_summary
-      ```
-      La commande met les courriels en file (worker Celery démarré) ; la semaine
-      résumée va du lundi précédent 00 h 00 au lundi 00 h 00, **heure de Paris**.
-      Destinataires : directeur, co-encadrants, tuteur actifs, seulement s'il y a
-      quelque chose sur les objectifs qu'ils peuvent lire (activité, retard, ou à
-      prendre en connaissance pour le directeur). La relancer dans la semaine
-      n'envoie rien deux fois (`WeeklySummaryLog`, contrainte d'unicité) ; un
-      envoi en échec est retenté par les exécutions suivantes de la semaine, 3
-      fois au plus. Courriel : un lien seulement.
-      *Vérifier* : `systemctl list-timers` montre le timer ; la sortie de la
-      commande ne contient que des nombres. Depuis M11a, l'envoi passe par
-      `core.delivery.deliver_once` : un destinataire qui n'est plus concerné, ou
-      une semaine qui n'a plus rien pour lui, donne `SKIPPED`.
+- [ ] **Résumé hebdomadaire des objectifs (M4) : timer à désactiver (M11b).**
+      Le résumé du lundi est fondu dans les résumés d'activité (`activity_digests`) ;
+      la commande `objectives_weekly_summary` n'existe plus. Désactiver et supprimer
+      son timer (`systemctl disable --now` puis retirer l'unité). Les lignes de
+      `WeeklySummaryLog` restent en lecture et sont purgées à 13 mois par
+      `activity_purge`.
 
 - [ ] **Activité (M11a) : deux timers quotidiens.**
       *Timers systemd* (utilisateur du serveur) :
@@ -281,10 +268,11 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       manage.py activity_digests    # chaque jour à 07 h 00 Europe/Paris (Persistent=true)
       manage.py activity_purge      # chaque jour, à une heure creuse
       ```
-      `activity_digests` met en file les résumés quotidiens et, le lundi, les
-      résumés hebdomadaires des « informations » (un lien vers le fil seulement,
-      envoyé seulement s'il reste un élément lisible et non lu), et remet en file
-      les courriels d'activité en échec (3 tentatives au plus). La relancer
+      `activity_digests` écrit les objectifs en retard (une fois chacun), met en
+      file les résumés quotidiens et, le lundi, les résumés hebdomadaires (M11b :
+      ils regroupent aussi les courriels différés de M3, M5a, M6 et M7 ; un lien
+      vers la page « Résumé » seulement), et remet en file les courriels
+      d'activité en échec (3 tentatives au plus). La relancer
       n'envoie rien deux fois. `activity_purge` supprime les événements de plus
       de 13 mois, avec leurs lectures et leurs courriels.
       *Vérifier* : la sortie des deux commandes ne contient que des nombres.

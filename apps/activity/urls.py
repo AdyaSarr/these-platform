@@ -8,5 +8,6 @@ urlpatterns = [
     path("", views.FeedView.as_view(), name="feed"),
     path("read-all/", views.ReadAllView.as_view(), name="read_all"),
     path("preferences/", views.PreferencesView.as_view(), name="preferences"),
+    path("digest/<uuid:digest_id>/", views.DigestView.as_view(), name="digest"),
     path("<uuid:event_id>/", views.OpenView.as_view(), name="open"),
 ]

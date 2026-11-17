@@ -1,9 +1,10 @@
-"""Preferences per (person, thesis), category « informations » only in M11a.
+"""Preferences per (person, thesis), category « informations ».
 
-Defaults: daily digest for the student, weekly for the supervisors and the CSI
-member; nothing for a guest. What asks the person to act (ST approvals, mission
-approvals, M3 validations, a refused piece, an assigned action) and their own
-deadline reminders can never be « feed only »: refused by the SERVICE.
+Defaults: daily digest for the student, weekly for the supervisors, « feed
+only » for the CSI member (who may change it); nothing for a guest. What asks
+the person to act (ST approvals, mission approvals, M3 validations, a refused
+piece, an assigned action) and their own deadline reminders can never be « feed
+only »: refused by the SERVICE.
 """
 
 from __future__ import annotations
@@ -17,7 +18,6 @@ from django.core.exceptions import ValidationError
 from apps.accounts.roles import Role
 from apps.activity import services
 from apps.activity.choices import Category, Frequency
-from apps.activity.models import NotificationPreference
 from apps.activity.tests import helpers as h
 from apps.vault.models import AuditEvent
 
@@ -37,7 +37,7 @@ def team() -> SimpleNamespace:
         (Role.CO_SUPERVISOR, Frequency.WEEKLY),
         (Role.INDUSTRIAL_TUTOR, Frequency.WEEKLY),
         (Role.INDUSTRIAL_CO_SUPERVISOR, Frequency.WEEKLY),
-        (Role.CSI_MEMBER, Frequency.WEEKLY),
+        (Role.CSI_MEMBER, Frequency.FEED_ONLY),
         (Role.GUEST, None),
     ],
 )
@@ -54,14 +54,6 @@ def test_a_preference_is_per_thesis(team: SimpleNamespace) -> None:
     services.set_preference(team.director, team.thesis, Category.INFO, Frequency.IMMEDIATE)
     assert services.frequency_of(team.director, team.thesis, Category.INFO) == Frequency.IMMEDIATE
     assert services.frequency_of(team.director, other.thesis, Category.INFO) == Frequency.WEEKLY
-
-
-@pytest.mark.parametrize("frequency", list(Frequency))
-def test_the_action_category_cannot_be_set(team: SimpleNamespace, frequency: str) -> None:
-    """M11a: what asks for an action stays immediate; never « feed only »."""
-    with pytest.raises(ValidationError):
-        services.set_preference(team.director, team.thesis, Category.ACTION, frequency)
-    assert not NotificationPreference.objects.exists()
 
 
 def test_feed_only_is_refused_for_what_cannot_be_turned_off(team: SimpleNamespace) -> None:

@@ -23,6 +23,7 @@ from django.utils import timezone
 from apps.accounts.models import Membership, Thesis, User
 from apps.accounts.permissions import can_access_level, roles_of
 from apps.accounts.roles import Role
+from apps.activity import routing
 from apps.core import delivery
 from apps.core.confidentiality import ConfidentialityLevel
 
@@ -112,7 +113,12 @@ def _queue(row: TravelNotification) -> None:
     from .tasks import send_travel_notification
 
     row_id = str(row.pk)  # the broker sees this id only
-    transaction.on_commit(lambda: send_travel_notification.delay(row_id))
+
+    def send() -> None:
+        transaction.on_commit(lambda: send_travel_notification.delay(row_id))
+
+    # M11b: immediate, deferred to a digest, or not wanted (the preference).
+    routing.dispatch(row, "travel", send)
 
 
 def notify(

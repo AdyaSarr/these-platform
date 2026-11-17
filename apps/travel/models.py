@@ -580,6 +580,15 @@ class TravelNotification(TimeStampedModel):
     attempts = models.PositiveSmallIntegerField(default=0)
     sent_at = models.DateTimeField(null=True, blank=True)
 
+    # M11b: the digest that sent this row (DIGESTED), kept for the history.
+    digest = models.ForeignKey(
+        "activity.ActivityNotification",
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name="+",
+        editable=False,
+    )
+
     class Meta:
         verbose_name = _("travel notification")
         constraints: ClassVar[list[models.BaseConstraint]] = [

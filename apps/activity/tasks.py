@@ -9,6 +9,7 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from django.urls import reverse
 
+from apps.activity import routing
 from apps.core.delivery import deliver_once
 
 from .choices import EMAIL_OF, EventKind, NotificationKind
@@ -19,8 +20,10 @@ def link_of(row: Any) -> str:
     site: str = settings.SITE_URL
     """The one link of the e-mail: the element itself, or the feed for a digest."""
     thesis_id = row.thesis_id
-    if row.kind != NotificationKind.EVENT:
-        return site + reverse("activity:feed", kwargs={"thesis_id": thesis_id})
+    if row.kind != NotificationKind.EVENT:  # a digest: its « Résumé » page
+        return site + reverse(
+            "activity:digest", kwargs={"thesis_id": thesis_id, "digest_id": row.pk}
+        )
     event = row.event
     if event.kind in (EventKind.ITEM_SUBMITTED, EventKind.ITEM_REJECTED):
         return site + reverse(
@@ -65,4 +68,5 @@ def send_activity_notification(notification_id: str) -> None:
         skip_reason=skip_reason,
         message=_message,
         select_related=("thesis", "recipient"),
+        route=routing.route_at_send("activity"),
     )

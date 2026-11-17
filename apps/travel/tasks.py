@@ -9,6 +9,7 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from django.urls import reverse
 
+from apps.activity import routing
 from apps.core.delivery import deliver_once
 
 from .models import TravelNotification
@@ -47,4 +48,5 @@ def send_travel_notification(row_id: str) -> None:
         message=_message,
         select_related=("recipient", "thesis", "mission"),
         lock_of=("self",),  # the mission is a nullable (outer) join
+        route=routing.route_at_send("travel"),
     )

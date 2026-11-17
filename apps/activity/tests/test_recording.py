@@ -255,6 +255,7 @@ def test_the_set_of_kinds_is_closed() -> None:
         "MISSION_PLANNED", "MISSION_CHANGED", "MISSION_CANCELLED", "ORDER_REQUESTED",
         "ORDER_DECIDED",
         "MEMBER_JOINED", "MEMBER_ROLE_CHANGED", "MEMBER_LEFT",
+        "OBJECTIVE_OVERDUE",  # M11b
     }  # fmt: skip
 
 

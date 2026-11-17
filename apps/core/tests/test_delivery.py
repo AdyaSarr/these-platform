@@ -183,7 +183,7 @@ def test_the_thesis_says_whether_it_is_open() -> None:
     ]
 
 
-NOTIFYING_MODULES = ("admin_file", "meetings", "conferences", "travel", "objectives", "activity")
+NOTIFYING_MODULES = ("admin_file", "meetings", "conferences", "travel", "activity")
 
 
 @pytest.mark.parametrize("module", NOTIFYING_MODULES)

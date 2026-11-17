@@ -15,8 +15,9 @@ critères d'acceptation de la fiche tous validés.
 | [x] | M6 — Conférences et soumissions | `modules/M06-conferences.md` | M1 | févr. 2027 |
 | | **MVP — mise en service avec les encadrants** | | M0–M6 | **mars 2027** |
 | [x] | M7 — Déplacements et temps ST / LIRMM | `modules/M07-deplacements.md` | M1 | printemps 2027 |
-| [ ] | M11a — Activité et notifications : fil, cloche, préférences « informations » | `modules/M11-activite.md` | M2–M7 | après le frontend |
-| [ ] | M11b — Courriels existants sous les préférences, résumé M4 fondu dans le résumé hebdomadaire | `modules/M11-activite.md` | M11a | plus tard |
+| [x] | M11a — Activité et notifications : fil, cloche, préférences « informations » | `modules/M11-activite.md` | M2–M7 | après le frontend |
+| [ ] | M11b — Courriels existants sous les préférences, résumé M4 fondu dans le résumé hebdomadaire | `modules/M11-activite.md` | M11a | en cours |
+| [ ] | Suppression de la table `WeeklySummaryLog` (migration séparée, après la conservation de 13 mois) | `modules/M11-activite.md` | M11b | 2028 |
 | [ ] | M8 — Rapports CSI et ANRT | `modules/M08-rapports.md` | M4, M5, M9 | avant mars 2028 |
 | [ ] | M9 — Portfolio, formations, publications | `modules/M09-portfolio.md` | M2 | été 2027 |
 | [ ] | M10 — Bout en bout et signatures post-quantiques | `modules/M10-e2e-pq.md` | M2 | 2028 |

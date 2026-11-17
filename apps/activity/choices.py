@@ -36,6 +36,7 @@ class EventKind(models.TextChoices):
     MEMBER_JOINED = "MEMBER_JOINED", _("New team member")
     MEMBER_ROLE_CHANGED = "MEMBER_ROLE_CHANGED", _("Role changed")
     MEMBER_LEFT = "MEMBER_LEFT", _("Member left")
+    OBJECTIVE_OVERDUE = "OBJECTIVE_OVERDUE", _("Objective overdue")
 
 
 class ObjectType(models.TextChoices):
@@ -99,6 +100,8 @@ class NotificationStatus(models.TextChoices):
     SENT = "SENT", _("Sent")
     FAILED = "FAILED", _("Failed")
     SKIPPED = "SKIPPED", _("Not sent: no longer concerned or due")
+    DEFERRED = "DEFERRED", _("Waiting for a digest")
+    DIGESTED = "DIGESTED", _("Sent in a digest")
 
 
 K = EventKind
@@ -135,4 +138,15 @@ EMAIL_OF: dict[str, str] = {
     K.MEMBER_JOINED: "INFO",
     K.MEMBER_ROLE_CHANGED: "INFO",
     K.MEMBER_LEFT: "INFO",
+    K.OBJECTIVE_OVERDUE: "INFO",  # Échéances for the student (notifications.category_for)
 }
+
+
+def allowed_frequencies(category: str) -> frozenset[str]:
+    """M11b: Informations, every frequency; À faire, never « feed only »;
+    Échéances, immediate or daily only. Also a database constraint."""
+    if category == Category.INFO:
+        return frozenset(Frequency.values)
+    if category == Category.ACTION:
+        return frozenset({Frequency.IMMEDIATE, Frequency.DAILY, Frequency.WEEKLY})
+    return frozenset({Frequency.IMMEDIATE, Frequency.DAILY})

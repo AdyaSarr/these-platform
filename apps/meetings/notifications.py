@@ -17,6 +17,7 @@ from django.utils import timezone
 
 from apps.accounts.models import User
 from apps.accounts.permissions import can_access_level
+from apps.activity import routing
 from apps.core import delivery
 from apps.core.confidentiality import ConfidentialityLevel
 
@@ -90,7 +91,12 @@ def _queue(notification: MeetingNotification) -> None:
     from .tasks import send_meeting_notification
 
     notification_id = str(notification.pk)  # the broker sees this id only
-    transaction.on_commit(lambda: send_meeting_notification.delay(notification_id))
+
+    def send() -> None:
+        transaction.on_commit(lambda: send_meeting_notification.delay(notification_id))
+
+    # M11b: immediate, deferred to a digest, or not wanted (the preference).
+    routing.dispatch(notification, "meetings", send)
 
 
 def notify(

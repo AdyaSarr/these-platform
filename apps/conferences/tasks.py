@@ -9,6 +9,7 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from django.urls import reverse
 
+from apps.activity import routing
 from apps.core.delivery import deliver_once
 
 from .models import ConferenceNotification, NotificationKind, StApproval
@@ -59,4 +60,5 @@ def send_conference_notification(row_id: str) -> None:
         skip_reason=skip_reason,
         message=_message,
         select_related=("thesis", "recipient"),
+        route=routing.route_at_send("conferences"),
     )

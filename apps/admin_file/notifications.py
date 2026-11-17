@@ -18,6 +18,7 @@ from django.utils import timezone
 from apps.accounts.models import User
 from apps.accounts.permissions import can, roles_of
 from apps.accounts.roles import Role
+from apps.activity import routing
 from apps.core import delivery
 
 from .models import (
@@ -114,7 +115,12 @@ def _queue(notification: ItemNotification) -> None:
     from .tasks import send_item_notification
 
     notification_id = str(notification.pk)  # the broker sees this id only
-    transaction.on_commit(lambda: send_item_notification.delay(notification_id))
+
+    def send() -> None:
+        transaction.on_commit(lambda: send_item_notification.delay(notification_id))
+
+    # M11b: immediate, deferred to a digest, or not wanted (the preference).
+    routing.dispatch(notification, "admin_file.notification", send)
 
 
 def notify(

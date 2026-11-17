@@ -9,6 +9,7 @@ from django.conf import settings
 from django.template.loader import render_to_string
 from django.urls import reverse
 
+from apps.activity import routing
 from apps.core.delivery import deliver_once
 
 from .models import ItemNotification, ReminderLog
@@ -54,6 +55,7 @@ def send_reminder_email(reminder_id: str) -> None:
         skip_reason=skip_reason,
         message=_reminder_message,
         select_related=("item__thesis", "recipient"),
+        route=routing.route_at_send("admin_file.reminder"),
     )
 
 
@@ -76,4 +78,5 @@ def send_item_notification(notification_id: str) -> None:
         skip_reason=skip_reason,
         message=_notification_message,
         select_related=("item__thesis", "recipient"),
+        route=routing.route_at_send("admin_file.notification"),
     )

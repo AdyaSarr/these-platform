@@ -20,35 +20,40 @@ from apps.accounts.roles import Role
 from .choices import Category, Frequency
 from .models import NotificationPreference
 
-SUPERVISION_AND_CSI = frozenset(
+SUPERVISION = frozenset(
     {
         Role.DIRECTOR,
         Role.CO_SUPERVISOR,
         Role.INDUSTRIAL_TUTOR,
         Role.INDUSTRIAL_CO_SUPERVISOR,
-        Role.CSI_MEMBER,
     }
 )
 
 
 def default_frequency(roles: frozenset[Role]) -> Frequency | None:
-    """Daily digest for the student, weekly for the supervision and the CSI;
-    nothing for a guest (who reads no event)."""
+    """Daily digest for the student, weekly for the supervision; « feed only » for
+    the CSI member (independent and yearly: no weekly follow-up by e-mail; they may
+    change it); nothing for a guest (who reads no event)."""
     if Role.PHD_STUDENT in roles:
         return Frequency.DAILY
-    if roles & SUPERVISION_AND_CSI:
+    if roles & SUPERVISION:
         return Frequency.WEEKLY
+    if Role.CSI_MEMBER in roles:
+        return Frequency.FEED_ONLY
     return None
 
 
 def frequency_of(user: Any, thesis: Thesis, category: str) -> Frequency | None:
-    """The frequency of ``category`` for ``user`` on ``thesis`` (None: no e-mail)."""
+    """The frequency of ``category`` for ``user`` on ``thesis`` (None: no e-mail).
+
+    Defaults: Informations by role (default_frequency); À faire and Échéances,
+    immediate (the behaviour before M11b)."""
     roles = roles_of(user, thesis)
     default = default_frequency(roles)
     if default is None:
         return None
     if category != Category.INFO:
-        return Frequency.IMMEDIATE  # M11a: what asks for an action stays immediate
+        default = Frequency.IMMEDIATE
     stored = (
         NotificationPreference.objects.filter(
             user_id=user.pk, thesis_id=thesis.pk, category=category
@@ -60,21 +65,27 @@ def frequency_of(user: Any, thesis: Thesis, category: str) -> Frequency | None:
 
 
 def set_preference(user: Any, thesis: Thesis, category: str, frequency: str) -> Frequency:
-    """Store the frequency of « informations »; journaled with codes only."""
+    """Store the frequency of ``category``; journaled with codes only.
+
+    Refused (also by the database): « feed only » outside Informations, « weekly »
+    for Échéances. Back to immediate, the rows waiting for a digest are released.
+    """
     from apps.vault.audit import AuditAction, audit
+
+    from .choices import allowed_frequencies
+    from .routing import release
 
     if (
         not can(user, Action.VIEW_THESIS, thesis)
         or default_frequency(roles_of(user, thesis)) is None
     ):
         raise PermissionDenied
-    if frequency not in Frequency.values:
+    if category not in Category.values or frequency not in Frequency.values:
         raise ValidationError(_("Unknown frequency."), code="frequency")
-    if category != Category.INFO:
-        # Decisions, validations, assigned actions and own deadlines: never « feed
-        # only », and fixed (immediate) in M11a.
+    if frequency not in allowed_frequencies(category):
         raise ValidationError(
-            _("These e-mails stay immediate for now: they ask you to act."), code="category"
+            _("This frequency is not possible for these e-mails: they ask you to act."),
+            code="frequency",
         )
     old = frequency_of(user, thesis, category)
     with transaction.atomic():
@@ -84,6 +95,8 @@ def set_preference(user: Any, thesis: Thesis, category: str, frequency: str) -> 
             category=category,
             defaults={"frequency": frequency},
         )
+        if frequency == Frequency.IMMEDIATE and old != Frequency.IMMEDIATE:
+            release(user, thesis, category)
         audit(
             AuditAction.ACTIVITY_PREFERENCE_CHANGED,
             actor=user,

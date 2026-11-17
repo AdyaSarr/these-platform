@@ -15,7 +15,7 @@ from .choices import EventKind, ObjectType
 from .models import Event
 
 
-def record(*, kind: str, obj: Any, object_type: str, thesis: Any, actor: Any) -> Event:
+def record(*, kind: str, obj: Any, object_type: str, thesis: Any, actor: Any | None) -> Event:
     """Write one event about ``obj`` (of ``object_type``) on ``thesis`` by ``actor``.
 
     No title, level or text is copied: the event names its object by id only.
@@ -25,8 +25,8 @@ def record(*, kind: str, obj: Any, object_type: str, thesis: Any, actor: Any) ->
         kind=EventKind(kind),
         object_type=ObjectType(object_type),
         object_id=obj.pk,
-        actor_id=actor.pk,
-        created_by_id=actor.pk,
+        actor_id=actor.pk if actor is not None else None,
+        created_by_id=actor.pk if actor is not None else None,
     )
     from .notifications import queue_for_event
 
