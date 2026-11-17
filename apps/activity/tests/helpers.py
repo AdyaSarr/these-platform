@@ -164,11 +164,15 @@ def mission(team: SimpleNamespace, destination: str, payer: str, *, start: dt.da
 
 def item(team: SimpleNamespace, section: str, validator_roles: list[Role]) -> Any:
     """A fictitious item (no attachment required), submitted by the student."""
+    import secrets as random
+
     from apps.admin_file import services as admin_file
     from apps.admin_file.tests.factories import RequiredItemFactory
 
     piece = RequiredItemFactory.create(
         thesis=team.thesis,
+        code=f"custom-{random.token_hex(6)}",  # a piece added by the student: a label
+        label="Pièce fictive",
         section=section,
         validator_roles=validator_roles,
         default_level=_readable_by(validator_roles),

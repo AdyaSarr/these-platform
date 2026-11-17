@@ -310,5 +310,11 @@ suppression de la table viendra plus tard, dans une migration séparée (ROADMAP
    Résumé autorisée et refusée (indiscernable), mutants.
 8. **Avec les valeurs par défaut, aucun test existant de M3, M5a, M6, M7 n'est
    modifié** ; si l'un doit l'être, arrêt et liste avant d'y toucher.
+   *Assoupli le 2026-11-17 (option a)* : les cinq courriels classés Informations
+   (`REOPENED`, `APPROVAL_DECIDED`, `POLICY_CHANGED`, `ORDER_DECIDED`,
+   `RULES_CHANGED`) suivent par défaut le résumé des Informations ; les tests qui
+   vérifient leur envoi immédiat posent explicitement la préférence
+   « Informations : immédiat » dans leur préparation (`_information_at_once`, et
+   la démonstration à l'arrivée de l'équipe) ; **aucune assertion n'est changée**.
 9. Le test sauté « objectif `INTERNAL_ST` » est remplacé par un test qui vérifie
    qu'un objectif ne peut pas avoir ce niveau (service et base).

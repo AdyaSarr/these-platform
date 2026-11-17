@@ -194,6 +194,8 @@ def describe(source: Source, row: Any) -> tuple[str, str]:
 
     from apps.ui.templatetags.ui import short_date
 
+    from .labels import joined
+
     kind = str(row.get_kind_display())
     if source.key.startswith("admin_file."):
         from apps.admin_file.services import label_of
@@ -201,7 +203,7 @@ def describe(source: Source, row: Any) -> tuple[str, str]:
         url = reverse(
             "admin_file:item", kwargs={"thesis_id": row.item.thesis_id, "item_id": row.item_id}
         )
-        return f"{kind} · {label_of(row.item)}", url
+        return joined(kind, label_of(row.item)), url
     if source.key == "meetings":
         from apps.meetings.tasks import _action_anchor
 
@@ -209,7 +211,7 @@ def describe(source: Source, row: Any) -> tuple[str, str]:
         url = reverse(
             "meetings:detail", kwargs={"thesis_id": meeting.thesis_id, "meeting_id": meeting.pk}
         )
-        name = f"{kind} · {meeting.get_kind_display()} {short_date(meeting.starts_at)}"
+        name = joined(kind, f"{meeting.get_kind_display()} {short_date(meeting.starts_at)}")
         return name, url + _action_anchor(row)
     if source.key == "conferences":
         from apps.conferences.tasks import _url
@@ -220,14 +222,12 @@ def describe(source: Source, row: Any) -> tuple[str, str]:
 
         mission = row.mission
         if mission is not None:
-            kind = (
-                f"{kind} · {short_date(mission.start_date)} \u2013 {short_date(mission.end_date)}"
-                f" · {mission.get_destination_display()}"
-            )
+            dates = f"{short_date(mission.start_date)} \u2013 {short_date(mission.end_date)}"
+            kind = joined(kind, dates, mission.get_destination_display())
         return kind, travel_url(row)
     from .labels import name_of, objects_of
 
     event = row.event
     obj = objects_of([event]).get(event.object_id)
     url = reverse("activity:open", kwargs={"thesis_id": event.thesis_id, "event_id": event.pk})
-    return f"{event.get_kind_display()} · {name_of(event, obj) if obj else ''}", url
+    return joined(event.get_kind_display(), name_of(event, obj) if obj else ""), url

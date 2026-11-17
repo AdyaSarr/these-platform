@@ -33,6 +33,21 @@ D, T = Role.DIRECTOR, Role.INDUSTRIAL_TUTOR
 STUDENT_REASONS = {Reason.AMENDMENT, Reason.EXPIRED, Reason.OTHER}
 
 
+def _information_at_once(team: Any) -> None:
+    """M11b: these e-mails are « Informations », whose default is a digest; this
+    test checks their immediate sending, so the preference is set explicitly
+    (preparation only, docs/modules/M11-activite.md, criterion 8)."""
+    from apps.accounts.models import Membership
+    from apps.accounts.permissions import roles_of
+    from apps.activity.choices import Category, Frequency
+    from apps.activity.preferences import default_frequency, set_preference
+
+    for membership in Membership.objects.active().filter(thesis=team.thesis):
+        user = membership.user
+        if default_frequency(roles_of(user, team.thesis)) is not None:
+            set_preference(user, team.thesis, Category.INFO, Frequency.IMMEDIATE)
+
+
 @pytest.fixture
 def team() -> SimpleNamespace:
     return make_team()
@@ -146,6 +161,7 @@ def test_a_second_reopening_of_a_later_cycle_is_kept_too(team: SimpleNamespace) 
 def test_the_student_reopening_notifies_the_tutor(
     team: SimpleNamespace, django_capture_on_commit_callbacks: Any
 ) -> None:
+    _information_at_once(team)
     item = _validated(team, [T])
     _reopen(item, team.student, django_capture_on_commit_callbacks)
     [note] = ItemNotification.objects.all()
@@ -158,6 +174,7 @@ def test_the_student_reopening_notifies_the_tutor(
 def test_both_validators_are_notified_for_a_two_party_item(
     team: SimpleNamespace, django_capture_on_commit_callbacks: Any
 ) -> None:
+    _information_at_once(team)
     item = _validated(team, [D, T])
     _reopen(item, team.student, django_capture_on_commit_callbacks)
     assert sorted(m.to[0] for m in mail.outbox) == sorted([team.director.email, team.tutor.email])
@@ -166,6 +183,7 @@ def test_both_validators_are_notified_for_a_two_party_item(
 def test_the_reopener_is_never_notified_of_their_own_approval(
     team: SimpleNamespace, django_capture_on_commit_callbacks: Any
 ) -> None:
+    _information_at_once(team)
     item = _validated(team, [D, T])
     _reopen(item, team.director, django_capture_on_commit_callbacks)
     assert [m.to for m in mail.outbox] == [[team.tutor.email]]
@@ -193,6 +211,7 @@ def test_the_email_is_a_link_only(
     django_capture_on_commit_callbacks: Any,
     caplog: pytest.LogCaptureFixture,
 ) -> None:
+    _information_at_once(team)
     item = _validated(team, [T])
     caplog.set_level(logging.DEBUG)
     _reopen(item, team.student, django_capture_on_commit_callbacks)
@@ -208,6 +227,7 @@ def test_the_email_is_a_link_only(
 def test_only_the_notification_id_goes_through_the_broker(
     team: SimpleNamespace, django_capture_on_commit_callbacks: Any
 ) -> None:
+    _information_at_once(team)
     from unittest import mock
 
     item = _validated(team, [T])

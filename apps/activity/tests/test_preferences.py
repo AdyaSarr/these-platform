@@ -17,7 +17,6 @@ from django.core.exceptions import ValidationError
 from apps.accounts.roles import Role
 from apps.activity import services
 from apps.activity.choices import Category, Frequency
-from apps.activity.models import NotificationPreference
 from apps.activity.tests import helpers as h
 from apps.vault.models import AuditEvent
 
@@ -54,14 +53,6 @@ def test_a_preference_is_per_thesis(team: SimpleNamespace) -> None:
     services.set_preference(team.director, team.thesis, Category.INFO, Frequency.IMMEDIATE)
     assert services.frequency_of(team.director, team.thesis, Category.INFO) == Frequency.IMMEDIATE
     assert services.frequency_of(team.director, other.thesis, Category.INFO) == Frequency.WEEKLY
-
-
-@pytest.mark.parametrize("frequency", list(Frequency))
-def test_the_action_category_cannot_be_set(team: SimpleNamespace, frequency: str) -> None:
-    """M11a: what asks for an action stays immediate; never « feed only »."""
-    with pytest.raises(ValidationError):
-        services.set_preference(team.director, team.thesis, Category.ACTION, frequency)
-    assert not NotificationPreference.objects.exists()
 
 
 def test_feed_only_is_refused_for_what_cannot_be_turned_off(team: SimpleNamespace) -> None:

@@ -500,6 +500,20 @@ class _Run:
                 note="Point d'avancement fictif (démonstration).",
             )
 
+    def information_at_once(self) -> None:
+        """Every member chooses immediate e-mails for the « Informations » (M11b):
+        the demonstration shows each e-mail of the modules as it happens."""
+        from apps.activity.choices import Category, Frequency
+        from apps.activity.preferences import frequency_of, set_preference
+
+        for person in PEOPLE:
+            user = self.users.get(person.role)  # the CSI member joins later: again then
+            if (
+                user is not None
+                and frequency_of(user, self.t, Category.INFO) != Frequency.IMMEDIATE
+            ):
+                set_preference(user, self.t, Category.INFO, Frequency.IMMEDIATE)
+
     def comment(self, role: Role, key: str, body: str) -> None:
         objectives.add_comment(objective=self.objectives[key], user=self.users[role], body=body)
 
@@ -926,6 +940,7 @@ class _Run:
             at(0, 2, 10),
             lambda: self.invite(DIRECTOR, CO_SUPERVISOR, TUTOR, COMPANY_CO_SUPERVISOR),
         )
+        s("notifications", at(0, 2, 11), self.information_at_once)
         s(
             "file-1",
             at(0, 3, 9),
@@ -1172,7 +1187,7 @@ class _Run:
         # The last steps happen today, a few hours before the real time.
         hour = dt.timedelta(hours=1)
         s("mission-pending", self.real_now - 4 * hour, self.pending_mission)
-        s("csi", self.real_now - 3 * hour, lambda: self.invite(CSI))
+        s("csi", self.real_now - 3 * hour, lambda: self.invite(CSI), self.information_at_once)
         s("note-v2", self.real_now - 2 * hour, self.new_note_version)
         s("progress-today", self.real_now - hour, lambda: self.progress(RECENT_PROGRESS))
 

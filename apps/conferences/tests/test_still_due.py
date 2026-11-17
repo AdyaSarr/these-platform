@@ -54,6 +54,21 @@ K = ConferenceNotification.Kind
 LOGGER = "apps.core.delivery"
 
 
+def _information_at_once(team: Any) -> None:
+    """M11b: these e-mails are « Informations », whose default is a digest; this
+    test checks their immediate sending, so the preference is set explicitly
+    (preparation only, docs/modules/M11-activite.md, criterion 8)."""
+    from apps.accounts.models import Membership
+    from apps.accounts.permissions import roles_of
+    from apps.activity.choices import Category, Frequency
+    from apps.activity.preferences import default_frequency, set_preference
+
+    for membership in Membership.objects.active().filter(thesis=team.thesis):
+        user = membership.user
+        if default_frequency(roles_of(user, team.thesis)) is not None:
+            set_preference(user, team.thesis, Category.INFO, Frequency.IMMEDIATE)
+
+
 @pytest.fixture(autouse=True)
 def _now(time_machine: Any) -> None:
     time_machine.move_to(NOW, tick=True)
@@ -202,6 +217,7 @@ def test_every_kind_has_a_case_here() -> None:
 
 
 def test_each_kind_still_due_is_sent(team: SimpleNamespace) -> None:
+    _information_at_once(team)
     for row in _one_of_each(team):
         assert _send(row) == "SENT", row.kind
         assert [m.to for m in mail.outbox] == [[row.recipient.email]]
@@ -375,6 +391,7 @@ def test_a_decision_is_skipped_for_someone_else_than_the_requester(
 
 def test_a_decision_stays_due_after_a_later_change(team: SimpleNamespace) -> None:
     """An accomplished event: the submission moving on does not cancel it."""
+    _information_at_once(team)
     _, submission = _paper(team)
     decided = _decide(team, _approval(team, submission))
     row = _row(team, K.APPROVAL_DECIDED, team.student, decided.pk)

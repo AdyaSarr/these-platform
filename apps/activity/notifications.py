@@ -160,6 +160,8 @@ def queue_for_event(event: Event, obj: Any) -> int:
 
 def period(kind: str, start: dt.date) -> tuple[dt.datetime, dt.datetime]:
     """[first instant, end instant) of a digest's period, in Paris dates."""
+    if type(start) is not dt.date:  # a datetime is a date too: refused, never truncated
+        raise TypeError("a digest's period starts on a date")
     days = 1 if kind == NotificationKind.DIGEST_DAILY else 7
     tz = timezone.get_current_timezone()
     first = dt.datetime.combine(start, dt.time(0), tzinfo=tz)

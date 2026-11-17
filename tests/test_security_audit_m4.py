@@ -14,8 +14,9 @@ Leads already closed elsewhere:
 - 3 CSI and comments: apps/objectives/tests/test_views.py
   ::test_csi_sees_objectives_but_never_the_comments (page and fragment);
   apps/objectives/tests/test_services.py::test_supervisors_comment_and_the_csi_does_not_see_comments;
-  apps/objectives/tests/test_summary.py::test_supervisors_receive_it_when_there_was_activity
-  (never the CSI member), and the e-mail is a link only (no comment can be in it).
+  apps/activity/tests/test_reads.py::test_a_comment_needs_the_comment_right_and_the_level
+  (never the CSI member), and every activity e-mail is a link only
+  (apps/activity/tests/test_m11b_digest_delivery.py::test_the_e_mail_is_a_link_only).
 - 4 revisions: apps/objectives/tests/test_services.py
   ::test_editing_an_approved_objective_without_reason_is_refused,
   ::test_every_definition_field_needs_a_reason_once_approved,
@@ -36,7 +37,8 @@ Leads already closed elsewhere:
 - 10 time: apps/objectives/tests/test_years.py (29 February, September),
   test_sync_years.py::test_current_*_follows_the_date_in_paris (midnight, both time changes),
   test_stats_service.py::test_overdue_follows_the_date_in_paris,
-  test_summary.py::test_week_start_is_the_monday_of_the_date_in_paris,
+  apps/activity/tests/test_m11b_digest_delivery.py
+  ::test_the_weekly_digest_runs_on_the_monday_of_the_date_in_paris,
   test_services.py::test_today_in_paris_is_not_the_future.
 """
 
@@ -65,8 +67,9 @@ from apps.accounts.permissions import Action
 from apps.accounts.roles import Role
 from apps.accounts.tests.factories import MembershipFactory, ThesisFactory, UserFactory
 from apps.accounts.tests.helpers import mfa_login
+from apps.activity import digests
 from apps.core.confidentiality import ConfidentialityLevel as L
-from apps.objectives import services, summary
+from apps.objectives import services
 from apps.objectives.models import Objective, ObjectiveComment, ProgressUpdate, Status
 from apps.objectives.tests.helpers import D
 from apps.vault import services as vault
@@ -212,13 +215,13 @@ def test_no_marker_in_the_database_the_storage_the_logs_or_the_audit_log(
     director.get(_url(team.thesis, "dashboard"))
     director.get(_url(team.thesis, "detail", objective_id=objective.pk))
     director.post(_url(team.thesis, "acknowledge", objective_id=objective.pk))
-    summary.run(D(2027, 3, 15))  # an overdue objective (due 1 March): the summary is sent
+    digests.run(D(2027, 3, 15))  # an overdue objective (due 1 March): its e-mail is sent
     student.post(
         _url(team.thesis, "drop", objective_id=objective.pk), {"reason": f"{marks['drop']} fin"}
     )
     assert ProgressUpdate.objects.count() == 1 and ObjectiveComment.objects.count() == 1
     assert Objective.objects.get().status == Status.DROPPED
-    assert mail.outbox, "the weekly summary was sent"
+    assert mail.outbox, "the overdue objective was e-mailed"
 
     dumps = _all_tables_dump()
     files = [p.read_bytes() for p in storage.root().rglob("*") if p.is_file()]

@@ -46,6 +46,21 @@ N = ItemNotification.Kind
 LOGGER = "apps.core.delivery"
 
 
+def _information_at_once(team: Any) -> None:
+    """M11b: these e-mails are « Informations », whose default is a digest; this
+    test checks their immediate sending, so the preference is set explicitly
+    (preparation only, docs/modules/M11-activite.md, criterion 8)."""
+    from apps.accounts.models import Membership
+    from apps.accounts.permissions import roles_of
+    from apps.activity.choices import Category, Frequency
+    from apps.activity.preferences import default_frequency, set_preference
+
+    for membership in Membership.objects.active().filter(thesis=team.thesis):
+        user = membership.user
+        if default_frequency(roles_of(user, team.thesis)) is not None:
+            set_preference(user, team.thesis, Category.INFO, Frequency.IMMEDIATE)
+
+
 @pytest.fixture
 def team(db: None) -> SimpleNamespace:
     return make_team()
@@ -195,6 +210,7 @@ def test_every_kind_has_a_case_here() -> None:
 
 def test_each_kind_still_due_is_sent(team: SimpleNamespace) -> None:
     """Positive control: a check that skipped everything would fail here."""
+    _information_at_once(team)
     rows = _one_of_each(team)
     for row in rows:
         assert _send(row) == "SENT", row.kind

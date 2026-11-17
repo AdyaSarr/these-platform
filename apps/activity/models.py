@@ -133,6 +133,11 @@ class ActivityNotification(TimeStampedModel):
                 condition=~Q(kind=NotificationKind.EVENT),
                 name="activity_notification_digest_once",
             ),
+            # A weekly digest covers a week starting on a Monday (dates in Paris).
+            models.CheckConstraint(
+                condition=~Q(kind=NotificationKind.DIGEST_WEEKLY) | Q(period_start__iso_week_day=1),
+                name="activity_weekly_digest_monday",
+            ),
             models.CheckConstraint(
                 condition=(Q(kind=NotificationKind.EVENT) & Q(event__isnull=False))
                 | (~Q(kind=NotificationKind.EVENT) & Q(period_start__isnull=False)),

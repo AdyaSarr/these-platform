@@ -5,7 +5,7 @@
 <nav class="segmented" aria-label="{% translate 'Modules' %}">{% for key, label, link in filters %}<a class="segment" href="{{ link }}"{% if key == page.module %} aria-current="page"{% endif %}>{{ label }}</a>{% endfor %}</nav>
 {% if page.rows %}
 <ul class="alert-list">
-  {% for row in page.rows %}<li class="activity-item"><a href="{% url 'activity:open' thesis_id=thesis.pk event_id=row.event.pk %}">{% if row.unread %}<strong>{{ row.event.get_kind_display }}</strong>{% else %}{{ row.event.get_kind_display }}{% endif %}</a> · {{ row.name }} · {{ row.event.created_at|short_date }}</li>{% endfor %}
+  {% for row in page.rows %}<li class="activity-item"><a href="{% url 'activity:open' thesis_id=thesis.pk event_id=row.event.pk %}">{% if row.unread %}<strong>{{ row.event.get_kind_display }}</strong>{% else %}{{ row.event.get_kind_display }}{% endif %}</a>{% if row.name %} · {{ row.name }}{% endif %} · {{ row.event.created_at|short_date }}</li>{% endfor %}
 </ul>
 {% else %}
 <p class="muted">{% translate "Nothing to show here." %}</p>

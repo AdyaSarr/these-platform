@@ -96,6 +96,7 @@ def _digest(
 
 def run(today: dt.date | None = None) -> dict[str, int]:
     today = today or timezone.localdate()
+    started = timezone.now()  # a row failing in THIS run is retried by the next one
     queued = again = overdue = 0
     open_theses = Thesis.objects.filter(status__in=[Thesis.Status.SETUP, Thesis.Status.ACTIVE])
     for thesis in open_theses:
@@ -107,7 +108,9 @@ def run(today: dt.date | None = None) -> dict[str, int]:
                 if categories and _digest(thesis, user, kind, start, categories):
                     queued += 1
     for row in ActivityNotification.objects.filter(
-        status=ActivityNotification.Status.FAILED, attempts__lt=MAX_ATTEMPTS
+        status=ActivityNotification.Status.FAILED,
+        attempts__lt=MAX_ATTEMPTS,
+        updated_at__lt=started,
     ):
         ActivityNotification.objects.filter(pk=row.pk).update(
             status=ActivityNotification.Status.PENDING

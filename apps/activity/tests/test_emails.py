@@ -166,7 +166,8 @@ def test_the_daily_digest_of_the_student(team: SimpleNamespace, time_machine: An
     time_machine.move_to(h.NOW + dt.timedelta(days=1), tick=True)
     digests.run()
     (message,) = _to(team.student)
-    assert LINK.findall(message.body)[0].endswith(h.url(team, "feed"))
+    digest = ActivityNotification.objects.get(recipient=team.student, kind="DIGEST_DAILY")
+    assert LINK.findall(message.body)[0].endswith(h.url(team, "digest", digest_id=digest.pk))
     digests.run()  # twice the same day: nothing more
     assert len(_to(team.student)) == 1
 
