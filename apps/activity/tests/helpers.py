@@ -123,9 +123,13 @@ def meeting(team: SimpleNamespace, level: L, *, days: int = 7, attendees: Any = 
 
 
 def submission(team: SimpleNamespace, level: L) -> Any:
+    from apps.conferences.models import ST_LEVELS
     from apps.conferences.tests.helpers import submission_of
 
-    return submission_of(team, level=level, title="TEMOIN-FUITE-TITRE-ARTICLE")
+    # ST work must be readable by the tutor (M6): off at a level the tutor cannot read.
+    return submission_of(
+        team, level=level, title="TEMOIN-FUITE-TITRE-ARTICLE", st_work=level in ST_LEVELS
+    )
 
 
 def objective(team: SimpleNamespace, level: L) -> Any:
@@ -167,9 +171,32 @@ def item(team: SimpleNamespace, section: str, validator_roles: list[Role]) -> An
         thesis=team.thesis,
         section=section,
         validator_roles=validator_roles,
+        default_level=_readable_by(validator_roles),
         attachment_required=False,
     )
     return admin_file.submit(item=piece, user=team.student)
+
+
+def _readable_by(validator_roles: list[Role]) -> L:
+    """A level every validator reads (a database rule of M3)."""
+    if Role.DIRECTOR in validator_roles and Role.INDUSTRIAL_TUTOR in validator_roles:
+        return L.CONFIDENTIAL
+    return L.INTERNAL_ST if Role.INDUSTRIAL_TUTOR in validator_roles else L.INTERNAL_LIRMM
+
+
+def attached(team: SimpleNamespace, doc: Any, section: str, validator_roles: list[Role]) -> Any:
+    """A fictitious item, not submitted, holding ``doc`` as its attachment."""
+    from apps.admin_file.models import RequiredItem
+    from apps.admin_file.tests.factories import RequiredItemFactory
+
+    piece = RequiredItemFactory.create(
+        thesis=team.thesis,
+        section=section,
+        validator_roles=validator_roles,
+        default_level=_readable_by(validator_roles),
+    )
+    RequiredItem.objects.filter(pk=piece.pk).update(document=doc)
+    return piece
 
 
 def events_of(kind: str) -> list[Any]:

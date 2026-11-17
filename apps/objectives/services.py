@@ -35,6 +35,7 @@ from django.utils.translation import gettext as _
 
 from apps.accounts.models import Thesis, User
 from apps.accounts.permissions import Action, can, can_access_document
+from apps.activity import events as activity
 from apps.core.confidentiality import ConfidentialityLevel
 from apps.vault import services as vault
 from apps.vault.audit import AuditAction, audit
@@ -438,6 +439,13 @@ def create_objective(
         for field in TEXT_FIELDS:
             if cleaned[field.value]:
                 sealer.seal(objective, field.value, cleaned[field.value])
+        activity.record(
+            kind="OBJECTIVE_CREATED",
+            obj=objective,
+            object_type="OBJECTIVE",
+            thesis=thesis,
+            actor=user,
+        )
         audit(
             AuditAction.OBJECTIVE_CREATED,
             actor=user,
@@ -535,6 +543,13 @@ def update_objective(
                 revisions.append(revision)
             locked.changed_since_approval = True
         locked.save()
+        activity.record(
+            kind="OBJECTIVE_CHANGED",
+            obj=locked,
+            object_type="OBJECTIVE",
+            thesis=thesis,
+            actor=user,
+        )
         if locked.is_approved:
             audit(
                 AuditAction.OBJECTIVE_REVISED,
@@ -748,6 +763,13 @@ def add_progress(
         if declared:
             locked.result_declared = True
         locked.save(update_fields=["progress", "status", "result_declared", "updated_at"])
+        activity.record(
+            kind="PROGRESS_REPORTED",
+            obj=locked,
+            object_type="OBJECTIVE",
+            thesis=thesis,
+            actor=user,
+        )
         audit(
             AuditAction.OBJECTIVE_PROGRESS_ADDED,
             actor=user,
@@ -775,6 +797,13 @@ def add_comment(*, objective: Objective, user: User, body: str) -> ObjectiveComm
         comment = ObjectiveComment(thesis=thesis, objective=locked, author=user, created_by=user)
         comment.save(force_insert=True)
         sealer.seal(comment, "body", text)
+        activity.record(
+            kind="OBJECTIVE_COMMENTED",
+            obj=comment,
+            object_type="OBJECTIVE_COMMENT",
+            thesis=thesis,
+            actor=user,
+        )
         audit(AuditAction.OBJECTIVE_COMMENT_ADDED, actor=user, obj=locked)
     return comment
 

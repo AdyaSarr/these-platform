@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "apps.meetings",
     "apps.conferences",
     "apps.travel",
+    "apps.activity",
     "apps.ui",  # visual layer: navigation, theme, icons (presentation only)
     # Authentication: sign-in, password reset, mandatory second factor (M1).
     "allauth",

@@ -1,0 +1,1 @@
+{% load i18n %}{% if category == "ACTION" %}{% translate "Something on the platform asks for you" %}{% elif category == "DIGEST" %}{% translate "Your activity digest on the platform" %}{% else %}{% translate "Something new on the platform" %}{% endif %}

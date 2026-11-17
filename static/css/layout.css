@@ -1,10 +1,6 @@
-/* Page layout: sidebar (thesis pages only), sticky header, main column.
-
-   Mobile menu: the sidebar is an HTML popover opened by a native button
-   (popovertarget), no script. Browsers without popover support ignore the
-   attribute: there the sidebar stays expanded above the content and the menu
-   button stays hidden. Every rule that hides the sidebar or shows the button
-   is inside @supports selector(:popover-open) (tests/test_ui_static.py). */
+/* Sidebar, sticky header, main column. Mobile menu: a popover, no script;
+   without popover support the sidebar stays expanded: every rule hiding it is
+   inside @supports selector(:popover-open) (tests/test_ui_static.py). */
 
 @layer layout {
   .skip-link {

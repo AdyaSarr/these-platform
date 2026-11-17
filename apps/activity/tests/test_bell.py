@@ -92,7 +92,8 @@ def test_the_bell_has_a_capped_number_of_queries(
     for _ in range(4):
         for level in L:
             h.meeting(team, level)
-            h.objective(team, level)
+            if level is not L.INTERNAL_ST:  # never an objective's level (M4)
+                h.objective(team, level)
     h.mission(team, "ROUSSET", "ST", start=h.D(2027, 2, 9))
     h.mission(team, "LIRMM", "LIRMM", start=h.D(2027, 2, 10))
     with django_assert_max_num_queries(12):
@@ -104,7 +105,7 @@ def test_the_bell_has_a_capped_number_of_queries(
 def test_no_sealed_text_read_by_the_bell_nor_the_feed(team: SimpleNamespace) -> None:
     from apps.vault.models import AuditEvent
 
-    session = h.meeting(team, L.PUBLIC, attendees=[team.student, team.director])
+    session = h.meeting(team, L.PUBLIC, days=-1, attendees=[team.student, team.director])
     from apps.meetings import services as meetings
 
     meetings.add_action(meeting=session, user=team.student, title="TEMOIN-FUITE-ACTION",

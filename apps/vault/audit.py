@@ -191,6 +191,9 @@ class AuditAction(StrEnum):
     SEALED_TEXT_KEK_UNAVAILABLE = "SEALED_TEXT_KEK_UNAVAILABLE"
     # MFA secrets (M2): clear secrets sealed by `manage.py vault_encrypt_mfa_secrets`.
     MFA_SECRETS_SEALED = "MFA_SECRETS_SEALED"  # pragma: allowlist secret (an action name)
+    # Activity (M11a): codes only, never a title or an address.
+    ACTIVITY_PREFERENCE_CHANGED = "ACTIVITY_PREFERENCE_CHANGED"  # category, old, new
+    ACTIVITY_ACCESS_DENIED = "ACTIVITY_ACCESS_DENIED"  # operation, reason
     # The log itself (M2).
     AUDIT_CHECKPOINT_CREATED = "AUDIT_CHECKPOINT_CREATED"
     AUDIT_PUBLIC_KEY_EXPORTED = "AUDIT_PUBLIC_KEY_EXPORTED"

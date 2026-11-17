@@ -345,8 +345,7 @@
   .empty .icon { width: 1.5rem; height: 1.5rem; }
 
   /* ---------------------------------------------------------------- confirm
-     An irreversible action is a disclosure: the summary only opens the panel,
-     the real submit button is inside it (no script, works everywhere). */
+     Irreversible action: the summary opens the panel, the submit is inside. */
   /* Panel below its row (page header or .confirm-row), across it; moves nothing. */
   .confirm { position: relative; display: inline-block; }
   .page-header, .confirm-row { position: relative; }
@@ -390,6 +389,24 @@
   }
   .confirm-panel p { margin-bottom: var(--space-3); }
   .confirm-panel form { margin: 0; }
+
+  /* ---------------------------------------------------------------- bell (M11a) */
+  .bell { position: relative; }
+  .bell-menu > summary { display: inline-flex; gap: var(--space-1); align-items: center; list-style: none; cursor: pointer; }
+  .bell-menu > summary::-webkit-details-marker { display: none; }
+  .bell-count { font-weight: 600; }
+  .bell-panel {
+    position: absolute;
+    inset-inline-end: 0;
+    top: calc(100% + var(--space-2));
+    z-index: 30;
+    width: min(24rem, calc(100vw - 2rem));
+    padding: var(--space-3);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow);
+  }
 
   /* ---------------------------------------------------------------- theme toggle */
   .theme-toggle {

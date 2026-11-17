@@ -47,7 +47,8 @@ def _user(team: SimpleNamespace, role: Role) -> Any:
 def _event(kind: str) -> Event:
     rows = h.events_of(kind)
     assert rows, kind
-    return rows[-1]
+    event: Event = rows[-1]
+    return event
 
 
 def _readers(team: SimpleNamespace, event: Event) -> set[Role]:
@@ -90,11 +91,8 @@ def test_a_grant_is_read_by_its_grantee_only(team: SimpleNamespace) -> None:
 def test_an_attachment_of_the_file_stays_closed(team: SimpleNamespace) -> None:
     """The M3 restriction: an INTERNAL_ST piece is not read by the company
     co-supervisor, whom the level alone would let in."""
-    from apps.admin_file.models import RequiredItem
-
     doc = h.document(team, L.INTERNAL_ST)
-    piece = h.item(team, "CIFRE", [R.INDUSTRIAL_TUTOR])
-    RequiredItem.objects.filter(pk=piece.pk).update(document=doc)
+    h.attached(team, doc, "CIFRE", [R.INDUSTRIAL_TUTOR])
     assert R.INDUSTRIAL_CO_SUPERVISOR not in _readers(team, _event("DOCUMENT_ADDED"))
 
 
@@ -124,7 +122,10 @@ def test_the_current_state_decides(team: SimpleNamespace) -> None:
 def test_the_list_rule_and_the_level(team: SimpleNamespace, make: Any, kind: str,
                                      level: L) -> None:  # fmt: skip
     from apps.accounts.permissions import LEVEL_ROLES, ROLE_ACTIONS, Action
+    from apps.objectives.models import OBJECTIVE_LEVELS
 
+    if kind == "OBJECTIVE_CREATED" and level not in OBJECTIVE_LEVELS:
+        pytest.skip("an objective is never INTERNAL_ST (M4)")
     make(team, level)
     action = {
         "MEETING_PLANNED": Action.MEETING_READ,
@@ -152,7 +153,7 @@ def test_the_meetings_list_itself_does_not_change(team: SimpleNamespace) -> None
 def test_an_action_follows_its_meeting(team: SimpleNamespace) -> None:
     from apps.meetings import services as meetings
 
-    session = h.meeting(team, L.INTERNAL_LIRMM, attendees=[team.student, team.director])
+    session = h.meeting(team, L.INTERNAL_LIRMM, days=-1, attendees=[team.student, team.director])
     meetings.add_action(meeting=session, user=team.student, title="Action fictive",
                         assignee=team.director, due_date=h.D(2027, 2, 15))  # fmt: skip
     readers = _readers(team, _event("ACTION_ASSIGNED"))
@@ -215,9 +216,9 @@ def test_the_team_follows_view_team(team: SimpleNamespace) -> None:
 
 def _every_kind_of_object(team: SimpleNamespace) -> None:
     """Events on every type of object, at every level, readable or not."""
-    from apps.admin_file.models import RequiredItem
     from apps.meetings import services as meetings
     from apps.objectives import services as objectives
+    from apps.objectives.models import OBJECTIVE_LEVELS
     from apps.travel import services as travel
     from apps.vault import services as vault
 
@@ -225,14 +226,14 @@ def _every_kind_of_object(team: SimpleNamespace) -> None:
         doc = h.document(team, level, title=f"Doc {level}")
         session = h.meeting(team, level)
         h.submission(team, level)
-        goal = h.objective(team, level)
-        objectives.add_comment(objective=goal, user=team.director, body="Avis fictif")
+        if level in OBJECTIVE_LEVELS:
+            goal = h.objective(team, level)
+            objectives.add_comment(objective=goal, user=team.director, body="Avis fictif")
         meetings.link_document(meeting=session, user=team.student, document=doc)
     confidential = h.document(team, L.CONFIDENTIAL, title="Doc accordé")
     vault.grant_access(document=confidential, grantee=team.st_co_supervisor, user=team.student)
-    attached = h.document(team, L.INTERNAL_ST, title="Pièce")
-    piece = h.item(team, "CIFRE", [R.INDUSTRIAL_TUTOR])
-    RequiredItem.objects.filter(pk=piece.pk).update(document=attached)
+    h.attached(team, h.document(team, L.INTERNAL_ST, title="Pièce"), "CIFRE",
+               [R.INDUSTRIAL_TUTOR])  # fmt: skip
     h.item(team, "ACADEMIC", [R.DIRECTOR])
     for destination, payer, day in (("LIRMM", "LIRMM", 9), ("ROUSSET", "ST", 10),
                                     ("CONFERENCE", "LIRMM", 11)):  # fmt: skip

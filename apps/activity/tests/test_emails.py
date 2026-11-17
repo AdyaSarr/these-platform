@@ -49,7 +49,9 @@ def _to(user: Any) -> list[Any]:
 
 
 def _row(user: Any, **kw: Any) -> ActivityNotification:
-    return ActivityNotification.objects.filter(recipient=user, **kw).order_by("created_at").last()
+    row = ActivityNotification.objects.filter(recipient=user, **kw).order_by("created_at").last()
+    assert row is not None
+    return row
 
 
 def _resend(row: ActivityNotification) -> str:
@@ -261,13 +263,13 @@ def test_a_refused_piece_is_sent_to_the_student(team: SimpleNamespace) -> None:
 def _assigned(team: SimpleNamespace, level: L = L.PUBLIC) -> Any:
     from apps.meetings import services as meetings
 
-    session = h.meeting(team, level, attendees=[team.student, team.director])
+    session = h.meeting(team, level, days=-1, attendees=[team.student, team.director])
+    mail.outbox.clear()  # the invitation of M5a: not this app's e-mail
     return meetings.add_action(meeting=session, user=team.student, title="TEMOIN-FUITE-ACTION",
                                assignee=team.director, due_date=h.D(2027, 2, 15))  # fmt: skip
 
 
 def test_an_assigned_action_is_sent_to_its_assignee(team: SimpleNamespace) -> None:
-    mail.outbox.clear()
     action = _assigned(team)
     (message,) = _to(team.director)
     detail = reverse("meetings:detail", kwargs={"thesis_id": team.thesis.pk,

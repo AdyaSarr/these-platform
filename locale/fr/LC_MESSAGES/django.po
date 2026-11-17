@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-17 16:05+0100\n"
+"POT-Creation-Date: 2026-11-17 17:15+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -219,15 +219,17 @@ msgstr "appartenances"
 msgid "Queued"
 msgstr "En file d'attente"
 
-#: apps/accounts/models.py:273 apps/admin_file/models.py:301
-#: apps/conferences/models.py:520 apps/meetings/models.py:343
-#: apps/objectives/models.py:356 apps/travel/choices.py:140
+#: apps/accounts/models.py:273 apps/activity/choices.py:99
+#: apps/admin_file/models.py:301 apps/conferences/models.py:520
+#: apps/meetings/models.py:343 apps/objectives/models.py:356
+#: apps/travel/choices.py:140
 msgid "Sent"
 msgstr "Envoyé"
 
-#: apps/accounts/models.py:274 apps/admin_file/models.py:302
-#: apps/conferences/models.py:521 apps/meetings/models.py:344
-#: apps/objectives/models.py:357 apps/travel/choices.py:141
+#: apps/accounts/models.py:274 apps/activity/choices.py:100
+#: apps/admin_file/models.py:302 apps/conferences/models.py:521
+#: apps/meetings/models.py:344 apps/objectives/models.py:357
+#: apps/travel/choices.py:141
 msgid "Failed"
 msgstr "Échec"
 
@@ -308,66 +310,68 @@ msgstr "Membre du CSI"
 msgid "Guest"
 msgstr "Invité·e"
 
-#: apps/accounts/services.py:57
+#: apps/accounts/services.py:58
 msgid "This person already holds this role on the thesis."
 msgstr "Cette personne a déjà ce rôle sur la thèse."
 
-#: apps/accounts/services.py:58
+#: apps/accounts/services.py:59
 msgid "A CSI member cannot also be the PhD student or part of the supervision."
 msgstr ""
 "Un membre du CSI ne peut pas être aussi le ou la doctorant·e ni faire partie "
 "de l'encadrement."
 
-#: apps/accounts/services.py:60
+#: apps/accounts/services.py:61
 msgid "The PhD student cannot hold any other role on their thesis."
 msgstr "Le ou la doctorant·e ne peut tenir aucun autre rôle sur sa thèse."
 
-#: apps/accounts/services.py:62
+#: apps/accounts/services.py:63
 msgid ""
 "One person cannot supervise a thesis both on the laboratory side and on the "
 "company side."
-msgstr "Une même personne ne peut pas encadrer une thèse à la fois côté laboratoire et côté entreprise."
+msgstr ""
+"Une même personne ne peut pas encadrer une thèse à la fois côté laboratoire "
+"et côté entreprise."
 
-#: apps/accounts/services.py:67
+#: apps/accounts/services.py:68
 msgid "This thesis already has a PhD student."
 msgstr "Cette thèse a déjà un·e doctorant·e."
 
-#: apps/accounts/services.py:191
+#: apps/accounts/services.py:197
 msgid "The PhD student cannot be removed from their thesis."
 msgstr "Le ou la doctorant·e ne peut pas être retiré·e de sa thèse."
 
-#: apps/accounts/services.py:194 apps/accounts/services.py:215
+#: apps/accounts/services.py:200 apps/accounts/services.py:224
 msgid "This membership is not active."
 msgstr "Cette appartenance n'est pas active."
 
-#: apps/accounts/services.py:210 apps/accounts/services.py:350
+#: apps/accounts/services.py:219 apps/accounts/services.py:366
 msgid "The PhD student role cannot be given or taken away."
 msgstr "Le rôle de doctorant·e ne peut être ni attribué ni retiré."
 
-#: apps/accounts/services.py:212
+#: apps/accounts/services.py:221
 msgid "This person already holds this role."
 msgstr "Cette personne a déjà ce rôle."
 
-#: apps/accounts/services.py:252
+#: apps/accounts/services.py:268
 #, python-format
 msgid "The extension must be between 1 and %(max)d days."
 msgstr "La prolongation doit être comprise entre 1 et %(max)d jours."
 
-#: apps/accounts/services.py:258
+#: apps/accounts/services.py:274
 msgid "Only a CSI membership can be extended."
 msgstr "Seule l'appartenance d'un membre du CSI peut être prolongée."
 
-#: apps/accounts/services.py:260
+#: apps/accounts/services.py:276
 msgid "An expired CSI membership cannot be extended; invite again."
 msgstr ""
 "Une appartenance CSI expirée ne peut pas être prolongée : invitez à nouveau "
 "la personne."
 
-#: apps/accounts/services.py:301
+#: apps/accounts/services.py:317
 msgid "Invalid email address."
 msgstr "Adresse électronique invalide."
 
-#: apps/accounts/services.py:432
+#: apps/accounts/services.py:448
 msgid "This invitation is no longer open."
 msgstr "Cette invitation n'est plus ouverte."
 
@@ -407,46 +411,242 @@ msgstr "Invitation révoquée."
 msgid "Active"
 msgstr "Active"
 
-#: apps/accounts/views.py:42 apps/ui/navigation.py:48
+#: apps/accounts/views.py:42 apps/activity/views.py:32 apps/ui/navigation.py:48
 #: templates/accounts/team.html:3 templates/accounts/team.html:5
 msgid "Team"
 msgstr "Équipe"
 
-#: apps/accounts/views.py:49 apps/ui/navigation.py:38
+#: apps/accounts/views.py:49 apps/activity/views.py:28 apps/ui/navigation.py:38
 #: templates/objectives/dashboard.html:2 templates/objectives/dashboard.html:4
 #: templates/objectives/detail.html:5
 msgid "Objectives"
 msgstr "Objectifs"
 
-#: apps/accounts/views.py:57 apps/ui/navigation.py:40 apps/ui/tabs.py:57
-#: apps/ui/tabs.py:59 templates/meetings/list.html:2
+#: apps/accounts/views.py:57 apps/activity/views.py:29 apps/ui/navigation.py:40
+#: apps/ui/tabs.py:57 apps/ui/tabs.py:59 templates/meetings/list.html:2
 #: templates/meetings/list.html:5
 msgid "Meetings"
 msgstr "Réunions"
 
-#: apps/accounts/views.py:64 apps/ui/navigation.py:42 apps/ui/tabs.py:64
-#: templates/conferences/deadlines.html:2
+#: apps/accounts/views.py:64 apps/activity/views.py:30 apps/ui/navigation.py:42
+#: apps/ui/tabs.py:64 templates/conferences/deadlines.html:2
 #: templates/conferences/deadlines.html:5
 msgid "Conferences"
 msgstr "Conférences"
 
-#: apps/accounts/views.py:71 apps/ui/navigation.py:44 apps/ui/tabs.py:79
-#: templates/travel/_links.html:3
+#: apps/accounts/views.py:71 apps/activity/views.py:31 apps/ui/navigation.py:44
+#: apps/ui/tabs.py:79 templates/travel/_links.html:3
 msgid "Travel"
 msgstr "Déplacements"
 
-#: apps/accounts/views.py:78 apps/ui/navigation.py:46
+#: apps/accounts/views.py:78 apps/activity/views.py:26 apps/ui/navigation.py:46
 #: templates/conferences/submission.html:40
 #: templates/vault/document_list.html:2 templates/vault/document_list.html:4
 msgid "Documents"
 msgstr "Documents"
 
-#: apps/accounts/views.py:87 apps/admin_file/services.py:278
-#: apps/ui/navigation.py:36 templates/accounts/dashboard.html:32
-#: templates/admin_file/file.html:2 templates/admin_file/file.html:4
-#: templates/admin_file/item_page.html:6 templates/admin_file/new_item.html:5
+#: apps/accounts/views.py:87 apps/activity/views.py:27
+#: apps/admin_file/services.py:279 apps/ui/navigation.py:36
+#: templates/accounts/dashboard.html:32 templates/admin_file/file.html:2
+#: templates/admin_file/file.html:4 templates/admin_file/item_page.html:6
+#: templates/admin_file/new_item.html:5
 msgid "Administrative file"
 msgstr "Dossier administratif"
+
+#: apps/activity/choices.py:10
+msgid "New document"
+msgstr "Nouveau document"
+
+#: apps/activity/choices.py:11
+msgid "New version of a document"
+msgstr "Nouvelle version d'un document"
+
+#: apps/activity/choices.py:12
+msgid "Document shared with you"
+msgstr "Document partagé avec vous"
+
+#: apps/activity/choices.py:13
+msgid "Document linked"
+msgstr "Document lié"
+
+#: apps/activity/choices.py:14
+msgid "Piece submitted"
+msgstr "Pièce déposée"
+
+#: apps/activity/choices.py:15
+msgid "Piece validated"
+msgstr "Pièce validée"
+
+#: apps/activity/choices.py:16
+msgid "Piece refused"
+msgstr "Pièce refusée"
+
+#: apps/activity/choices.py:17
+msgid "Piece reopened"
+msgstr "Pièce rouverte"
+
+#: apps/activity/choices.py:18 templates/objectives/dashboard.html:4
+#: templates/objectives/form.html:2 templates/objectives/form.html:5
+msgid "New objective"
+msgstr "Nouvel objectif"
+
+#: apps/activity/choices.py:19
+msgid "Objective changed"
+msgstr "Objectif modifié"
+
+#: apps/activity/choices.py:20
+msgid "Progress reported"
+msgstr "Avancement déclaré"
+
+#: apps/activity/choices.py:21
+msgid "Comment on an objective"
+msgstr "Commentaire sur un objectif"
+
+#: apps/activity/choices.py:22
+msgid "Meeting planned"
+msgstr "Réunion planifiée"
+
+#: apps/activity/choices.py:23
+msgid "Meeting changed"
+msgstr "Réunion modifiée"
+
+#: apps/activity/choices.py:24
+msgid "Meeting cancelled"
+msgstr "Réunion annulée"
+
+#: apps/activity/choices.py:25
+msgid "Minutes published"
+msgstr "Compte rendu publié"
+
+#: apps/activity/choices.py:26
+msgid "Action assigned"
+msgstr "Action assignée"
+
+#: apps/activity/choices.py:27 templates/conferences/submission_form.html:2
+#: templates/conferences/submission_form.html:6
+#: templates/conferences/submissions.html:5
+msgid "New submission"
+msgstr "Nouvelle soumission"
+
+#: apps/activity/choices.py:28
+msgid "Submission status changed"
+msgstr "Statut d'une soumission modifié"
+
+#: apps/activity/choices.py:29 apps/conferences/models.py:202
+#: apps/conferences/models.py:505
+msgid "ST approval requested"
+msgstr "Accord ST demandé"
+
+#: apps/activity/choices.py:30 apps/conferences/models.py:506
+msgid "ST approval decided"
+msgstr "Accord ST décidé"
+
+#: apps/activity/choices.py:31
+msgid "Mission planned"
+msgstr "Mission prévue"
+
+#: apps/activity/choices.py:32
+msgid "Mission changed"
+msgstr "Mission modifiée"
+
+#: apps/activity/choices.py:33
+msgid "Mission cancelled"
+msgstr "Mission annulée"
+
+#: apps/activity/choices.py:34 apps/travel/choices.py:123
+msgid "Mission approval requested"
+msgstr "Accord de mission demandé"
+
+#: apps/activity/choices.py:35 apps/travel/choices.py:124
+msgid "Mission approval decided"
+msgstr "Accord de mission décidé"
+
+#: apps/activity/choices.py:36
+msgid "New team member"
+msgstr "Nouveau membre de l'équipe"
+
+#: apps/activity/choices.py:37
+msgid "Role changed"
+msgstr "Rôle modifié"
+
+#: apps/activity/choices.py:38
+msgid "Member left"
+msgstr "Départ d'un membre"
+
+#: apps/activity/choices.py:79 apps/activity/views.py:80
+msgid "Information"
+msgstr "Informations"
+
+#: apps/activity/choices.py:80
+msgid "Asks you to act"
+msgstr "Vous demande d'agir"
+
+#: apps/activity/choices.py:81
+msgid "Deadline reminders"
+msgstr "Rappels d'échéance"
+
+#: apps/activity/choices.py:85
+msgid "At once, one e-mail per element"
+msgstr "Immédiatement, un courriel par élément"
+
+#: apps/activity/choices.py:86 apps/activity/choices.py:93
+msgid "Daily digest"
+msgstr "Résumé quotidien"
+
+#: apps/activity/choices.py:87
+msgid "Weekly digest (Monday)"
+msgstr "Résumé hebdomadaire (le lundi)"
+
+#: apps/activity/choices.py:88
+msgid "No e-mail: the Activity page only"
+msgstr "Aucun courriel : la page Activité seulement"
+
+#: apps/activity/choices.py:92
+msgid "One element"
+msgstr "Un élément"
+
+#: apps/activity/choices.py:94
+msgid "Weekly digest"
+msgstr "Résumé hebdomadaire"
+
+#: apps/activity/choices.py:98 apps/admin_file/models.py:300
+#: apps/admin_file/models.py:404 apps/conferences/models.py:342
+#: apps/conferences/models.py:519 apps/meetings/models.py:342
+#: apps/objectives/models.py:355
+msgid "Pending"
+msgstr "En attente"
+
+#: apps/activity/choices.py:101 apps/admin_file/models.py:303
+#: apps/conferences/models.py:522 apps/meetings/models.py:345
+#: apps/objectives/models.py:358
+msgid "Not sent: no longer concerned or due"
+msgstr "Non envoyé : destinataire plus concerné ou envoi plus dû"
+
+#: apps/activity/labels.py:76
+#, python-format
+msgid "%(category)s objective · due %(date)s"
+msgstr "Objectif (%(category)s) · échéance %(date)s"
+
+#: apps/activity/labels.py:104
+#, python-format
+msgid "Action due %(date)s · %(meeting)s"
+msgstr "Action pour le %(date)s · %(meeting)s"
+
+#: apps/activity/labels.py:115
+msgid "A member"
+msgstr "Un membre"
+
+#: apps/activity/preferences.py:72
+msgid "Unknown frequency."
+msgstr "Fréquence inconnue."
+
+#: apps/activity/preferences.py:77
+msgid "These e-mails stay immediate for now: they ask you to act."
+msgstr "Ces courriels restent immédiats pour l'instant : ils vous demandent d'agir."
+
+#: apps/activity/views.py:54
+msgid "Everything"
+msgstr "Tout"
 
 #: apps/admin_file/catalog.py:61
 msgid "ST employment contract"
@@ -621,7 +821,7 @@ msgid "Attachment required"
 msgstr "Pièce jointe obligatoire"
 
 #: apps/admin_file/forms.py:148 apps/admin_file/forms.py:150
-#: apps/admin_file/services.py:772
+#: apps/admin_file/services.py:802
 msgid "These validators are not allowed."
 msgstr "Ces validateurs ne sont pas permis."
 
@@ -744,17 +944,6 @@ msgstr "3 jours avant"
 msgid "Overdue"
 msgstr "En retard"
 
-#: apps/admin_file/models.py:300 apps/admin_file/models.py:404
-#: apps/conferences/models.py:342 apps/conferences/models.py:519
-#: apps/meetings/models.py:342 apps/objectives/models.py:355
-msgid "Pending"
-msgstr "En attente"
-
-#: apps/admin_file/models.py:303 apps/conferences/models.py:522
-#: apps/meetings/models.py:345
-msgid "Not sent: no longer concerned or due"
-msgstr "Non envoyé : destinataire plus concerné ou envoi plus dû"
-
 #: apps/admin_file/models.py:321
 msgid "reminder"
 msgstr "rappel"
@@ -820,85 +1009,85 @@ msgstr "notification de pièce"
 msgid "item notifications"
 msgstr "notifications de pièce"
 
-#: apps/admin_file/services.py:214 apps/admin_file/services.py:308
-#: apps/admin_file/services.py:805 apps/admin_file/views.py:66
+#: apps/admin_file/services.py:215 apps/admin_file/services.py:309
+#: apps/admin_file/services.py:835 apps/admin_file/views.py:66
 msgid "The thesis is finished: its administrative file is frozen."
 msgstr "La thèse est terminée : son dossier administratif est gelé."
 
-#: apps/admin_file/services.py:261 apps/admin_file/services.py:997
+#: apps/admin_file/services.py:262 apps/admin_file/services.py:1027
 msgid "Choose a reason."
 msgstr "Choisissez un motif."
 
-#: apps/admin_file/services.py:264 apps/admin_file/services.py:980
+#: apps/admin_file/services.py:265 apps/admin_file/services.py:1010
 msgid "The comment is too long."
 msgstr "Le commentaire est trop long."
 
-#: apps/admin_file/services.py:266 apps/admin_file/services.py:982
+#: apps/admin_file/services.py:267 apps/admin_file/services.py:1012
 msgid "The comment contains a control character."
 msgstr "Le commentaire contient un caractère de contrôle."
 
-#: apps/admin_file/services.py:313
+#: apps/admin_file/services.py:314
 msgid "A validator could not read this document."
 msgstr "Un validateur ne pourrait pas lire ce document."
 
-#: apps/admin_file/services.py:315 apps/admin_file/services.py:360
+#: apps/admin_file/services.py:316 apps/admin_file/services.py:361
 msgid "This document belongs to another item."
 msgstr "Ce document appartient déjà à une autre pièce."
 
-#: apps/admin_file/services.py:326 apps/admin_file/services.py:778
+#: apps/admin_file/services.py:327 apps/admin_file/services.py:808
 msgid "A validator could not read the file at this level."
 msgstr "Un validateur ne pourrait pas lire le fichier à ce niveau."
 
-#: apps/admin_file/services.py:349
+#: apps/admin_file/services.py:350
 msgid "This item needs an attachment."
 msgstr "Cette pièce demande une pièce jointe."
 
-#: apps/admin_file/services.py:420
+#: apps/admin_file/services.py:428
 msgid "The attachment changed since it was submitted."
 msgstr "La pièce jointe a changé depuis le dépôt."
 
-#: apps/admin_file/services.py:759
+#: apps/admin_file/services.py:789
 msgid "A label is required."
 msgstr "Un libellé est obligatoire."
 
-#: apps/admin_file/services.py:761
+#: apps/admin_file/services.py:791
 msgid "The label is too long."
 msgstr "Le libellé est trop long."
 
-#: apps/admin_file/services.py:763
+#: apps/admin_file/services.py:793
 msgid "The label contains a control character."
 msgstr "Le libellé contient un caractère de contrôle."
 
-#: apps/admin_file/services.py:775
+#: apps/admin_file/services.py:805
 msgid "A validator would not see this section."
 msgstr "Un validateur ne verrait pas cette partie du dossier."
 
-#: apps/admin_file/services.py:861
+#: apps/admin_file/services.py:891
 msgid "Enter a valid date."
 msgstr "Saisissez une date valide."
 
-#: apps/admin_file/services.py:864
+#: apps/admin_file/services.py:894
 msgid "The due date cannot be before the CIFRE start date."
 msgstr "L'échéance ne peut pas précéder la date d'effet CIFRE."
 
-#: apps/admin_file/services.py:868
+#: apps/admin_file/services.py:898
 msgid "The due date cannot be after the planned end of the thesis."
 msgstr "L'échéance ne peut pas dépasser la fin prévue de la thèse."
 
-#: apps/admin_file/services.py:924
+#: apps/admin_file/services.py:954
 msgid "A mandatory item of the catalogue keeps a due date."
 msgstr "Une pièce obligatoire du catalogue garde une échéance."
 
-#: apps/admin_file/services.py:967 apps/conferences/services.py:1065
+#: apps/admin_file/services.py:997 apps/conferences/services.py:1080
 msgid "No industrial tutor in the team: invite them first."
 msgstr ""
 "Aucun·e tuteur·rice industriel·le dans l'équipe : invitez-le·la d'abord."
 
-#: apps/admin_file/services.py:968
+#: apps/admin_file/services.py:998
 msgid "No thesis director in the team: invite them first."
 msgstr "Aucun·e directeur·rice de thèse dans l'équipe : invitez-le·la d'abord."
 
-#: apps/admin_file/services.py:970
+#: apps/admin_file/services.py:1000
 msgid ""
 "Neither a thesis director nor an industrial tutor in the team: invite one "
 "first."
@@ -906,27 +1095,27 @@ msgstr ""
 "Ni directeur·rice de thèse ni tuteur·rice industriel·le dans l'équipe : "
 "invitez l'un·e d'eux d'abord."
 
-#: apps/admin_file/services.py:977
+#: apps/admin_file/services.py:1007
 msgid "The comment is not text."
 msgstr "Le commentaire n'est pas du texte."
 
-#: apps/admin_file/services.py:1005
+#: apps/admin_file/services.py:1035
 msgid "The due date of a custom item is changed directly."
 msgstr "L'échéance d'une pièce personnalisée se modifie directement."
 
-#: apps/admin_file/services.py:1008
+#: apps/admin_file/services.py:1038
 msgid "Give the proposed due date."
 msgstr "Indiquez l'échéance proposée."
 
-#: apps/admin_file/services.py:1011
+#: apps/admin_file/services.py:1041
 msgid "This is already the due date."
 msgstr "C'est déjà l'échéance actuelle."
 
-#: apps/admin_file/services.py:1014
+#: apps/admin_file/services.py:1044
 msgid "A proposal is already waiting for a decision."
 msgstr "Une proposition attend déjà une décision."
 
-#: apps/admin_file/services.py:1066
+#: apps/admin_file/services.py:1096
 msgid "This proposal has already been decided."
 msgstr "Cette proposition a déjà été tranchée."
 
@@ -1254,10 +1443,6 @@ msgstr "règle de publication"
 msgid "In preparation"
 msgstr "En préparation"
 
-#: apps/conferences/models.py:202 apps/conferences/models.py:505
-msgid "ST approval requested"
-msgstr "Accord ST demandé"
-
 #: apps/conferences/models.py:203
 msgid "ST approval granted"
 msgstr "Accord ST obtenu"
@@ -1348,10 +1533,6 @@ msgstr "Date limite de demande d'accord ST"
 msgid "ST approval awaiting a decision"
 msgstr "Accord ST en attente de décision"
 
-#: apps/conferences/models.py:506
-msgid "ST approval decided"
-msgstr "Accord ST décidé"
-
 #: apps/conferences/models.py:507
 msgid "ST review period changed"
 msgstr "Délai de relecture ST modifié"
@@ -1364,113 +1545,113 @@ msgstr "Événement"
 msgid "conference notification"
 msgstr "notification de conférence"
 
-#: apps/conferences/services.py:112 apps/meetings/services.py:105
-#: apps/objectives/services.py:153 apps/travel/services.py:724
+#: apps/conferences/services.py:113 apps/meetings/services.py:106
+#: apps/objectives/services.py:154 apps/travel/services.py:725
 msgid "This text is invalid."
 msgstr "Ce texte n'est pas valide."
 
-#: apps/conferences/services.py:115 apps/meetings/services.py:108
-#: apps/objectives/services.py:156 apps/travel/services.py:727
+#: apps/conferences/services.py:116 apps/meetings/services.py:109
+#: apps/objectives/services.py:157 apps/travel/services.py:728
 msgid "The text contains a control character."
 msgstr "Le texte contient un caractère de contrôle."
 
-#: apps/conferences/services.py:118 apps/meetings/services.py:111
-#: apps/objectives/services.py:159
+#: apps/conferences/services.py:119 apps/meetings/services.py:112
+#: apps/objectives/services.py:160
 #, python-format
 msgid "Between %(min)d and %(max)d characters."
 msgstr "Entre %(min)d et %(max)d caractères."
 
-#: apps/conferences/services.py:127 apps/travel/services.py:733
+#: apps/conferences/services.py:128 apps/travel/services.py:734
 msgid "One line only."
 msgstr "Une seule ligne."
 
-#: apps/conferences/services.py:137
+#: apps/conferences/services.py:138
 msgid "The address must start with https://."
 msgstr "L'adresse doit commencer par https://."
 
-#: apps/conferences/services.py:143 apps/meetings/services.py:135
-#: apps/travel/services.py:739
+#: apps/conferences/services.py:144 apps/meetings/services.py:136
+#: apps/travel/services.py:740
 msgid "Unknown confidentiality level."
 msgstr "Niveau de confidentialité inconnu."
 
-#: apps/conferences/services.py:150
+#: apps/conferences/services.py:151
 msgid "A submission on ST work must be readable by the industrial tutor."
 msgstr ""
 "Une soumission sur des travaux ST doit être lisible par le tuteur industriel."
 
-#: apps/conferences/services.py:163
+#: apps/conferences/services.py:164
 msgid "A co-author must be an active member of the supervision team."
 msgstr "Un co-auteur doit être un membre actif de l'équipe d'encadrement."
 
-#: apps/conferences/services.py:168
+#: apps/conferences/services.py:169
 msgid "A co-author could not read this confidentiality level."
 msgstr "Un co-auteur ne pourrait pas lire ce niveau de confidentialité."
 
-#: apps/conferences/services.py:175
+#: apps/conferences/services.py:176
 msgid "This venue belongs to another thesis."
 msgstr "Cette conférence appartient à une autre thèse."
 
-#: apps/conferences/services.py:178 apps/conferences/services.py:347
+#: apps/conferences/services.py:179 apps/conferences/services.py:348
 msgid "A journal has no edition."
 msgstr "Une revue n'a pas d'édition."
 
-#: apps/conferences/services.py:181
+#: apps/conferences/services.py:182
 msgid "Choose an edition of this conference."
 msgstr "Choisissez une édition de cette conférence."
 
-#: apps/conferences/services.py:186 apps/meetings/services.py:204
+#: apps/conferences/services.py:187 apps/meetings/services.py:205
 msgid "This objective belongs to another thesis."
 msgstr "Cet objectif appartient à une autre thèse."
 
-#: apps/conferences/services.py:229
+#: apps/conferences/services.py:230
 msgid "The thesis is finished: its submissions are frozen."
 msgstr "La thèse est terminée : ses soumissions sont figées."
 
-#: apps/conferences/services.py:254
+#: apps/conferences/services.py:255
 msgid "This change of status is not possible now."
 msgstr "Ce changement de statut n'est pas possible maintenant."
 
-#: apps/conferences/services.py:271 apps/conferences/services.py:368
+#: apps/conferences/services.py:272 apps/conferences/services.py:369
 msgid "Unknown type."
 msgstr "Type inconnu."
 
-#: apps/conferences/services.py:278 apps/conferences/services.py:311
+#: apps/conferences/services.py:279 apps/conferences/services.py:312
 msgid "This venue already exists."
 msgstr "Cette conférence ou revue existe déjà."
 
-#: apps/conferences/services.py:319
+#: apps/conferences/services.py:320
 msgid "A year between 2000 and 2100."
 msgstr "Une année entre 2000 et 2100."
 
-#: apps/conferences/services.py:323 apps/core/timezones.py:52
-#: apps/meetings/services.py:210 apps/meetings/timing.py:61
-#: apps/objectives/services.py:176
+#: apps/conferences/services.py:324 apps/core/timezones.py:52
+#: apps/meetings/services.py:211 apps/meetings/timing.py:61
+#: apps/objectives/services.py:177
 msgid "A date is required."
 msgstr "Une date est obligatoire."
 
-#: apps/conferences/services.py:325
+#: apps/conferences/services.py:326
 msgid "The event ends before it starts."
 msgstr "L'événement finit avant de commencer."
 
-#: apps/conferences/services.py:352
+#: apps/conferences/services.py:353
 msgid "This edition already exists."
 msgstr "Cette édition existe déjà."
 
-#: apps/conferences/services.py:398 apps/conferences/services.py:422
+#: apps/conferences/services.py:399 apps/conferences/services.py:423
 msgid "This deadline was cancelled."
 msgstr "Cette échéance a été annulée."
 
-#: apps/conferences/services.py:472 apps/travel/services.py:615
-#: apps/travel/services.py:636 apps/travel/services.py:643
+#: apps/conferences/services.py:473 apps/travel/services.py:616
+#: apps/travel/services.py:637 apps/travel/services.py:644
 #, python-format
 msgid "Between 0 and %(max)d days."
 msgstr "Entre 0 et %(max)d jours."
 
-#: apps/conferences/services.py:797 apps/conferences/services.py:1299
+#: apps/conferences/services.py:805 apps/conferences/services.py:1335
 msgid "This submission is closed."
 msgstr "Cette soumission est close."
 
-#: apps/conferences/services.py:806
+#: apps/conferences/services.py:814
 msgid ""
 "ST's approval was requested for this target: submit elsewhere instead (a new "
 "submission, a new approval)."
@@ -1478,77 +1659,77 @@ msgstr ""
 "L'accord de ST a été demandé pour cette cible : soumettez plutôt ailleurs "
 "(une nouvelle soumission, un nouvel accord)."
 
-#: apps/conferences/services.py:825 apps/conferences/services.py:879
-#: apps/conferences/services.py:1144 apps/conferences/services.py:1309
+#: apps/conferences/services.py:833 apps/conferences/services.py:887
+#: apps/conferences/services.py:1166 apps/conferences/services.py:1345
 msgid "The submission changed meanwhile: try again."
 msgstr "La soumission a été modifiée entre-temps : recommencez."
 
-#: apps/conferences/services.py:922
+#: apps/conferences/services.py:930
 msgid "An ST approval is pending: decide it first."
 msgstr "Un accord ST est en attente : décidez-le d'abord."
 
-#: apps/conferences/services.py:944 apps/meetings/services.py:1216
+#: apps/conferences/services.py:952 apps/meetings/services.py:1253
 msgid "This document is already linked."
 msgstr "Ce document est déjà lié."
 
-#: apps/conferences/services.py:966 apps/meetings/services.py:1235
+#: apps/conferences/services.py:981 apps/meetings/services.py:1279
 msgid "This document is no longer linked."
 msgstr "Ce document n'est plus lié."
 
-#: apps/conferences/services.py:985
+#: apps/conferences/services.py:1000
 msgid "Choose a version of a document linked to this submission."
 msgstr "Choisissez une version d'un document lié à cette soumission."
 
-#: apps/conferences/services.py:1003
+#: apps/conferences/services.py:1018
 msgid "ST's approval of this exact version is required first."
 msgstr "L'accord de ST sur cette version exacte est d'abord nécessaire."
 
-#: apps/conferences/services.py:1054
+#: apps/conferences/services.py:1069
 msgid "Unknown purpose."
 msgstr "Objet inconnu."
 
-#: apps/conferences/services.py:1058
+#: apps/conferences/services.py:1073
 msgid "This submission does not concern ST work: no approval is needed."
 msgstr ""
 "Cette soumission ne concerne pas des travaux ST : aucun accord n'est "
 "nécessaire."
 
-#: apps/conferences/services.py:1070
+#: apps/conferences/services.py:1085
 msgid "The industrial tutor cannot read this document: change its level first."
 msgstr ""
 "Le tuteur industriel ne peut pas lire ce document : changez d'abord son "
 "niveau."
 
-#: apps/conferences/services.py:1080
+#: apps/conferences/services.py:1095
 msgid "A request is already pending."
 msgstr "Une demande est déjà en attente."
 
-#: apps/conferences/services.py:1130 apps/travel/services.py:1316
+#: apps/conferences/services.py:1152 apps/travel/services.py:1345
 #: apps/travel/views.py:791
 msgid "Grant or refuse."
 msgstr "Accordez ou refusez."
 
-#: apps/conferences/services.py:1132
+#: apps/conferences/services.py:1154
 msgid "A refusal needs its reason."
 msgstr "Un refus a besoin de son motif."
 
-#: apps/conferences/services.py:1134
+#: apps/conferences/services.py:1156
 msgid "A grant has no refusal reason."
 msgstr "Un accord n'a pas de motif de refus."
 
-#: apps/conferences/services.py:1142 apps/conferences/services.py:1184
+#: apps/conferences/services.py:1164 apps/conferences/services.py:1213
 msgid "This request was already decided."
 msgstr "Cette demande a déjà été décidée."
 
-#: apps/conferences/services.py:1231
+#: apps/conferences/services.py:1260
 msgid "The document has a newer version than the one ST approved."
 msgstr "Le document a une version plus récente que celle que ST a accordée."
 
-#: apps/conferences/services.py:1289
+#: apps/conferences/services.py:1325
 msgid "Unknown platform."
 msgstr "Plateforme inconnue."
 
-#: apps/conferences/services.py:1296
+#: apps/conferences/services.py:1332
 msgid "The date of a preprint is today or earlier."
 msgstr "La date d'une prépublication est aujourd'hui ou avant."
 
@@ -1951,111 +2132,111 @@ msgstr "Action en retard"
 msgid "meeting notification"
 msgstr "notification de réunion"
 
-#: apps/meetings/services.py:124
+#: apps/meetings/services.py:125
 msgid "The video link must be an https:// address."
 msgstr "Le lien de visio doit être une adresse https://."
 
-#: apps/meetings/services.py:142
+#: apps/meetings/services.py:143
 msgid "Unknown meeting type."
 msgstr "Type de réunion inconnu."
 
-#: apps/meetings/services.py:146
+#: apps/meetings/services.py:147
 msgid "A presentation needs its venue (seminar, ST meeting, other)."
 msgstr "Une présentation a besoin de son cadre (séminaire, réunion ST, autre)."
 
-#: apps/meetings/services.py:152
+#: apps/meetings/services.py:153
 msgid "Unknown place."
 msgstr "Lieu inconnu."
 
-#: apps/meetings/services.py:155
+#: apps/meetings/services.py:156
 msgid "The duration is between 5 and 600 minutes."
 msgstr "La durée est comprise entre 5 et 600 minutes."
 
-#: apps/meetings/services.py:158
+#: apps/meetings/services.py:159
 msgid "A date and time are required."
 msgstr "Une date et une heure sont obligatoires."
 
-#: apps/meetings/services.py:177
+#: apps/meetings/services.py:178
 msgid "A meeting needs at least one attendee."
 msgstr "Une réunion a besoin d'au moins un participant."
 
-#: apps/meetings/services.py:182
+#: apps/meetings/services.py:183
 msgid "An attendee must be an active member of the supervision team."
 msgstr "Un participant doit être un membre actif de l'équipe d'encadrement."
 
-#: apps/meetings/services.py:187
+#: apps/meetings/services.py:188
 msgid "An attendee could not read this confidentiality level."
 msgstr "Un participant ne pourrait pas lire ce niveau de confidentialité."
 
-#: apps/meetings/services.py:196
+#: apps/meetings/services.py:197
 msgid "The person in charge must be an active member of the supervision team."
 msgstr "Le responsable doit être un membre actif de l'équipe d'encadrement."
 
-#: apps/meetings/services.py:277
+#: apps/meetings/services.py:278
 msgid "The thesis is finished: its meetings are frozen."
 msgstr "La thèse est terminée : ses réunions sont figées."
 
-#: apps/meetings/services.py:292 apps/meetings/services.py:298
+#: apps/meetings/services.py:293 apps/meetings/services.py:299
 msgid "This meeting was cancelled."
 msgstr "Cette réunion a été annulée."
 
-#: apps/meetings/services.py:304
+#: apps/meetings/services.py:305
 msgid "The minutes of a CSI meeting will be available in a later version."
 msgstr ""
 "Le compte rendu d'une réunion du CSI sera disponible dans une prochaine "
 "version."
 
-#: apps/meetings/services.py:314
+#: apps/meetings/services.py:315
 msgid "The minutes, decisions and actions open when the meeting starts."
 msgstr ""
 "Le compte rendu, les décisions et les actions s'ouvrent au début de la "
 "réunion."
 
-#: apps/meetings/services.py:320
+#: apps/meetings/services.py:321
 msgid "The meeting changed meanwhile: try again."
 msgstr "La réunion a été modifiée entre-temps : recommencez."
 
-#: apps/meetings/services.py:780
+#: apps/meetings/services.py:788
 msgid ""
 "A meeting with minutes, decisions or actions cannot become a CSI meeting."
 msgstr ""
 "Une réunion qui a un compte rendu, des décisions ou des actions ne peut pas "
 "devenir une réunion du CSI."
 
-#: apps/meetings/services.py:926
+#: apps/meetings/services.py:948
 msgid "member"
 msgstr "membre"
 
-#: apps/meetings/services.py:982
+#: apps/meetings/services.py:1004
 msgid "Open actions:"
 msgstr "Actions ouvertes :"
 
-#: apps/meetings/services.py:984
+#: apps/meetings/services.py:1006
 msgid "Overdue objectives:"
 msgstr "Objectifs en retard :"
 
-#: apps/meetings/services.py:987
+#: apps/meetings/services.py:1009
 msgid "No open action or overdue objective to copy at this level."
 msgstr ""
 "Aucune action ouverte ni aucun objectif en retard à copier à ce niveau."
 
-#: apps/meetings/services.py:1052
+#: apps/meetings/services.py:1082
 msgid "Unknown mark."
 msgstr "Marque inconnue."
 
-#: apps/meetings/services.py:1060
+#: apps/meetings/services.py:1090
 msgid "There are no minutes yet."
 msgstr "Il n'y a pas encore de compte rendu."
 
-#: apps/meetings/services.py:1070
+#: apps/meetings/services.py:1100
 msgid "You already marked this version."
 msgstr "Vous avez déjà marqué cette version."
 
-#: apps/meetings/services.py:1117
+#: apps/meetings/services.py:1147
 msgid "This decision was already withdrawn."
 msgstr "Cette décision a déjà été retirée."
 
-#: apps/meetings/services.py:1180
+#: apps/meetings/services.py:1217
 msgid "Unknown status."
 msgstr "Statut inconnu."
 
@@ -2303,74 +2484,74 @@ msgstr "commentaire d'objectif"
 msgid "objective comments"
 msgstr "commentaires d'objectif"
 
-#: apps/objectives/models.py:374
+#: apps/objectives/models.py:375
 msgid "weekly summary"
 msgstr "point hebdomadaire"
 
-#: apps/objectives/models.py:375
+#: apps/objectives/models.py:376
 msgid "weekly summaries"
 msgstr "points hebdomadaires"
 
-#: apps/objectives/services.py:168
+#: apps/objectives/services.py:169
 #, python-format
 msgid "A reason of at least %(min)d characters is required."
 msgstr "Un motif d'au moins %(min)d caractères est obligatoire."
 
-#: apps/objectives/services.py:186 apps/travel/services.py:1535
+#: apps/objectives/services.py:187 apps/travel/services.py:1571
 msgid "Unknown category."
 msgstr "Catégorie inconnue."
 
-#: apps/objectives/services.py:192
+#: apps/objectives/services.py:193
 msgid "The weight is 1, 2 or 3."
 msgstr "Le poids vaut 1, 2 ou 3."
 
-#: apps/objectives/services.py:197
+#: apps/objectives/services.py:198
 msgid "An objective is Public, Internal LIRMM or Confidential."
 msgstr "Un objectif est Public, Interne LIRMM ou Confidentiel."
 
-#: apps/objectives/services.py:240 apps/objectives/services.py:247
-#: apps/objectives/services.py:427
+#: apps/objectives/services.py:241 apps/objectives/services.py:248
+#: apps/objectives/services.py:428
 msgid "The thesis is finished: its objectives are frozen."
 msgstr "La thèse est terminée : ses objectifs sont figés."
 
-#: apps/objectives/services.py:252
+#: apps/objectives/services.py:253
 msgid "This objective was dropped."
 msgstr "Cet objectif a été abandonné."
 
-#: apps/objectives/services.py:422
+#: apps/objectives/services.py:423
 msgid "This year belongs to another thesis."
 msgstr "Cette année appartient à une autre thèse."
 
-#: apps/objectives/services.py:508 apps/objectives/services.py:656
-#: apps/objectives/services.py:721 apps/objectives/services.py:774
+#: apps/objectives/services.py:516 apps/objectives/services.py:671
+#: apps/objectives/services.py:736 apps/objectives/services.py:796
 msgid "The objective changed meanwhile: try again."
 msgstr "L'objectif a été modifié entre-temps : recommencez."
 
-#: apps/objectives/services.py:560
+#: apps/objectives/services.py:575
 msgid "This objective is already approved."
 msgstr "Cet objectif est déjà approuvé."
 
-#: apps/objectives/services.py:615
+#: apps/objectives/services.py:630
 msgid "Nothing to acknowledge."
 msgstr "Rien à prendre en connaissance."
 
-#: apps/objectives/services.py:703
+#: apps/objectives/services.py:718
 msgid "A progress report cannot be dated in the future."
 msgstr "Un point d'avancement ne peut pas être daté dans le futur."
 
-#: apps/objectives/services.py:705
+#: apps/objectives/services.py:720
 msgid "Progress is between 0 and 100."
 msgstr "L'avancement est compris entre 0 et 100."
 
-#: apps/objectives/services.py:707
+#: apps/objectives/services.py:722
 msgid "Choose a status."
 msgstr "Choisissez un statut."
 
-#: apps/objectives/services.py:712
+#: apps/objectives/services.py:727
 msgid "This document cannot be attached."
 msgstr "Ce document ne peut pas être joint."
 
-#: apps/objectives/services.py:728
+#: apps/objectives/services.py:743
 msgid ""
 "An objective with progress cannot go back to “Planned”: keep “In progress” "
 "or set the progress back to zero."
@@ -2593,14 +2774,6 @@ msgstr "Accord de mission en attente de décision"
 #: apps/travel/choices.py:122
 msgid "Receipts or actual amounts missing"
 msgstr "Justificatifs ou montants réels manquants"
-
-#: apps/travel/choices.py:123
-msgid "Mission approval requested"
-msgstr "Accord de mission demandé"
-
-#: apps/travel/choices.py:124
-msgid "Mission approval decided"
-msgstr "Accord de mission décidé"
 
 #: apps/travel/choices.py:125
 msgid "Time-split target or rules changed"
@@ -2941,113 +3114,113 @@ msgstr "budget des déplacements"
 msgid "travel notification"
 msgstr "notification des déplacements"
 
-#: apps/travel/services.py:119
+#: apps/travel/services.py:120
 msgid "The thesis is finished: its travel data is frozen."
 msgstr "La thèse est terminée : ses déplacements sont figés."
 
-#: apps/travel/services.py:149
+#: apps/travel/services.py:150
 #, python-format
 msgid "The dates must be between %(first)s and %(last)s."
 msgstr "Les dates doivent être comprises entre le %(first)s et le %(last)s."
 
-#: apps/travel/services.py:196
+#: apps/travel/services.py:197
 msgid "Unknown kind of day."
 msgstr "Type de jour inconnu."
 
-#: apps/travel/services.py:198
+#: apps/travel/services.py:199
 msgid "The first day must not be after the last one."
 msgstr "Le premier jour ne peut pas être après le dernier."
 
-#: apps/travel/services.py:201
+#: apps/travel/services.py:202
 #, python-format
 msgid "At most %(n)d days at once."
 msgstr "%(n)d jours au plus à la fois."
 
-#: apps/travel/services.py:322 apps/travel/services.py:658
+#: apps/travel/services.py:323 apps/travel/services.py:659
 msgid "Unknown CIFRE year."
 msgstr "Année CIFRE inconnue."
 
-#: apps/travel/services.py:427
+#: apps/travel/services.py:428
 msgid "Unknown month."
 msgstr "Mois inconnu."
 
-#: apps/travel/services.py:429
+#: apps/travel/services.py:430
 msgid "This month is outside the thesis."
 msgstr "Ce mois est hors de la thèse."
 
-#: apps/travel/services.py:599
+#: apps/travel/services.py:600
 msgid "Unknown side."
 msgstr "Côté inconnu."
 
-#: apps/travel/services.py:601 apps/travel/services.py:796
-#: apps/travel/services.py:1507
+#: apps/travel/services.py:602 apps/travel/services.py:797
+#: apps/travel/services.py:1543
 msgid "Yes or no."
 msgstr "Oui ou non."
 
-#: apps/travel/services.py:607
+#: apps/travel/services.py:608
 #, python-format
 msgid "Between 1 and %(max)d points."
 msgstr "Entre 1 et %(max)d points."
 
-#: apps/travel/services.py:659
+#: apps/travel/services.py:660
 msgid "Between 0 and 100."
 msgstr "Entre 0 et 100."
 
-#: apps/travel/services.py:730
+#: apps/travel/services.py:731
 #, python-format
 msgid "At most %(max)d characters."
 msgstr "%(max)d caractères au plus."
 
-#: apps/travel/services.py:747
+#: apps/travel/services.py:748
 msgid "The person who decides for this payer must be able to read the mission."
 msgstr "La personne qui décide pour ce payeur doit pouvoir lire la mission."
 
-#: apps/travel/services.py:754 apps/travel/views.py:377
+#: apps/travel/services.py:755 apps/travel/views.py:377
 msgid "Unknown linked object."
 msgstr "Objet lié inconnu."
 
-#: apps/travel/services.py:763
+#: apps/travel/services.py:764
 msgid "The return must not be before the departure."
 msgstr "Le retour ne peut pas précéder le départ."
 
-#: apps/travel/services.py:765
+#: apps/travel/services.py:766
 #, python-format
 msgid "At most %(n)d days."
 msgstr "%(n)d jours au plus."
 
-#: apps/travel/services.py:768
+#: apps/travel/services.py:769
 msgid "Unknown destination."
 msgstr "Destination inconnue."
 
-#: apps/travel/services.py:770 apps/travel/services.py:836
+#: apps/travel/services.py:771 apps/travel/services.py:837
 msgid "Unknown payer."
 msgstr "Payeur inconnu."
 
-#: apps/travel/services.py:772
+#: apps/travel/services.py:773
 msgid "Unknown lodging."
 msgstr "Hébergement inconnu."
 
-#: apps/travel/services.py:780
+#: apps/travel/services.py:781
 msgid "Choose one or more means of transport."
 msgstr "Choisissez un ou plusieurs moyens de transport."
 
-#: apps/travel/services.py:783
+#: apps/travel/services.py:784
 msgid "Name the place (a town, a site)."
 msgstr "Indiquez le lieu (une ville, un site)."
 
-#: apps/travel/services.py:786
+#: apps/travel/services.py:787
 msgid "A place is named for another destination only."
 msgstr "Un lieu ne s'indique que pour une autre destination."
 
-#: apps/travel/services.py:790
+#: apps/travel/services.py:791
 msgid "A conference only for a conference trip."
 msgstr "Une conférence seulement pour un déplacement en conférence."
 
-#: apps/travel/services.py:898
+#: apps/travel/services.py:906
 msgid "This mission is closed."
 msgstr "Cette mission est close."
 
-#: apps/travel/services.py:923
+#: apps/travel/services.py:931
 msgid ""
 "A mission approval is pending: withdraw it before changing the dates, the "
 "destination or the payer."
@@ -3055,67 +3228,67 @@ msgstr ""
 "Une demande d'accord de mission est en attente : retirez-la avant de changer "
 "les dates, la destination ou le payeur."
 
-#: apps/travel/services.py:941 apps/travel/services.py:986
-#: apps/travel/services.py:1225 apps/travel/services.py:1333
-#: apps/travel/services.py:1457 apps/travel/services.py:1545
-#: apps/travel/services.py:1657 apps/travel/services.py:1725
+#: apps/travel/services.py:949 apps/travel/services.py:1001
+#: apps/travel/services.py:1247 apps/travel/services.py:1362
+#: apps/travel/services.py:1493 apps/travel/services.py:1581
+#: apps/travel/services.py:1693 apps/travel/services.py:1761
 msgid "The mission changed meanwhile: try again."
 msgstr "La mission a changé entre-temps : réessayez."
 
-#: apps/travel/services.py:1087
+#: apps/travel/services.py:1109
 msgid "A granted mission approval is needed first."
 msgstr "Il faut d'abord un accord de mission obtenu."
 
-#: apps/travel/services.py:1090
+#: apps/travel/services.py:1112
 msgid "The mission is not over yet."
 msgstr "La mission n'est pas encore terminée."
 
-#: apps/travel/services.py:1193
+#: apps/travel/services.py:1215
 msgid "This mission approval is already decided."
 msgstr "Cette demande d'accord est déjà décidée."
 
-#: apps/travel/services.py:1204
+#: apps/travel/services.py:1226
 msgid "No mission approval for another body."
 msgstr "Pas d'accord de mission pour un autre organisme."
 
-#: apps/travel/services.py:1206 apps/travel/services.py:1222
+#: apps/travel/services.py:1228 apps/travel/services.py:1244
 msgid "A mission approval is already pending."
 msgstr "Une demande d'accord de mission est déjà en attente."
 
-#: apps/travel/services.py:1212 apps/travel/services.py:1502
-#: apps/travel/services.py:1754 apps/travel/views.py:731
+#: apps/travel/services.py:1234 apps/travel/services.py:1538
+#: apps/travel/services.py:1790 apps/travel/views.py:731
 msgid "An amount in euros, such as 123,45."
 msgstr "Un montant en euros, par exemple 123,45."
 
-#: apps/travel/services.py:1216
+#: apps/travel/services.py:1238
 msgid "Nobody active can decide for this payer and read the mission."
 msgstr "Personne d'actif ne peut décider pour ce payeur et lire la mission."
 
-#: apps/travel/services.py:1318
+#: apps/travel/services.py:1347
 msgid "Choose a reason for the refusal."
 msgstr "Choisissez un motif de refus."
 
-#: apps/travel/services.py:1320
+#: apps/travel/services.py:1349
 msgid "A grant has no reason."
 msgstr "Un accord n'a pas de motif."
 
-#: apps/travel/services.py:1509
+#: apps/travel/services.py:1545
 msgid "A flat rate only for meals or other expenses."
 msgstr "Un forfait seulement pour les repas ou les autres dépenses."
 
-#: apps/travel/services.py:1710
+#: apps/travel/services.py:1746
 msgid "Only a mission done can be reimbursed."
 msgstr "Seule une mission effectuée peut être remboursée."
 
-#: apps/travel/services.py:1715
+#: apps/travel/services.py:1751
 msgid "Every expense line needs its actual amount."
 msgstr "Chaque ligne de frais doit avoir son montant réel."
 
-#: apps/travel/services.py:1719
+#: apps/travel/services.py:1755
 msgid "Every expense line needs a receipt, unless it is a flat rate."
 msgstr "Chaque ligne de frais doit avoir un justificatif, sauf un forfait."
 
-#: apps/travel/services.py:1751 apps/travel/services.py:1819
+#: apps/travel/services.py:1787 apps/travel/services.py:1855
 msgid "This year is outside the thesis."
 msgstr "Cette année est hors de la thèse."
 
@@ -3364,19 +3537,19 @@ msgstr "texte scellé"
 msgid "sealed texts"
 msgstr "textes scellés"
 
-#: apps/vault/services.py:197
+#: apps/vault/services.py:198
 msgid "A title is required."
 msgstr "Un titre est obligatoire."
 
-#: apps/vault/services.py:450
+#: apps/vault/services.py:459
 msgid "Only confidential documents take explicit access."
 msgstr "Seuls les documents confidentiels acceptent un accès explicite."
 
-#: apps/vault/services.py:453
+#: apps/vault/services.py:462
 msgid "You already have access."
 msgstr "Vous avez déjà accès."
 
-#: apps/vault/services.py:456
+#: apps/vault/services.py:465
 msgid "Access can only be given to an active member of the thesis."
 msgstr "L'accès ne peut être donné qu'à un membre actif de la thèse."
 
@@ -3773,6 +3946,124 @@ msgstr "Révoquer l'invitation"
 msgid "No pending invitation."
 msgstr "Aucune invitation en attente."
 
+#: templates/activity/_bell.html:1
+msgid "Unread"
+msgstr "Non lus"
+
+#: templates/activity/_bell.html:1
+msgid "Nothing new."
+msgstr "Rien de nouveau."
+
+#: templates/activity/_bell.html:1
+msgid "All the activity"
+msgstr "Toute l'activité"
+
+#: templates/activity/email/body.txt:1
+msgid "Something on the platform asks for you:"
+msgstr "Un élément de la plateforme vous attend :"
+
+#: templates/activity/email/body.txt:1
+msgid "Your activity digest is waiting for you on the platform:"
+msgstr "Votre résumé d'activité vous attend sur la plateforme :"
+
+#: templates/activity/email/body.txt:1
+msgid "Something new concerns you on the platform:"
+msgstr "Du nouveau vous concerne sur la plateforme :"
+
+#: templates/activity/email/body.txt:5
+#: templates/admin_file/email/notification_body.txt:5
+#: templates/admin_file/email/reminder_body.txt:5
+#: templates/conferences/email/notification_body.txt:5
+#: templates/meetings/email/notification_body.txt:5
+#: templates/objectives/email/summary_body.txt:5
+#: templates/travel/email/notification_body.txt:5
+msgid "This message contains no detail: sign in to see it."
+msgstr ""
+"Ce message ne contient aucun détail : connectez-vous pour le consulter."
+
+#: templates/activity/email/subject.txt:1
+msgid "Something on the platform asks for you"
+msgstr "Un élément de la plateforme vous attend"
+
+#: templates/activity/email/subject.txt:1
+msgid "Your activity digest on the platform"
+msgstr "Votre résumé d'activité sur la plateforme"
+
+#: templates/activity/email/subject.txt:1
+msgid "Something new on the platform"
+msgstr "Du nouveau sur la plateforme"
+
+#: templates/activity/feed.html:2 templates/activity/feed.html:4
+msgid "Activity"
+msgstr "Activité"
+
+#: templates/activity/feed.html:4
+msgid "What happened on the thesis, among what you can read."
+msgstr "Ce qui s'est passé sur la thèse, parmi ce que vous pouvez lire."
+
+#: templates/activity/feed.html:4 templates/activity/preferences.html:2
+#: templates/activity/preferences.html:4
+msgid "My notifications"
+msgstr "Mes notifications"
+
+#: templates/activity/feed.html:5
+msgid "Modules"
+msgstr "Modules"
+
+#: templates/activity/feed.html:11
+msgid "Nothing to show here."
+msgstr "Rien à afficher ici."
+
+#: templates/activity/feed.html:14
+msgid "Pages"
+msgstr "Pages"
+
+#: templates/activity/feed.html:14
+msgid "Newer"
+msgstr "Plus récents"
+
+#: templates/activity/feed.html:14
+msgid "Older"
+msgstr "Plus anciens"
+
+#: templates/activity/feed.html:16
+msgid "Mark everything as read"
+msgstr "Tout marquer comme lu"
+
+#: templates/activity/preferences.html:4
+msgid "For this thesis only."
+msgstr "Pour cette thèse seulement."
+
+#: templates/activity/preferences.html:6
+msgid ""
+"Information: a new document, piece, submission, mission, objective, comment "
+"or team change you can read. Each e-mail holds a link only."
+msgstr "Informations : un nouveau document, une pièce, une soumission, une mission, un objectif, un commentaire ou un changement dans l'équipe que vous pouvez lire. Chaque courriel ne contient qu'un lien."
+
+#: templates/activity/preferences.html:7 templates/conferences/policy.html:12
+#: templates/conferences/submission_form.html:8
+#: templates/conferences/venue.html:21 templates/conferences/venue_form.html:8
+#: templates/meetings/form.html:14 templates/objectives/form.html:18
+#: templates/travel/mission.html:63 templates/travel/mission_form.html:10
+#: templates/travel/month.html:28
+msgid "Save"
+msgstr "Enregistrer"
+
+#: templates/activity/preferences.html:8
+msgid "Always sent at once, for now"
+msgstr "Toujours envoyés immédiatement, pour l'instant"
+
+#: templates/activity/preferences.html:9
+msgid ""
+"What asks you to act (ST approvals, mission approvals, pieces to validate, a "
+"refused piece, an action assigned to you) and the reminders of your own "
+"deadlines stay immediate e-mails for now: they cannot be turned off."
+msgstr "Ce qui vous demande d'agir (accords ST, accords de mission, pièces à valider, pièce refusée, action qui vous est assignée) et les rappels de vos propres échéances restent des courriels immédiats pour l'instant : ils ne peuvent pas être désactivés."
+
+#: templates/activity/preferences.html:10
+msgid "Back to the activity"
+msgstr "Retour à l'activité"
+
 #: templates/admin_file/blocks/dashboard.html:6
 #: templates/admin_file/item_row.html:12
 #: templates/meetings/_objective_actions.html:4
@@ -3811,16 +4102,6 @@ msgstr "Ouvrir le dossier administratif"
 #: templates/admin_file/email/notification_body.txt:1
 msgid "An item of the administrative file has changed on the platform:"
 msgstr "Une pièce du dossier administratif a changé sur la plateforme :"
-
-#: templates/admin_file/email/notification_body.txt:5
-#: templates/admin_file/email/reminder_body.txt:5
-#: templates/conferences/email/notification_body.txt:5
-#: templates/meetings/email/notification_body.txt:5
-#: templates/objectives/email/summary_body.txt:5
-#: templates/travel/email/notification_body.txt:5
-msgid "This message contains no detail: sign in to see it."
-msgstr ""
-"Ce message ne contient aucun détail : connectez-vous pour le consulter."
 
 #: templates/admin_file/email/notification_subject.txt:1
 msgid "CIFRE thesis: an item of the administrative file has changed"
@@ -4103,15 +4384,6 @@ msgstr ""
 msgid "Collaboration contract:"
 msgstr "Contrat de collaboration :"
 
-#: templates/conferences/policy.html:12
-#: templates/conferences/submission_form.html:8
-#: templates/conferences/venue.html:21 templates/conferences/venue_form.html:8
-#: templates/meetings/form.html:14 templates/objectives/form.html:18
-#: templates/travel/mission.html:63 templates/travel/mission_form.html:10
-#: templates/travel/month.html:28
-msgid "Save"
-msgstr "Enregistrer"
-
 #: templates/conferences/policy.html:13
 msgid "Asks for your second factor. The PhD student is told."
 msgstr "Demande votre second facteur. Le doctorant est prévenu."
@@ -4242,12 +4514,6 @@ msgstr "Changer la confidentialité"
 #: templates/conferences/submission_form.html:6
 msgid "Edit the submission"
 msgstr "Modifier la soumission"
-
-#: templates/conferences/submission_form.html:2
-#: templates/conferences/submission_form.html:6
-#: templates/conferences/submissions.html:5
-msgid "New submission"
-msgstr "Nouvelle soumission"
 
 #: templates/conferences/submission_form.html:6
 #: templates/conferences/venue_form.html:6 templates/meetings/duplicate.html:6
@@ -4650,11 +4916,6 @@ msgstr "Aucun avancement à afficher pour l'instant."
 #, python-format
 msgid "CIFRE year from %(start)s to %(end)s"
 msgstr "Année CIFRE du %(start)s au %(end)s"
-
-#: templates/objectives/dashboard.html:4 templates/objectives/form.html:2
-#: templates/objectives/form.html:5
-msgid "New objective"
-msgstr "Nouvel objectif"
 
 #: templates/objectives/dashboard.html:7 templates/travel/split.html:6
 msgid "CIFRE years"

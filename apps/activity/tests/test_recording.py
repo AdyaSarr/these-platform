@@ -49,7 +49,8 @@ def spy(monkeypatch: pytest.MonkeyPatch) -> list[tuple[str, int]]:
 def _last(kind: str) -> Event:
     rows = h.events_of(kind)
     assert rows, kind
-    return rows[-1]
+    event: Event = rows[-1]
+    return event
 
 
 def _check(team: SimpleNamespace, spy: list[tuple[str, int]], kind: str, obj: Any,
@@ -91,10 +92,10 @@ def test_documents_linked_to_a_meeting_and_a_submission(team: SimpleNamespace, s
     link = meetings.link_document(meeting=h.meeting(team, L.PUBLIC), user=team.student,
                                   document=doc)  # fmt: skip
     _check(team, spy, "DOCUMENT_LINKED", link, "MEETING_DOCUMENT", team.student)
-    link = conferences.link_document(
+    link2 = conferences.link_document(
         submission=h.submission(team, L.PUBLIC), user=team.student, document=doc
     )
-    _check(team, spy, "DOCUMENT_LINKED", link, "SUBMISSION_DOCUMENT", team.student)
+    _check(team, spy, "DOCUMENT_LINKED", link2, "SUBMISSION_DOCUMENT", team.student)
 
 
 # --------------------------------------------------------------------------- M3
@@ -150,16 +151,20 @@ def test_meeting_events(team: SimpleNamespace, spy: Any) -> None:
 
     from apps.meetings import services as meetings
 
-    session = h.meeting(team, L.PUBLIC, attendees=[team.student, team.director])
-    _check(team, spy, "MEETING_PLANNED", session, "MEETING", team.student)
-    meetings.update_meeting(meeting=session, user=team.student,
-                            changes={"starts_at": h.NOW + dt.timedelta(days=9)})  # fmt: skip
-    _check(team, spy, "MEETING_CHANGED", session, "MEETING", team.student)
-    action = meetings.add_action(meeting=session, user=team.student, title="Action fictive",
-                                 assignee=team.director, due_date=h.D(2027, 2, 15))  # fmt: skip
+    coming = h.meeting(team, L.PUBLIC, attendees=[team.student, team.director])
+    _check(team, spy, "MEETING_PLANNED", coming, "MEETING", team.student)
+    meetings.update_meeting(
+        meeting=coming, user=team.student, changes={"starts_at": h.NOW + dt.timedelta(days=9)}
+    )
+    _check(team, spy, "MEETING_CHANGED", coming, "MEETING", team.student)
+    meetings.cancel_meeting(meeting=coming, user=team.student)
+    _check(team, spy, "MEETING_CANCELLED", coming, "MEETING", team.student)
+    started = h.meeting(team, L.PUBLIC, days=-1, attendees=[team.student, team.director])
+    action = meetings.add_action(
+        meeting=started, user=team.student, title="Action fictive", assignee=team.director,
+        due_date=h.D(2027, 2, 15),
+    )  # fmt: skip
     _check(team, spy, "ACTION_ASSIGNED", action, "ACTION", team.student)
-    meetings.cancel_meeting(meeting=session, user=team.student)
-    _check(team, spy, "MEETING_CANCELLED", session, "MEETING", team.student)
 
 
 def test_minutes_published(team: SimpleNamespace, spy: Any, time_machine: Any) -> None:

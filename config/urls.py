@@ -71,6 +71,7 @@ urlpatterns: list[URLPattern | URLResolver] = [
     path("t/<uuid:thesis_id>/meetings/", include("apps.meetings.urls")),
     path("t/<uuid:thesis_id>/conferences/", include("apps.conferences.urls")),
     path("t/<uuid:thesis_id>/travel/", include("apps.travel.urls")),
+    path("t/<uuid:thesis_id>/activity/", include("apps.activity.urls")),
     # Invitation acceptance (apps/accounts/invitation_views.py). "accept/" and
     # "logout/" first: the <str:token> route would match them otherwise.
     path("invitation/", invitation_views.invitation_continue, name="invitation_continue"),

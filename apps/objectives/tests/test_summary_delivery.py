@@ -34,7 +34,7 @@ def team() -> SimpleNamespace:
     return make_team()
 
 
-def _queued(team: SimpleNamespace) -> WeeklySummaryLog:
+def _queued(team: SimpleNamespace, recipient: Any = None) -> WeeklySummaryLog:
     with time_machine.travel(IN_THE_WEEK, tick=False):
         services.create_objective(
             thesis=team.thesis, user=team.student, year=year_of(team), title="Titre fictif",
@@ -42,11 +42,11 @@ def _queued(team: SimpleNamespace) -> WeeklySummaryLog:
         )  # fmt: skip
     with time_machine.travel(RUN, tick=False):
         summary.run()
-    return WeeklySummaryLog.objects.get(recipient=team.director)
+    return WeeklySummaryLog.objects.get(recipient=recipient or team.director)
 
 
 def _resend(row: WeeklySummaryLog) -> str:
-    WeeklySummaryLog.objects.filter(pk=row.pk).update(status="PENDING", attempts=0)
+    WeeklySummaryLog.objects.filter(pk=row.pk).update(status="PENDING", attempts=0, sent_at=None)
     mail.outbox.clear()
     with time_machine.travel(RUN, tick=False):
         tasks.send_weekly_summary(str(row.pk))
@@ -85,9 +85,9 @@ def test_a_finished_thesis_is_skipped(team: SimpleNamespace) -> None:
 
 def test_nothing_left_for_the_recipient_is_skipped(team: SimpleNamespace) -> None:
     """still_due: what made the summary due is gone (the objective's level is no
-    longer readable by the recipient)."""
+    longer readable by the recipient: the tutor does not read INTERNAL_LIRMM)."""
     from apps.objectives.models import Objective
 
-    row = _queued(team)
-    Objective.objects.filter(thesis=team.thesis).update(level=L.INTERNAL_ST)
+    row = _queued(team, team.tutor)
+    Objective.objects.filter(thesis=team.thesis).update(level=L.INTERNAL_LIRMM)
     assert _resend(row) == "SKIPPED"

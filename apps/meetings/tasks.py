@@ -14,10 +14,27 @@ from apps.core.delivery import deliver_once
 from .models import MeetingNotification
 
 
+def _action_anchor(row: Any) -> str:
+    """ACTION_OVERDUE leads to the action itself (M11a): its anchor on the page."""
+    from .models import ActionItem, NotificationKind
+    from .reminders import overdue_event
+
+    if row.kind != NotificationKind.ACTION_OVERDUE:
+        return ""
+    for action in ActionItem.objects.filter(meeting_id=row.meeting_id):
+        if overdue_event(action) == row.event_id:
+            return f"#action-{action.pk}"
+    return ""
+
+
 def _message(row: Any) -> tuple[str, str]:
-    url = settings.SITE_URL + reverse(
-        "meetings:detail",
-        kwargs={"thesis_id": row.meeting.thesis_id, "meeting_id": row.meeting_id},
+    url = (
+        settings.SITE_URL
+        + reverse(
+            "meetings:detail",
+            kwargs={"thesis_id": row.meeting.thesis_id, "meeting_id": row.meeting_id},
+        )
+        + _action_anchor(row)
     )
     context = {"url": url, "kind": row.kind}
     subject = render_to_string("meetings/email/notification_subject.txt", context).strip()

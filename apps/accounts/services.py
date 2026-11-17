@@ -24,6 +24,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_noop
 
+from apps.activity import events as activity
 from apps.vault import crypto
 from apps.vault.services import AuditAction, audit
 
@@ -170,6 +171,11 @@ def add_membership(
             start=timezone.now(),
             created_by=created_by,
         )
+        # The person who joins is the actor: they accepted (or were created with
+        # the thesis); never told of their own arrival.
+        activity.record(
+            kind="MEMBER_JOINED", obj=m, object_type="MEMBERSHIP", thesis=thesis, actor=user
+        )
         audit(
             AuditAction.MEMBERSHIP_GRANTED,
             actor=created_by,
@@ -194,6 +200,9 @@ def end_membership(
             raise TeamError(_("This membership is not active."))
         m.active_until = now
         m.save(update_fields=["active_until", "updated_at"])
+        activity.record(
+            kind="MEMBER_LEFT", obj=m, object_type="MEMBERSHIP", thesis=m.thesis, actor=by
+        )
         audit(AuditAction.MEMBER_REMOVED, actor=by, obj=m, request=request, role=m.role)
         return m
 
@@ -226,6 +235,13 @@ def change_role(
             organization=m.organization,
             start=now,
             created_by=by,
+        )
+        activity.record(
+            kind="MEMBER_ROLE_CHANGED",
+            obj=new,
+            object_type="MEMBERSHIP",
+            thesis=m.thesis,
+            actor=by,
         )
         audit(
             AuditAction.MEMBER_ROLE_CHANGED,

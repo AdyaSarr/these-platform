@@ -27,8 +27,8 @@ def test_the_primary_key_is_a_random_uuid(model: type[models.Model]) -> None:
 def test_an_event_holds_no_title_no_level_no_free_text() -> None:
     names = {f.name for f in Event._meta.get_fields() if getattr(f, "concrete", False)}
     assert names == {
-        "id", "created_at", "updated_at", "thesis", "kind", "object_type", "object_id",
-        "actor",
+        "id", "created_at", "updated_at", "created_by", "thesis", "kind", "object_type",
+        "object_id", "actor",
     }  # fmt: skip
     for field in Event._meta.concrete_fields:
         if isinstance(field, models.CharField):

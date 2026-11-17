@@ -355,6 +355,7 @@ class WeeklySummaryLog(TimeStampedModel):
         PENDING = "PENDING", _("Pending")
         SENT = "SENT", _("Sent")
         FAILED = "FAILED", _("Failed")
+        SKIPPED = "SKIPPED", _("Not sent: no longer concerned or due")
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     thesis = models.ForeignKey(

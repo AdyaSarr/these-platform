@@ -7,7 +7,8 @@ role. Exposed ids are random UUIDs: those shown are the same rows in every world
 
 Three states are compared: the shared objects only (everything marked read by the
 role), then world "a" (hidden objects added), then world "b" (more, of other
-kinds). A digest triggered by an unreadable element, a count, a cut before the
+kinds), inside the week the Monday digest covers. A digest triggered by an
+unreadable element, a count, a cut before the
 filter, an id that leaks an order: each one makes a state differ.
 """
 
@@ -34,10 +35,13 @@ pytestmark = pytest.mark.django_db(transaction=True)
 R = Role
 ROLES = [R.CO_SUPERVISOR, R.INDUSTRIAL_CO_SUPERVISOR, R.INDUSTRIAL_TUTOR, R.DIRECTOR,
          R.CSI_MEMBER]  # fmt: skip
-MONDAY = dt.datetime(2027, 1, 25, 6, 0, tzinfo=dt.UTC)  # 07:00 in Paris
+# 07:00 in Paris. The shared objects (20 January) are outside the week this digest
+# covers (25-31 January); the hidden ones inside: a digest set off by an
+# unreadable element would appear in world "a" only.
+MONDAY = dt.datetime(2027, 2, 1, 6, 0, tzinfo=dt.UTC)
 MODULES = ["", "documents", "admin_file", "objectives", "meetings", "conferences", "travel",
            "team"]  # fmt: skip
-_CSRF = re.compile(r'(name="csrfmiddlewaretoken" value=)"[^"]+"')
+_CSRF = re.compile(r'(name="csrfmiddlewaretoken" value=|"X-CSRFToken": )"[^"]+"')
 _BELL = re.compile(r'<div class="bell"[^>]*>.*?</div>\s*<!-- /bell -->', re.S)
 
 
@@ -77,7 +81,7 @@ def _shared(team: SimpleNamespace) -> None:
         h.submission(team, level)
     goal = h.objective(team, L.PUBLIC)
     h.objective(team, L.INTERNAL_LIRMM)
-    h.objective(team, L.INTERNAL_ST)
+    h.objective(team, L.CONFIDENTIAL)
     objectives.add_comment(objective=goal, user=team.director, body="Avis partagé fictif")
     for day, (destination, payer) in enumerate(
         [("LIRMM", "LIRMM"), ("ROUSSET", "ST"), ("CONFERENCE", "LIRMM")], start=2
@@ -90,7 +94,7 @@ def _hidden(team: SimpleNamespace, role: Role, world: str) -> None:
     """Only what ``role`` does not read; world "b" adds more, of other kinds."""
     from apps.accounts.permissions import Action
     from apps.objectives import services as objectives
-    from apps.objectives.models import Objective
+    from apps.objectives.models import OBJECTIVE_LEVELS, Objective
 
     copies = 10 if world == "a" else 3
     for n in range(copies):
@@ -102,9 +106,11 @@ def _hidden(team: SimpleNamespace, role: Role, world: str) -> None:
         for level in _hidden_levels(role, Action.SUBMISSION_READ):
             h.submission(team, level)
         for level in _hidden_levels(role, Action.OBJECTIVE_READ):
-            h.objective(team, level)
+            if level in OBJECTIVE_LEVELS:  # never INTERNAL_ST (M4)
+                h.objective(team, level)
         if role is R.CSI_MEMBER:  # a comment: the CSI member never reads them
             public = Objective.objects.filter(thesis=team.thesis, level=L.PUBLIC).first()
+            assert public is not None
             objectives.add_comment(objective=public, user=team.director, body="Avis caché")
     for day, (destination, payer) in enumerate(_hidden_destinations(role), start=15):
         h.mission(team, destination, payer, start=h.D(2027, 2, day + (world == "b") * 5))
@@ -156,12 +162,12 @@ def test_a_role_cannot_tell_the_worlds_apart(role: Role, frequency: str, time_ma
     shared_only = _state(team, role, user)
     events_before = Event.objects.count()
 
-    time_machine.move_to(MONDAY - dt.timedelta(hours=2), tick=True)
+    time_machine.move_to(MONDAY - dt.timedelta(days=2), tick=True)
     _hidden(team, role, "a")
     time_machine.move_to(MONDAY, tick=False)
     world_a = _state(team, role, user)
 
-    time_machine.move_to(MONDAY - dt.timedelta(hours=1), tick=True)
+    time_machine.move_to(MONDAY - dt.timedelta(days=1), tick=True)
     _hidden(team, role, "b")
     time_machine.move_to(MONDAY, tick=False)
     world_b = _state(team, role, user)
@@ -176,6 +182,19 @@ def test_a_role_cannot_tell_the_worlds_apart(role: Role, frequency: str, time_ma
     for left, right in ((shared_only, world_a), (world_a, world_b)):
         for (target, status_l, body_l), (_, status_r, body_r) in zip(left[0], right[0],
                                                                      strict=True):  # fmt: skip
-            assert (status_l, body_l) == (status_r, body_r), target
+            if (status_l, body_l) != (status_r, body_r):
+                import difflib
+
+                diff = "\n".join(difflib.unified_diff(body_l.splitlines(), body_r.splitlines(),
+                                                      lineterm="", n=0))  # fmt: skip
+                raise AssertionError(f"{target}\n{diff}")
         assert left[1] == right[1], "e-mails"
         assert left[2] == right[2], "notification rows"
+
+    if frequency == Frequency.WEEKLY:  # not vacuous: a readable element is digested
+        time_machine.move_to(MONDAY - dt.timedelta(hours=12), tick=True)
+        h.objective(team, L.PUBLIC)
+        time_machine.move_to(MONDAY, tick=False)
+        mail.outbox.clear()
+        digests.run()
+        assert [m for m in mail.outbox if user.email in m.to]

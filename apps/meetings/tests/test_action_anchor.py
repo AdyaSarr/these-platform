@@ -4,8 +4,10 @@ ACTION_OVERDUE ends with it. Still a link only (CLAUDE.md rule 7)."""
 
 from __future__ import annotations
 
+import datetime as dt
 import re
 from types import SimpleNamespace
+from typing import Any
 
 import pytest
 from django.conf import settings
@@ -14,10 +16,15 @@ from django.test import Client
 from django.urls import reverse
 
 from apps.meetings import reminders, services
-from apps.meetings.tests.helpers import meeting_of
+from apps.meetings.tests.helpers import START, meeting_of
 from apps.objectives.tests.helpers import D, make_team, marker
 
 pytestmark = pytest.mark.django_db(transaction=True)
+
+
+@pytest.fixture(autouse=True)
+def _now(time_machine: Any) -> None:
+    time_machine.move_to(START + dt.timedelta(days=1), tick=True)  # the meeting has started
 
 
 @pytest.fixture
@@ -37,7 +44,7 @@ def test_the_overdue_e_mail_links_the_action(team: SimpleNamespace) -> None:
     detail = reverse(
         "meetings:detail", kwargs={"thesis_id": team.thesis.pk, "meeting_id": meeting.pk}
     )
-    links = re.findall(r"https?://\S+", sent.body)
+    links = re.findall(r"https?://\S+", str(sent.body))
     assert links == [f"{settings.SITE_URL}{detail}#action-{action.pk}"]
 
 

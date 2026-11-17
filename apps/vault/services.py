@@ -37,6 +37,7 @@ from django.views.decorators.debug import sensitive_variables
 
 from apps.accounts.models import Thesis, User
 from apps.accounts.permissions import Action, can, can_access_document, can_access_level, roles_of
+from apps.activity import events as activity
 from apps.core.confidentiality import ConfidentialityLevel
 
 from . import crypto, formats, keys, locks, storage
@@ -236,6 +237,10 @@ def store(
             mime_type=checked.mime_type,
             created_by=user,
         )
+        activity.record(
+            kind="DOCUMENT_ADDED", obj=document, object_type="DOCUMENT",
+            thesis=document.thesis, actor=user,
+        )  # fmt: skip
         audit(
             AuditAction.DOCUMENT_CREATED,
             actor=user,
@@ -283,6 +288,10 @@ def add_version(*, document: Document, upload: Upload, user: User) -> DocumentVe
             )
             locked.current_version = number
             locked.save(update_fields=["current_version", "updated_at"])
+            activity.record(
+                kind="DOCUMENT_VERSION_ADDED", obj=locked, object_type="DOCUMENT",
+                thesis=locked.thesis, actor=user,
+            )  # fmt: skip
             audit(AuditAction.DOCUMENT_VERSION_ADDED, actor=user, obj=locked, version=number)
             return version
     raise RuntimeError("the document's level changed twice during add_version(); retry")
@@ -461,6 +470,10 @@ def grant_access(*, document: Document, grantee: User, user: User) -> DocumentAc
         grant = DocumentAccessGrant.objects.create(
             document=locked, user=grantee, granted_by=user, created_by=user
         )
+        activity.record(
+            kind="DOCUMENT_GRANTED", obj=grant, object_type="DOCUMENT_GRANT",
+            thesis=locked.thesis, actor=user,
+        )  # fmt: skip
         audit(AuditAction.DOCUMENT_GRANT_ADDED, actor=user, obj=locked, grantee=str(grantee.pk))
     return grant
 

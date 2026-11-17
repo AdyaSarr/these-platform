@@ -52,6 +52,7 @@ from apps.accounts.permissions import (
     can_access_document,
     roles_of,
 )
+from apps.activity import events as activity
 from apps.core.confidentiality import ConfidentialityLevel
 from apps.objectives.models import Objective
 from apps.objectives.models import Status as ObjectiveStatus
@@ -640,6 +641,13 @@ def _create(
         for person in people:
             Attendee.objects.create(meeting=meeting, user=person, created_by=user)
         notify(meeting, Notify.INVITED, uuid.uuid4(), people, exclude=user)
+        activity.record(
+            kind="MEETING_PLANNED",
+            obj=meeting,
+            object_type="MEETING",
+            thesis=thesis,
+            actor=user,
+        )
         audit(
             audit_action,
             actor=user,
@@ -801,6 +809,13 @@ def update_meeting(*, meeting: Meeting, user: User, changes: Mapping[str, Any]) 
         locked.save()
         if NOTIFIED_FIELDS & set(changed):
             notify(locked, Notify.CHANGED, uuid.uuid4(), _current_attendees(locked), exclude=user)
+            activity.record(
+                kind="MEETING_CHANGED",
+                obj=locked,
+                object_type="MEETING",
+                thesis=locked.thesis,
+                actor=user,
+            )
         audit(AuditAction.MEETING_UPDATED, actor=user, obj=locked, fields=changed)
     return changed
 
@@ -888,6 +903,13 @@ def cancel_meeting(*, meeting: Meeting, user: User) -> Meeting:
         locked.ics_sequence += 1
         locked.save()
         notify(locked, Notify.CANCELLED, uuid.uuid4(), _current_attendees(locked), exclude=user)
+        activity.record(
+            kind="MEETING_CANCELLED",
+            obj=locked,
+            object_type="MEETING",
+            thesis=locked.thesis,
+            actor=user,
+        )
         audit(AuditAction.MEETING_CANCELLED, actor=user, obj=locked)
     return locked
 
@@ -1030,6 +1052,14 @@ def save_minutes(*, meeting: Meeting, user: User, minutes: str, version: int) ->
             )
             recipients = list(User.objects.filter(pk__in=list(marked)))
         notify(locked, Notify.MINUTES, uuid.uuid4(), recipients, exclude=user)
+        if locked.minutes_version == 1:  # the first minutes: published
+            activity.record(
+                kind="MINUTES_PUBLISHED",
+                obj=locked,
+                object_type="MEETING",
+                thesis=locked.thesis,
+                actor=user,
+            )
         audit(
             AuditAction.MEETING_MINUTES_UPDATED,
             actor=user,
@@ -1159,6 +1189,13 @@ def add_action(
         )
         action.save(force_insert=True)
         sealer.seal(action, "title", text)
+        activity.record(
+            kind="ACTION_ASSIGNED",
+            obj=action,
+            object_type="ACTION",
+            thesis=thesis,
+            actor=user,
+        )
         audit(
             AuditAction.MEETING_ACTION_ADDED,
             actor=user,
@@ -1215,6 +1252,13 @@ def link_document(*, meeting: Meeting, user: User, document: Document) -> Meetin
         if MeetingDocument.objects.filter(meeting=locked, document=document).exists():
             raise ValidationError(_("This document is already linked."), code="already_linked")
         link = MeetingDocument.objects.create(meeting=locked, document=document, created_by=user)
+        activity.record(
+            kind="DOCUMENT_LINKED",
+            obj=link,
+            object_type="MEETING_DOCUMENT",
+            thesis=thesis,
+            actor=user,
+        )
         audit(
             AuditAction.MEETING_DOCUMENT_LINKED,
             actor=user,

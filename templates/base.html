@@ -45,6 +45,7 @@
           <a class="brand" href="{% url 'core:home' %}">{% icon "graduation-cap" %}<span>{% translate "CIFRE thesis" %}</span></a>
         {% endif %}
         {% if ui_thesis %}<p class="header-thesis">{{ ui_thesis.title }}</p>{% else %}<span class="header-spacer"></span>{% endif %}
+        {% if ui_bell %}{% include "activity/_bell.html" with bell=ui_bell %}{% endif %}
         <div class="header-tools">
           {# Signed-in users only: an anonymous page keeps a single CSRF token (test_invitations.py). #}
           {% if user.is_authenticated %}{% include "ui/header_tools.html" %}
