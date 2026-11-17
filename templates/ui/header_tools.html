@@ -1,0 +1,14 @@
+{% load i18n ui %}{# Theme toggle and logout. Written twice on a thesis page, in the header (wide screen) and at the foot of the menu (narrow screen): layout.css shows one copy only. #}
+{# No script: the choice is a POST, the server sets the cookie and comes back to this page. #}
+<form class="theme-toggle" method="post" action="{% url 'ui:theme' %}" role="group" aria-label="{% translate 'Theme' %}">
+  {% csrf_token %}
+  <input type="hidden" name="next" value="{{ ui_next }}">
+  <button type="submit" name="theme" value="auto" aria-pressed="{% if ui_theme == 'auto' %}true{% else %}false{% endif %}" title="{% translate 'Follow the system' %}">{% icon "monitor" %}<span class="visually-hidden">{% translate "Follow the system" %}</span></button>
+  <button type="submit" name="theme" value="light" aria-pressed="{% if ui_theme == 'light' %}true{% else %}false{% endif %}" title="{% translate 'Light theme' %}">{% icon "sun" %}<span class="visually-hidden">{% translate "Light theme" %}</span></button>
+  <button type="submit" name="theme" value="dark" aria-pressed="{% if ui_theme == 'dark' %}true{% else %}false{% endif %}" title="{% translate 'Dark theme' %}">{% icon "moon" %}<span class="visually-hidden">{% translate "Dark theme" %}</span></button>
+</form>
+<form class="logout" method="post" action="{% url 'logout' %}">
+  {% csrf_token %}
+  <span class="who">{{ user.email }}</span>
+  <button type="submit" title="{% translate 'Log out' %}">{% icon "log-out" %}<span class="logout-label">{% translate "Log out" %}</span></button>
+</form>

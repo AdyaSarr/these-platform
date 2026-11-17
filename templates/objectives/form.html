@@ -1,8 +1,8 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}{% load i18n ui %}
 {% block title %}{% if objective %}{% translate "Edit an objective" %}{% else %}{% translate "New objective" %}{% endif %}{% endblock %}
 {% block content %}
-<h1>{% if objective %}{% translate "Edit an objective" %}{% else %}{% translate "New objective" %}{% endif %}</h1>
-<p><a href="{% if objective %}{% url 'objectives:detail' thesis_id=thesis.pk objective_id=objective.pk %}{% else %}{% url 'objectives:dashboard' thesis_id=thesis.pk %}{% endif %}">{% translate "Back" %}</a></p>
+{% if objective %}{% url 'objectives:detail' thesis_id=thesis.pk objective_id=objective.pk as back_url %}{% else %}{% url 'objectives:dashboard' thesis_id=thesis.pk as back_url %}{% endif %}
+{% page_header parent_url=back_url parent_label=_("Back") %}{% if objective %}{% translate "Edit an objective" %}{% else %}{% translate "New objective" %}{% endif %}{% endpage_header %}
 {% if objective.is_approved %}<p class="mark">{% translate "This objective is approved: every change needs a reason, is kept in its history and is flagged to the director." %}</p>{% endif %}
 <form class="stack" method="post">
   {% csrf_token %}
@@ -15,6 +15,6 @@
       {{ field.errors }}
     </p>
   {% endfor %}
-  <button type="submit">{% if objective %}{% translate "Save" %}{% else %}{% translate "Create the objective" %}{% endif %}</button>
+  <button type="submit" class="btn-primary">{% if objective %}{% translate "Save" %}{% else %}{% translate "Create the objective" %}{% endif %}</button>
 </form>
 {% endblock %}

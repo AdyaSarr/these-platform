@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "apps.meetings",
     "apps.conferences",
     "apps.travel",
+    "apps.ui",  # visual layer: navigation, theme, icons (presentation only)
     # Authentication: sign-in, password reset, mandatory second factor (M1).
     "allauth",
     "allauth.account",
@@ -82,6 +83,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "apps.ui.context_processors.ui",
             ],
         },
     },
@@ -182,6 +184,8 @@ SESSION_COOKIE_AGE = 8 * 3600
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Strict"
 CSRF_COOKIE_SAMESITE = "Strict"
+# Our page, without technical detail nor anything of the request (docs/ui-notes.md).
+CSRF_FAILURE_VIEW = "apps.core.views.csrf_failure"
 
 # --------------------------------------------------------------------------- security headers
 X_FRAME_OPTIONS = "DENY"

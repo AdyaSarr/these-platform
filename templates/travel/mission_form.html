@@ -1,11 +1,11 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}{% load i18n ui %}
 {% block title %}{% if mission %}{% translate "Edit the mission" %}{% else %}{% translate "Plan a mission" %}{% endif %}{% endblock %}
 {% block content %}
-{% include "travel/_nav.html" %}
-<h1>{% if mission %}{% translate "Edit the mission" %}{% else %}{% translate "Plan a mission" %}{% endif %}</h1>
+{% module_tabs "travel" %}
+{% page_header %}{% if mission %}{% translate "Edit the mission" %}{% else %}{% translate "Plan a mission" %}{% endif %}{% endpage_header %}
 {% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
 <p class="muted">{% translate "Entered by hand: the platform calls no booking or timetable service." %}</p>
 {% if links %}<ul>{% for label in links %}<li>{{ label }}</li>{% endfor %}</ul>{% endif %}
 <form class="stack" method="post">{% csrf_token %}{% include "conferences/_form.html" %}
-  <button type="submit">{% translate "Save" %}</button></form>
+  <button type="submit" class="btn-primary">{% translate "Save" %}</button></form>
 {% endblock %}

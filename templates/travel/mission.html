@@ -1,15 +1,14 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}{% load i18n ui %}
 {% block title %}{% translate "Mission" %}{% endblock %}
 {% block content %}
-{% include "travel/_nav.html" %}
-<h1>{% translate "Mission" %} — {{ mission.get_destination_display }}</h1>
-<p><a href="{% url 'travel:mission_ics' thesis_id=thesis.pk mission_id=mission.pk %}">{% translate "Add to my calendar (.ics)" %}</a></p>
+{% module_tabs "travel" %}
+{% page_header %}{% translate "Mission" %} — {{ mission.get_destination_display }}{% actions %}{% url 'travel:mission_ics' thesis_id=thesis.pk mission_id=mission.pk as ics_url %}{% include "ui/action.html" with url=ics_url label=_("Add to my calendar (.ics)") icon="calendar-plus" %}{% if writer %}{% url 'travel:edit_mission' thesis_id=thesis.pk mission_id=mission.pk as edit_url %}{% include "ui/action.html" with url=edit_url label=_("Edit") icon="pencil" %}{% endif %}{% endpage_header %}
 {% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
 <dl class="stats">
   <div><dt>{% translate "Dates" %}</dt><dd>{{ mission.start_date|date:"d/m/Y" }} – {{ mission.end_date|date:"d/m/Y" }}</dd></div>
   <div><dt>{% translate "Status" %}</dt><dd>{{ mission.get_status_display }}</dd></div>
   <div><dt>{% translate "Paid by" %}</dt><dd>{{ mission.get_payer_display }}</dd></div>
-  <div><dt>{% translate "Confidentiality" %}</dt><dd>{{ mission.get_level_display }}</dd></div>
+  <div><dt>{% translate "Confidentiality" %}</dt><dd>{% level_badge mission.level %}</dd></div>
 </dl>
 <ul>
   {% if mission.destination == "OTHER" %}<li>{% translate "Place:" %} {% include "conferences/_text.html" with value=texts.destination_detail %}</li>{% endif %}
@@ -40,7 +39,7 @@
 {% else %}<p class="muted">{% translate "No mission approval requested yet." %}</p>{% endif %}
 {% if request_form %}
 <form class="stack" method="post" action="{% url 'travel:request_order' thesis_id=thesis.pk mission_id=mission.pk %}">{% csrf_token %}{% with form=request_form %}{% include "conferences/_form.html" %}{% endwith %}
-  <button type="submit">{% translate "Request the mission approval" %}</button>
+  <button type="submit" class="btn-primary">{% translate "Request the mission approval" %}</button>
   <span class="muted">{% translate "The dates, the destination and the payer are then frozen until the decision." %}</span></form>
 {% endif %}
 {% if pending and writer %}
@@ -48,7 +47,7 @@
 {% endif %}
 {% if decision_form and pending %}
 <form class="stack" method="post" action="{% url 'travel:decide_order' thesis_id=thesis.pk order_id=pending.pk %}">{% csrf_token %}{% with form=decision_form %}{% include "conferences/_form.html" %}{% endwith %}
-  <button type="submit">{% translate "Record the decision" %}</button>
+  <button type="submit" class="btn-primary">{% translate "Record the decision" %}</button>
   <span class="muted">{% translate "Asks for your second factor." %}</span></form>
 {% endif %}
 <h2>{% translate "Expenses" %}</h2>
@@ -61,15 +60,15 @@
     <td>{% if row.actual.restricted %}<span class="restricted">{% translate "Restricted content" %}</span>{% else %}{{ row.actual.text|default:"—" }}{% endif %}</td>
     <td>{% for document in row.view.receipts %}<a href="{% url 'vault:document' thesis_id=thesis.pk document_id=document.pk %}">{% translate "receipt" %} {{ forloop.counter }}</a>{% if not forloop.last %}, {% endif %}{% empty %}{% if row.view.expense.flat_rate %}<span class="muted">{% translate "none needed" %}</span>{% else %}—{% endif %}{% endfor %}</td>
     {% if can_expense %}<td>
-      <form class="actions" method="post" action="{% url 'travel:update_expense' thesis_id=thesis.pk expense_id=row.view.expense.pk %}">{% csrf_token %}{% with form=amounts_form %}{{ form.estimated }} {{ form.actual }}{% endwith %}<button type="submit">{% translate "Save" %}</button></form>
-      <form class="stack" method="post" enctype="multipart/form-data" action="{% url 'travel:attach_receipt' thesis_id=thesis.pk expense_id=row.view.expense.pk %}">{% csrf_token %}{% with form=receipt_form %}{% include "conferences/_form.html" %}{% endwith %}<button type="submit">{% translate "Store the receipt" %}</button></form>
+      <form class="form-secondary actions" method="post" action="{% url 'travel:update_expense' thesis_id=thesis.pk expense_id=row.view.expense.pk %}">{% csrf_token %}{% with form=amounts_form %}{{ form.estimated }} {{ form.actual }}{% endwith %}<button type="submit">{% translate "Save" %}</button></form>
+      <form class="form-secondary stack" method="post" enctype="multipart/form-data" action="{% url 'travel:attach_receipt' thesis_id=thesis.pk expense_id=row.view.expense.pk %}">{% csrf_token %}{% with form=receipt_form %}{% include "conferences/_form.html" %}{% endwith %}<button type="submit">{% translate "Store the receipt" %}</button></form>
     </td>{% endif %}
   </tr>{% endfor %}</tbody>
 </table>
 {% else %}<p class="muted">{% translate "No expense line yet." %}</p>{% endif %}
 {% if can_expense %}
 <form class="stack" method="post" action="{% url 'travel:add_expense' thesis_id=thesis.pk mission_id=mission.pk %}">{% csrf_token %}{% with form=expense_form %}{% include "conferences/_form.html" %}{% endwith %}
-  <button type="submit">{% translate "Add the line" %}</button></form>
+  <button type="submit" class="btn-primary">{% translate "Add the line" %}</button></form>
 {% endif %}
 {% if can_reimburse %}
 <form method="post" action="{% url 'travel:mission_reimbursed' thesis_id=thesis.pk mission_id=mission.pk %}">{% csrf_token %}<button type="submit">{% translate "Mark as reimbursed" %}</button>
@@ -77,16 +76,18 @@
 {% endif %}
 {% if official_form %}
 <form class="stack" method="post" enctype="multipart/form-data" action="{% url 'travel:official_order' thesis_id=thesis.pk mission_id=mission.pk %}">{% csrf_token %}{% with form=official_form %}{% include "conferences/_form.html" %}{% endwith %}
-  <button type="submit">{% translate "Store the official mission order" %}</button></form>
+  <button type="submit" class="btn-primary">{% translate "Store the official mission order" %}</button></form>
 {% endif %}
 {% if writer %}
-<p class="actions"><a href="{% url 'travel:edit_mission' thesis_id=thesis.pk mission_id=mission.pk %}">{% translate "Edit" %}</a>
-  <form method="post" action="{% url 'travel:mission_done' thesis_id=thesis.pk mission_id=mission.pk %}">{% csrf_token %}<button type="submit">{% translate "Mark as done" %}</button></form>
-  <form method="post" action="{% url 'travel:cancel_mission' thesis_id=thesis.pk mission_id=mission.pk %}">{% csrf_token %}<button type="submit" class="danger">{% translate "Cancel the mission" %}</button></form></p>
+<div class="actions confirm-row">
+  <form method="post" action="{% url 'travel:mission_done' thesis_id=thesis.pk mission_id=mission.pk %}">{% csrf_token %}<button type="submit" class="btn btn-secondary">{% translate "Mark as done" %}</button></form>
+  {% url 'travel:cancel_mission' thesis_id=thesis.pk mission_id=mission.pk as cancel_url %}
+  {% include "ui/confirm.html" with label=_("Cancel the mission") message=_("The mission will be cancelled; its approvals and expenses stay in its history. This cannot be undone.") action=cancel_url confirm_label=_("Yes, cancel the mission") %}
+</div>
 {% endif %}
 {% if level_form %}
 <form class="stack" method="post" action="{% url 'travel:mission_level' thesis_id=thesis.pk mission_id=mission.pk %}">{% csrf_token %}{% with form=level_form %}{% include "conferences/_form.html" %}{% endwith %}
-  <button type="submit">{% translate "Change the confidentiality" %}</button>
+  <button type="submit" class="btn-primary">{% translate "Change the confidentiality" %}</button>
   <span class="muted">{% translate "Asks for your second factor." %}</span></form>
 {% endif %}
 {% endblock %}

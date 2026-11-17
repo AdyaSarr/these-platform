@@ -1,11 +1,16 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}{% load i18n ui %}
 {% block title %}{% translate "Presence calendar" %}{% endblock %}
 {% block content %}
-{% include "travel/_nav.html" %}
-<h1>{% translate "Presence calendar" %} — {{ month_start|date:"F Y" }}</h1>
-<p class="actions">{% if previous_url %}<a href="{{ previous_url }}">← {% translate "Previous month" %}</a>{% endif %}
-  {% if next_url %}<a href="{{ next_url }}">{% translate "Next month" %} →</a>{% endif %}</p>
+{% module_tabs "travel" %}
+{% page_header %}{% translate "Presence calendar" %}{% endpage_header %}
+<nav class="segmented" aria-label="{% translate 'Month' %}">
+  {% if previous_url %}<a class="segment" href="{{ previous_url }}">{% icon "chevron-left" %}<span>{% translate "Previous month" %}</span></a>{% else %}<span class="segment segment-disabled" aria-disabled="true">{% icon "chevron-left" %}<span>{% translate "Previous month" %}</span></span>{% endif %}
+  <span class="segment segment-label" aria-current="page">{{ month_start|date:"F Y" }}</span>
+  {% if next_url %}<a class="segment" href="{{ next_url }}"><span>{% translate "Next month" %}</span>{% icon "chevron-right" %}</a>{% else %}<span class="segment segment-disabled" aria-disabled="true"><span>{% translate "Next month" %}</span>{% icon "chevron-right" %}</span>{% endif %}
+</nav>
 {% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
+{# Seven equal columns (components.css, .calendar); the wrapper scrolls on a narrow screen, never the page. #}
+<div class="table-wrap">
 <table class="table calendar">
   <thead><tr>{% for name in weekdays %}<th scope="col">{{ name }}</th>{% endfor %}</tr></thead>
   <tbody>
@@ -13,14 +18,14 @@
   {% endfor %}
   </tbody>
 </table>
+</div>
 <p class="muted">{% translate "Legend:" %} {% for value, label in legend %}<span class="day-{{ value|lower }} legend-item">{{ label }}</span>{% if not forloop.last %} · {% endif %}{% endfor %}</p>
-<p>{% blocktranslate count n=view.lirmm_days %}{{ n }} working day at the LIRMM this month.{% plural %}{{ n }} working days at the LIRMM this month.{% endblocktranslate %}
-</p>
+{# No « N working days at the LIRMM this month »: the rule's line below says it (frontend step 2, point 10). #}
 {% if view.rule %}<p>{% include "travel/_rule.html" with rule=view.rule %}</p>{% endif %}
 {% if form %}
 <h2>{% translate "Fill in days" %}</h2>
 <form class="stack" method="post" action="{% url 'travel:presence' thesis_id=thesis.pk %}">{% csrf_token %}{% include "conferences/_form.html" %}
-  <button type="submit">{% translate "Save" %}</button>
+  <button type="submit" class="btn-primary">{% translate "Save" %}</button>
   <span class="muted">{% translate "Working days only unless the box is ticked. A change to a past day is recorded in the audit log." %}</span></form>
 {% endif %}
 {% endblock %}

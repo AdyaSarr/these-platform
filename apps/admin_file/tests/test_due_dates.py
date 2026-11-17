@@ -290,8 +290,8 @@ def test_a_proposal_needs_a_date(team: SimpleNamespace) -> None:
 @pytest.mark.parametrize(
     ("roles", "message"),
     [
-        ([T], "Aucun·e tuteur·rice industriel·le dans l'équipe : invitez-le·la d'abord."),
-        ([D], "Aucun·e directeur·rice de thèse dans l'équipe : invitez-le·la d'abord."),
+        ([T], "Aucun·e tuteur·rice industriel·le dans l'équipe\u00a0: invitez-le·la d'abord."),
+        ([D], "Aucun·e directeur·rice de thèse dans l'équipe\u00a0: invitez-le·la d'abord."),
     ],
 )
 def test_no_proposal_without_an_active_validator(

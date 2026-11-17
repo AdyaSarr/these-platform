@@ -648,6 +648,17 @@ def request_due_dates(thesis: Thesis) -> list[tuple[Submission, dt.date]]:
     return sorted(result, key=lambda pair: pair[1])
 
 
+def submission_counts(user: Any, thesis: Thesis) -> list[tuple[str, int]]:
+    """(status label, number) of the submissions of ``thesis``, in the order of the
+    statuses, the empty ones left out. Read only; no text opened (the list of the
+    submissions shows them all to SUBMISSION_READ, titles by level)."""
+    _require(user, Action.SUBMISSION_READ, thesis, "counts")
+    counts: dict[str, int] = {}
+    for status in Submission.objects.filter(thesis=thesis).values_list("status", flat=True):
+        counts[status] = counts.get(status, 0) + 1
+    return [(str(s.label), counts[s.value]) for s in S if s.value in counts]
+
+
 def dashboard_block(request: Any, thesis: Thesis) -> dict[str, Any]:
     """The « Conferences » card: next deadlines of the targeted editions, request
     due dates, approvals awaiting the tutor."""
@@ -658,12 +669,17 @@ def dashboard_block(request: Any, thesis: Thesis) -> dict[str, Any]:
         deadline_display(d) for d in upcoming_deadlines(user, thesis) if d.edition_id in targeted
     ][:5]
     today = timezone.localdate()
+    pending = pending_approvals(user, thesis)  # the tutor's only
     return {
         "deadlines": deadlines,
         "request_dues": [
             (s, due, (due - today).days) for s, due in request_due_dates(thesis) if due >= today
         ][:3],
-        "pending": len(pending_approvals(user, thesis)),
+        "pending": len(pending),
+        "pending_approvals": pending,  # one line and link each in « À traiter »
+        "by_status": (
+            submission_counts(user, thesis) if can(user, Action.SUBMISSION_READ, thesis) else []
+        ),
     }
 
 

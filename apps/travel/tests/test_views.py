@@ -26,6 +26,7 @@ from apps.travel.tests.helpers import (
     make_team,
     url,
 )
+from apps.ui.tests.helpers import without_sidebar
 
 pytestmark = pytest.mark.django_db(transaction=True)
 
@@ -174,7 +175,9 @@ def test_the_director_never_reads_the_word_leave(team: SimpleNamespace, page: st
 def test_the_co_supervisor_reads_lirmm_only(team: SimpleNamespace) -> None:
     _fill_week(team)
     for target in (_month(team), url(team, "split")):
-        html = client_for(team, "co_supervisor").get(target).content.decode()
+        page = client_for(team, "co_supervisor").get(target).content.decode()
+        # The sidebar (redesign) names the Conferences module the co-supervisor may open.
+        html = without_sidebar(page)
         assert "LIRMM" in html
         for word in ("ROUSSET", "Rousset", "REMOTE", "Télétravail", "CONFERENCE", "Conférence"):
             assert word not in html, (target, word)

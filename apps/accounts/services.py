@@ -503,3 +503,38 @@ def accept_invitation_new_user(
         EmailAddress.objects.create(user=user, email=user.email, verified=True, primary=True)
         _accept(inv, user, request)
         return user
+
+
+# --------------------------------------------------------------------------- dashboard
+
+CSI_END_NEAR = dt.timedelta(days=30)
+
+
+def team_summary(user: User, thesis: Thesis) -> dict[str, object]:
+    """The team card of the dashboard: the active members by role (in the order of
+    the roles), and the end of the CSI when it is within CSI_END_NEAR. Read only."""
+    _require(user, Action.VIEW_TEAM, thesis)
+    members = list(
+        Membership.objects.active()
+        .filter(thesis=thesis)
+        .select_related("user")
+        .order_by("user__last_name", "user__email")
+    )
+    by_role = [
+        (
+            str(role.label),
+            [m.user.get_full_name() or m.user.email for m in members if m.role == role],
+        )
+        for role in Role
+    ]
+    now = timezone.now()
+    ends = [
+        m.active_until for m in members if m.role == Role.CSI_MEMBER and m.active_until is not None
+    ]
+    csi_end = min(ends) if ends and min(ends) - now <= CSI_END_NEAR else None
+    return {"roles": [(label, names) for label, names in by_role if names], "csi_end": csi_end}
+
+
+def team_block(request: object, thesis: Thesis) -> dict[str, object]:
+    """Data of the « Team » dashboard card (accounts.views.DASHBOARD_BLOCKS)."""
+    return team_summary(request.user, thesis)  # type: ignore[attr-defined]

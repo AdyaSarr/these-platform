@@ -1,9 +1,8 @@
-{% extends "base.html" %}{% load i18n %}
-{% block title %}{{ document.title }}{% endblock %}
+{% extends "base.html" %}{% load i18n ui %}
+{% block title %}{% document_label document %}{% endblock %}
 {% block content %}
-<h1>{{ document.title }}</h1>
-<p><a href="{% url 'vault:documents' thesis_id=thesis.pk %}">{% translate "All documents" %}</a></p>
-<p>{% translate "Confidentiality" %} : {{ document.get_confidentiality_display }}</p>
+{% url 'vault:documents' thesis_id=thesis.pk as documents_url %}
+{% document_label document as label %}{% page_header parent_url=documents_url parent_label=_("All documents") %}{{ label }}{% subtitle %}{% level_badge document.confidentiality %}{% endpage_header %}
 
 <h2>{% translate "Versions" %}</h2>
 <table>
@@ -15,7 +14,7 @@
       <td>{{ version.size|filesizeformat }}</td>
       <td>{{ version.mime_type }}</td>
       <td>{{ version.created_at|date:"SHORT_DATETIME_FORMAT" }}</td>
-      <td><a href="{% url 'vault:download' thesis_id=thesis.pk version_id=version.pk %}">{% translate "Download" %}</a></td>
+      <td><a class="btn btn-ghost btn-sm" href="{% url 'vault:download' thesis_id=thesis.pk version_id=version.pk %}">{% icon "download" %}<span>{% translate "Download" %}</span></a></td>
     </tr>
   {% endfor %}
   </tbody>
@@ -25,7 +24,7 @@
 <h2>{% translate "New version" %}</h2>
 <form method="post" enctype="multipart/form-data" action="{% url 'vault:new_version' thesis_id=thesis.pk document_id=document.pk %}">
   {% csrf_token %}{{ version_form.as_p }}
-  <button type="submit">{% translate "Store the new version" %}</button>
+  <button type="submit" class="btn-primary">{% translate "Store the new version" %}</button>
 </form>
 {% endif %}
 
@@ -34,7 +33,7 @@
 <p>{% translate "Changing the level re-encrypts every version; a recent second factor is asked." %}</p>
 <form method="post" action="{% url 'vault:change_level' thesis_id=thesis.pk document_id=document.pk %}">
   {% csrf_token %}{{ level_form.as_p }}
-  <button type="submit">{% translate "Change the level" %}</button>
+  <button type="submit" class="btn-primary">{% translate "Change the level" %}</button>
 </form>
 {% endif %}
 

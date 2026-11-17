@@ -60,7 +60,9 @@ def _line(html: str) -> str | None:
 
 
 def _card_counts(html: str) -> tuple[int, int]:
-    card = re.search(r'data-block="admin_file">(.*?)</section>', html, re.S)
+    # The progress moved from the card to the « Administrative file » tile (frontend
+    # step 8a): the same admin_file.services.progress().
+    card = re.search(r'data-tile="file">(.*?)</li>', html, re.S)
     assert card is not None
     validated, total = re.search(r'<progress value="(\d+)" max="(\d+)"', card.group(1)).groups()  # type: ignore[union-attr]
     return int(validated), int(total)
@@ -120,14 +122,14 @@ def test_without_access_to_the_file_no_count_and_no_link(team: SimpleNamespace) 
 
 def test_dates_in_french(team: SimpleNamespace) -> None:
     html = _dashboard(team)
-    assert "Date d'effet CIFRE : 2 mars 2026" in html
-    assert "Première inscription : 15 mars 2026" in html
+    assert "Date d'effet CIFRE\u00a0: 2 mars 2026" in html
+    assert "Première inscription\u00a0: 15 mars 2026" in html
 
 
 def test_dates_are_shown_for_an_active_thesis_too(team: SimpleNamespace) -> None:
     Thesis.objects.filter(pk=team.thesis.pk).update(status=Thesis.Status.ACTIVE)
     html = _dashboard(team, "director")
-    assert "Date d'effet CIFRE : 2 mars 2026" in html
+    assert "Date d'effet CIFRE\u00a0: 2 mars 2026" in html
 
 
 def test_one_calculation_for_the_line_and_the_card(monkeypatch: Any, team: SimpleNamespace) -> None:

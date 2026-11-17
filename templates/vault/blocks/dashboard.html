@@ -1,4 +1,12 @@
-{% load i18n %}{# data = vault.services.dashboard_block: the number of documents THIS user may read, nothing else. #}
+{% load i18n ui %}{# data = vault.services.dashboard_block: THIS user's readable documents; the 3 latest, numbered like the list, with their level. #}
 <p data-documents="{{ data.count }}">{% blocktranslate count counter=data.count %}{{ counter }} document you can read{% plural %}{{ counter }} documents you can read{% endblocktranslate %}</p>
+{% latest_document_rows data as rows %}
+{% if rows %}
+<ul class="card-list">
+  {% for document, label in rows %}
+    <li><a href="{% url 'vault:document' thesis_id=thesis.pk document_id=document.pk %}">{{ label }}</a> {% level_badge document.confidentiality %} <span class="muted">{{ document.updated_at|short_date }}</span></li>
+  {% endfor %}
+</ul>
+{% endif %}
 {# The list filters by right itself (vault.services.readable_documents): a link is not an access check. #}
 <p><a href="{% url 'vault:documents' thesis_id=thesis.pk %}">{% translate "Open the documents" %}</a></p>

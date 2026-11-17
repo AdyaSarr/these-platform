@@ -587,7 +587,9 @@ def actions_for_objective(user: User, objective: Objective) -> list[LinkedAction
 
 
 def dashboard_block(request: Any, thesis: Thesis) -> dict[str, Any]:
-    """The « Meetings » card: next meeting (one I attend first), overdue actions."""
+    """The « Meetings » card and its tiles: next meeting (one I attend first, its
+    date and kind only), overdue actions. Opens the titles of MY overdue actions
+    only: the dashboard opens sealed texts once (frontend step 8a)."""
     user = request.user
     _require(user, Action.MEETING_READ, thesis, "dashboard")
     upcoming = Meeting.objects.filter(
@@ -597,12 +599,9 @@ def dashboard_block(request: Any, thesis: Thesis) -> dict[str, Any]:
     overdue = list(overdue_actions(thesis).select_related("meeting"))
     mine = [a for a in overdue if a.assignee_id == user.pk]
     items: list[tuple[Any, str]] = [(a, "title") for a in mine]
-    if following is not None:
-        items.append((following, "title"))
     opened = vault.open_texts(user, thesis, items, action=Action.MEETING_READ)
     return {
         "next_meeting": following,
-        "next_title": _shown(opened.get((following.pk, "title"), "")) if following else None,
         "next_is_mine": following is not None and is_attendee(user, following),
         "overdue_count": len(overdue),
         "my_overdue": [(a, _shown(opened.get((a.pk, "title"), ""))) for a in mine],

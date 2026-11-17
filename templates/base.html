@@ -1,5 +1,6 @@
-{% load static i18n %}<!doctype html>
-<html lang="fr">
+{% load static i18n ui %}<!doctype html>
+{# data-theme: only a value of the closed list (apps/ui/theme.py); absent = follow the system. #}
+<html lang="fr"{% if ui_theme == "light" or ui_theme == "dark" %} data-theme="{{ ui_theme }}"{% endif %}>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -7,28 +8,58 @@
   {# responseHandling: 400 and 409 carry a fragment with the message (form errors, item changed): swap them too. #}
   <meta name="htmx-config" content='{"allowEval":false,"includeIndicatorStyles":false,"allowScriptTags":false,"selfRequestsOnly":true,"responseHandling":[{"code":"204","swap":false},{"code":"[23]..","swap":true},{"code":"40[09]","swap":true,"error":false},{"code":"[45]..","swap":false,"error":true},{"code":"...","swap":false}]}'>
   <title>{% block title %}{% translate "CIFRE thesis" %}{% endblock %} · {% translate "CIFRE thesis" %}</title>
+  <link rel="preload" href="{% static 'vendor/inter/inter-latin-wght-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
+  {# One file per layer group; the layer order is declared at the top of base.css. #}
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/layout.css' %}">
+  <link rel="stylesheet" href="{% static 'css/components.css' %}">
   <script src="{% static 'vendor/htmx/htmx.min.js' %}" defer></script>
 </head>
 {# htmx sends the CSRF token as a header on every non-GET request. #}
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
-  <header class="site-header">
-    <a class="brand" href="{% url 'core:home' %}">{% translate "CIFRE thesis" %}</a>
-    {% if user.is_authenticated %}
-      <form class="logout" method="post" action="{% url 'logout' %}">
-        {% csrf_token %}
-        <span class="who">{{ user.email }}</span>
-        <button type="submit">{% translate "Log out" %}</button>
-      </form>
+  <a class="skip-link" href="#main">{% translate "Skip to content" %}</a>
+  {# ui_nav is empty unless permissions.py authorised this page of a thesis (apps/ui/navigation.py). #}
+  <div class="app {% if ui_nav %}app-with-nav{% else %}app-plain{% endif %}">
+    {% if ui_nav %}
+      <nav id="sidebar" class="sidebar" popover aria-label="{% translate 'Main navigation' %}">
+        <div class="sidebar-head">
+          <a class="brand" href="{% url 'core:home' %}">{% icon "graduation-cap" %}<span>{% translate "CIFRE thesis" %}</span></a>
+          <button type="button" class="nav-close" popovertarget="sidebar" popovertargetaction="hide">{% icon "x" %}<span class="visually-hidden">{% translate "Close the menu" %}</span></button>
+        </div>
+        <ul class="nav-list">
+          {% for item in ui_nav %}
+            <li><a class="nav-link" data-nav="{{ item.key }}" href="{{ item.url }}"{% if item.current %} aria-current="page"{% endif %}>{% icon item.icon %}<span>{{ item.label }}</span></a></li>
+          {% endfor %}
+        </ul>
+        {# The header's tools, for a narrow screen where the header holds only the menu button. #}
+        <div class="nav-tools">{% include "ui/header_tools.html" %}</div>
+      </nav>
     {% endif %}
-  </header>
-  <main class="content">
-    {% if messages %}
-      <ul class="messages">
-        {% for message in messages %}<li class="message message-{{ message.tags }}">{{ message }}</li>{% endfor %}
-      </ul>
-    {% endif %}
-    {% block content %}{% endblock %}
-  </main>
+    <div class="main-col">
+      <header class="site-header">
+        {% if ui_nav %}
+          <button type="button" class="nav-toggle" popovertarget="sidebar">{% icon "menu" %}<span>{% translate "Menu" %}</span></button>
+          {# Short name, narrow screen only: on a wide screen the sidebar shows it. #}
+          <a class="brand header-brand" href="{% url 'core:home' %}">{% icon "graduation-cap" %}<span>{% translate "CIFRE thesis" %}</span></a>
+        {% else %}
+          <a class="brand" href="{% url 'core:home' %}">{% icon "graduation-cap" %}<span>{% translate "CIFRE thesis" %}</span></a>
+        {% endif %}
+        {% if ui_thesis %}<p class="header-thesis">{{ ui_thesis.title }}</p>{% else %}<span class="header-spacer"></span>{% endif %}
+        <div class="header-tools">
+          {# Signed-in users only: an anonymous page keeps a single CSRF token (test_invitations.py). #}
+          {% if user.is_authenticated %}{% include "ui/header_tools.html" %}
+          {% endif %}
+        </div>
+      </header>
+      <main id="main" class="content" tabindex="-1">
+        {% if messages %}
+          <ul class="messages">
+            {% for message in messages %}<li class="message message-{{ message.tags }}">{{ message }}</li>{% endfor %}
+          </ul>
+        {% endif %}
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
 </body>
 </html>

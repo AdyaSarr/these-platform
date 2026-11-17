@@ -298,9 +298,25 @@ def readable_documents(user: Any, thesis: Thesis) -> list[Document]:
     ]
 
 
+def latest_documents(user: Any, thesis: Thesis, *, limit: int = 3) -> list[Document]:
+    """The ``limit`` documents last updated among those ``user`` may read (the
+    list's own rule, readable_documents). Read only; nothing is decrypted."""
+    if not can(user, Action.DOCUMENT_READ, thesis):
+        raise _deny(user, "latest", thesis=thesis)
+    readable = readable_documents(user, thesis)
+    return sorted(readable, key=lambda d: (d.updated_at, str(d.pk)), reverse=True)[:limit]
+
+
 def dashboard_block(request: Any, thesis: Thesis) -> dict[str, Any]:
-    """Data of the thesis dashboard card (accounts.views.DASHBOARD_BLOCKS): a count only."""
-    return {"count": len(readable_documents(request.user, thesis))}
+    """Data of the thesis dashboard card (accounts.views.DASHBOARD_BLOCKS): the
+    number of documents the user may read, the readable ones (to number the
+    repeated titles like the list) and the latest three. Nothing decrypted."""
+    readable = readable_documents(request.user, thesis)
+    return {
+        "count": len(readable),
+        "readable": readable,
+        "latest": latest_documents(request.user, thesis),
+    }
 
 
 def document_for(user: User, thesis: Thesis, document_id: Any, *, operation: str) -> Document:

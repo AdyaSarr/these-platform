@@ -1,20 +1,18 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}{% load i18n ui %}
 {% block title %}{% translate "Submission" %}{% endblock %}
 {% block content %}
-<p><a href="{% url 'conferences:submissions' thesis_id=thesis.pk %}">{% translate "Submissions" %}</a></p>
-<h1>{% include "conferences/_text.html" with value=texts.title %}</h1>
-{% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
-
-<p class="muted">
+{% module_tabs "conferences" %}
+{% page_header %}{% include "conferences/_text.html" with value=texts.title %}{% subtitle %}
   {{ submission.venue.acronym }}{% if submission.edition %} {{ submission.edition.year }}{% endif %} ({{ submission.venue.get_kind_display }}) ·
   <strong>{{ submission.get_status_display }}</strong> ·
-  {% translate "Confidentiality" %} : {{ submission.get_level_display }} ·
+  {% translate "Confidentiality" %}&nbsp;: {% level_badge submission.level %} ·
   {% if submission.st_work %}{% translate "ST work: ST's approval required" %}{% else %}{% translate "Not ST work" %}{% endif %}
-</p>
+{% actions %}{% if can_write %}{% url 'conferences:edit_submission' thesis_id=thesis.pk submission_id=submission.pk as edit_url %}{% include "ui/action.html" with url=edit_url label=_("Edit") icon="pencil" %}{% endif %}
+{% endpage_header %}
+{% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
 {% if submission.resubmission_of_id %}<p class="muted"><a href="{% url 'conferences:submission' thesis_id=thesis.pk submission_id=submission.resubmission_of_id %}">{% translate "Resubmission of an earlier submission" %}</a></p>{% endif %}
 
 <div class="actions">
-  {% if can_write %}<a href="{% url 'conferences:edit_submission' thesis_id=thesis.pk submission_id=submission.pk %}">{% translate "Edit" %}</a>{% endif %}
   {% if can_decide and submission.st_work %}
     <form method="post" action="{% url 'conferences:st_work_off' thesis_id=thesis.pk submission_id=submission.pk %}">{% csrf_token %}
       <button type="submit">{% translate "Not ST work: no approval needed" %}</button></form>
@@ -27,14 +25,14 @@
 
 <h2>{% translate "Abstract" %}</h2>
 <p>{% include "conferences/_text.html" with value=texts.abstract %}</p>
-<p>{% translate "Internal co-authors" %} : {% for user in authors %}{{ user.get_full_name|default:user.email }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</p>
-<p>{% translate "External co-authors" %} : {% include "conferences/_text.html" with value=texts.external_authors %}</p>
-{% if texts.notes.text or texts.notes.restricted %}<p>{% translate "Notes" %} : {% include "conferences/_text.html" with value=texts.notes %}</p>{% endif %}
+<p>{% translate "Internal co-authors" %}&nbsp;: {% for user in authors %}{{ user.get_full_name|default:user.email }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</p>
+<p>{% translate "External co-authors" %}&nbsp;: {% include "conferences/_text.html" with value=texts.external_authors %}</p>
+{% if texts.notes.text or texts.notes.restricted %}<p>{% translate "Notes" %}&nbsp;: {% include "conferences/_text.html" with value=texts.notes %}</p>{% endif %}
 
 {% if deadlines %}
 <section aria-labelledby="deadlines-title">
   <h2 id="deadlines-title">{% translate "Deadlines" %}</h2>
-  <ul>{% for d in deadlines %}<li>{{ d.deadline.get_kind_display }} : {% include "conferences/_deadline.html" %}</li>{% endfor %}</ul>
+  <ul>{% for d in deadlines %}<li>{{ d.deadline.get_kind_display }}&nbsp;: {% include "conferences/_deadline.html" %}</li>{% endfor %}</ul>
 </section>
 {% endif %}
 
@@ -44,14 +42,14 @@
   <ul>
     {% for document, link in documents %}
       <li><a href="{% url 'vault:document' thesis_id=thesis.pk document_id=document.pk %}">{{ document.title }}</a> (v{{ document.current_version }})
-        {% if can_write %}<form method="post" action="{% url 'conferences:unlink_document' thesis_id=thesis.pk submission_id=submission.pk link_id=link.pk %}">{% csrf_token %}<button type="submit">{% translate "Unlink" %}</button></form>{% endif %}</li>
+        {% if can_write %}<form method="post" action="{% url 'conferences:unlink_document' thesis_id=thesis.pk submission_id=submission.pk link_id=link.pk %}">{% csrf_token %}<button type="submit" class="btn-ghost btn-sm">{% translate "Unlink" %}</button></form>{% endif %}</li>
     {% endfor %}
   </ul>
   {% endif %}
   {% if hidden_documents %}<p class="muted">{% blocktranslate count counter=hidden_documents %}{{ counter }} linked document you may not read.{% plural %}{{ counter }} linked documents you may not read.{% endblocktranslate %}</p>{% endif %}
   {% if document_form and document_form.fields.document.choices %}
     <form class="stack" method="post" action="{% url 'conferences:document' thesis_id=thesis.pk submission_id=submission.pk %}">{% csrf_token %}{% include "conferences/_form.html" with form=document_form %}
-      <button type="submit">{% translate "Link the document" %}</button></form>
+      <button type="submit" class="btn-primary">{% translate "Link the document" %}</button></form>
   {% endif %}
 </section>
 
@@ -64,12 +62,12 @@
       <li>{{ approval.get_purpose_display }} — {% if document_title %}{{ document_title }}{% else %}<span class="restricted">{% translate "Restricted document" %}</span>{% endif %} v{{ approval.version.version }} ·
         <strong>{{ approval.get_decision_display }}</strong>{% if approval.reason %} ({{ approval.get_reason_display }}){% endif %}
         · {% blocktranslate with days=approval.review_days %}period {{ days }} days{% endblocktranslate %}{% if approval.request_due %} · {% blocktranslate with date=approval.request_due|date:"SHORT_DATE_FORMAT" %}to request by {{ date }}{% endblocktranslate %}{% endif %}
-        {% if comment.text or comment.restricted %}<br>{% translate "Comment" %} : {% include "conferences/_text.html" with value=comment %}{% endif %}
+        {% if comment.text or comment.restricted %}<br>{% translate "Comment" %}&nbsp;: {% include "conferences/_text.html" with value=comment %}{% endif %}
         {% if approval.decision == pending %}
           {% if can_write %}<form method="post" action="{% url 'conferences:withdraw_approval' thesis_id=thesis.pk submission_id=submission.pk approval_id=approval.pk %}">{% csrf_token %}<button type="submit">{% translate "Withdraw the request" %}</button></form>{% endif %}
           {% if can_decide %}
             <form class="stack" method="post" action="{% url 'conferences:decide' thesis_id=thesis.pk submission_id=submission.pk approval_id=approval.pk %}">{% csrf_token %}{% include "conferences/_form.html" with form=decision_form %}
-              <button type="submit">{% translate "Record the decision" %}</button>
+              <button type="submit" class="btn-primary">{% translate "Record the decision" %}</button>
               <span class="muted">{% translate "Asks for your second factor." %}</span></form>
           {% endif %}
         {% endif %}
@@ -79,7 +77,7 @@
   {% else %}<p class="muted">{% translate "No request yet." %}</p>{% endif %}
   {% if request_form %}
     <form class="stack" method="post" action="{% url 'conferences:request' thesis_id=thesis.pk submission_id=submission.pk %}">{% csrf_token %}{% include "conferences/_form.html" with form=request_form %}
-      <button type="submit">{% translate "Request ST's approval" %}</button></form>
+      <button type="submit" class="btn-primary">{% translate "Request ST's approval" %}</button></form>
   {% endif %}
 </section>
 
@@ -87,7 +85,7 @@
 <section aria-labelledby="status-title">
   <h2 id="status-title">{% translate "Status" %}</h2>
   <form class="stack" method="post" action="{% url 'conferences:status' thesis_id=thesis.pk submission_id=submission.pk %}">{% csrf_token %}{% include "conferences/_form.html" with form=status_form %}
-    <button type="submit">{% translate "Change the status" %}</button>
+    <button type="submit" class="btn-primary">{% translate "Change the status" %}</button>
     <span class="helptext">{% translate "Submitted and published: choose the version sent." %}</span></form>
 </section>
 {% endif %}
@@ -95,12 +93,12 @@
 <section aria-labelledby="preprints-title">
   <h2 id="preprints-title">{% translate "Preprints" %}</h2>
   {% if preprints %}
-  <ul>{% for preprint, url in preprints %}<li>{{ preprint.get_platform_display }}, {{ preprint.posted_on|date:"SHORT_DATE_FORMAT" }} :
+  <ul>{% for preprint, url in preprints %}<li>{{ preprint.get_platform_display }}, {{ preprint.posted_on|date:"SHORT_DATE_FORMAT" }}&nbsp;:
     {% if url.restricted %}{% include "conferences/_text.html" with value=url %}{% else %}{% include "conferences/_external.html" with url=url.text label=url.text %}{% endif %}</li>{% endfor %}</ul>
   {% else %}<p class="muted">{% translate "No preprint." %}</p>{% endif %}
   {% if preprint_form %}
     <form class="stack" method="post" action="{% url 'conferences:preprint' thesis_id=thesis.pk submission_id=submission.pk %}">{% csrf_token %}{% include "conferences/_form.html" with form=preprint_form %}
-      <button type="submit">{% translate "Record the preprint" %}</button></form>
+      <button type="submit" class="btn-primary">{% translate "Record the preprint" %}</button></form>
   {% endif %}
 </section>
 
@@ -108,7 +106,7 @@
 <section aria-labelledby="resubmit-title">
   <h2 id="resubmit-title">{% translate "Submit elsewhere" %}</h2>
   <form class="stack" method="post" action="{% url 'conferences:resubmit' thesis_id=thesis.pk submission_id=submission.pk %}">{% csrf_token %}{% include "conferences/_form.html" with form=resubmit_form %}
-    <button type="submit">{% translate "Create the new submission" %}</button>
+    <button type="submit" class="btn-primary">{% translate "Create the new submission" %}</button>
     <span class="helptext">{% translate "A new ST approval is required: the earlier one is never reused." %}</span></form>
 </section>
 {% endif %}
@@ -117,7 +115,7 @@
 <section aria-labelledby="level-title">
   <h2 id="level-title">{% translate "Confidentiality" %}</h2>
   <form class="stack" method="post" action="{% url 'conferences:level' thesis_id=thesis.pk submission_id=submission.pk %}">{% csrf_token %}{% include "conferences/_form.html" with form=level_form %}
-    <button type="submit">{% translate "Change the confidentiality" %}</button>
+    <button type="submit" class="btn-primary">{% translate "Change the confidentiality" %}</button>
     <span class="muted">{% translate "Asks for your second factor." %}</span></form>
 </section>
 {% endif %}

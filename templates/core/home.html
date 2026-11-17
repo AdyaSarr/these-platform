@@ -1,17 +1,22 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n ui %}
 {% block title %}{% translate "Dashboard" %}{% endblock %}
 {% block content %}
-  <h1>{% translate "Dashboard" %}</h1>
-  <p>{% blocktranslate with name=user.get_short_name|default:user.email %}Welcome, {{ name }}.{% endblocktranslate %}</p>
+  <div class="page-head">
+    <p class="greeting">{% blocktranslate with name=user.get_short_name|default:user.email %}Welcome, {{ name }}.{% endblocktranslate %}</p>
+    <h1>{% translate "Dashboard" %}</h1>
+  </div>
   {% if theses %}
-    <h2>{% translate "My theses" %}</h2>
-    <ul class="stack">
-      {% for thesis in theses %}
-        <li><a href="{% url 'accounts:dashboard' thesis_id=thesis.pk %}">{{ thesis.title }}</a></li>
-      {% endfor %}
-    </ul>
+    <section class="card">
+      <h2 class="card-title">{% icon "graduation-cap" %}{% translate "My theses" %}</h2>
+      <ul class="stack">
+        {% for thesis in theses %}
+          <li><a href="{% url 'accounts:dashboard' thesis_id=thesis.pk %}">{{ thesis.title }}</a></li>
+        {% endfor %}
+      </ul>
+    </section>
   {% else %}
-    <p class="muted">{% translate "You do not have access to any thesis. Access is granted by invitation only." %}</p>
+    {% translate "You do not have access to any thesis. Access is granted by invitation only." as nothing %}
+    {% include "ui/empty.html" with message=nothing %}
   {% endif %}
 {% endblock %}

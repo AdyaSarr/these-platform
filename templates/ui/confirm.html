@@ -1,0 +1,11 @@
+{% load ui %}{# An irreversible action (cancel a meeting, reopen an item...): the summary only opens the panel, the real submit is inside. No script. #}
+<details class="confirm">
+  <summary class="btn btn-danger">{% icon "triangle-alert" %}{{ label }}</summary>
+  <div class="confirm-panel">
+    <p>{{ message }}</p>
+    <form method="post" action="{{ action }}">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">{{ confirm_label }}</button>
+    </form>
+  </div>
+</details>

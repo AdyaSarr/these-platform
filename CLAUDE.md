@@ -98,6 +98,9 @@ la contourner.
 
 - Code, identifiants, commentaires et messages de commit en anglais ; interface en
   français (`gettext`, `LANGUAGE_CODE = "fr-fr"`, `TIME_ZONE = "Europe/Paris"`).
+- Interface : règles de la refonte dans `docs/decisions.md` (2026-11-17) : couches CSS,
+  composants `templates/ui/`, `{% page_header %}`, onglets en `<nav>`, un seul bouton plein
+  par bloc, confirmation `<details>`, plafond CSS de 40 Kio maintenu.
 - Une app Django par module (voir `docs/ARCHITECTURE.md`). Modèles métier hérités de
   `core.TimeStampedModel` ; clés primaires UUID pour tout objet exposé dans une URL.
 - Logique métier dans `services.py`, vues fines, requêtes complexes dans des managers.
@@ -121,6 +124,9 @@ la contourner.
   message n'est construit qu'après cette décision. Un test statique le vérifie.
 - Tests avec pytest et factory-boy ; pour chaque vue, au moins un test autorisé et un
   test refusé par rôle concerné.
+- Un test de non-fuite utilise un témoin qu'aucune valeur produite par hasard ne
+  peut contenir (pas de chiffres seuls ni d'hexadécimal) : par exemple un montant
+  avec virgule ou une chaîne comme `TEMOIN-FUITE-…`.
 - Un test qui enchaîne une opération journalisée (connexion, invitation...) puis une
   opération du coffre (`wrap`, chiffrement MFA, dépôt) doit être en
   `django_db(transaction=True)` : sinon la transaction englobante du test garde le

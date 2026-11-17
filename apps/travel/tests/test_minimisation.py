@@ -53,6 +53,9 @@ LIRMM_DAYS = frozenset(
     {D(2026, 12, 8), D(2026, 12, 9), D(2027, 1, 5), D(2027, 1, 26), D(2027, 3, 2)}
 )
 MONTHS = [(2026, 9), (2026, 12), (2027, 1), (2027, 2), (2027, 3), (2027, 11)]
+NEAR_HIDDEN = [D(2027, 1, d) for d in (21, 22, 25, 27, 28, 29)] + [
+    D(2027, 2, d) for d in (1, 2, 3, 4)
+]
 
 
 @pytest.fixture(autouse=True)
@@ -142,6 +145,33 @@ def _world(team: SimpleNamespace, pattern: str) -> None:
                 mission=mission, user=team.student, category="LODGING", estimated="210"
             )
             services.attach_receipt(expense=line, user=team.student, upload=_pdf())
+    if pattern == "a":
+        # Hidden missions NEARER than the shared one of 12 February, more than the
+        # 8 lines of the « À venir » card: a cut before the filter per viewer would
+        # change what the co-supervisor's card shows.
+        for day in NEAR_HIDDEN:
+            mission_of(
+                team, destination="ROUSSET", payer="ST", start_date=day, end_date=day,
+                purpose=pattern,
+            )  # fmt: skip
+        # Documents the co-supervisor does not read (INTERNAL_ST), more recent than
+        # every other one: the documents card cuts to 3 after the filter per viewer
+        # (frontend step 8b), so theirs must not change.
+        from apps.core.confidentiality import ConfidentialityLevel
+        from apps.vault import services as vault
+        from apps.vault.models import Document
+
+        for n in range(4):
+            hidden = vault.store(
+                thesis=team.thesis,
+                upload=_pdf(),
+                title=f"Document caché fictif {n}",
+                level=ConfidentialityLevel.INTERNAL_ST,
+                user=team.student,
+            )
+            Document.objects.filter(pk=hidden.pk).update(
+                updated_at=NOW + dt.timedelta(hours=1, minutes=n)
+            )
 
 
 def _lirmm(team: SimpleNamespace) -> list[Mission]:
@@ -163,6 +193,11 @@ def _lirmm(team: SimpleNamespace) -> list[Mission]:
         mission=shared[0], user=team.student, category="MEALS", flat_rate=True, estimated="30"
     )
     services.attach_receipt(expense=line, user=team.student, upload=_pdf())
+    # « À venir » card of the dashboard (frontend step 8a): a shared mission the
+    # co-supervisor sees, after the hidden ones of world "a" (_world).
+    shared.append(
+        mission_of(team, payer="LIRMM", start_date=D(2027, 2, 12), end_date=D(2027, 2, 12))
+    )
     return shared
 
 
@@ -331,6 +366,72 @@ def test_the_co_supervisor_cannot_tell_two_worlds_apart(team: SimpleNamespace) -
     assert services_a == services_b
     for target in surfaces:
         assert seen_a[target] == seen_b[target], target
+
+    # Module tabs (apps/ui/tabs.py, frontend step 2): neither the budget nor the
+    # approvals queue for the co-supervisor, on any surface; each one shown to
+    # whoever it is for, or this check would be vacuous.
+    budget = reverse("travel:budget", kwargs={"thesis_id": team.thesis.pk}).encode()
+    orders = reverse("travel:orders", kwargs={"thesis_id": team.thesis.pk}).encode()
+    bars = [_tab_bar(body) for status, _type, body in seen_a.values() if status == 200]
+    tabbed = [nav for nav in bars if nav is not None]
+    assert tabbed
+    assert not any(budget in nav or orders in nav for nav in tabbed)
+    calendar = reverse("travel:calendar", kwargs={"thesis_id": team.thesis.pk})
+    student_tabs = _tab_bar(student_a[calendar][2])
+    assert student_tabs is not None
+    assert budget in student_tabs and orders not in student_tabs
+    for decider in ("director", "tutor"):
+        tabs = _tab_bar(client_for(team, decider).get(calendar).content)
+        assert tabs is not None, decider
+        assert orders in tabs and budget in tabs, decider
+
+    # « À venir » card: cut after the filter per viewer. The student's card is full
+    # of the hidden missions; the co-supervisor's shows theirs, 12 February included.
+    dashboard = reverse("accounts:dashboard", kwargs={"thesis_id": team.thesis.pk})
+    student_agenda = _agenda_card(student_a[dashboard][2])
+    assert student_agenda.count(b'class="agenda-item"') == 8
+    assert "12\u00a0févr.".encode() not in student_agenda
+    co_sup_agenda = _agenda_card(seen_a[dashboard][2])
+    assert "12\u00a0févr.".encode() in co_sup_agenda
+    assert co_sup_agenda.count(b'class="agenda-item"') == 2  # 26 January, 12 February
+
+    # Cards of step 8b (documents, team, conferences): the co-supervisor's are in the
+    # bytes compared above, identical in both worlds; not vacuous: the student's
+    # documents card counts what the co-supervisor does not read.
+    student_docs = _dashboard_card(student_a[dashboard][2], b"documents")
+    co_sup_docs = _dashboard_card(seen_a[dashboard][2], b"documents")
+    assert student_docs != co_sup_docs
+    # The cut to the 3 latest documents comes after the filter per viewer: the
+    # student's latest ones (receipts and orders of hidden missions, stored after
+    # the shared ones) are not on the co-supervisor's card, which still lists theirs.
+    links = re.compile(rb"documents/([0-9a-f-]{36})/")
+    student_latest = links.findall(student_docs)
+    co_sup_latest = links.findall(co_sup_docs)
+    assert len(student_latest) == 3 and co_sup_latest
+    assert not set(student_latest) & set(co_sup_latest)
+    for key in (b"team", b"conferences"):
+        assert _dashboard_card(seen_a[dashboard][2], key) == _dashboard_card(
+            seen_b[dashboard][2], key
+        )
+
+
+def _dashboard_card(body: bytes, key: bytes) -> bytes:
+    match = re.search(
+        rb'<section class="block" data-block="' + key + rb'">.*?</section>', body, re.S
+    )
+    assert match is not None, key
+    return match.group(0)
+
+
+def _agenda_card(body: bytes) -> bytes:
+    match = re.search(rb'<section class="card agenda".*?</section>', body, re.S)
+    assert match is not None
+    return match.group(0)
+
+
+def _tab_bar(body: bytes) -> bytes | None:
+    match = re.search(rb'<nav class="tabs".*?</nav>', body, re.S)
+    return match.group(0) if match else None
 
 
 def test_the_director_cannot_tell_leave_from_any_other_absence_label(

@@ -153,6 +153,10 @@ class RequiredItem(TimeStampedModel):
         "accounts.User", on_delete=models.PROTECT, null=True, related_name="+", editable=False
     )
     validated_at = models.DateTimeField(null=True, editable=False)
+    # When the current cycle was deposited: « en attente de validation depuis X jours »
+    # (frontend step 2). Cleared by a withdrawal, a rejection or a reopening; NULL
+    # for the items deposited before the field existed (no number is shown).
+    submitted_at = models.DateTimeField(null=True, editable=False)
     reason_code = models.CharField(
         max_length=20, choices=Reason.choices, blank=True, editable=False
     )
@@ -193,6 +197,12 @@ class RequiredItem(TimeStampedModel):
             models.CheckConstraint(
                 condition=Q(reason_code="") | Q(reason_code__in=Reason.values),
                 name="admin_file_item_known_reason",
+            ),
+            # A deposit date only while deposited; a deposit without date stays
+            # possible (items deposited before the field, migration 0007).
+            models.CheckConstraint(
+                condition=Q(submitted_at__isnull=True) | Q(status=ItemStatus.SUBMITTED),
+                name="admin_file_item_submitted_at_status",
             ),
             models.CheckConstraint(
                 condition=(Q(status=ItemStatus.VALIDATED) & Q(validated_at__isnull=False))

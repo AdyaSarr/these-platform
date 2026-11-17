@@ -1,11 +1,9 @@
-{% load i18n %}{# data = conferences.services.dashboard_block: no title. #}
-{% if data.deadlines %}
-<ul>
-  {% for d in data.deadlines %}<li>{{ d.deadline.edition.venue.acronym }} {{ d.deadline.edition.year }} — {{ d.deadline.get_kind_display }} : {% include "conferences/_deadline.html" %}</li>{% endfor %}
+{% load i18n %}{# data = conferences.services.dashboard_block: deadlines in « À venir », approvals in the « To deal with » tile; here the submissions by status (submission_counts). #}
+{% if data.by_status %}
+<ul class="card-list">
+  {% for label, count in data.by_status %}<li>{{ label }}&nbsp;: <strong>{{ count }}</strong></li>{% endfor %}
 </ul>
-{% else %}<p class="muted">{% translate "No upcoming deadline for a submission in progress." %}</p>{% endif %}
-{% for submission, due, days in data.request_dues %}
-  <p>{% blocktranslate with date=due|date:"SHORT_DATE_FORMAT" count counter=days %}ST approval to request by {{ date }} (in {{ counter }} day){% plural %}ST approval to request by {{ date }} (in {{ counter }} days){% endblocktranslate %}</p>
-{% endfor %}
-{% if data.pending %}<p><strong>{% blocktranslate count counter=data.pending %}{{ counter }} ST approval awaits your decision{% plural %}{{ counter }} ST approvals await your decision{% endblocktranslate %}</strong></p>{% endif %}
+{% else %}
+<p class="muted">{% translate "No submission yet." %}</p>
+{% endif %}
 <p><a href="{% url 'conferences:deadlines' thesis_id=thesis.pk %}">{% translate "Open the conferences" %}</a></p>

@@ -1,28 +1,105 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n ui %}
 {% block title %}{{ thesis.title }}{% endblock %}
 {% block content %}
-  <h1>{{ thesis.title }}</h1>
+  <p class="greeting">{% blocktranslate with name=user.first_name|default:user.email %}Hello {{ name }}{% endblocktranslate %}</p>
+  {# The status line stays a <p class="muted"> of its own: apps/accounts/tests/test_thesis_status_label.py reads it. #}
+  {% page_header %}{{ thesis.title }}{% endpage_header %}
   <p class="muted">
     {{ thesis.get_status_display }} ·
-    {% translate "CIFRE effective date" %} : {{ thesis.cifre_start_date|date:"j F Y" }} ·
-    {% translate "First enrolment" %} : {{ thesis.first_enrollment_date|date:"j F Y" }}
+    {% translate "CIFRE effective date" %}&nbsp;: {{ thesis.cifre_start_date|date:"j F Y" }} ·
+    {% translate "First enrolment" %}&nbsp;: {{ thesis.first_enrollment_date|date:"j F Y" }}
   </p>
-  {# data = admin_file.services.setup_explanation: only for a SETUP thesis. #}
+  {# data = admin_file.services.setup_explanation: only for a SETUP thesis. Only « Open the file » is a link (docs/ui-notes.md). #}
   {% if setup %}
-    <p class="status-help">
-      {% blocktranslate asvar becomes with status=thesis.Status.ACTIVE.label %}The thesis will become “{{ status }}” when the mandatory items of the administrative file are validated{% endblocktranslate %}
-      {% if setup.progress is None %}{{ becomes }}.{% else %}<a href="{% url 'admin_file:file' thesis_id=thesis.pk %}">{{ becomes }}</a>
-        ({{ setup.progress.validated }} / {{ setup.progress.total }}{% if setup.partial %} {% translate "that you see" %}{% endif %}).{% endif %}
-    </p>
+    <div class="alert alert-info">{% icon "info" %}
+      <p class="status-help">
+        {% blocktranslate asvar becomes with status=thesis.Status.ACTIVE.label %}The thesis will become “{{ status }}” when the mandatory items of the administrative file are validated{% endblocktranslate %}
+        {% if setup.progress is None %}{{ becomes }}.{% else %}{{ becomes }}
+          ({{ setup.progress.validated }} / {{ setup.progress.total }}{% if setup.partial %} {% translate "that you see" %}{% endif %}).
+          <a href="{% url 'admin_file:file' thesis_id=thesis.pk %}">{% translate "Open the file" %}</a>{% endif %}
+      </p>
+    </div>
   {% endif %}
-  {# Each block was filtered by its own action in the view: never in this template. #}
+
+  {# Tiles re-read the data of the blocks below, already filtered by their own action (apps/ui/tiles.py). #}
+  {% dashboard_tiles blocks as tiles %}
+  {% if tiles %}
+    <h2 class="visually-hidden">{% translate "At a glance" %}</h2>
+    <ul class="tiles">
+      {% if tiles.file %}
+        <li class="tile" data-tile="file">
+          <span class="tile-label">{% icon "folder-open" %}{% translate "Administrative file" %}</span>
+          <span class="tile-value">{{ tiles.file.percent }}&nbsp;%</span>
+          <progress value="{{ tiles.file.validated }}" max="{{ tiles.file.total }}" aria-hidden="true"></progress>
+          <p class="tile-detail">{% blocktranslate with validated=tiles.file.validated total=tiles.file.total %}{{ validated }} / {{ total }} mandatory items validated{% endblocktranslate %}</p>
+          <a href="{% url 'admin_file:file' thesis_id=thesis.pk %}">{% translate "Open the file" %}</a>
+        </li>
+      {% endif %}
+      {% if tiles.objectives is not None %}
+        <li class="tile" data-tile="objectives">
+          <span class="tile-label">{% icon "target" %}{% translate "Weighted attainment" %}</span>
+          <span class="tile-value">{% if tiles.objectives.attainment is None %}—{% else %}{{ tiles.objectives.attainment }}&nbsp;%{% endif %}</span>
+          <p class="tile-detail">{% if tiles.objectives.year %}{% blocktranslate with number=tiles.objectives.year.number %}Year {{ number }}{% endblocktranslate %} · {% blocktranslate with overdue=tiles.objectives.overdue drafts=tiles.objectives.drafts %}{{ overdue }} overdue, {{ drafts }} awaiting approval{% endblocktranslate %}{% else %}{% translate "No objective yet." %}{% endif %}</p>
+          <a href="{% url 'objectives:dashboard' thesis_id=thesis.pk %}">{% translate "Open the objectives" %}</a>
+        </li>
+      {% endif %}
+      {% if tiles.meeting is not None %}
+        <li class="tile" data-tile="meeting">
+          <span class="tile-label">{% icon "calendar-days" %}{% translate "Next meeting" %}</span>
+          {% with meeting=tiles.meeting.next_meeting %}
+            {% if meeting %}
+              <span class="tile-value">{{ meeting.starts_at|short_date }}</span>
+              <p class="tile-detail">{{ meeting.starts_at|time:"H:i" }} · {{ meeting.get_kind_display }}{% if not tiles.meeting.next_is_mine %} ({% translate "you do not attend" %}){% endif %}</p>
+              <a href="{% url 'meetings:detail' thesis_id=thesis.pk meeting_id=meeting.pk %}">{% translate "See the meeting" %}</a>
+            {% else %}
+              <span class="tile-value">—</span>
+              <p class="tile-detail">{% translate "No upcoming meeting." %}</p>
+              <a href="{% url 'meetings:list' thesis_id=thesis.pk %}">{% translate "Open the meetings" %}</a>
+            {% endif %}
+          {% endwith %}
+        </li>
+      {% endif %}
+      {% if tiles.alerts %}
+        <li class="tile tile-alerts" data-tile="alerts">
+          <span class="tile-label">{% icon "bell" %}{% translate "To deal with" %}</span>
+          <span class="tile-value">{{ tiles.alerts.total }}</span>
+          {% if tiles.alerts.parts %}
+            {# One explicit line per kind, then one link per element (review A); a sealed title was opened by the Meetings card. #}
+            <ul class="tile-detail alert-list">
+              {% for name, counter, items in tiles.alerts.parts %}
+                <li>
+                  <strong>{% if name == "actions_overdue" %}{% blocktranslate count counter=counter %}{{ counter }} overdue meeting action{% plural %}{{ counter }} overdue meeting actions{% endblocktranslate %}{% elif name == "conference_decisions" %}{% blocktranslate count counter=counter %}{{ counter }} ST approval to decide{% plural %}{{ counter }} ST approvals to decide{% endblocktranslate %}{% elif name == "mission_decisions" %}{% blocktranslate count counter=counter %}{{ counter }} mission approval to decide{% plural %}{{ counter }} mission approvals to decide{% endblocktranslate %}{% elif name == "missing_receipts" %}{% blocktranslate count counter=counter %}{{ counter }} mission with missing receipts{% plural %}{{ counter }} missions with missing receipts{% endblocktranslate %}{% endif %}</strong>
+                  <ul>
+                    {% for item in items %}
+                      {% if name == "actions_overdue" %}{% with action=item.0 title=item.1 %}<li><a href="{% url 'meetings:detail' thesis_id=thesis.pk meeting_id=action.meeting_id %}">{% include "meetings/_text.html" with value=title %}</a> · {% translate "due" context "before a date" %} {{ action.due_date|short_date }}</li>{% endwith %}
+                      {% elif name == "conference_decisions" %}<li><a href="{% url 'conferences:submission' thesis_id=thesis.pk submission_id=item.submission_id %}">{{ item.submission.venue.acronym }}{% if item.submission.edition %} {{ item.submission.edition.year }}{% endif %}</a> · {{ item.get_purpose_display }}</li>
+                      {% elif name == "mission_decisions" %}<li><a href="{% url 'travel:mission' thesis_id=thesis.pk mission_id=item.mission_id %}">{{ item.snapshot_start|short_date }} – {{ item.snapshot_end|short_date }}</a> · {{ item.get_snapshot_destination_display }}</li>
+                      {% elif name == "missing_receipts" %}<li><a href="{% url 'travel:mission' thesis_id=thesis.pk mission_id=item.pk %}">{{ item.start_date|short_date }} – {{ item.end_date|short_date }}</a> · {{ item.get_destination_display }}</li>
+                      {% endif %}
+                    {% endfor %}
+                  </ul>
+                </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <p class="tile-detail">{% include "ui/badge.html" with tone="success" label=_("Nothing to report") %}</p>
+          {% endif %}
+        </li>
+      {% endif %}
+    </ul>
+  {% endif %}
+
+  {% dashboard_agenda blocks as agenda %}
+  {% include "ui/agenda.html" %}
+
+  {# Each block was filtered by its own action in the view: never in this template. A block without a card (block.card False) only feeds the tiles. #}
   <div class="blocks">
-    {% for block, data in blocks %}
+    {% for block, data in blocks %}{% if block.card %}
       <section class="block" data-block="{{ block.key }}">
-        <h2>{{ block.title }}</h2>
+        <h2>{% block_icon block.key %}{{ block.title }}</h2>
         {% include block.template with data=data %}
       </section>
-    {% endfor %}
+    {% endif %}{% endfor %}
   </div>
 {% endblock %}

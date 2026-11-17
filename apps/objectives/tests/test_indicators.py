@@ -82,8 +82,8 @@ def test_the_card_equals_the_current_month_point(time_machine: Any) -> None:
             reverse("objectives:dashboard", kwargs={"thesis_id": team.thesis.pk})
         ).content.decode()
     )
-    card = re.search(r"<dt>Avancement moyen pondéré</dt>\s*<dd>(\d+) %", page)
-    last_row = re.findall(r'<th scope="row">[^<]+</th><td>(\d+) %</td>', page)
+    card = re.search(r"<dt>Avancement moyen pondéré</dt>\s*<dd>(\d+)\u00a0%", page)
+    last_row = re.findall(r'<th scope="row">[^<]+</th><td>(\d+)\u00a0%</td>', page)
     assert card is not None and last_row
     assert card.group(1) == last_row[-1] == "68"
 

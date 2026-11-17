@@ -1,9 +1,9 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}{% load i18n ui %}
 {% block title %}{% translate "Travel budget" %}{% endblock %}
 {% block content %}
-{% include "travel/_nav.html" %}
-<h1>{% translate "Travel budget" %} — {{ year }}</h1>
-<ul class="years">{% for y, link in years %}<li>{% if y == year %}<strong>{{ y }}</strong>{% else %}<a href="{{ link }}">{{ y }}</a>{% endif %}</li>{% endfor %}</ul>
+{% module_tabs "travel" %}
+{% page_header %}{% translate "Travel budget" %} — {{ year }}{% endpage_header %}
+<nav class="segmented" aria-label="{% translate 'Years' %}">{% for y, link in years %}<a class="segment" href="{{ link }}"{% if y == year %} aria-current="page"{% endif %}>{{ y }}</a>{% endfor %}</nav>
 <p class="muted">{% translate "Calendar year of the departure. Committed: the estimates of the missions not cancelled nor refused; actual: their actual amounts." %}</p>
 <table class="table">
   <thead><tr><th scope="col">{% translate "Payer" %}</th><th scope="col">{% translate "Budget" %}</th><th scope="col">{% translate "Committed" %}</th><th scope="col">{% translate "Actual" %}</th><th scope="col">{% translate "of which conferences (committed / actual)" %}</th></tr></thead>
@@ -18,7 +18,7 @@
 {% if form %}
 <h2>{% translate "Set a budget" %}</h2>
 <form class="stack" method="post" action="{% url 'travel:set_budget' thesis_id=thesis.pk %}">{% csrf_token %}{% include "conferences/_form.html" %}
-  <button type="submit">{% translate "Save the budget" %}</button>
+  <button type="submit" class="btn-primary">{% translate "Save the budget" %}</button>
   <span class="muted">{% translate "Asks for your second factor. The amount is sealed and never written in the audit log." %}</span></form>
 {% endif %}
 {% endblock %}

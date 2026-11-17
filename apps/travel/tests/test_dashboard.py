@@ -40,6 +40,23 @@ def _dashboard(team: SimpleNamespace, role: str) -> str:
     return "" if start < 0 else html[start : html.find("</section>", start)]
 
 
+def _page(team: SimpleNamespace, role: str) -> str:
+    """The whole dashboard: the tiles carry the counts the card carried (step 8a)."""
+    response = client_for(team, role).get(
+        reverse("accounts:dashboard", kwargs={"thesis_id": team.thesis.pk})
+    )
+    assert response.status_code == 200
+    return unescape(response.content.decode())
+
+
+def _agenda(team: SimpleNamespace, role: str) -> str:
+    """The « À venir » card: the next missions moved there (frontend step 8a)."""
+    html = _page(team, role)
+    start = html.find('<section class="card agenda"')
+    assert start >= 0
+    return html[start : html.find("</section>", start)]
+
+
 # =========================================================================== card
 
 
@@ -58,22 +75,26 @@ def test_the_next_mission_without_its_purpose(team: SimpleNamespace) -> None:
         end_date=D(2027, 3, 2),
     )
     mission_of(team, destination="LIRMM", start_date=D(2027, 2, 8), end_date=D(2027, 2, 9))
-    card = _dashboard(team, "student")
-    assert "08/02/2027" in card and "LIRMM" in card and secret not in card
+    agenda = _agenda(team, "student")
+    assert "8\u00a0févr." in agenda and "LIRMM" in agenda
+    assert secret not in _page(team, "student")
 
 
 def test_the_co_supervisor_sees_the_next_lirmm_mission_only(team: SimpleNamespace) -> None:
     mission_of(team, destination="ROUSSET", start_date=D(2027, 1, 25), end_date=D(2027, 1, 25))
     mission_of(team, destination="LIRMM", start_date=D(2027, 2, 8), end_date=D(2027, 2, 9))
-    card = _dashboard(team, "co_supervisor")
-    assert "08/02/2027" in card and "25/01/2027" not in card and "Rousset" not in card
+    agenda = _agenda(team, "co_supervisor")
+    assert "8\u00a0févr." in agenda and "25\u00a0janv." not in agenda and "Rousset" not in agenda
 
 
 def test_pending_approvals_for_the_decider(team: SimpleNamespace) -> None:
     order_mission = mission_of(team, payer="ST")
     services.request_order(mission=order_mission, user=team.student, estimated_total="1")
-    assert "1 accord de mission attend votre décision" in _dashboard(team, "tutor")
-    assert "attend votre décision" not in _dashboard(team, "director")
+    tutor = _page(team, "tutor")
+    assert "1 accord de mission à décider" in tutor
+    # The negative looks for a text that exists: the same words on the tutor's page.
+    assert "accord de mission à décider" in tutor
+    assert "accord de mission à décider" not in _page(team, "director")
 
 
 def test_the_split_alert_but_not_for_the_co_supervisor(team: SimpleNamespace) -> None:
@@ -94,9 +115,18 @@ def test_the_budget_for_its_readers_only(team: SimpleNamespace) -> None:
     services.set_budget(
         thesis=team.thesis, user=team.tutor, payer="ST", year=2027, amount="4000", recent_mfa=True
     )
-    assert "4\u00a0000,00\u00a0€" in _dashboard(team, "tutor")
-    for role in ("director", "co_supervisor"):
-        assert "4\u00a0000,00" not in _dashboard(team, role), role
+    # The budgets left the dashboard (one sealed read per display, frontend step 8a):
+    # no amount there for anyone; the Budget tab shows it to its reader only.
+    for role in ("student", "director", "co_supervisor", "tutor"):
+        assert "4\u00a0000,00" not in _page(team, role), role
+    budget = reverse("travel:budget", kwargs={"thesis_id": team.thesis.pk}) + "?year=2027"
+    tutor = client_for(team, "tutor").get(budget)
+    assert tutor.status_code == 200 and "4\u00a0000,00\u00a0€" in unescape(tutor.content.decode())
+    director = client_for(team, "director").get(budget)
+    assert director.status_code == 200 and "4\u00a0000,00" not in unescape(
+        director.content.decode()
+    )
+    assert client_for(team, "co_supervisor").get(budget).status_code == 403
 
 
 def test_missing_receipts_for_the_student(team: SimpleNamespace, time_machine: Any) -> None:
@@ -106,7 +136,7 @@ def test_missing_receipts_for_the_student(team: SimpleNamespace, time_machine: A
     time_machine.move_to(dt.datetime(2027, 2, 15, 9, 0, tzinfo=dt.UTC), tick=False)
     services.mark_done(mission=mission, user=team.student)
     services.add_expense(mission=mission, user=team.student, category="TRANSPORT", actual="10")
-    assert "1 mission avec des justificatifs manquants" in _dashboard(team, "student")
+    assert "1 mission avec des justificatifs manquants" in _page(team, "student")
 
 
 # =========================================================================== M5, M6

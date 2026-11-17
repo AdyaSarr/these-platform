@@ -349,6 +349,7 @@ def submit(
             raise ValidationError(_("This item needs an attachment."), code="attachment")
         locked.cycle += 1
         locked.submitted_by = user
+        locked.submitted_at = timezone.now()
         locked.reason_code = ""
         locked.reason_comment = ""
         try:
@@ -377,6 +378,7 @@ def withdraw(*, item: RequiredItem, user: User) -> RequiredItem:
         _require_writer(user, locked)
         before = locked.status
         locked.status = target(before, Event.WITHDRAW)
+        locked.submitted_at = None
         locked.save()
         audit(
             AuditAction.ADMIN_ITEM_WITHDRAWN,
@@ -447,6 +449,7 @@ def approve(*, item: RequiredItem, user: User) -> RequiredItem:
         if complete:
             locked.status = final
             locked.validated_at = timezone.now()
+            locked.submitted_at = None  # CHECK admin_file_item_submitted_at_status
             locked.save()
             thesis = locked.thesis
             if thesis.status == Thesis.Status.SETUP and _all_mandatory_validated(thesis):
@@ -491,6 +494,7 @@ def reject(*, item: RequiredItem, user: User, reason: Any, comment: str = "") ->
         before = locked.status
         locked.status = target(before, Event.REJECT)
         locked.reason_code, locked.reason_comment = code, comment
+        locked.submitted_at = None
         locked.save()
         audit(
             AuditAction.ADMIN_ITEM_REJECTED,
@@ -547,6 +551,7 @@ def reopen(*, item: RequiredItem, user: User, reason: Any, comment: str = "") ->
         if validated_at is None:  # impossible once VALIDATED (database constraint)
             raise InvalidTransitionError("a validated item has a validation time")
         locked.validated_at = None
+        locked.submitted_at = None
         locked.reason_code, locked.reason_comment = code, comment
         locked.save()
         reopening = ItemReopening.objects.create(
@@ -701,9 +706,45 @@ def setup_explanation(request: Any, thesis: Thesis) -> SetupExplanation | None:
     return SetupExplanation(progress=seen, partial=seen.total < every)
 
 
+@dataclass(frozen=True)
+class NextItem:
+    item: RequiredItem
+    label: str
+    overdue: bool  # still to deposit (TODO, REJECTED) and past its due date
+    waiting_days: int | None  # deposited: days since (None: before submitted_at existed)
+
+
+def next_items(user: Any, thesis: Thesis, *, limit: int = 3) -> list[NextItem]:
+    """The next items of the file THIS user sees (visible_items: the tutor sees the
+    CIFRE part), not validated: overdue to deposit first, then by due date (none
+    last). Read only; cut after the filter, never before (a hidden item never
+    changes what a viewer gets)."""
+    if not can(user, Action.CIFRE_FILE_READ, thesis):
+        _audit_denial(user, "next_items", "missing_right", thesis=thesis)
+        raise PermissionDenied
+    today = timezone.localdate()
+    rows = []
+    for item in visible_items(user, thesis).exclude(status=ItemStatus.VALIDATED):
+        status = ItemStatus(item.status)
+        overdue = (
+            item.due_date is not None
+            and status in (ItemStatus.TODO, ItemStatus.REJECTED)
+            and item.due_date < today
+        )
+        waiting = None
+        if status == ItemStatus.SUBMITTED and item.submitted_at is not None:
+            waiting = (today - timezone.localdate(item.submitted_at)).days
+        rows.append(NextItem(item, label_of(item), overdue, waiting))
+    rows.sort(key=lambda r: (not r.overdue, r.item.due_date or dt.date.max, r.label))
+    return rows[:limit]
+
+
 def dashboard_context(request: Any, thesis: Thesis) -> dict[str, Any]:
     """Data of the dashboard block (accounts.views.DASHBOARD_BLOCKS)."""
-    return {"progress": progress(request.user, thesis)}
+    return {
+        "progress": progress(request.user, thesis),
+        "next": next_items(request.user, thesis),
+    }
 
 
 # --------------------------------------------------------------------------- edits

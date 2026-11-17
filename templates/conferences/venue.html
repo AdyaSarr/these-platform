@@ -1,9 +1,8 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}{% load i18n ui %}
 {% block title %}{% translate "Venue" %}{% endblock %}
 {% block content %}
-<p><a href="{% url 'conferences:deadlines' thesis_id=thesis.pk %}">{% translate "Conferences" %}</a></p>
-<h1>{{ venue.acronym }} — {{ venue.name }}</h1>
-<p class="muted">{{ venue.get_kind_display }}{% if venue.url %} · {% include "conferences/_external.html" with url=venue.url label=venue.url %}{% endif %}</p>
+{% module_tabs "conferences" %}
+{% page_header %}{{ venue.acronym }} — {{ venue.name }}{% subtitle %}{{ venue.get_kind_display }}{% if venue.url %} · {% include "conferences/_external.html" with url=venue.url label=venue.url %}{% endif %}{% endpage_header %}
 {% if not venue.is_journal %}
 <section aria-labelledby="editions-title">
   <h2 id="editions-title">{% translate "Editions" %}</h2>
@@ -11,7 +10,7 @@
   {% else %}<p class="muted">{% translate "No edition yet." %}</p>{% endif %}
   {% if edition_form %}
     <form class="stack" method="post" action="{% url 'conferences:new_edition' thesis_id=thesis.pk venue_id=venue.pk %}">{% csrf_token %}{% include "conferences/_form.html" with form=edition_form %}
-      <button type="submit">{% translate "Add the edition" %}</button></form>
+      <button type="submit" class="btn-primary">{% translate "Add the edition" %}</button></form>
   {% endif %}
 </section>
 {% endif %}
@@ -19,7 +18,7 @@
 <section aria-labelledby="edit-title">
   <h2 id="edit-title">{% translate "Edit the venue" %}</h2>
   <form class="stack" method="post">{% csrf_token %}{% include "conferences/_form.html" %}
-    <button type="submit">{% translate "Save" %}</button></form>
+    <button type="submit" class="btn-primary">{% translate "Save" %}</button></form>
 </section>
 {% endif %}
 {% endblock %}

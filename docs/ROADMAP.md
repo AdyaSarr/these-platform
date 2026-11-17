@@ -15,6 +15,7 @@ critères d'acceptation de la fiche tous validés.
 | [x] | M6 — Conférences et soumissions | `modules/M06-conferences.md` | M1 | févr. 2027 |
 | | **MVP — mise en service avec les encadrants** | | M0–M6 | **mars 2027** |
 | [x] | M7 — Déplacements et temps ST / LIRMM | `modules/M07-deplacements.md` | M1 | printemps 2027 |
+| [ ] | Activité et notifications (prochain module après la refonte visuelle) | fiche à écrire | M2–M7 | après le frontend |
 | [ ] | M8 — Rapports CSI et ANRT | `modules/M08-rapports.md` | M4, M5, M9 | avant mars 2028 |
 | [ ] | M9 — Portfolio, formations, publications | `modules/M09-portfolio.md` | M2 | été 2027 |
 | [ ] | M10 — Bout en bout et signatures post-quantiques | `modules/M10-e2e-pq.md` | M2 | 2028 |
@@ -85,3 +86,13 @@ Idées validées, sans module ni date pour l'instant.
   2026-11-14, un échec « CSRF cookie not set » dans Safari venait du réglage
   « Bloquer tous les cookies », pas de la plateforme : la piste `SameSite` n'a pas
   été démontrée, et la prod n'a pas été changée.
+
+- **Activité et notifications** (prochain module après la refonte visuelle ; remplace
+  « Activité récente sur le tableau de bord », écartée de l'étape 8 le 2026-11-16) :
+  une source d'événements filtrée par lecteur (nouveau document ou nouvelle version,
+  document lié à une réunion ou une soumission, pièce déposée, compte rendu publié…),
+  une cloche dans l'en-tête avec les nouveautés depuis la dernière visite, et un
+  récapitulatif quotidien par courriel, facultatif (un lien seulement, CLAUDE.md
+  règle 7). Chaque destinataire n'est prévenu que de ce qu'il peut lire, avec la règle
+  de « À venir » : filtrer d'abord, couper ensuite. Le journal d'audit n'est pas la
+  source affichée : il trace aussi des connexions et des lectures `CONFIDENTIAL`.

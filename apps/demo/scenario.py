@@ -243,6 +243,25 @@ def _at(anchor: dt.date, k: int, day: int, hour: int) -> dt.datetime:
     return timezone.make_aware(moment)  # Europe/Paris (TIME_ZONE)
 
 
+def working_day(day: dt.date, *, back: bool) -> dt.date:
+    """``day``, or the nearest working day (Monday to Friday): back to the Friday
+    for a past date (it stays before what follows it in the scenario), on to the
+    Monday for a future one (it stays to come)."""
+    step = dt.timedelta(days=-1 if back else 1)
+    while day.weekday() >= 5:
+        day += step
+    return day
+
+
+def working_week_start(start: dt.date, length: int, *, back: bool) -> dt.date:
+    """A start such that the ``length`` days from it are all working days: moved
+    back (past mission) or on (future mission), one day at a time."""
+    step = dt.timedelta(days=-1 if back else 1)
+    while any((start + dt.timedelta(days=n)).weekday() >= 5 for n in range(length)):
+        start += step
+    return start
+
+
 def anchor_for(today: dt.date) -> dt.date:
     """The CIFRE start of the demonstration: first day of the month 5 months ago."""
     return _month(today.replace(day=1), -5)
@@ -319,6 +338,18 @@ class _Run:
 
     def at(self, k: int, day: int, hour: int) -> dt.datetime:
         return _at(self.anchor, k, day, hour)
+
+    def meeting_at(self, k: int, day: int, hour: int) -> dt.datetime:
+        """A past meeting's start, on a working day (never a weekend, point 13)."""
+        moment = dt.datetime.combine(
+            working_day(_day(self.anchor, k, day), back=True), dt.time(hour)
+        )
+        return timezone.make_aware(moment)
+
+    def past_range(self, k: int, day: int, length: int) -> dict[str, dt.date]:
+        """A past mission's dates, all within one working week."""
+        start = working_week_start(_day(self.anchor, k, day), length, back=True)
+        return {"start_date": start, "end_date": start + dt.timedelta(days=length - 1)}
 
     def month_end(self, k: int) -> dt.datetime:
         return self.at(k, 31, 18)
@@ -574,7 +605,8 @@ class _Run:
         today = timezone.localdate(self.real_now)
 
         def on(days: int, hour: int) -> dt.datetime:
-            day = today + dt.timedelta(days=days)
+            # Never a weekend: on to the Monday (it stays to come).
+            day = working_day(today + dt.timedelta(days=days), back=False)
             return timezone.make_aware(dt.datetime.combine(day, dt.time(hour)))
 
         self.meeting(
@@ -790,12 +822,10 @@ class _Run:
         )
 
     def lab_mission(self) -> None:
-        a = self.anchor
         self._mission(
             "lab",
             [("TRANSPORT", "95", False), ("LODGING", "180", False), ("MEALS", "45", True)],
-            start_date=_day(a, 1, 14),
-            end_date=_day(a, 1, 16),
+            **self.past_range(1, 14, 3),
             destination="LIRMM",
             payer="LIRMM",
             transports=["TRAIN", "URBAN_TRANSIT"],
@@ -829,12 +859,10 @@ class _Run:
         )
 
     def refused_mission(self) -> None:
-        a = self.anchor
         self._mission(
             "refused",
             [("TRANSPORT", "95", False)],
-            start_date=_day(a, 2, 6),
-            end_date=_day(a, 2, 7),
+            **self.past_range(2, 6, 2),
             destination="LIRMM",
             payer="ST",
             purpose="Séjour fictif demandé sur le budget ST (démonstration).",
@@ -843,12 +871,10 @@ class _Run:
         self._request("refused", "95")
 
     def conference_mission(self) -> None:
-        a = self.anchor
         self._mission(
             "sfca",
             [("REGISTRATION", "350", False), ("LODGING", "240", False), ("MEALS", "60", True)],
-            start_date=_day(a, 4, 9),
-            end_date=_day(a, 4, 11),
+            **self.past_range(4, 9, 3),
             destination="CONFERENCE",
             edition=self.editions["sfca"],
             submission=self.submissions["a"],
@@ -870,7 +896,9 @@ class _Run:
 
     def pending_mission(self) -> None:
         """A mission to the LIRMM paid by ST in ten days: its approval awaits the tutor."""
-        start = timezone.localdate(self.real_now) + dt.timedelta(days=10)
+        start = working_week_start(
+            timezone.localdate(self.real_now) + dt.timedelta(days=10), 2, back=False
+        )
         self._mission(
             "pending",
             [("TRANSPORT", "95", False)],
@@ -921,7 +949,9 @@ class _Run:
         s(
             "meeting-tutor",
             at(1, 5, 10),
-            lambda: self.meeting("tutor", Role.PHD_STUDENT, at(1, 12, 14), **TUTOR_MEETING),
+            lambda: self.meeting(
+                "tutor", Role.PHD_STUDENT, self.meeting_at(1, 12, 14), **TUTOR_MEETING
+            ),
             lambda: self.agenda("tutor", Role.PHD_STUDENT, TUTOR_AGENDA),
         )
         s(
@@ -995,7 +1025,7 @@ class _Run:
             "meeting-tripartite",
             at(2, 1, 10),
             lambda: self.meeting(
-                "tripartite", Role.PHD_STUDENT, at(2, 20, 10), **TRIPARTITE_MEETING
+                "tripartite", Role.PHD_STUDENT, self.meeting_at(2, 20, 10), **TRIPARTITE_MEETING
             ),
             lambda: self.agenda("tripartite", Role.PHD_STUDENT, TRIPARTITE_AGENDA),
         )
@@ -1058,7 +1088,9 @@ class _Run:
         s(
             "seminar",
             at(3, 1, 10),
-            lambda: self.meeting("seminar", Role.PHD_STUDENT, at(3, 14, 14), **SEMINAR),
+            lambda: self.meeting(
+                "seminar", Role.PHD_STUDENT, self.meeting_at(3, 14, 14), **SEMINAR
+            ),
         )
         s("side-objective", at(3, 10, 10), lambda: self.create_objectives(SIDE_TOOL))
         s("side-objective-approved", at(3, 11, 9), lambda: self.approve_objective("tool"))

@@ -112,7 +112,8 @@ def _rendered_blocks(html: str) -> set[str]:
 def test_dashboard_shows_exactly_the_blocks_the_role_may_see(client: Client, role: Role) -> None:
     m = _login(client, role)
     html = client.get(_url("dashboard", m)).content.decode()
-    expected = {b.key for b in DASHBOARD_BLOCKS if b.action in ROLE_ACTIONS[role]}
+    # card=False: a block that only feeds the tiles (frontend step 8a).
+    expected = {b.key for b in DASHBOARD_BLOCKS if b.action in ROLE_ACTIONS[role] and b.card}
     assert _rendered_blocks(html) == expected
 
 

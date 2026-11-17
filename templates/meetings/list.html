@@ -1,18 +1,14 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}{% load i18n ui %}
 {% block title %}{% translate "Meetings" %}{% endblock %}
 {% block content %}
-<h1>{% translate "Meetings" %}</h1>
-<p><a href="{% url 'accounts:dashboard' thesis_id=thesis.pk %}">{% translate "Back to the thesis" %}</a> ·
-  <a href="{% url 'meetings:register' thesis_id=thesis.pk %}">{% translate "Decision register" %}</a>
-  {% if can_create %} · <a href="{% url 'meetings:new' thesis_id=thesis.pk %}">{% translate "New meeting" %}</a>{% endif %}</p>
+{% module_tabs "meetings" %}
+{% page_header %}{% translate "Meetings" %}{% actions %}{% if can_create %}{% url 'meetings:new' thesis_id=thesis.pk as new_url %}{% include "ui/action.html" with url=new_url label=_("New meeting") icon="plus" primary=True %}{% endif %}{% endpage_header %}
 
-<nav aria-label="{% translate 'Period' %}">
-  <ul class="years">
-    <li>{% if past %}<a href="?when=upcoming{% if kind %}&amp;kind={{ kind }}{% endif %}">{% translate "Upcoming" %}</a>{% else %}<strong aria-current="page">{% translate "Upcoming" %}</strong>{% endif %}</li>
-    <li>{% if past %}<strong aria-current="page">{% translate "Past" %}</strong>{% else %}<a href="?when=past{% if kind %}&amp;kind={{ kind }}{% endif %}">{% translate "Past" %}</a>{% endif %}</li>
-  </ul>
+<nav class="segmented" aria-label="{% translate 'Period' %}">
+  <a class="segment" href="?when=upcoming{% if kind %}&amp;kind={{ kind }}{% endif %}"{% if not past %} aria-current="page"{% endif %}>{% translate "Upcoming" %}</a>
+  <a class="segment" href="?when=past{% if kind %}&amp;kind={{ kind }}{% endif %}"{% if past %} aria-current="page"{% endif %}>{% translate "Past" %}</a>
 </nav>
-<form method="get" class="stack">
+<form class="filter-row" method="get">
   <input type="hidden" name="when" value="{% if past %}past{% else %}upcoming{% endif %}">
   <p><label for="kind-filter">{% translate "Type" %}</label>
     <select name="kind" id="kind-filter">
@@ -32,7 +28,7 @@
       <td>{{ meeting.get_kind_display }}{% if mine %} <span class="mark">{% translate "you attend" %}</span>{% endif %}{% if meeting.is_cancelled %} <strong class="overdue">{% translate "cancelled" %}</strong>{% endif %}</td>
       <td><a href="{% url 'meetings:detail' thesis_id=thesis.pk meeting_id=meeting.pk %}">{% include "meetings/_text.html" with value=title %}</a></td>
       <td>{{ meeting.get_location_display }}</td>
-      <td>{{ meeting.get_level_display }}</td>
+      <td>{% level_badge meeting.level %}</td>
     </tr>
   {% endfor %}
   </tbody>

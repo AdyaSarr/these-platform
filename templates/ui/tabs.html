@@ -1,0 +1,2 @@
+{% load i18n %}{# Sub-sections of a module (apps/ui/tabs.py): links to pages, the current one marked; not an ARIA tablist (no panels in this page). #}
+<nav class="tabs" aria-label="{% blocktranslate with module=module_label %}Sections of {{ module }}{% endblocktranslate %}"><ul>{% for tab in tabs %}<li><a class="tab" href="{{ tab.url }}"{% if tab.current %} aria-current="page"{% endif %}>{{ tab.label }}</a></li>{% endfor %}</ul></nav>

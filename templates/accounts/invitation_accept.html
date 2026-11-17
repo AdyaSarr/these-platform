@@ -7,7 +7,7 @@
   <form class="stack" method="post" action="{% url 'invitation_accept' %}">
     {% csrf_token %}
     {{ form.as_div }}
-    <button type="submit">{% translate "Create my account" %}</button>
+    <button type="submit" class="btn-primary">{% translate "Create my account" %}</button>
   </form>
   <p class="muted">{% translate "Next step: set up a second authentication factor (mandatory)." %}</p>
 {% endblock %}

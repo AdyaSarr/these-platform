@@ -1,0 +1,282 @@
+/* Page layout: sidebar (thesis pages only), sticky header, main column.
+
+   Mobile menu: the sidebar is an HTML popover opened by a native button
+   (popovertarget), no script. Browsers without popover support ignore the
+   attribute: there the sidebar stays expanded above the content and the menu
+   button stays hidden. Every rule that hides the sidebar or shows the button
+   is inside @supports selector(:popover-open) (tests/test_ui_static.py). */
+
+@layer layout {
+  .skip-link {
+    position: absolute;
+    inset-inline-start: var(--space-4);
+    inset-block-start: -10rem;
+    z-index: 100;
+    padding: var(--space-2) var(--space-4);
+    background: var(--accent);
+    color: var(--accent-fg);
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .skip-link:focus { inset-block-start: var(--space-3); }
+
+  .app { min-height: 100vh; }
+  .app-with-nav { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .main-col { min-width: 0; display: flex; flex-direction: column; }
+
+  /* ----------------------------------------------------------------- sidebar */
+
+  /* Reset of the browser's popover box: in flow, always visible by default. */
+  .sidebar {
+    display: block;
+    position: static;
+    inset: auto;
+    margin: 0;
+    width: auto;
+    height: auto;
+    max-height: none;
+    overflow: visible;
+    padding: var(--space-4);
+    color: var(--nav-fg);
+    background: var(--sidebar-bg);
+    border: 0;
+    border-block-end: 1px solid var(--border);
+  }
+
+  .sidebar-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    margin-block-end: var(--space-3);
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--fg);
+    font-weight: 700;
+    text-decoration: none;
+    letter-spacing: -0.01em;
+  }
+  .brand .icon { color: var(--accent); width: 1.5rem; height: 1.5rem; }
+
+  .nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 2.5rem;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    color: var(--nav-fg);
+    font-weight: 500;
+    text-decoration: none;
+    border-inline-start: 3px solid transparent;
+  }
+  .nav-link .icon { flex: none; width: 1.25rem; height: 1.25rem; }
+  .nav-link:hover { background: var(--surface-2); color: var(--fg); }
+
+  /* Current page: background, bar and weight, not colour alone (WCAG 1.4.1). */
+  .nav-link[aria-current="page"] {
+    background: var(--accent-soft);
+    color: var(--accent-strong);
+    border-inline-start-color: var(--accent);
+    font-weight: 650;
+  }
+
+  /* Without popover support these buttons would do nothing: hidden. */
+  .nav-toggle { display: none; }
+  .nav-close { display: none; }
+
+  @media (min-width: 64rem) {
+    .app-with-nav { grid-template-columns: var(--sidebar-width) minmax(0, 1fr); }
+    .sidebar {
+      position: sticky;
+      inset-block-start: 0;
+      height: 100vh;
+      overflow-y: auto;
+      padding: var(--space-5) var(--space-3);
+      border-block-end: 0;
+      border-inline-end: 1px solid var(--border);
+    }
+    .sidebar-head { padding-inline: var(--space-3); margin-block-end: var(--space-5); }
+    .nav-list { flex-direction: column; flex-wrap: nowrap; }
+  }
+
+  @supports selector(:popover-open) {
+    @media (max-width: 63.99rem) {
+      .nav-toggle, .nav-close {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--space-2);
+        min-width: 2.75rem;
+        min-height: 2.75rem;
+        padding: var(--space-2) var(--space-3);
+        color: var(--fg);
+        background: var(--surface);
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-sm);
+        cursor: pointer;
+      }
+      .sidebar:not(:popover-open) { display: none; }
+      .sidebar:popover-open {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: min(20rem, 85vw);
+        height: 100%;
+        overflow-y: auto;
+        border-block-end: 0;
+        border-inline-end: 1px solid var(--border);
+        box-shadow: var(--shadow);
+      }
+      .sidebar:popover-open .nav-list { flex-direction: column; flex-wrap: nowrap; }
+      .sidebar::backdrop { background: rgb(15 17 22 / 0.45); }
+    }
+  }
+
+  /* ----------------------------------------------------------------- header */
+
+  /* One line of a fixed height on every screen: base.css adds --header-height to
+     scroll-padding-top, so the sticky header never hides the title a link or the
+     skip link scrolls to (WCAG 2.4.11). Whatever does not fit is truncated or
+     moved into the menu, never wrapped onto a second line. */
+  .site-header {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 10;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: var(--space-3);
+    height: var(--header-height);
+    padding-inline: var(--space-4);
+    background: var(--surface);
+    border-block-end: 1px solid var(--border);
+  }
+  .site-header > * { flex: none; }
+
+  /* Basis 0: the title takes what the tools leave, never the reverse. */
+  .header-thesis {
+    flex: 1 1 0;
+    min-width: 0;
+    margin: 0;
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .header-spacer { flex: 1 1 auto; }
+
+  .header-tools {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    flex: 0 1 auto;
+    gap: var(--space-3);
+    min-width: 0;
+    margin-inline-start: auto;
+  }
+
+  .logout { display: flex; gap: var(--space-3); align-items: center; min-width: 0; margin: 0; }
+  .logout button { flex: none; }
+  .who {
+    min-width: 0;
+    max-width: 16rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--muted);
+    font-size: var(--text-sm);
+  }
+
+  /* Tools at the foot of the menu (narrow screen). */
+  .nav-tools {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+    margin-block-start: var(--space-4);
+    padding-block-start: var(--space-4);
+    border-block-start: 1px solid var(--border);
+  }
+  .nav-tools .logout { flex-wrap: wrap; }
+  .nav-tools .who { max-width: 100%; }
+
+  /* Narrow screen with a menu: the menu button and the short name only. Outside
+     @supports: without popover support the sidebar is expanded and holds the
+     tools too. */
+  @media (max-width: 63.99rem) {
+    .app-with-nav .header-tools { display: none; }
+    .app-with-nav .header-thesis { display: none; }
+    .header-brand { margin-inline-end: auto; }
+  }
+
+  @media (min-width: 64rem) {
+    .nav-tools { display: none; }
+    .header-brand { display: none; }
+  }
+
+  /* The address in the header from 80rem only: below, the thesis title needs the
+     room (the address stays in the menu on a narrow screen). */
+  @media (max-width: 79.99rem) {
+    .header-tools .who { display: none; }
+  }
+
+  /* A page without a menu (list of theses, second factor) keeps its tools in the
+     header. On a phone the logout button shows its icon only, and below 22.5rem
+     the logo too; their names stay for a screen reader. */
+  @media (max-width: 40rem) {
+    .header-tools .logout-label {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  }
+  @media (max-width: 22.49rem) {
+    .site-header, .header-tools { gap: var(--space-2); }
+    .app-plain .site-header .brand span {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+  }
+
+  /* ----------------------------------------------------------------- content */
+
+  .content {
+    width: 100%;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: var(--space-5) var(--space-4) var(--space-7);
+  }
+  .content:focus { outline: none; }
+
+  @media (min-width: 64rem) {
+    .site-header { padding-inline: var(--space-6); }
+    .content { padding: var(--space-6) var(--space-6) var(--space-7); }
+  }
+
+  /* Pages outside a thesis (sign-in, second factor, list of theses). */
+  .app-plain .content { max-width: 40rem; }
+
+  .page-head { margin-block-end: var(--space-5); }
+  .page-head h1 { margin-block-end: var(--space-1); }
+}

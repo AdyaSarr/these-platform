@@ -1,13 +1,14 @@
-{% extends "base.html" %}{% load i18n %}
+{% extends "base.html" %}{% load i18n ui %}
 {% block title %}{% translate "Duplicate the meeting" %}{% endblock %}
 {% block content %}
-<h1>{% translate "Duplicate the meeting" %}</h1>
-<p><a href="{% url 'meetings:detail' thesis_id=thesis.pk meeting_id=meeting.pk %}">{% translate "Back" %}</a></p>
+{% module_tabs "meetings" %}
+{% url 'meetings:detail' thesis_id=thesis.pk meeting_id=meeting.pk as back_url %}
+{% page_header parent_url=back_url parent_label=_("Back") %}{% translate "Duplicate the meeting" %}{% endpage_header %}
 <p class="muted">{% translate "Copies the type, place, duration, confidentiality, attendees and title; never the agenda, minutes, decisions, actions, documents, room or video link." %}</p>
 <form class="stack" method="post">
   {% csrf_token %}
   {{ form.non_field_errors }}
   {% for field in form %}<p>{{ field.label_tag }} {{ field }}{{ field.errors }}</p>{% endfor %}
-  <button type="submit">{% translate "Duplicate" %}</button>
+  <button type="submit" class="btn-primary">{% translate "Duplicate" %}</button>
 </form>
 {% endblock %}
