@@ -18,7 +18,13 @@ from apps.core.db_functions import TsTzRange
 from apps.core.models import TimeStampedModel
 
 from .managers import MembershipQuerySet, ThesisQuerySet, UserManager
-from .roles import CSI_INCOMPATIBLE_ROLES, Role
+from .roles import (
+    COMPANY_SIDE_ROLES,
+    CSI_INCOMPATIBLE_ROLES,
+    LAB_SIDE_ROLES,
+    ROLE_MAX_LENGTH,
+    Role,
+)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
@@ -152,7 +158,7 @@ class Membership(TimeStampedModel):
     organization = models.ForeignKey(
         Organization, on_delete=models.PROTECT, related_name="+", verbose_name=_("organization")
     )
-    role = models.CharField(_("role"), max_length=20, choices=Role.choices)
+    role = models.CharField(_("role"), max_length=ROLE_MAX_LENGTH, choices=Role.choices)
     active_from = models.DateTimeField(_("active from"), default=timezone.now)
     active_until = models.DateTimeField(_("active until"), null=True, blank=True)
 
@@ -205,6 +211,45 @@ class Membership(TimeStampedModel):
                 ],
                 condition=Q(role__in=sorted({Role.CSI_MEMBER, *CSI_INCOMPATIBLE_ROLES})),
             ),
+            # One side of the supervision per person and thesis (docs/decisions.md):
+            # a laboratory row (group 1) and a company row (group 0) of one user and
+            # thesis may not overlap; rows of one side may.
+            ExclusionConstraint(
+                name="accounts_membership_one_supervision_side",
+                expressions=[
+                    ("user", RangeOperators.EQUAL),
+                    ("thesis", RangeOperators.EQUAL),
+                    (_active_period(), RangeOperators.OVERLAPS),
+                    (
+                        Case(
+                            When(role__in=sorted(LAB_SIDE_ROLES), then=Value(1)),
+                            default=Value(0),
+                            output_field=models.IntegerField(),
+                        ),
+                        RangeOperators.NOT_EQUAL,
+                    ),
+                ],
+                condition=Q(role__in=sorted(LAB_SIDE_ROLES | COMPANY_SIDE_ROLES)),
+            ),
+            # The PhD student holds no other role on their own thesis: a student row
+            # (group 1) and any other row (group 0) of one user and thesis may not
+            # overlap (they could validate their own items and objectives).
+            ExclusionConstraint(
+                name="accounts_membership_student_alone",
+                expressions=[
+                    ("user", RangeOperators.EQUAL),
+                    ("thesis", RangeOperators.EQUAL),
+                    (_active_period(), RangeOperators.OVERLAPS),
+                    (
+                        Case(
+                            When(role=Role.PHD_STUDENT, then=Value(1)),
+                            default=Value(0),
+                            output_field=models.IntegerField(),
+                        ),
+                        RangeOperators.NOT_EQUAL,
+                    ),
+                ],
+            ),
         ]
 
     def __str__(self) -> str:
@@ -242,7 +287,7 @@ class Invitation(TimeStampedModel):
         Thesis, on_delete=models.PROTECT, related_name="invitations", verbose_name=_("thesis")
     )
     email = models.EmailField(_("email address"), max_length=254)
-    role = models.CharField(_("role"), max_length=20, choices=Role.choices)
+    role = models.CharField(_("role"), max_length=ROLE_MAX_LENGTH, choices=Role.choices)
     organization = models.ForeignKey(
         Organization, on_delete=models.PROTECT, related_name="+", verbose_name=_("organization")
     )

@@ -14,7 +14,7 @@ holds an independent second transcription and compares them cell by cell.
 from __future__ import annotations
 
 import uuid
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from enum import StrEnum
 from functools import wraps
 from types import MappingProxyType
@@ -149,6 +149,18 @@ ROLE_ACTIONS: Mapping[Role, frozenset[Action]] = MappingProxyType(
                 _A.VALIDATE_ANRT, _A.VALIDATE_PUBLICATION,              # ANRT, publications
             }
         ),
+        # Same row as the LIRMM co-supervisor, on the company side: travel filtered
+        # to Rousset (ST_ONLY), levels PUBLIC and INTERNAL_ST (LEVEL_ROLES below).
+        Role.INDUSTRIAL_CO_SUPERVISOR: frozenset(
+            {
+                _A.VIEW_THESIS, _A.VIEW_TEAM,
+                _A.OBJECTIVE_READ, _A.OBJECTIVE_COMMENT,                # commenter
+                _A.MEETING_READ, _A.MEETING_WRITE, _A.MEETING_ACKNOWLEDGE,  # écrire
+                _A.CONFERENCE_READ, _A.CONFERENCE_WRITE, _A.SUBMISSION_READ,  # M6
+                _A.TRAVEL_READ,                                         # M7: Rousset only
+                _A.DOCUMENT_READ, _A.DOCUMENT_COMMENT,                  # lire, commenter
+            }                                                       # admin : —
+        ),
         Role.CSI_MEMBER: frozenset(
             {
                 _A.VIEW_THESIS,                 # no VIEW_TEAM: outside the supervision
@@ -170,7 +182,9 @@ LEVEL_ROLES: Mapping[ConfidentialityLevel, frozenset[Role]] = MappingProxyType(
     {
         _L.PUBLIC: frozenset(Role),  # tous les membres actifs
         _L.INTERNAL_LIRMM: frozenset({Role.PHD_STUDENT, Role.DIRECTOR, Role.CO_SUPERVISOR}),
-        _L.INTERNAL_ST: frozenset({Role.PHD_STUDENT, Role.INDUSTRIAL_TUTOR}),
+        _L.INTERNAL_ST: frozenset(
+            {Role.PHD_STUDENT, Role.INDUSTRIAL_TUTOR, Role.INDUSTRIAL_CO_SUPERVISOR}
+        ),
         # "+ liste explicite": per-document grants, added in M2.
         _L.CONFIDENTIAL: frozenset({Role.PHD_STUDENT, Role.DIRECTOR, Role.INDUSTRIAL_TUTOR}),
     }
@@ -204,6 +218,11 @@ def _thesis_of(obj: object) -> Thesis | None:
     return None
 
 
+def actions_for(roles: Iterable[Role]) -> frozenset[Action]:
+    """The rights of a set of roles: the union of their rows (no database)."""
+    return frozenset().union(*(ROLE_ACTIONS[role] for role in roles))
+
+
 def can(user: AnyUser, action: Action, obj: Thesis | ThesisOwned) -> bool:
     """Whether ``user`` may perform ``action`` on ``obj`` (a thesis or an object of one)."""
     if not isinstance(action, Action):
@@ -211,14 +230,14 @@ def can(user: AnyUser, action: Action, obj: Thesis | ThesisOwned) -> bool:
     thesis = _thesis_of(obj)
     if thesis is None:
         return False
-    return any(action in ROLE_ACTIONS[role] for role in roles_of(user, thesis))
+    return action in actions_for(roles_of(user, thesis))
 
 
 def allowed_actions(user: AnyUser, thesis: Thesis) -> frozenset[Action]:
     """Every action ``user`` may perform on ``thesis``: one query for a whole page."""
     if _thesis_of(thesis) is None:
         return frozenset()
-    return frozenset().union(*(ROLE_ACTIONS[role] for role in roles_of(user, thesis)))
+    return actions_for(roles_of(user, thesis))
 
 
 def can_access_level(user: AnyUser, thesis: Thesis, level: ConfidentialityLevel) -> bool:

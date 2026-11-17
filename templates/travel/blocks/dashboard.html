@@ -1,6 +1,6 @@
 {% load i18n %}{# data = travel.services.dashboard_block: filtered per viewer (access.py). The next missions are in « À venir », approvals and missing receipts in the « To deal with » tile, the budgets in the Budget tab. #}
 <dl class="stats">
-  <div><dt>{% translate "Days at the LIRMM" %}</dt><dd>{{ data.summary.lirmm_days }}</dd><dd class="helptext">{% blocktranslate with n=data.summary.cifre_year %}CIFRE year {{ n }}{% endblocktranslate %}</dd></div>
+  {% if data.summary.rousset_days is not None %}<div><dt>{% translate "Days at Rousset" %}</dt><dd>{{ data.summary.rousset_days }}</dd>{% else %}<div><dt>{% translate "Days at the LIRMM" %}</dt><dd>{{ data.summary.lirmm_days }}</dd>{% endif %}<dd class="helptext">{% blocktranslate with n=data.summary.cifre_year %}CIFRE year {{ n }}{% endblocktranslate %}</dd></div>
   {% if data.full and data.st_percent is not None %}<div><dt>{% translate "ST share" %}</dt><dd>{{ data.st_percent }}&nbsp;%</dd></div>{% endif %}
   {% if data.full and data.gap is not None %}<div><dt>{% translate "Gap to the target" %}</dt><dd>{% blocktranslate with gap=data.gap %}{{ gap }} points{% endblocktranslate %}</dd>{% if data.summary.alert %}<dd class="helptext overdue">{% translate "Above the alert threshold." %}</dd>{% endif %}</div>{% endif %}
 </dl>

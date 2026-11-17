@@ -31,7 +31,7 @@ from . import tasks
 from .managers import UserManager
 from .models import Invitation, Membership, Organization, Thesis, User
 from .permissions import Action, can, roles_of
-from .roles import CSI_INCOMPATIBLE_ROLES, Role
+from .roles import COMPANY_SIDE_ROLES, CSI_INCOMPATIBLE_ROLES, LAB_SIDE_ROLES, Role
 
 if TYPE_CHECKING:
     from django.http import HttpRequest
@@ -57,11 +57,43 @@ class ThesisCreationError(Exception):
 _MSG_SAME_ROLE = gettext_noop("This person already holds this role on the thesis.")
 _MSG_CSI = gettext_noop("A CSI member cannot also be the PhD student or part of the supervision.")
 
+_MSG_STUDENT_ALONE = gettext_noop("The PhD student cannot hold any other role on their thesis.")
+_MSG_SIDE = gettext_noop(
+    "One person cannot supervise a thesis both on the laboratory side and on the company side."
+)
+
 _CONSTRAINT_MESSAGES = {
     "accounts_membership_no_overlap": _MSG_SAME_ROLE,
     "accounts_membership_one_phd_student": gettext_noop("This thesis already has a PhD student."),
     "accounts_membership_csi_independent": _MSG_CSI,
+    "accounts_membership_student_alone": _MSG_STUDENT_ALONE,
+    "accounts_membership_one_supervision_side": _MSG_SIDE,
 }
+
+
+def _incompatibility(held: frozenset[Role], role: Role) -> str | None:
+    """Why ``role`` cannot join the roles ``held`` on one thesis (the database
+    constraints, said early and clearly), or None. Same role, then the CSI, the
+    student alone, one side of the supervision."""
+    if role in held:
+        return _MSG_SAME_ROLE
+    if (role == Role.CSI_MEMBER and held & CSI_INCOMPATIBLE_ROLES) or (
+        role in CSI_INCOMPATIBLE_ROLES and Role.CSI_MEMBER in held
+    ):
+        return _MSG_CSI
+    if held and (role == Role.PHD_STUDENT or Role.PHD_STUDENT in held):
+        return _MSG_STUDENT_ALONE
+    if (role in LAB_SIDE_ROLES and held & COMPANY_SIDE_ROLES) or (
+        role in COMPANY_SIDE_ROLES and held & LAB_SIDE_ROLES
+    ):
+        return _MSG_SIDE
+    return None
+
+
+def _check_compatible(held: frozenset[Role], role: Role) -> None:
+    message = _incompatibility(held, role)
+    if message is not None:
+        raise TeamError(_(message))
 
 
 def _constraint_name(exc: IntegrityError) -> str | None:
@@ -181,6 +213,8 @@ def change_role(
         now = timezone.now()
         if not _is_active(m, now):
             raise TeamError(_("This membership is not active."))
+        # The other roles the person keeps on the thesis (before anything is closed).
+        _check_compatible(roles_of(m.user, m.thesis) - {Role(m.role)}, new_role)
         m.active_until = now
         m.save(update_fields=["active_until", "updated_at"])
         # If the new row violates a constraint, TeamError leaves this
@@ -245,13 +279,7 @@ def _check_invitee(email: str, thesis: Thesis, role: Role) -> None:
     existing = User.objects.filter(email=email).first()
     if existing is None:
         return
-    held = roles_of(existing, thesis)
-    if role in held:
-        raise TeamError(_(_MSG_SAME_ROLE))
-    if (role == Role.CSI_MEMBER and held & CSI_INCOMPATIBLE_ROLES) or (
-        role in CSI_INCOMPATIBLE_ROLES and Role.CSI_MEMBER in held
-    ):
-        raise TeamError(_(_MSG_CSI))
+    _check_compatible(roles_of(existing, thesis), role)
 
 
 def _create_invitation(
@@ -439,6 +467,8 @@ def check_token(token: str) -> Invitation:
 
 
 def _accept(inv: Invitation, user: User, request: HttpRequest | None) -> Membership:
+    # Early and clear; the database constraints still decide (_create).
+    _check_compatible(roles_of(user, inv.thesis), Role(inv.role))
     m = add_membership(
         user=user,
         thesis=inv.thesis,

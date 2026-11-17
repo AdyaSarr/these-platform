@@ -22,6 +22,7 @@ import pytest
 from django.core import mail
 from django.utils import timezone
 
+from apps.accounts import services as accounts
 from apps.accounts.models import Membership, Thesis
 from apps.accounts.roles import Role
 from apps.accounts.tests.factories import MembershipFactory
@@ -114,8 +115,18 @@ def _end(user: Any, thesis: Thesis) -> None:
 
 
 def _switch(user: Any, thesis: Thesis, role: Role) -> None:
-    _end(user, thesis)
-    MembershipFactory.create(thesis=thesis, user=user, role=role)
+    """``user`` changes role at one instant t: the old membership closes at t, the
+    new one opens at t (no overlap). Through accounts.services.change_role (done by
+    the student, who holds CHANGE_ROLE), except for the student's own role, which
+    the service never changes (M1): then both bounds are set here."""
+    current = Membership.objects.active().get(user=user, thesis=thesis)
+    if current.role == Role.PHD_STUDENT:
+        t = timezone.now()
+        Membership.objects.filter(pk=current.pk).update(active_until=t)
+        MembershipFactory.create(thesis=thesis, user=user, role=role, active_from=t)
+        return
+    student = Membership.objects.active().get(thesis=thesis, role=Role.PHD_STUDENT).user
+    accounts.change_role(current, role, by=student)
 
 
 def _paper(team: SimpleNamespace, **kw: Any) -> tuple[Deadline, Submission]:

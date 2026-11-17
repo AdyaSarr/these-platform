@@ -48,8 +48,14 @@ these-platform/
 - **Thesis** : titre, date d'effet CIFRE, date de 1re inscription, date de fin prévue,
   statut (`SETUP`, `ACTIVE`, `DEFENDED`, `CLOSED`).
 - **Membership** : (user, thesis, role, organization, actif du / au).
-  Rôles : `PHD_STUDENT`, `DIRECTOR`, `CO_SUPERVISOR`, `INDUSTRIAL_TUTOR`,
-  `CSI_MEMBER`, `GUEST`.
+  Rôles : `PHD_STUDENT`, `DIRECTOR`, `CO_SUPERVISOR` (co-encadrant·e LIRMM),
+  `INDUSTRIAL_TUTOR`, `INDUSTRIAL_CO_SUPERVISOR` (co-encadrant·e entreprise),
+  `CSI_MEMBER`, `GUEST`. Plusieurs personnes peuvent tenir un même rôle (sauf
+  `PHD_STUDENT`). Une personne ne tient, sur une thèse et à un instant donné, que
+  des rôles d'un seul côté de l'encadrement : laboratoire (`DIRECTOR`,
+  `CO_SUPERVISOR`) ou entreprise (`INDUSTRIAL_TUTOR`, `INDUSTRIAL_CO_SUPERVISOR`) ;
+  le doctorant ne tient aucun autre rôle sur sa thèse ; un membre du CSI aucun rôle
+  d'encadrement (contraintes en base, `docs/decisions.md`).
 - **ThesisYear** : année n de thèse, double bornage (année CIFRE, année universitaire).
 - **Deadline** : échéance générique (type, date, responsable, objet lié, rappels).
 - **Document** (M2) : métadonnées en clair (titre, niveau, auteur) + contenu chiffré.
@@ -66,6 +72,7 @@ mais le modèle permet d'en accueillir plusieurs (autres doctorants CIFRE plus t
 | DIRECTOR | commenter | écrire | lire, commenter | lire | objectifs, CSI, ANRT |
 | CO_SUPERVISOR | commenter | écrire | lire, commenter | — | — |
 | INDUSTRIAL_TUTOR | commenter | écrire | lire, commenter | partie CIFRE | ANRT, publications |
+| INDUSTRIAL_CO_SUPERVISOR | commenter | écrire | lire, commenter | — | — |
 | CSI_MEMBER | dossier CSI | — | rapport CSI | — | avis CSI |
 | GUEST | — | une réunion | projet partagé | — | — |
 
@@ -75,5 +82,11 @@ Accès à un document = rôle autorisé **ET** niveau compatible :
 |---|---|
 | PUBLIC | tous les membres actifs |
 | INTERNAL_LIRMM | doctorant, directeur, co-encadrants |
-| INTERNAL_ST | doctorant, tuteur industriel |
+| INTERNAL_ST | doctorant, tuteur industriel, co-encadrants entreprise |
 | CONFIDENTIAL | doctorant, directeur, tuteur industriel (+ liste explicite) |
+
+Déplacements (M7) : le co-encadrant LIRMM ne voit que les jours au LIRMM et les
+missions vers le LIRMM ; le co-encadrant entreprise, symétriquement, que les jours
+à Rousset et les missions vers Rousset (ni télétravail, ni conférences, ni congés,
+ni la règle mensuelle des jours au LIRMM). Aucun des deux ne règle un budget ni ne
+décide un ordre de mission.

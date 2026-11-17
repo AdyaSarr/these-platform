@@ -13,7 +13,13 @@ from apps.accounts.models import Membership, Thesis, User
 from apps.accounts.roles import Role
 
 INTERNAL_ROLES = frozenset(
-    {Role.PHD_STUDENT, Role.DIRECTOR, Role.CO_SUPERVISOR, Role.INDUSTRIAL_TUTOR}
+    {
+        Role.PHD_STUDENT,
+        Role.DIRECTOR,
+        Role.CO_SUPERVISOR,
+        Role.INDUSTRIAL_TUTOR,
+        Role.INDUSTRIAL_CO_SUPERVISOR,
+    }
 )
 
 

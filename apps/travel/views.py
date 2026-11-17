@@ -48,7 +48,7 @@ from apps.vault import services as vault
 from apps.vault.errors import ReauthenticationRequiredError
 
 from . import amounts, ics, services
-from .access import PresenceAccess
+from .access import RESTRICTED, PresenceAccess
 from .choices import (
     Destination,
     MissionStatus,
@@ -81,6 +81,7 @@ _LEGEND: dict[PresenceAccess, list[ShownKind]] = {
     PresenceAccess.FULL: [k for k in ShownKind if k != ShownKind.UNAVAILABLE],
     PresenceAccess.NO_LEAVE: [k for k in ShownKind if k != ShownKind.LEAVE],
     PresenceAccess.LIRMM_ONLY: [ShownKind.LIRMM],
+    PresenceAccess.ST_ONLY: [ShownKind.ROUSSET],
 }
 
 
@@ -206,7 +207,7 @@ class SplitView(_Mixin, View):
         context = {
             "thesis": self.thesis,
             "summary": summary,
-            "full": summary.access is not PresenceAccess.LIRMM_ONLY,
+            "full": summary.access not in RESTRICTED,
             "st_percent": _points(summary.st_percent),
             "gap": _points(summary.gap),
             "counts": [

@@ -39,7 +39,7 @@ from apps.vault.models import Document
 from apps.vault.services import audit
 
 from . import amounts, holidays, split
-from .access import PresenceAccess, presence_access
+from .access import RESTRICTED, PresenceAccess, presence_access
 from .choices import (
     FLAT_RATE_CATEGORIES,
     PRESENCE_OF_DESTINATION,
@@ -287,15 +287,17 @@ def visible_days(user: Any, thesis: Thesis, first: dt.date, last: dt.date) -> di
 @dataclass(frozen=True)
 class SplitSummary:
     """The counter of one CIFRE year as one viewer may see it. ``None`` = not shown
-    to this viewer (the co-supervisor gets the LIRMM days only)."""
+    to this viewer (the LIRMM co-supervisor gets the LIRMM days only, the company
+    co-supervisor the Rousset days only)."""
 
     access: PresenceAccess
     cifre_year: int
     year_count: int
     first: dt.date
     last: dt.date  # up to today for the current year
-    lirmm_days: int
+    lirmm_days: int | None
     shown_counts: dict[str, int] = field(default_factory=dict)
+    rousset_days: int | None = None  # the company co-supervisor's only figure
     st_days: int | None = None
     lab_days: int | None = None
     st_percent: Fraction | None = None
@@ -332,6 +334,19 @@ def split_summary(user: Any, thesis: Thesis, *, cifre_year: int | None = None) -
     else:
         counted = split.count(rows, first, last, rules)
     lirmm = counted.by_kind.get(PresenceKind.LIRMM, 0)
+    if access is PresenceAccess.ST_ONLY:
+        # Only Rousset rows were fetched: nothing else exists for this viewer.
+        rousset = counted.by_kind.get(PresenceKind.ROUSSET, 0)
+        return SplitSummary(
+            access=access,
+            cifre_year=number,
+            year_count=count_years,
+            first=first,
+            last=last,
+            lirmm_days=None,
+            rousset_days=rousset,
+            shown_counts={PresenceKind.ROUSSET.value: rousset} if rousset else {},
+        )
     if access is PresenceAccess.LIRMM_ONLY:
         # Only LIRMM rows were fetched: nothing else exists for this viewer.
         return SplitSummary(
@@ -473,8 +488,11 @@ RULE_PLANNED_STATUSES = (
 
 
 def month_rule(user: Any, thesis: Thesis, year: int, month: int) -> MonthRule | None:
-    """The monthly rule of the month page AND the dashboard card (one function)."""
-    _require_reader(user, thesis, "presence_read")
+    """The monthly rule of the month page AND the dashboard card (one function).
+    None for the company co-supervisor: the rule counts LIRMM days, which they do
+    not see; computed from what they see, it would always read 0 and "not met"."""
+    if _require_reader(user, thesis, "presence_read") is PresenceAccess.ST_ONLY:
+        return None
     fresh = _fresh(thesis)
     policy = policy_of(fresh)
     minimum = policy.min_lab_days_per_month
@@ -1873,7 +1891,7 @@ def expenses_incomplete(mission: Mission) -> bool:
 
 def dashboard_block(request: Any, thesis: Thesis) -> dict[str, Any]:
     """The "Travel" card: computed from what the viewer sees (access.py, the levels):
-    a co-supervisor gets the next LIRMM mission and LIRMM days only. No budget: it
+    a co-supervisor gets the next mission and the days of their side only. No budget: it
     would decrypt amounts on every display of the dashboard; the budgets are in the
     Budget tab (frontend step 8a)."""
     user = request.user
@@ -1908,7 +1926,7 @@ def dashboard_block(request: Any, thesis: Thesis) -> dict[str, Any]:
         "missing_receipts": len(missing),
         "missing_missions": missing,
         "summary": summary,
-        "full": summary.access is not PresenceAccess.LIRMM_ONLY,
+        "full": summary.access not in RESTRICTED,
         "st_percent": None if summary.st_percent is None else round(float(summary.st_percent)),
         # Rounded and localised for display only ("16,7"); the alert used the exact value.
         "gap": None

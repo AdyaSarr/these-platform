@@ -155,32 +155,43 @@ def test_a_role_approves_a_cycle_once(team: SimpleNamespace) -> None:
     )
 
 
-def test_one_person_with_both_roles_cannot_validate_the_collaboration_contract_alone(
+def test_one_approval_per_person_and_cycle_stays_enforced_by_the_database(
     team: SimpleNamespace,
 ) -> None:
-    """Correction 1: one approval per PERSON and cycle, roles cumulated or not."""
-    both = MembershipFactory.create(thesis=team.thesis, role=D, user__mfa=False).user
-    MembershipFactory.create(thesis=team.thesis, role=T, user=both)
+    """Correction 1: one approval per PERSON and cycle. A person can no longer hold
+    the director and the tutor roles together (one side of the supervision); the
+    database constraint stays, as a defence in depth."""
+    from django.db import IntegrityError, transaction
+
+    from apps.admin_file.tests.factories import ItemApprovalFactory
+
     item = _submitted(
         team, code="collaboration_contract", section=Section.CIFRE, validator_roles=[D, T]
     )
-    assert services.approve(item=item, user=both).status == S.SUBMITTED
-    _refused(lambda: services.approve(item=item, user=both), both, item, "already_approved")
-    assert ItemApproval.objects.filter(item=item).count() == 1
-    # The other party still validates.
-    assert services.approve(item=item, user=team.tutor).status == S.VALIDATED
+    ItemApprovalFactory.create(
+        item=item, cycle=item.cycle, role=D, user=team.director, submitted_by=team.student
+    )
+    with pytest.raises(IntegrityError, match="one_per_user"), transaction.atomic():
+        ItemApprovalFactory.create(
+            item=item, cycle=item.cycle, role=T, user=team.director, submitted_by=team.student
+        )
 
 
 def test_the_submitter_never_validates_their_cycle(team: SimpleNamespace) -> None:
-    """Correction 1: a student who is ALSO director of the thesis."""
-    MembershipFactory.create(thesis=team.thesis, role=D, user=team.student)
-    item = _submitted(team, section=Section.ACADEMIC, validator_roles=[D])
+    """Correction 1: the submitter of a cycle never validates it. The student can no
+    longer be a director of their thesis (accounts_membership_student_alone): the
+    cycle is written as submitted by a director (put, no service), who is refused;
+    a second director validates."""
+    second = MembershipFactory.create(thesis=team.thesis, role=D, user__mfa=False).user
+    item = put(
+        item_of(team, section=Section.ACADEMIC, validator_roles=[D]), S.SUBMITTED, team.director
+    )
     for call in (
-        lambda: services.approve(item=item, user=team.student),
-        lambda: services.reject(item=item, user=team.student, reason=Reason.OTHER),
+        lambda: services.approve(item=item, user=team.director),
+        lambda: services.reject(item=item, user=team.director, reason=Reason.OTHER),
     ):
-        _refused(call, team.student, item, "submitter")
-    assert services.approve(item=item, user=team.director).status == S.VALIDATED
+        _refused(call, team.director, item, "submitter")
+    assert services.approve(item=item, user=second).status == S.VALIDATED
 
 
 def test_a_new_cycle_needs_new_approvals(team: SimpleNamespace) -> None:
