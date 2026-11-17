@@ -1,6 +1,8 @@
 """Project-wide pytest configuration.
 
-Fails the whole run early, with an actionable message, when PostgreSQL is not
+Fails the whole run early, with an actionable message, when the settings are not
+config.settings.test (an exported DJANGO_SETTINGS_MODULE or --ds wins over
+pyproject.toml in pytest-django), when PostgreSQL is not
 reachable (tests run on PostgreSQL only, see docs/decisions.md), or when another
 pytest run already uses the test database (tests/pytest_lock.py).
 
@@ -39,6 +41,22 @@ FALLBACK_DATABASE_MESSAGE = (
     "docker compose up -d db-test, puis TEST_DATABASE_URL dans .env (README)."
 )
 
+TEST_SETTINGS = "config.settings.test"
+SETTINGS_EXIT_CODE = 4
+SETTINGS_FIXES = {
+    "env": "Retirez la variable d'environnement (unset DJANGO_SETTINGS_MODULE)",
+    "option": "Retirez l'option --ds de la ligne de commande",
+}
+
+
+def settings_message(loaded: str, source: str) -> str:
+    origin = "option --ds" if source == "option" else "variable DJANGO_SETTINGS_MODULE"
+    return (
+        f"Réglages chargés : {loaded} ({origin}). Les tests ne tournent qu'avec "
+        f"{TEST_SETTINGS} (pyproject.toml). {SETTINGS_FIXES[source]}, puis relancez."
+    )
+
+
 _LOCK_FD = pytest.StashKey[int]()
 _ORDER_FILE = pytest.StashKey[IO[str]]()
 # In the controller: the workers that ran a failing test, for the replay.
@@ -56,10 +74,29 @@ def _is_worker(config: pytest.Config) -> bool:
     return hasattr(config, "workerinput")
 
 
+def _check_settings(config: pytest.Config) -> None:
+    """Stop before any collection unless the settings are config.settings.test.
+
+    pytest-django takes, in this order, --ds, then DJANGO_SETTINGS_MODULE, then
+    pyproject.toml: a variable exported from .env (which names the dev settings)
+    silently replaced the test settings."""
+    if config.option.help or config.option.version:
+        return
+    from django.conf import settings
+
+    loaded = settings.SETTINGS_MODULE
+    if loaded == TEST_SETTINGS:
+        return
+    source = "option" if config.getoption("ds", None) else "env"
+    pytest.exit(settings_message(loaded, source), returncode=SETTINGS_EXIT_CODE)
+
+
 def pytest_configure(config: pytest.Config) -> None:
-    """The lock of the session (tests/pytest_lock.py), taken by the process that owns
-    the session: the xdist controller, or the only process without xdist. Taken here,
-    before xdist starts any worker and before any test database is created."""
+    """The settings check first, then the lock of the session (tests/pytest_lock.py),
+    taken by the process that owns the session: the xdist controller, or the only
+    process without xdist. Taken here, before xdist starts any worker and before any
+    test database is created."""
+    _check_settings(config)
     if _is_worker(config):
         _start_worker(config)
         return

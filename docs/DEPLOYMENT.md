@@ -286,3 +286,13 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
   `.env`. Liste des variables : `.env.example`.
 - `manage.py check --deploy --settings=config.settings.prod --fail-level WARNING`
   doit répondre `no issues` sur le serveur, avec son environnement réel.
+  Avant, sur le poste de développement : `scripts/check_deploy.sh` (lancé par le
+  développeur seulement, il lit `.env`). Il charge `.env` dans un sous-shell
+  `( set -a; . ./.env; … )`, impose des valeurs fictives de production
+  (`DJANGO_SITE_URL=https://these.example.org`,
+  `DJANGO_ALLOWED_HOSTS=these.example.org`, origines CSRF, `EMAIL_URL` SMTP et
+  `DEFAULT_FROM_EMAIL` fictifs), prend un `VAULT_STORAGE_DIR` temporaire
+  (`mktemp -d`, supprimé à la fin) et lance ce même contrôle avec
+  `config.settings.prod`. Aucune variable ne reste dans le shell appelant, même
+  si le script est sourcé ; les arguments supplémentaires vont au contrôle
+  (`--database default`). Ce contrôle local ne remplace pas celui du serveur.
