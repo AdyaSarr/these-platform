@@ -15,6 +15,6 @@
       {{ field.errors }}
     </p>
   {% endfor %}
-  <button type="submit">{% if objective %}{% translate "Save" %}{% else %}{% translate "Create the objective" %}{% endif %}</button>
+  <button type="submit" class="btn-primary">{% if objective %}{% translate "Save" %}{% else %}{% translate "Create the objective" %}{% endif %}</button>
 </form>
 {% endblock %}

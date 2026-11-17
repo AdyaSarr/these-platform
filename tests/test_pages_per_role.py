@@ -61,7 +61,9 @@ PRIMARY = re.compile(r'<button\b[^>]*class="[^"]*\bbtn-primary\b|<a\b[^>]*class=
 def _crowded_blocks(page: str) -> list[str]:
     """The forms and sections of a page with more than one primary button."""
     blocks = re.findall(r"<form\b.*?</form>", page, re.S)
-    blocks += re.findall(r"<section\b.*?</section>", page, re.S)
+    blocks += re.findall(r"<article\b.*?</article>", page, re.S)
+    # A section listing cards (<article>) is a list: each card is the block.
+    blocks += [s for s in re.findall(r"<section\b.*?</section>", page, re.S) if "<article" not in s]
     blocks += re.findall(r'<header class="page-header">.*?</header>', page, re.S)
     return [b[:70] for b in blocks if len(PRIMARY.findall(b)) > 1]
 

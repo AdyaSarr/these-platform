@@ -47,7 +47,7 @@
     <form class="stack" method="post" action="{% url 'meetings:agenda' thesis_id=thesis.pk meeting_id=meeting.pk %}">
       {% csrf_token %}
       {% for field in agenda_form %}<p>{{ field.label_tag }} {{ field }}{% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}{{ field.errors }}</p>{% endfor %}
-      <button type="submit">{% translate "Save the agenda" %}</button>
+      <button type="submit" class="btn-primary">{% translate "Save the agenda" %}</button>
     </form>
     <form method="post" action="{% url 'meetings:prefill' thesis_id=thesis.pk meeting_id=meeting.pk %}">
       {% csrf_token %}<button type="submit">{% translate "Add the open actions and overdue objectives" %}</button>
@@ -73,7 +73,7 @@
       <form class="stack" method="post" action="{% url 'meetings:minutes' thesis_id=thesis.pk meeting_id=meeting.pk %}">
         {% csrf_token %}
         {% for field in minutes_form %}{% if field.is_hidden %}{{ field }}{% else %}<p>{{ field.label_tag }} {{ field }}{% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}{{ field.errors }}</p>{% endif %}{% endfor %}
-        <button type="submit">{% translate "Save the minutes" %}</button>
+        <button type="submit" class="btn-primary">{% translate "Save the minutes" %}</button>
       </form>
     {% elif texts.minutes.text or texts.minutes.restricted %}
       <p>{% include "meetings/_text.html" with value=texts.minutes %}</p>
@@ -116,7 +116,7 @@
   {% if decision_form %}
     <form class="stack" method="post" action="{% url 'meetings:decision' thesis_id=thesis.pk meeting_id=meeting.pk %}">
       {% csrf_token %}{{ decision_form.as_p }}
-      <button type="submit">{% translate "Record the decision" %}</button>
+      <button type="submit" class="btn-primary">{% translate "Record the decision" %}</button>
     </form>
   {% endif %}
 </section>
@@ -129,7 +129,7 @@
       <li>{% include "meetings/_text.html" with value=row.title %} — {{ row.action.assignee.get_full_name|default:row.action.assignee.email }}, {{ row.action.due_date|date:"SHORT_DATE_FORMAT" }} · {{ row.action.get_status_display }}{% if row.overdue %} <strong class="overdue">{% translate "overdue" %}</strong>{% endif %}
         {% if row.action.objective_id %}(<a href="{% url 'objectives:detail' thesis_id=thesis.pk objective_id=row.action.objective_id %}">{% translate "linked objective" %}</a>){% endif %}
         {% if row.can_status %}
-          <form method="post" action="{% url 'meetings:action_status' thesis_id=thesis.pk meeting_id=meeting.pk action_id=row.action.pk %}">
+          <form class="form-secondary" method="post" action="{% url 'meetings:action_status' thesis_id=thesis.pk meeting_id=meeting.pk action_id=row.action.pk %}">
             {% csrf_token %}
             <label for="status-{{ row.action.pk }}">{% translate "Status" %}</label>
             <select name="status" id="status-{{ row.action.pk }}">
@@ -145,7 +145,7 @@
   {% if action_form %}
     <form class="stack" method="post" action="{% url 'meetings:action' thesis_id=thesis.pk meeting_id=meeting.pk %}">
       {% csrf_token %}{{ action_form.as_p }}
-      <button type="submit">{% translate "Record the action" %}</button>
+      <button type="submit" class="btn-primary">{% translate "Record the action" %}</button>
     </form>
   {% endif %}
 </section>
@@ -157,7 +157,7 @@
   <ul>
     {% for document, link in documents %}
       <li><a href="{% url 'vault:document' thesis_id=thesis.pk document_id=document.pk %}">{{ document.title }}</a> {% level_badge document.confidentiality %}
-        {% if can_write %}<form method="post" action="{% url 'meetings:unlink_document' thesis_id=thesis.pk meeting_id=meeting.pk link_id=link.pk %}">{% csrf_token %}<button type="submit">{% translate "Unlink" %}</button></form>{% endif %}
+        {% if can_write %}<form method="post" action="{% url 'meetings:unlink_document' thesis_id=thesis.pk meeting_id=meeting.pk link_id=link.pk %}">{% csrf_token %}<button type="submit" class="btn-ghost btn-sm">{% translate "Unlink" %}</button></form>{% endif %}
       </li>
     {% endfor %}
   </ul>
@@ -167,7 +167,7 @@
   {% if document_form and document_form.fields.document.choices %}
     <form class="stack" method="post" action="{% url 'meetings:document' thesis_id=thesis.pk meeting_id=meeting.pk %}">
       {% csrf_token %}{{ document_form.as_p }}
-      <button type="submit">{% translate "Link the document" %}</button>
+      <button type="submit" class="btn-primary">{% translate "Link the document" %}</button>
     </form>
   {% endif %}
 </section>
@@ -177,7 +177,7 @@
   <h2 id="level-title">{% translate "Confidentiality" %}</h2>
   <form class="stack" method="post" action="{% url 'meetings:level' thesis_id=thesis.pk meeting_id=meeting.pk %}">
     {% csrf_token %}{{ level_form.as_p }}
-    <button type="submit">{% translate "Change the confidentiality" %}</button>
+    <button type="submit" class="btn-primary">{% translate "Change the confidentiality" %}</button>
     <span class="muted">{% translate "Asks for your second factor. Every attendee must be able to read the new level." %}</span>
   </form>
 </section>

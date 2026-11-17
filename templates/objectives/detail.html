@@ -76,7 +76,7 @@
   <form class="stack" method="post" action="{% url 'objectives:level' thesis_id=thesis.pk objective_id=objective.pk %}">
     {% csrf_token %}
     {% for field in level_form %}<p>{{ field.label_tag }} {{ field }}{% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}{{ field.errors }}</p>{% endfor %}
-    <button type="submit">{% translate "Change the confidentiality" %}</button>
+    <button type="submit" class="btn-primary">{% translate "Change the confidentiality" %}</button>
     <span class="muted">{% translate "Asks for your second factor." %}</span>
   </form>
 </section>

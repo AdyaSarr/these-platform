@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-17 11:02+0100\n"
+"POT-Creation-Date: 2026-11-17 11:22+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -3914,24 +3914,24 @@ msgstr "Proposer cette échéance"
 msgid "Add the item"
 msgstr "Ajouter la pièce"
 
-#: templates/base.html:10 templates/base.html:27 templates/base.html:44
-#: templates/base.html:46
+#: templates/base.html:10 templates/base.html:26 templates/base.html:43
+#: templates/base.html:45
 msgid "CIFRE thesis"
 msgstr "Thèse CIFRE"
 
-#: templates/base.html:21
+#: templates/base.html:20
 msgid "Skip to content"
 msgstr "Aller au contenu"
 
-#: templates/base.html:25
+#: templates/base.html:24
 msgid "Main navigation"
 msgstr "Navigation principale"
 
-#: templates/base.html:28
+#: templates/base.html:27
 msgid "Close the menu"
 msgstr "Fermer le menu"
 
-#: templates/base.html:42
+#: templates/base.html:41
 msgid "Menu"
 msgstr "Menu"
 
@@ -5050,7 +5050,9 @@ msgstr "Annuler la mission"
 msgid ""
 "The mission will be cancelled; its approvals and expenses stay in its "
 "history. This cannot be undone."
-msgstr "La mission sera annulée ; ses accords et ses frais restent dans son historique. Cette action est définitive."
+msgstr ""
+"La mission sera annulée ; ses accords et ses frais restent dans son "
+"historique. Cette action est définitive."
 
 #: templates/travel/mission.html:85
 msgid "Yes, cancel the mission"

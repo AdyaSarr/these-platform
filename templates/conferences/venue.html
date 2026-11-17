@@ -10,7 +10,7 @@
   {% else %}<p class="muted">{% translate "No edition yet." %}</p>{% endif %}
   {% if edition_form %}
     <form class="stack" method="post" action="{% url 'conferences:new_edition' thesis_id=thesis.pk venue_id=venue.pk %}">{% csrf_token %}{% include "conferences/_form.html" with form=edition_form %}
-      <button type="submit">{% translate "Add the edition" %}</button></form>
+      <button type="submit" class="btn-primary">{% translate "Add the edition" %}</button></form>
   {% endif %}
 </section>
 {% endif %}
@@ -18,7 +18,7 @@
 <section aria-labelledby="edit-title">
   <h2 id="edit-title">{% translate "Edit the venue" %}</h2>
   <form class="stack" method="post">{% csrf_token %}{% include "conferences/_form.html" %}
-    <button type="submit">{% translate "Save" %}</button></form>
+    <button type="submit" class="btn-primary">{% translate "Save" %}</button></form>
 </section>
 {% endif %}
 {% endblock %}

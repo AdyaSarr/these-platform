@@ -14,7 +14,7 @@
 </ul>
 {% if rules_form %}
 <form class="stack" method="post" action="{% url 'travel:rules' thesis_id=thesis.pk %}">{% csrf_token %}{% with form=rules_form %}{% include "conferences/_form.html" %}{% endwith %}
-  <button type="submit">{% translate "Save the rules" %}</button>
+  <button type="submit" class="btn-primary">{% translate "Save the rules" %}</button>
   <span class="muted">{% translate "Asks for your second factor." %}</span></form>
 {% endif %}
 <h2>{% translate "ST / LIRMM targets" %}</h2>
@@ -25,7 +25,7 @@
 </table>
 {% if target_form %}
 <form class="stack" method="post" action="{% url 'travel:target' thesis_id=thesis.pk %}">{% csrf_token %}{% with form=target_form %}{% include "conferences/_form.html" %}{% endwith %}
-  <button type="submit">{% translate "Save the target" %}</button>
+  <button type="submit" class="btn-primary">{% translate "Save the target" %}</button>
   <span class="muted">{% translate "Asks for your second factor." %}</span></form>
 {% endif %}
 <h2>{% translate "Reminders" %}</h2>
@@ -35,7 +35,7 @@
 </ul>
 {% if reminders_form %}
 <form class="stack" method="post" action="{% url 'travel:reminders' thesis_id=thesis.pk %}">{% csrf_token %}{% with form=reminders_form %}{% include "conferences/_form.html" %}{% endwith %}
-  <button type="submit">{% translate "Save the reminders" %}</button>
+  <button type="submit" class="btn-primary">{% translate "Save the reminders" %}</button>
   <span class="muted">{% translate "Asks for your second factor." %}</span></form>
 {% endif %}
 {% endblock %}

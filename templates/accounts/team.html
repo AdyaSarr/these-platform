@@ -55,7 +55,7 @@
     <form class="stack" method="post" action="{% url 'accounts:team_invite' thesis_id=thesis.pk %}">
       {% csrf_token %}
       {{ invite_form.as_div }}
-      <button type="submit">{% translate "Send the invitation" %}</button>
+      <button type="submit" class="btn-primary">{% translate "Send the invitation" %}</button>
     </form>
     <p class="muted">{% translate "Inviting, changing a role, removing or extending a member asks for your second factor if you have not used it in the last 10 minutes." %}</p>
 

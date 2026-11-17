@@ -5,6 +5,6 @@
 {% page_header parent_url=file_url parent_label=_("Administrative file") %}{% translate "Add a custom item" %}{% endpage_header %}
 <form class="stack" method="post" action="{% url 'admin_file:new_item' thesis_id=thesis.pk %}">
   {% csrf_token %}{{ form.as_p }}
-  <button type="submit">{% translate "Add the item" %}</button>
+  <button type="submit" class="btn-primary">{% translate "Add the item" %}</button>
 </form>
 {% endblock %}

@@ -16,6 +16,6 @@
         hx-target="#comments-{{ objective.pk }}" hx-swap="outerHTML">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">{% translate "Comment" %}</button>
+    <button type="submit" class="btn-primary">{% translate "Comment" %}</button>
   </form>
 </div>

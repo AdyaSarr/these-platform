@@ -79,7 +79,7 @@
       {% csrf_token %}
       {% if row.warning %}<p class="warning">{{ row.warning }}</p>{% endif %}
       {{ row.submit_form.as_p }}
-      <button type="submit">{% translate "Submit" %}</button>
+      <button type="submit" class="btn-primary">{% translate "Submit" %}</button>
     </form>
   {% endif %}
 
@@ -112,19 +112,19 @@
           hx-post="{% url 'admin_file:reopen' thesis_id=thesis.pk item_id=row.item.pk %}"
           hx-target="#item-{{ row.item.pk }}" hx-swap="outerHTML">
       {% csrf_token %}{{ row.reopen_form.as_p }}
-      <button type="submit">{% translate "Reopen" %}</button>
+      <button type="submit" class="btn-primary">{% translate "Reopen" %}</button>
     </form>
   {% endif %}
 
   {% if row.due_form %}
-    <form class="actions item-inline" method="post" action="{{ row.due_url }}"
+    <form class="actions item-inline form-secondary" method="post" action="{{ row.due_url }}"
           hx-post="{{ row.due_url }}" hx-target="#item-{{ row.item.pk }}" hx-swap="outerHTML">
       {% csrf_token %}{{ row.due_form.due_date.label_tag }} {{ row.due_form.due_date }}
       <button type="submit">{% translate "Save the due date" %}</button>
     </form>
   {% endif %}
   {% if row.propose_form %}
-    <form class="stack" method="post" action="{% url 'admin_file:propose_due_date' thesis_id=thesis.pk item_id=row.item.pk %}"
+    <form class="stack form-secondary" method="post" action="{% url 'admin_file:propose_due_date' thesis_id=thesis.pk item_id=row.item.pk %}"
           hx-post="{% url 'admin_file:propose_due_date' thesis_id=thesis.pk item_id=row.item.pk %}"
           hx-target="#item-{{ row.item.pk }}" hx-swap="outerHTML">
       {% csrf_token %}{{ row.propose_form.as_p }}

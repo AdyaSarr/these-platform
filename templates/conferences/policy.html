@@ -9,7 +9,7 @@
   {% if contract %}{% translate "Collaboration contract:" %} {{ contract.get_status_display }}.{% endif %}</p>
 {% if form %}
   <form class="stack" method="post" action="{% url 'conferences:policy_edit' thesis_id=thesis.pk %}">{% csrf_token %}{% include "conferences/_form.html" %}
-    <button type="submit">{% translate "Save" %}</button>
+    <button type="submit" class="btn-primary">{% translate "Save" %}</button>
     <span class="muted">{% translate "Asks for your second factor. The PhD student is told." %}</span></form>
 {% endif %}
 {% endblock %}

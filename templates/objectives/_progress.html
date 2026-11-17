@@ -21,7 +21,7 @@
         hx-target="#progress-{{ objective.pk }}" hx-swap="outerHTML">
     {% csrf_token %}
     {{ progress_form.as_p }}
-    <button type="submit">{% translate "Record the progress" %}</button>
+    <button type="submit" class="btn-primary">{% translate "Record the progress" %}</button>
   </form>
   {% endif %}
 </section>

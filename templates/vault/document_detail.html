@@ -24,7 +24,7 @@
 <h2>{% translate "New version" %}</h2>
 <form method="post" enctype="multipart/form-data" action="{% url 'vault:new_version' thesis_id=thesis.pk document_id=document.pk %}">
   {% csrf_token %}{{ version_form.as_p }}
-  <button type="submit">{% translate "Store the new version" %}</button>
+  <button type="submit" class="btn-primary">{% translate "Store the new version" %}</button>
 </form>
 {% endif %}
 
@@ -33,7 +33,7 @@
 <p>{% translate "Changing the level re-encrypts every version; a recent second factor is asked." %}</p>
 <form method="post" action="{% url 'vault:change_level' thesis_id=thesis.pk document_id=document.pk %}">
   {% csrf_token %}{{ level_form.as_p }}
-  <button type="submit">{% translate "Change the level" %}</button>
+  <button type="submit" class="btn-primary">{% translate "Change the level" %}</button>
 </form>
 {% endif %}
 

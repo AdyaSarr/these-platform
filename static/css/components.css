@@ -11,14 +11,14 @@
     padding: var(--space-2) var(--space-4);
     font-weight: 550;
     line-height: 1.2;
-    color: var(--accent-fg);
-    background: var(--accent);
-    border: 1px solid var(--accent);
+    color: var(--fg);
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
     border-radius: var(--radius-sm);
     cursor: pointer;
     transition: background-color var(--duration), border-color var(--duration);
   }
-  button:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+  button:hover { background: var(--surface-2); }
   button:disabled { opacity: 0.55; cursor: not-allowed; }
 
   input:not([type="checkbox"], [type="radio"], [type="file"], [type="hidden"]),
@@ -68,11 +68,71 @@
 }
 
 @layer components {
+  /* Module pages (from legacy.css; the rules below win). The QR code keeps a
+     white background in both themes, for the authenticator app. */
+  .stack { display: grid; gap: var(--space-4); max-width: 26rem; padding: 0; list-style: none; }
+  .stack label { display: block; font-weight: 550; margin-bottom: var(--space-1); }
+    .actions { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+  .actions form { display: flex; gap: var(--space-2); align-items: center; margin: 0; }
+  .delivery-not_sent, .delivery-failed { color: var(--error); font-weight: 600; }
+    button.danger, button.btn-danger {
+    color: var(--danger-solid-fg);
+    background: var(--danger-solid);
+    border-color: var(--danger-solid);
+  }
+  button.danger:hover, button.btn-danger:hover { background: var(--danger-solid-hover); }
+    .item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-3) var(--space-4);
+    margin-bottom: var(--space-3);
+    box-shadow: var(--shadow-sm);
+  }
+  .item-head { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: baseline; }
+  .item-head h3 { margin: 0; font-size: 1rem; }
+  .status { font-weight: 600; }
+  .warning { border-left: 3px solid var(--danger-fg); padding-left: var(--space-2); }
+  .approvals { margin: var(--space-1) 0; padding-left: 1.25rem; }
+    .overdue { color: var(--overdue); font-weight: 600; }
+  .restricted {
+    color: var(--restricted-fg);
+    background: var(--restricted-bg);
+    border-radius: 4px;
+    padding: 0 0.375rem;
+    font-style: italic;
+  }
+  .mark { color: var(--warning-fg); background: var(--warning-bg); border-radius: 4px; padding: 0 0.375rem; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: var(--space-2); }
+  .stats div {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: var(--space-2) var(--space-3);
+  }
+  .stats dt { color: var(--muted); font-size: var(--text-sm); }
+  .stats dd { margin: 0; font-size: 1.4rem; font-weight: 650; font-variant-numeric: tabular-nums; }
+  .stats dd.helptext { font-size: 0.85rem; font-weight: normal; color: var(--muted); }
+  .revisions, .progress-list, .comment-list { padding-left: 1.25rem; }
+    .chart-data { border-collapse: collapse; margin-top: var(--space-2); }
+  .chart-data th, .chart-data td { border-bottom: 1px solid var(--border); padding: 0.2rem 0.6rem; text-align: left; }
+    .qr { display: inline-block; background: #ffffff; padding: 0.75rem; border-radius: 6px; }
+  .qr svg { display: block; width: 12rem; height: auto; }
+
+  /* Rhythm: forms and sections apart, buttons at their width, filters on one line. */
+  form { margin-block-end: var(--space-4); }
+  form button { justify-self: start; }
+  .content h2 { margin-block-start: var(--space-6); }
+  .content :is(.card, .block, .page-heading) h2 { margin-block-start: 0; }
+  .filter-row { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--space-2) var(--space-3); }
+  .filter-row p { margin: 0; }
+  .filter-row select, .filter-row input { width: auto; }
   .icon { width: 1.25em; height: 1.25em; flex: none; vertical-align: -0.25em; }
 
   /* ---------------------------------------------------------------- buttons */
   .btn { text-decoration: none; }
-  a.btn {
+  /* One filled button per form and block (apps/ui/tests/test_buttons.py). */
+  button.btn-primary, a.btn {
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
@@ -84,7 +144,7 @@
     background: var(--accent);
     border: 1px solid var(--accent);
   }
-  a.btn:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+  button.btn-primary:hover, a.btn:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
   .btn-secondary, a.btn-secondary {
     color: var(--fg);
     background: var(--surface);
@@ -470,8 +530,7 @@
   .agenda-when { min-width: 8rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 
   /* ---------------------------------------------------------------- administrative file */
-  /* An item's forms: buttons at their own width (« Rouvrir » took the whole one),
-     the due-date form on one line that wraps, never over the button. */
+  /* Item forms: buttons at their width, due date on one line (ui-notes). */
   .item form button { justify-self: start; }
   .item-inline { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
   .item-inline input { width: auto; }
@@ -479,8 +538,7 @@
   .missing-validator { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); color: var(--warning-fg); }
 
   /* ---------------------------------------------------------------- calendar */
-  /* travel/month.html: seven columns of equal width (fixed layout, no width on a
-     column); below 42rem the wrapper scrolls, the page never does. */
+  /* Calendar: 7 equal columns; the wrapper scrolls, never the page. */
   .calendar { table-layout: fixed; min-width: 42rem; }
   .calendar td { height: 4.5rem; vertical-align: top; overflow-wrap: anywhere; }
   .calendar .day-number { font-weight: 650; font-variant-numeric: tabular-nums; }

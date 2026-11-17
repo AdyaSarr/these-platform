@@ -1,10 +1,7 @@
 /* Design system of the platform, hand-written (no build step).
    No inline style anywhere: the CSP forbids it (docs/decisions.md).
 
-   Cascade layers: a later layer wins over an earlier one whatever the selector
-   specificity, so the order below is the whole priority scheme.
-   - legacy: the styles of the modules before the redesign, kept until step 2
-     restyles each module; components win over them.
+   Cascade layers: a later layer wins whatever the specificity.
 
    Colour tokens are #rrggbb only: tests/test_design_tokens.py and
    apps/objectives/tests/test_chart_contrast.py read them from this file and check
@@ -12,7 +9,7 @@
    prefers-color-scheme (no choice, or "auto") and under [data-theme="dark"] (the
    toggle, apps/ui/theme.py); a test keeps both blocks identical. */
 
-@layer reset, tokens, base, layout, legacy, components, utilities;
+@layer reset, tokens, base, layout, components, utilities;
 
 @layer reset {
   *, *::before, *::after { box-sizing: border-box; }
@@ -273,11 +270,9 @@
   }
 }
 
-/* Progress chart of the objectives (M4, apps/objectives/charts.py): here, next to
-   its colour tokens, because apps/objectives/tests/test_chart_contrast.py reads
-   this file. The line is solid with dot markers, the grid dashed: never the
-   colour alone. */
-@layer legacy {
+/* Objectives chart (M4): read with its tokens by test_chart_contrast.py.
+   Solid line with dots, dashed grid: never the colour alone. */
+@layer components {
   .chart-svg { width: 100%; height: auto; max-width: 40rem; }
   .chart-grid { stroke: var(--chart-grid); stroke-width: 1; stroke-dasharray: 4 4; }
   .chart-line { stroke: var(--chart-line); stroke-width: 2.5; }

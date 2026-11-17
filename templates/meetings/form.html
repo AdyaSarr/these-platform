@@ -11,6 +11,6 @@
     <p>{{ field.label_tag }} {{ field }}{% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}{{ field.errors }}</p>
   {% endfor %}
   {% if meeting %}<p class="muted">{% translate "The confidentiality has its own form on the meeting's page." %}</p>{% endif %}
-  <button type="submit">{% translate "Save" %}</button>
+  <button type="submit" class="btn-primary">{% translate "Save" %}</button>
 </form>
 {% endblock %}

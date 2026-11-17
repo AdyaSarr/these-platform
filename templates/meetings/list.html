@@ -8,7 +8,7 @@
   <a class="segment" href="?when=upcoming{% if kind %}&amp;kind={{ kind }}{% endif %}"{% if not past %} aria-current="page"{% endif %}>{% translate "Upcoming" %}</a>
   <a class="segment" href="?when=past{% if kind %}&amp;kind={{ kind }}{% endif %}"{% if past %} aria-current="page"{% endif %}>{% translate "Past" %}</a>
 </nav>
-<form method="get" class="stack">
+<form class="filter-row" method="get">
   <input type="hidden" name="when" value="{% if past %}past{% else %}upcoming{% endif %}">
   <p><label for="kind-filter">{% translate "Type" %}</label>
     <select name="kind" id="kind-filter">

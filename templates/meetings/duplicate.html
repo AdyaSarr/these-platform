@@ -9,6 +9,6 @@
   {% csrf_token %}
   {{ form.non_field_errors }}
   {% for field in form %}<p>{{ field.label_tag }} {{ field }}{{ field.errors }}</p>{% endfor %}
-  <button type="submit">{% translate "Duplicate" %}</button>
+  <button type="submit" class="btn-primary">{% translate "Duplicate" %}</button>
 </form>
 {% endblock %}

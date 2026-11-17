@@ -5,5 +5,5 @@
 {% url 'conferences:deadlines' thesis_id=thesis.pk as back_url %}
 {% page_header parent_url=back_url parent_label=_("Back") %}{% translate "New venue" %}{% endpage_header %}
 <form class="stack" method="post">{% csrf_token %}{% include "conferences/_form.html" %}
-  <button type="submit">{% translate "Save" %}</button></form>
+  <button type="submit" class="btn-primary">{% translate "Save" %}</button></form>
 {% endblock %}

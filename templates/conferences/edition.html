@@ -17,7 +17,7 @@
   {% else %}<p class="muted">{% translate "No deadline yet." %}</p>{% endif %}
   {% if deadline_form %}
     <form class="stack" method="post">{% csrf_token %}{% include "conferences/_form.html" with form=deadline_form %}
-      <button type="submit">{% translate "Add the deadline" %}</button></form>
+      <button type="submit" class="btn-primary">{% translate "Add the deadline" %}</button></form>
   {% endif %}
 </section>
 {% endblock %}

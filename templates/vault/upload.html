@@ -6,6 +6,6 @@
 <p class="warning">{% translate "The title is not encrypted: do not put any confidential information in it." %}</p>
 <form method="post" enctype="multipart/form-data">
   {% csrf_token %}{{ form.as_p }}
-  <button type="submit">{% translate "Store" %}</button>
+  <button type="submit" class="btn-primary">{% translate "Store" %}</button>
 </form>
 {% endblock %}

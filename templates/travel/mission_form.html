@@ -7,5 +7,5 @@
 <p class="muted">{% translate "Entered by hand: the platform calls no booking or timetable service." %}</p>
 {% if links %}<ul>{% for label in links %}<li>{{ label }}</li>{% endfor %}</ul>{% endif %}
 <form class="stack" method="post">{% csrf_token %}{% include "conferences/_form.html" %}
-  <button type="submit">{% translate "Save" %}</button></form>
+  <button type="submit" class="btn-primary">{% translate "Save" %}</button></form>
 {% endblock %}

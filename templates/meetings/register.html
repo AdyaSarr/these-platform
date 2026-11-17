@@ -3,7 +3,7 @@
 {% block content %}
 {% module_tabs "meetings" %}
 {% page_header %}{% translate "Decision register" %}{% endpage_header %}
-<form method="get" class="stack">
+<form class="filter-row" method="get">
   {% for field in form %}<p>{{ field.label_tag }} {{ field }}{{ field.errors }}</p>{% endfor %}
   <button type="submit">{% translate "Filter" %}</button>
 </form>

@@ -44,8 +44,13 @@ def test_at_most_one_primary_button_per_form() -> None:
 
 
 # Forms that collect data without a main submit of their own: a filter (its
-# button is secondary: it only narrows a list), the theme toggle.
-NOT_A_SUBMISSION = ("Filter", "theme-toggle")
+# button is secondary: it only narrows a list), the theme toggle, the small forms
+# of a member card's menu (secondary actions side by side, one block).
+# A form marked form-secondary is a side action of its block (a due date next to
+# the deposit, a row of a table): its submit stays secondary.
+NOT_A_SUBMISSION = ("Filter", "theme-toggle", 'class="menu-form"', "form-secondary")
+# The main submit: primary, or danger when the form's action is (reject...).
+MAIN = re.compile(r'<button\b[^>]*class="[^"]*\b(?:btn-primary|danger|btn-danger)\b')
 
 
 def test_a_form_that_collects_data_has_one_primary_submit() -> None:
@@ -54,7 +59,7 @@ def test_a_form_that_collects_data_has_one_primary_submit() -> None:
         for name, form in _forms()
         if COLLECTS.search(form)
         and not any(marker in form for marker in NOT_A_SUBMISSION)
-        and len(PRIMARY.findall(form)) != 1
+        and len(MAIN.findall(form)) != 1
     ]
     assert found == []
 

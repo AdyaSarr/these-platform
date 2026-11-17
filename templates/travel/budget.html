@@ -18,7 +18,7 @@
 {% if form %}
 <h2>{% translate "Set a budget" %}</h2>
 <form class="stack" method="post" action="{% url 'travel:set_budget' thesis_id=thesis.pk %}">{% csrf_token %}{% include "conferences/_form.html" %}
-  <button type="submit">{% translate "Save the budget" %}</button>
+  <button type="submit" class="btn-primary">{% translate "Save the budget" %}</button>
   <span class="muted">{% translate "Asks for your second factor. The amount is sealed and never written in the audit log." %}</span></form>
 {% endif %}
 {% endblock %}
