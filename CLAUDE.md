@@ -49,7 +49,8 @@ uv run ruff check . && uv run ruff format --check .
 uv run mypy apps
 uv run bandit -r apps -ll
 uv run pip-audit
-uv run python manage.py check --deploy --settings=config.settings.prod
+scripts/check_deploy.sh                       # check --deploy en prod (lit .env) :
+                                              # lancé par l'utilisatrice seulement
 scripts/demo_reset.sh                         # base de démonstration _demo (README)
 ```
 
@@ -84,6 +85,10 @@ qui le lance.**
    toute action sensible (connexion, lecture `CONFIDENTIAL`, validation, droits, export).
 9. **Secrets** uniquement par variables d'environnement. **Ne lis jamais `.env`** ni
    aucun fichier de `secrets/` ; utilise `.env.example` pour connaître les variables.
+   Toute commande qui a besoin de `.env` se lance dans un **sous-shell** `( … )`
+   (`set -a; . ./.env` à l'intérieur), jamais avec un `source .env` dans le shell
+   courant : les secrets et `DJANGO_SETTINGS_MODULE=config.settings.dev` y
+   resteraient exportés (pytest refuse alors de démarrer, `conftest.py`).
 10. **Données fictives uniquement** tant que l'hébergement n'est pas validé par ST et
     le LIRMM : aucune trace de mesure, aucun résultat ST, aucune donnée réelle de
     personne dans les fixtures ou les tests.

@@ -13,6 +13,8 @@ message and another code.
 
 from __future__ import annotations
 
+import subprocess  # nosec B404
+
 import pytest
 
 from tests.pytest_child import fake_database_env, run_pytest
@@ -23,8 +25,8 @@ pytestmark = pytest.mark.serial
 TARGET = ("tests/test_migrations.py", "-p", "no:cacheprovider", "-q")
 
 
-def _output(result: object) -> str:
-    return result.stdout + result.stderr  # type: ignore[attr-defined]
+def _output(result: subprocess.CompletedProcess[str]) -> str:
+    return result.stdout + result.stderr
 
 
 @pytest.mark.parametrize("module", ["config.settings.dev", "config.settings.demo"])

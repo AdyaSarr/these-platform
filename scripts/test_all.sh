@@ -10,6 +10,8 @@
 #                 with db-test, little gain beyond, see docs/decisions.md)
 # PYTEST_SEED     pytest-randomly seed of both phases (default: drawn at random)
 #
+# DJANGO_SETTINGS_MODULE  must be unset or config.settings.test (else exit 2 at once)
+#
 # Exit code: the first non-zero code of the two phases (both always run), else 0.
 # Last line: test_all: exit=N parallel=N serial=N seed=S
 #
@@ -20,6 +22,16 @@ set -u
 
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 cd "$REPO" || exit 2
+
+# An exported DJANGO_SETTINGS_MODULE (sourced from .env, which names the dev
+# settings) would win over pyproject.toml: stop before pytest. conftest.py refuses
+# it too (and --ds), for a pytest started by hand.
+if [[ -n "${DJANGO_SETTINGS_MODULE+set}" && "$DJANGO_SETTINGS_MODULE" != "config.settings.test" ]]; then
+  echo "test_all: DJANGO_SETTINGS_MODULE='$DJANGO_SETTINGS_MODULE' est exportée ; les tests ne" \
+    "tournent qu'avec config.settings.test. Retirez-la (unset DJANGO_SETTINGS_MODULE)," \
+    "puis relancez." >&2
+  exit 2
+fi
 
 workers="${PYTEST_WORKERS:-6}"
 if [[ ! "$workers" =~ ^[1-9][0-9]?$ ]]; then

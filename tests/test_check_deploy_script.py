@@ -35,6 +35,7 @@ PRODUCTION = {
     "DJANGO_SETTINGS_MODULE": "config.settings.prod",
     "DJANGO_SITE_URL": "https://these.example.org",
     "DJANGO_ALLOWED_HOSTS": "these.example.org",
+    "DJANGO_CSRF_TRUSTED_ORIGINS": "https://these.example.org",
     "EMAIL_URL": "smtp+tls://demo:demo@smtp.example.org:587",  # pragma: allowlist secret
     "DEFAULT_FROM_EMAIL": "noreply@these.example.org",
 }
@@ -68,9 +69,9 @@ def _environment(tmp_path: Path) -> dict[str, str]:
     return {"PATH": f"{tmp_path / 'bin'}:/usr/bin:/bin", "HOME": str(tmp_path)}
 
 
-def _run(tmp_path: Path, repo: Path) -> subprocess.CompletedProcess[str]:
+def _run(tmp_path: Path, repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(  # nosec B603
-        [BASH, str(repo / "scripts" / "check_deploy.sh")],
+        [BASH, str(repo / "scripts" / "check_deploy.sh"), *args],
         cwd=tmp_path,
         env=_environment(tmp_path),
         capture_output=True,
@@ -100,6 +101,13 @@ def test_check_deploy_runs_with_prod_settings_from_the_repository(tmp_path: Path
         "run", "python", "manage.py", "check", "--deploy",
         "--settings=config.settings.prod", "--fail-level", "WARNING",
     ]  # fmt: skip
+
+
+def test_extra_arguments_go_to_the_check(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    _run(tmp_path, repo, "--database", "default")
+    args = (tmp_path / "uv.args").read_text().splitlines()
+    assert args[-4:] == ["--fail-level", "WARNING", "--database", "default"]
 
 
 def test_dot_env_is_loaded_and_the_production_values_win(tmp_path: Path) -> None:

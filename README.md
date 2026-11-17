@@ -102,36 +102,30 @@ TEST_CLOCK=2027-06-15T12:00:00+00:00 scripts/test_all.sh   # après tous les ins
 
 ## Vérifier la configuration de prod en local
 
-`check --deploy --database default` exécute aussi les contrôles du coffre qui
-ont besoin de la base (`vault.E001` : aller-retour réel de chiffrement MFA ;
-`vault.E002` : une KEK par domaine). Avec les réglages de prod, `.env` n'est pas
-lu (seul `dev.py` le lit) : il faut charger ses variables dans le shell, puis
-remplacer celles que `prod.py` refuse en local (hôtes, URL en `https://`,
-origines CSRF, serveur et expéditeur des courriels, chemin absolu du coffre) :
-
 ```bash
-set -a; source .env; set +a
-# pragma: allowlist nextline secret (fictitious SMTP credentials, never used)
-EMAIL_URL='smtp+tls://fictif:fictif@smtp.example.org:587' \
-DJANGO_SETTINGS_MODULE=config.settings.prod \
-DJANGO_ALLOWED_HOSTS=these.example.org \
-DJANGO_CSRF_TRUSTED_ORIGINS=https://these.example.org \
-DJANGO_SITE_URL=https://these.example.org \
-DEFAULT_FROM_EMAIL=noreply@these.example.org \
-VAULT_STORAGE_DIR="$PWD/var/vault" \
-uv run python manage.py check --deploy --database default --fail-level WARNING
+scripts/check_deploy.sh                       # check --deploy, réglages de prod
+scripts/check_deploy.sh --database default    # + contrôles du coffre sur la base
 ```
 
-Attendu : « System check identified no issues ». Les variables préfixées ne
-valent que pour cette commande ; `DATABASE_URL`, `MASTER_KEY`, `REDIS_URL` et
-`DJANGO_SECRET_KEY` viennent de `.env`. `prod.py` refuse une clé secrète de moins
-de 50 caractères ou commençant par `change-me` : remplace celle de
-`.env.example` avant. `source` exécute `.env` comme un script shell : une valeur
+Avec les réglages de prod, `.env` n'est pas lu (seul `dev.py` le lit). Le script
+charge `.env` **dans un sous-shell** (`( set -a; . ./.env; … )`), remplace ce que
+`prod.py` refuse en local par des valeurs fictives (`https://these.example.org`,
+SMTP et expéditeur fictifs, origines CSRF) et prend un dossier de coffre
+temporaire, supprimé à la fin. Aucune variable ne reste dans le terminal, même si
+le script est sourcé par erreur. `--database default` exécute aussi `vault.E001`
+(aller-retour réel de chiffrement MFA) et `vault.E002` (une KEK par domaine).
+
+Attendu : « System check identified no issues ». `DATABASE_URL`, `MASTER_KEY`,
+`REDIS_URL` et `DJANGO_SECRET_KEY` viennent de `.env`. `prod.py` refuse une clé
+secrète de moins de 50 caractères ou commençant par `change-me` : remplace celle
+de `.env.example` avant. `.env` est lu comme un script shell : une valeur
 contenant des espaces ou des caractères spéciaux doit y être entre guillemets.
 
-**Ferme ensuite ce terminal** : `set -a` a exporté tous les secrets de `.env`
-(`MASTER_KEY`, mots de passe) dans le shell : tout programme lancé ensuite depuis
-ce terminal en hériterait.
+**Jamais `source .env` dans le terminal** : `set -a` y exporterait tous les secrets
+de `.env`, et `DJANGO_SETTINGS_MODULE=config.settings.dev`, que pytest prendrait
+au lieu des réglages de test (`scripts/test_all.sh` et `conftest.py` refusent
+alors de démarrer). Toute commande qui a besoin de `.env` se lance dans un
+sous-shell `( … )`.
 
 ## Données
 
