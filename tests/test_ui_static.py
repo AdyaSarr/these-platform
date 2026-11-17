@@ -25,10 +25,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 STATIC = BASE_DIR / "static"
 CSS_DIR = STATIC / "css"
 VENDOR = STATIC / "vendor"
-# Link order = layer order. legacy (the styles of the modules before the redesign)
-# comes before components: a later layer wins whatever the specificity.
-CSS_FILES = ["base.css", "layout.css", "legacy.css", "components.css"]
-LAYERS = "@layer reset, tokens, base, layout, legacy, components, utilities;"
+# Link order = layer order: a later layer wins whatever the specificity. The
+# legacy layer (styles from before the redesign) is gone: its rules live in
+# components.css (review B).
+CSS_FILES = ["base.css", "layout.css", "components.css"]
+LAYERS = "@layer reset, tokens, base, layout, components, utilities;"
 
 # --------------------------------------------------------------------------- templates
 

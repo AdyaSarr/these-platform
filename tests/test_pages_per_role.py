@@ -55,6 +55,17 @@ def _assert_structure(page: str, prefix: str, where: object) -> None:
     assert not LINK_BAR.search(content), (where, LINK_BAR.search(content))
 
 
+PRIMARY = re.compile(r'<button\b[^>]*class="[^"]*\bbtn-primary\b|<a\b[^>]*class="btn btn-primary"')
+
+
+def _crowded_blocks(page: str) -> list[str]:
+    """The forms and sections of a page with more than one primary button."""
+    blocks = re.findall(r"<form\b.*?</form>", page, re.S)
+    blocks += re.findall(r"<section\b.*?</section>", page, re.S)
+    blocks += re.findall(r'<header class="page-header">.*?</header>', page, re.S)
+    return [b[:70] for b in blocks if len(PRIMARY.findall(b)) > 1]
+
+
 def _links(html: str, prefix: str) -> set[str]:
     return {
         url
@@ -63,7 +74,9 @@ def _links(html: str, prefix: str) -> set[str]:
     }
 
 
-def _crawl(client: Client, start: str, prefix: str, role: Role) -> dict[str, int]:
+def _crawl(
+    client: Client, start: str, prefix: str, role: Role, crowded: list[object] | None = None
+) -> dict[str, int]:
     from apps.ui.navigation import NAV
 
     expected_nav = [item.key for item in NAV if item.action in ROLE_ACTIONS[role]]
@@ -88,6 +101,8 @@ def _crawl(client: Client, start: str, prefix: str, role: Role) -> dict[str, int
             assert sidebar is not None, (role, url)
             assert len(re.findall(r'aria-current="page"', sidebar.group(0))) <= 1, (role, url)
             _assert_structure(page, prefix, (role, url))
+            if crowded is not None:
+                crowded.extend((role.value, url, b) for b in _crowded_blocks(page))
             tabs = re.search(r'<nav class="tabs".*?</nav>', page, re.S)
             if tabs is not None:
                 assert len(re.findall(r'aria-current="page"', tabs.group(0))) <= 1, (role, url)
@@ -103,12 +118,14 @@ def test_every_reachable_page_renders_for_every_role(settings) -> None:  # type:
     thesis = Thesis.objects.get(title=scenario.DEMO_TITLE)
     prefix = f"/t/{thesis.pk}/"
     reached = {}
+    crowded: list[object] = []  # one primary button per form and per block (review B)
     for role in ROLES:
         user = Membership.objects.active().get(thesis=thesis, role=role).user
         enroll_totp(user)  # demo accounts have no factor yet: the middleware would redirect
         client = Client()
         client.force_login(user)
-        reached[role] = _crawl(client, prefix, prefix, role)
+        reached[role] = _crawl(client, prefix, prefix, role, crowded)
+    assert crowded == [], "\n".join(map(str, crowded))
     # The crawl really went through the modules.
     assert len([u for u, s in reached[Role.PHD_STUDENT].items() if s == 200]) > 30
     for role in ROLES:
