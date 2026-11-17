@@ -51,6 +51,7 @@ def _models() -> dict[str, Any]:
     """{object type: model}, imported here: the business modules import this app."""
     from apps.admin_file.models import RequiredItem
     from apps.conferences.models import StApproval, Submission, SubmissionDocument
+    from apps.feeds.models import CalendarFeed
     from apps.meetings.models import ActionItem, Meeting, MeetingDocument
     from apps.objectives.models import Objective, ObjectiveComment
     from apps.travel.models import Mission, MissionOrder
@@ -71,6 +72,7 @@ def _models() -> dict[str, Any]:
         T.MISSION: Mission,
         T.ORDER: MissionOrder,
         T.MEMBERSHIP: Membership,
+        T.FEED: CalendarFeed,
     }
 
 
@@ -91,6 +93,7 @@ THESIS_PATH: dict[str, str] = {
     T.MISSION: "thesis",
     T.ORDER: "mission__thesis",
     T.MEMBERSHIP: "thesis",
+    T.FEED: "thesis",
 }
 
 
@@ -159,6 +162,8 @@ RULES: dict[str, Callable[[Any, Any], bool]] = {
     T.MISSION: _mission,
     T.ORDER: lambda u, o: _mission(u, o.mission),
     T.MEMBERSHIP: lambda u, o: can(u, Action.VIEW_TEAM, o.thesis),
+    # M12: one's own live feed only.
+    T.FEED: lambda u, o: o.user_id == u.pk and o.revoked_at is None,
 }
 
 
@@ -216,6 +221,7 @@ def readable_events(user: Any, thesis: Thesis) -> QuerySet[Event]:
     """The events of ``thesis`` that ``user`` reads: exactly {e | reads(user, e)}."""
     from apps.admin_file.models import SECTION_READ_ACTION, RequiredItem, Section
     from apps.conferences.models import StApproval, Submission, SubmissionDocument
+    from apps.feeds.models import CalendarFeed
     from apps.meetings.models import ActionItem, Meeting, MeetingDocument
     from apps.objectives.models import Objective, ObjectiveComment
     from apps.travel.models import Mission, MissionOrder
@@ -271,6 +277,9 @@ def readable_events(user: Any, thesis: Thesis) -> QuerySet[Event]:
         T.MISSION: ids(missions),
         T.ORDER: ids(MissionOrder.objects.filter(mission__in=missions)),
         T.MEMBERSHIP: ids(team),
+        T.FEED: ids(
+            CalendarFeed.objects.filter(thesis=thesis, user_id=user.pk, revoked_at__isnull=True)
+        ),
     }
     condition = Q()
     for object_type, readable in rules.items():

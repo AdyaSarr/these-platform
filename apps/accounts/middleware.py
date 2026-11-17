@@ -18,6 +18,9 @@ _ALLOWED_PREFIXES = (
 )
 
 
+FEED_PREFIX = "/ical/"
+
+
 class MfaRequiredMiddleware:
     """Every authenticated request needs an enrolled TOTP or WebAuthn factor.
 
@@ -31,6 +34,10 @@ class MfaRequiredMiddleware:
         self.allowed = ("/" + settings.STATIC_URL.lstrip("/"), *_ALLOWED_PREFIXES)
 
     def __call__(self, request: HttpRequest) -> HttpResponse:
+        # M12: the iCal feed reads neither the user nor the session: the path is
+        # checked first, so that request.user is never evaluated there.
+        if request.path.startswith(FEED_PREFIX):
+            return self.get_response(request)
         user = request.user
         if (
             user.is_authenticated

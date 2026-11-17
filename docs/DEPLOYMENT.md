@@ -54,7 +54,8 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       			wrap json
       			fields {
       				# Jetons : 43 caractères base64url ; /invitation/accept/ reste lisible.
-      				request>uri regexp ^/invitation/[A-Za-z0-9_-]{20,}/ /invitation/[masque]/
+      				# Invitations (M1) et flux iCal (M12) dans une même expression.
+      				request>uri regexp ^/(invitation|ical)/[A-Za-z0-9_-]{20,} /${1}/[masque]
       				request>headers>Referer delete
       				request>headers>Cookie delete
       			}
@@ -74,6 +75,17 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       de Caddy déployée (la syntaxe de `format filter` a évolué en 2.8) ; ouvrir un
       lien d'invitation puis `grep <jeton> /var/log/caddy/these-access.log` : aucune
       occurrence.
+
+- [ ] **Jetons des flux iCal absents des journaux d'accès du proxy (M12).**
+      La règle fusionnée ci-dessus couvre les deux chemins
+      (`/invitation/<jeton>/` et `/ical/<jeton>.ics`) ; à confirmer par
+      `caddy validate` et le `grep -c` ci-dessous sur la version déployée. *Pourquoi* : le jeton est un secret porteur, sans second
+      facteur, valable 12 mois ; une application d'agenda le relit toutes les
+      heures, chaque requête écrirait l'URL complète. Côté Django, le filtre
+      `TokenPathFilter` masque déjà le chemin dans toutes les lignes.
+      *Vérifier* : créer un lien d'abonnement, le lire une fois
+      (`curl -s -o /dev/null <url>`), puis
+      `grep -c '/ical/[A-Za-z0-9_-]\{20,\}' /var/log/caddy/these-access.log` : `0`.
 
 - [ ] **Vraie adresse IP du client transmise à Django (M1).** Le proxy fixe
       `REMOTE_ADDR` (ou un en-tête de confiance lu par un middleware dédié) à
@@ -276,6 +288,17 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       n'envoie rien deux fois. `activity_purge` supprime les événements de plus
       de 13 mois, avec leurs lectures et leurs courriels.
       *Vérifier* : la sortie des deux commandes ne contient que des nombres.
+
+- [ ] **Flux iCal (M12) : un timer quotidien.**
+      *Timer systemd*, chaque jour à 06 h 30 Europe/Paris (`Persistent=true`) :
+      ```
+      manage.py feeds_daily
+      ```
+      Révoque les liens expirés (12 mois) et ceux des thèses soutenues ou closes
+      (journalisé, raison seule) ; écrit, 14 jours avant l'expiration, un avis
+      « Échéances » (une fois par lien ; le courriel suit les préférences, un lien
+      seulement). La relancer ne fait rien deux fois. *Vérifier* : la sortie ne
+      contient que des nombres.
 
 ## Rappels de configuration
 

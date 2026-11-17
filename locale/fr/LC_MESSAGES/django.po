@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-17 18:09+0100\n"
+"POT-Creation-Date: 2026-11-17 22:47+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -219,14 +219,14 @@ msgstr "appartenances"
 msgid "Queued"
 msgstr "En file d'attente"
 
-#: apps/accounts/models.py:273 apps/activity/choices.py:100
+#: apps/accounts/models.py:273 apps/activity/choices.py:103
 #: apps/admin_file/models.py:301 apps/conferences/models.py:520
 #: apps/meetings/models.py:343 apps/objectives/models.py:356
 #: apps/travel/choices.py:140
 msgid "Sent"
 msgstr "Envoyé"
 
-#: apps/accounts/models.py:274 apps/activity/choices.py:101
+#: apps/accounts/models.py:274 apps/activity/choices.py:104
 #: apps/admin_file/models.py:302 apps/conferences/models.py:521
 #: apps/meetings/models.py:344 apps/objectives/models.py:357
 #: apps/travel/choices.py:141
@@ -340,38 +340,38 @@ msgstr "Cette thèse a déjà un·e doctorant·e."
 msgid "The PhD student cannot be removed from their thesis."
 msgstr "Le ou la doctorant·e ne peut pas être retiré·e de sa thèse."
 
-#: apps/accounts/services.py:200 apps/accounts/services.py:224
+#: apps/accounts/services.py:200 apps/accounts/services.py:228
 msgid "This membership is not active."
 msgstr "Cette appartenance n'est pas active."
 
-#: apps/accounts/services.py:219 apps/accounts/services.py:366
+#: apps/accounts/services.py:223 apps/accounts/services.py:375
 msgid "The PhD student role cannot be given or taken away."
 msgstr "Le rôle de doctorant·e ne peut être ni attribué ni retiré."
 
-#: apps/accounts/services.py:221
+#: apps/accounts/services.py:225
 msgid "This person already holds this role."
 msgstr "Cette personne a déjà ce rôle."
 
-#: apps/accounts/services.py:268
+#: apps/accounts/services.py:277
 #, python-format
 msgid "The extension must be between 1 and %(max)d days."
 msgstr "La prolongation doit être comprise entre 1 et %(max)d jours."
 
-#: apps/accounts/services.py:274
+#: apps/accounts/services.py:283
 msgid "Only a CSI membership can be extended."
 msgstr "Seule l'appartenance d'un membre du CSI peut être prolongée."
 
-#: apps/accounts/services.py:276
+#: apps/accounts/services.py:285
 msgid "An expired CSI membership cannot be extended; invite again."
 msgstr ""
 "Une appartenance CSI expirée ne peut pas être prolongée : invitez à nouveau "
 "la personne."
 
-#: apps/accounts/services.py:317
+#: apps/accounts/services.py:326
 msgid "Invalid email address."
 msgstr "Adresse électronique invalide."
 
-#: apps/accounts/services.py:448
+#: apps/accounts/services.py:457
 msgid "This invitation is no longer open."
 msgstr "Cette invitation n'est plus ouverte."
 
@@ -411,41 +411,41 @@ msgstr "Invitation révoquée."
 msgid "Active"
 msgstr "Active"
 
-#: apps/accounts/views.py:42 apps/activity/views.py:33 apps/ui/navigation.py:50
+#: apps/accounts/views.py:42 apps/activity/views.py:34 apps/ui/navigation.py:50
 #: templates/accounts/team.html:3 templates/accounts/team.html:5
 msgid "Team"
 msgstr "Équipe"
 
-#: apps/accounts/views.py:49 apps/activity/views.py:29 apps/ui/navigation.py:40
+#: apps/accounts/views.py:49 apps/activity/views.py:30 apps/ui/navigation.py:40
 #: templates/objectives/dashboard.html:2 templates/objectives/dashboard.html:4
 #: templates/objectives/detail.html:5
 msgid "Objectives"
 msgstr "Objectifs"
 
-#: apps/accounts/views.py:57 apps/activity/views.py:30 apps/ui/navigation.py:42
+#: apps/accounts/views.py:57 apps/activity/views.py:31 apps/ui/navigation.py:42
 #: apps/ui/tabs.py:57 apps/ui/tabs.py:59 templates/meetings/list.html:2
 #: templates/meetings/list.html:5
 msgid "Meetings"
 msgstr "Réunions"
 
-#: apps/accounts/views.py:64 apps/activity/views.py:31 apps/ui/navigation.py:44
+#: apps/accounts/views.py:64 apps/activity/views.py:32 apps/ui/navigation.py:44
 #: apps/ui/tabs.py:64 templates/conferences/deadlines.html:2
 #: templates/conferences/deadlines.html:5
 msgid "Conferences"
 msgstr "Conférences"
 
-#: apps/accounts/views.py:71 apps/activity/views.py:32 apps/ui/navigation.py:46
+#: apps/accounts/views.py:71 apps/activity/views.py:33 apps/ui/navigation.py:46
 #: apps/ui/tabs.py:79 templates/travel/_links.html:3
 msgid "Travel"
 msgstr "Déplacements"
 
-#: apps/accounts/views.py:78 apps/activity/views.py:27 apps/ui/navigation.py:48
+#: apps/accounts/views.py:78 apps/activity/views.py:28 apps/ui/navigation.py:48
 #: templates/conferences/submission.html:40
 #: templates/vault/document_list.html:2 templates/vault/document_list.html:4
 msgid "Documents"
 msgstr "Documents"
 
-#: apps/accounts/views.py:87 apps/activity/views.py:28
+#: apps/accounts/views.py:87 apps/activity/views.py:29
 #: apps/admin_file/services.py:279 apps/ui/navigation.py:38
 #: templates/accounts/dashboard.html:32 templates/admin_file/file.html:2
 #: templates/admin_file/file.html:4 templates/admin_file/item_page.html:6
@@ -577,91 +577,102 @@ msgstr "Départ d'un membre"
 msgid "Objective overdue"
 msgstr "Objectif en retard"
 
-#: apps/activity/choices.py:80 apps/activity/views.py:96
+#: apps/activity/choices.py:40
+msgid "Calendar subscription expiring"
+msgstr "Abonnement agenda bientôt expiré"
+
+#: apps/activity/choices.py:83 apps/activity/views.py:97
 #: templates/activity/digest.html:10
 msgid "Information"
 msgstr "Informations"
 
-#: apps/activity/choices.py:81 apps/activity/views.py:98
+#: apps/activity/choices.py:84 apps/activity/views.py:99
 msgid "Asks you to act"
 msgstr "Vous demande d'agir"
 
-#: apps/activity/choices.py:82 apps/activity/views.py:101
+#: apps/activity/choices.py:85 apps/activity/views.py:102
 msgid "Deadline reminders"
 msgstr "Rappels d'échéance"
 
-#: apps/activity/choices.py:86
+#: apps/activity/choices.py:89
 msgid "At once, one e-mail per element"
 msgstr "Immédiatement, un courriel par élément"
 
-#: apps/activity/choices.py:87 apps/activity/choices.py:94
+#: apps/activity/choices.py:90 apps/activity/choices.py:97
 msgid "Daily digest"
 msgstr "Résumé quotidien"
 
-#: apps/activity/choices.py:88
+#: apps/activity/choices.py:91
 msgid "Weekly digest (Monday)"
 msgstr "Résumé hebdomadaire (le lundi)"
 
-#: apps/activity/choices.py:89
+#: apps/activity/choices.py:92
 msgid "No e-mail: the Activity page only"
 msgstr "Aucun courriel : la page Activité seulement"
 
-#: apps/activity/choices.py:93
+#: apps/activity/choices.py:96
 msgid "One element"
 msgstr "Un élément"
 
-#: apps/activity/choices.py:95
+#: apps/activity/choices.py:98
 msgid "Weekly digest"
 msgstr "Résumé hebdomadaire"
 
-#: apps/activity/choices.py:99 apps/admin_file/models.py:300
+#: apps/activity/choices.py:102 apps/admin_file/models.py:300
 #: apps/admin_file/models.py:415 apps/conferences/models.py:342
 #: apps/conferences/models.py:519 apps/meetings/models.py:342
 #: apps/objectives/models.py:355
 msgid "Pending"
 msgstr "En attente"
 
-#: apps/activity/choices.py:102 apps/admin_file/models.py:303
+#: apps/activity/choices.py:105 apps/admin_file/models.py:303
 #: apps/conferences/models.py:522 apps/meetings/models.py:345
 #: apps/objectives/models.py:358
 msgid "Not sent: no longer concerned or due"
 msgstr "Non envoyé : destinataire plus concerné ou envoi plus dû"
 
-#: apps/activity/choices.py:103 apps/admin_file/models.py:304
+#: apps/activity/choices.py:106 apps/admin_file/models.py:304
 #: apps/conferences/models.py:523 apps/meetings/models.py:346
 #: apps/travel/choices.py:143
 msgid "Waiting for a digest"
 msgstr "En attente d'un résumé"
 
-#: apps/activity/choices.py:104 apps/admin_file/models.py:305
+#: apps/activity/choices.py:107 apps/admin_file/models.py:305
 #: apps/conferences/models.py:524 apps/meetings/models.py:347
 #: apps/travel/choices.py:144
 msgid "Sent in a digest"
 msgstr "Envoyé dans un résumé"
 
-#: apps/activity/labels.py:76
+#: apps/activity/labels.py:85
 #, python-format
 msgid "%(category)s objective · due %(date)s"
 msgstr "Objectif (%(category)s) · échéance %(date)s"
 
-#: apps/activity/labels.py:104
+#: apps/activity/labels.py:113
 #, python-format
 msgid "Action due %(date)s · %(meeting)s"
 msgstr "Action pour le %(date)s · %(meeting)s"
 
-#: apps/activity/labels.py:115
+#: apps/activity/labels.py:124
 msgid "A member"
 msgstr "Un membre"
 
-#: apps/activity/preferences.py:82
+#: apps/activity/labels.py:126
+#, python-format
+msgid "expires %(date)s"
+msgstr "expire le %(date)s"
+
+#: apps/activity/preferences.py:84
 msgid "Unknown frequency."
 msgstr "Fréquence inconnue."
 
-#: apps/activity/preferences.py:85
+#: apps/activity/preferences.py:87
 msgid "This frequency is not possible for these e-mails: they ask you to act."
-msgstr "Cette fréquence n'est pas possible pour ces courriels : ils vous demandent d'agir."
+msgstr ""
+"Cette fréquence n'est pas possible pour ces courriels : ils vous demandent "
+"d'agir."
 
-#: apps/activity/views.py:55
+#: apps/activity/views.py:56
 msgid "Everything"
 msgstr "Tout"
 
@@ -1894,6 +1905,34 @@ msgid "This time happens twice in this time zone (change to winter time)."
 msgstr ""
 "Cette heure a lieu deux fois dans ce fuseau (retour à l'heure d'hiver)."
 
+#: apps/feeds/calendar.py:53 apps/feeds/calendar.py:88
+#: apps/feeds/calendar.py:159 apps/meetings/ics.py:53 apps/travel/ics.py:62
+msgid "Details on the platform:"
+msgstr "Détails sur la plateforme :"
+
+#: apps/feeds/calendar.py:109
+msgid "Administrative file: a piece to file"
+msgstr "Dossier administratif : pièce à déposer"
+
+#: apps/feeds/calendar.py:118
+msgid "Administrative file: a piece to validate"
+msgstr "Dossier administratif : pièce à valider"
+
+#: apps/feeds/calendar.py:148
+#, python-format
+msgid "Deadline: %(kind)s"
+msgstr "Échéance : %(kind)s"
+
+#: apps/feeds/calendar.py:204
+#, python-format
+msgid "Objective due (%(category)s)"
+msgstr "Échéance d'objectif (%(category)s)"
+
+#: apps/feeds/calendar.py:227 templates/base.html:10 templates/base.html:26
+#: templates/base.html:43 templates/base.html:45
+msgid "CIFRE thesis"
+msgstr "Thèse CIFRE"
+
 #: apps/meetings/forms.py:23
 msgid ""
 "Sealed at the meeting's level: readers without this level see « Restricted "
@@ -1990,10 +2029,6 @@ msgstr "Au"
 #: apps/meetings/forms.py:218
 msgid "Include withdrawn decisions"
 msgstr "Inclure les décisions retirées"
-
-#: apps/meetings/ics.py:80 apps/travel/ics.py:60
-msgid "Details on the platform:"
-msgstr "Détails sur la plateforme :"
 
 #: apps/meetings/models.py:53
 msgid "Meeting with the ST tutor"
@@ -2997,12 +3032,12 @@ msgstr "Payeur"
 msgid "Budget (euros)"
 msgstr "Budget (euros)"
 
-#: apps/travel/ics.py:31 templates/travel/mission.html:2
+#: apps/travel/ics.py:33 templates/travel/mission.html:2
 #: templates/travel/mission.html:5
 msgid "Mission"
 msgstr "Mission"
 
-#: apps/travel/ics.py:34
+#: apps/travel/ics.py:36
 msgctxt "ics"
 msgid "Trip"
 msgstr "Déplacement"
@@ -4071,14 +4106,21 @@ msgstr "Pour cette thèse seulement."
 msgid ""
 "Information: a new document, piece, submission, mission, objective, comment "
 "or team change you can read."
-msgstr "Informations : un nouveau document, une pièce, une soumission, une mission, un objectif, un commentaire ou un changement dans l'équipe que vous pouvez lire."
+msgstr ""
+"Informations : un nouveau document, une pièce, une soumission, une mission, "
+"un objectif, un commentaire ou un changement dans l'équipe que vous pouvez "
+"lire."
 
 #: templates/activity/preferences.html:7
 msgid ""
 "Asks you to act (approvals to decide, pieces to validate, minutes to "
 "approve, an action assigned to you) and deadline reminders cannot be turned "
 "off: you only choose how often. Each e-mail holds a link only."
-msgstr "Ce qui vous demande d'agir (accords à décider, pièces à valider, comptes rendus à approuver, action qui vous est assignée) et les rappels d'échéance ne peuvent pas être coupés : vous choisissez seulement leur fréquence. Chaque courriel ne contient qu'un lien."
+msgstr ""
+"Ce qui vous demande d'agir (accords à décider, pièces à valider, comptes "
+"rendus à approuver, action qui vous est assignée) et les rappels d'échéance "
+"ne peuvent pas être coupés : vous choisissez seulement leur fréquence. "
+"Chaque courriel ne contient qu'un lien."
 
 #: templates/activity/preferences.html:8 templates/conferences/policy.html:12
 #: templates/conferences/submission_form.html:8
@@ -4089,7 +4131,7 @@ msgstr "Ce qui vous demande d'agir (accords à décider, pièces à valider, com
 msgid "Save"
 msgstr "Enregistrer"
 
-#: templates/activity/preferences.html:9
+#: templates/activity/preferences.html:10
 msgid "Back to the activity"
 msgstr "Retour à l'activité"
 
@@ -4256,11 +4298,6 @@ msgstr "Proposer cette échéance"
 #: templates/admin_file/new_item.html:8
 msgid "Add the item"
 msgstr "Ajouter la pièce"
-
-#: templates/base.html:10 templates/base.html:26 templates/base.html:43
-#: templates/base.html:45
-msgid "CIFRE thesis"
-msgstr "Thèse CIFRE"
 
 #: templates/base.html:20
 msgid "Skip to content"
@@ -4440,7 +4477,7 @@ msgstr "Pas des travaux ST : aucun accord nécessaire"
 
 #: templates/conferences/submission.html:19
 #: templates/conferences/submission.html:71
-#: templates/conferences/submission.html:119
+#: templates/conferences/submission.html:119 templates/feeds/_block.html:16
 #: templates/objectives/dashboard.html:85 templates/objectives/detail.html:39
 #: templates/objectives/detail.html:80 templates/travel/mission.html:51
 #: templates/travel/mission.html:91 templates/travel/settings.html:18
@@ -4603,6 +4640,105 @@ msgid ""
 "You do not have access to any thesis. Access is granted by invitation only."
 msgstr ""
 "Vous n'avez accès à aucune thèse. L'accès se fait uniquement sur invitation."
+
+#: templates/feeds/_block.html:3 templates/feeds/created.html:2
+#: templates/feeds/created.html:4
+msgid "Calendar subscription"
+msgstr "Abonnement agenda"
+
+#: templates/feeds/_block.html:4
+msgid ""
+"A personal link for Calendar (iPhone) or another client: your meetings, the "
+"due dates that concern you, your missions. Whoever has the link reads it "
+"without a password."
+msgstr "Un lien personnel pour Calendrier (iPhone) ou un autre client : vos réunions, les échéances qui vous concernent, vos missions. Quiconque a le lien le lit sans mot de passe."
+
+#: templates/feeds/_block.html:7
+#, python-format
+msgid "Created on %(date)s"
+msgstr "Créé le %(date)s"
+
+#: templates/feeds/_block.html:8
+#, python-format
+msgid "Expires on %(date)s"
+msgstr "Expire le %(date)s"
+
+#: templates/feeds/_block.html:9
+#, python-format
+msgid "Last used: %(date)s"
+msgstr "Dernière utilisation : le %(date)s"
+
+#: templates/feeds/_block.html:9
+msgid "Last used: never"
+msgstr "Dernière utilisation : jamais"
+
+#: templates/feeds/_block.html:12
+msgid "Regenerate the link"
+msgstr "Régénérer le lien"
+
+#: templates/feeds/_block.html:12
+msgid ""
+"The current link stops working at once; a new one is shown once. Asks for "
+"your second factor."
+msgstr "Le lien actuel cesse de fonctionner aussitôt ; un nouveau est affiché une seule fois. Demande votre second facteur."
+
+#: templates/feeds/_block.html:12
+msgid "Yes, regenerate"
+msgstr "Oui, régénérer"
+
+#: templates/feeds/_block.html:13
+msgid "Revoke the link"
+msgstr "Révoquer le lien"
+
+#: templates/feeds/_block.html:13
+msgid "The link stops working at once."
+msgstr "Le lien cesse de fonctionner aussitôt."
+
+#: templates/feeds/_block.html:13
+msgid "Yes, revoke"
+msgstr "Oui, révoquer"
+
+#: templates/feeds/_block.html:16
+msgid "Create the link"
+msgstr "Créer le lien"
+
+#: templates/feeds/created.html:4
+msgid "Copy this link now: it will not be shown again."
+msgstr "Copiez ce lien maintenant : il ne sera plus affiché."
+
+#: templates/feeds/created.html:5
+msgid ""
+"This link is a secret: whoever has it reads your calendar without a "
+"password. Never share it; regenerate it if it has leaked."
+msgstr "Ce lien est un secret : quiconque l'a lit votre agenda sans mot de passe. Ne le partagez jamais ; régénérez-le s'il a fuité."
+
+#: templates/feeds/created.html:6
+msgid "Subscription link"
+msgstr "Lien d'abonnement"
+
+#: templates/feeds/created.html:7
+msgid "Open in the calendar of this device"
+msgstr "Ouvrir dans le calendrier de cet appareil"
+
+#: templates/feeds/created.html:8
+msgid "On an iPhone (recommended)"
+msgstr "Sur un iPhone (recommandé)"
+
+#: templates/feeds/created.html:9
+msgid ""
+"Settings › Calendar › Accounts › Add Account › Other › Add Subscribed "
+"Calendar, then paste the link."
+msgstr "Réglages › Calendrier › Comptes › Ajouter un compte › Autre › Ajouter un calendrier avec abonnement, puis collez le lien."
+
+#: templates/feeds/created.html:10
+msgid ""
+"A subscription added in iCloud (from a Mac or iCloud.com) is read again by "
+"Apple's servers: prefer adding it on the device."
+msgstr "Un abonnement ajouté dans iCloud (depuis un Mac ou iCloud.com) est relu par les serveurs d'Apple : préférez l'ajout sur l'appareil."
+
+#: templates/feeds/created.html:11
+msgid "Back to my notifications"
+msgstr "Retour à mes notifications"
 
 #: templates/meetings/_objective_actions.html:9
 msgid "No action linked to this objective."

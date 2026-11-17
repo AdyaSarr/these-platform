@@ -36,8 +36,10 @@ def _mfa_browser(user: Any) -> Any:
 
     from apps.accounts.tests.helpers import mfa_login
 
-    client = Client(enforce_csrf_checks=True)
-    mfa_login(client, user, h.PASSWORD)
+    signed = Client()  # the sign-in itself, as a test helper does it
+    mfa_login(signed, user, h.PASSWORD)
+    client = Client(enforce_csrf_checks=True)  # then a browser that checks CSRF
+    client.cookies = signed.cookies
     return client
 
 
@@ -78,9 +80,13 @@ def test_create_without_a_recent_second_factor_asks_for_it(team: SimpleNamespace
 
 @pytest.mark.parametrize("role", ["csi", "guest", "outsider"])
 def test_create_is_refused_to_excluded_roles(team: SimpleNamespace, role: str) -> None:
-    browser = _mfa_browser(getattr(team, role))
-    page = h.browser_post(browser, reverse("core:home"), h.page(team, "create"), {})
-    assert page.status_code == 403
+    from django.test import Client
+
+    from apps.accounts.tests.helpers import mfa_login
+
+    signed = Client()  # a recent second factor: only the role is refused (CSRF: elsewhere)
+    mfa_login(signed, getattr(team, role), h.PASSWORD)
+    assert signed.post(h.page(team, "create")).status_code == 403
     assert not CalendarFeed.objects.exists()
 
 

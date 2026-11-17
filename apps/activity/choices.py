@@ -37,6 +37,7 @@ class EventKind(models.TextChoices):
     MEMBER_ROLE_CHANGED = "MEMBER_ROLE_CHANGED", _("Role changed")
     MEMBER_LEFT = "MEMBER_LEFT", _("Member left")
     OBJECTIVE_OVERDUE = "OBJECTIVE_OVERDUE", _("Objective overdue")
+    CALENDAR_FEED_EXPIRING = "CALENDAR_FEED_EXPIRING", _("Calendar subscription expiring")
 
 
 class ObjectType(models.TextChoices):
@@ -54,6 +55,7 @@ class ObjectType(models.TextChoices):
     MISSION = "MISSION", "MISSION"
     ORDER = "ORDER", "ORDER"
     MEMBERSHIP = "MEMBERSHIP", "MEMBERSHIP"
+    FEED = "FEED", "FEED"  # M12: one's own iCal feed
 
 
 # The module each type belongs to: the filter of the Activity page.
@@ -72,6 +74,7 @@ MODULE_OF: dict[str, str] = {
     ObjectType.MISSION: "travel",
     ObjectType.ORDER: "travel",
     ObjectType.MEMBERSHIP: "team",
+    ObjectType.FEED: "team",
 }
 MODULES = ("documents", "admin_file", "objectives", "meetings", "conferences", "travel", "team")
 
@@ -139,6 +142,7 @@ EMAIL_OF: dict[str, str] = {
     K.MEMBER_ROLE_CHANGED: "INFO",
     K.MEMBER_LEFT: "INFO",
     K.OBJECTIVE_OVERDUE: "INFO",  # Échéances for the student (notifications.category_for)
+    K.CALENDAR_FEED_EXPIRING: "INFO",  # Échéances for its owner (notifications.category_for)
 }
 
 

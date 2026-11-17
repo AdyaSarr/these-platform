@@ -1,0 +1,18 @@
+{% load i18n ui %}{# M12: never the URL here (shown once, at creation). #}
+<section aria-labelledby="calendar-feed-title">
+<h2 id="calendar-feed-title">{% translate "Calendar subscription" %}</h2>
+<p class="muted">{% translate "A personal link for Calendar (iPhone) or another client: your meetings, the due dates that concern you, your missions. Whoever has the link reads it without a password." %}</p>
+{% if calendar_feed.feed %}
+<ul>
+  <li>{% blocktranslate with date=calendar_feed.feed.created_at|date:"j F Y" %}Created on {{ date }}{% endblocktranslate %}</li>
+  <li>{% blocktranslate with date=calendar_feed.feed.expires_on|date:"j F Y" %}Expires on {{ date }}{% endblocktranslate %}</li>
+  <li>{% if calendar_feed.feed.last_used_on %}{% blocktranslate with date=calendar_feed.feed.last_used_on|date:"j F Y" %}Last used: {{ date }}{% endblocktranslate %}{% else %}{% translate "Last used: never" %}{% endif %}</li>
+</ul>
+<div class="confirm-row">
+{% url 'feeds:regenerate' thesis_id=thesis.pk as regenerate_url %}{% include "ui/confirm.html" with label=_("Regenerate the link") message=_("The current link stops working at once; a new one is shown once. Asks for your second factor.") action=regenerate_url confirm_label=_("Yes, regenerate") %}
+{% url 'feeds:revoke' thesis_id=thesis.pk as revoke_url %}{% include "ui/confirm.html" with label=_("Revoke the link") message=_("The link stops working at once.") action=revoke_url confirm_label=_("Yes, revoke") %}
+</div>
+{% else %}
+<form method="post" action="{% url 'feeds:create' thesis_id=thesis.pk %}">{% csrf_token %}<button type="submit" class="btn-primary">{% translate "Create the link" %}</button> <span class="muted">{% translate "Asks for your second factor." %}</span></form>
+{% endif %}
+</section>

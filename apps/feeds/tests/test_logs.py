@@ -43,7 +43,8 @@ def test_the_filter_masks_a_token_in_a_message_and_its_arguments() -> None:
 def test_the_filter_is_on_every_handler() -> None:
     from django.conf import settings
 
-    for name, handler in settings.LOGGING["handlers"].items():
+    handlers: dict[str, dict[str, Any]] = settings.LOGGING["handlers"]  # type: ignore[assignment]
+    for name, handler in handlers.items():
         assert "token_path" in handler.get("filters", []), name
 
 
@@ -89,6 +90,6 @@ def test_the_runserver_request_line_masks_the_token(
     _feed, token = h.new_feed(team.director, team.thesis)
     for path in (h.feed_url(token), "/ical/" + "z" * 43 + ".ics"):
         with contextlib.suppress(urllib.error.HTTPError):
-            urllib.request.urlopen(live_server.url + path, timeout=5)  # noqa: S310
+            urllib.request.urlopen(live_server.url + path, timeout=5)  # noqa: S310  # nosec B310
     captured = " ".join(r.getMessage() for r in caplog.records)
     assert token not in captured and "z" * 43 not in captured

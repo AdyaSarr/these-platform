@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% load i18n ui %}
+{% block title %}{% translate "Calendar subscription" %}{% endblock %}
+{% block content %}
+{% page_header %}{% translate "Calendar subscription" %}{% subtitle %}{% translate "Copy this link now: it will not be shown again." %}{% endpage_header %}
+<p class="message message-warning" role="alert">{% translate "This link is a secret: whoever has it reads your calendar without a password. Never share it; regenerate it if it has leaked." %}</p>
+<p><label for="feed-url">{% translate "Subscription link" %}</label><br><input id="feed-url" type="text" readonly value="{{ url }}" size="60"></p>
+<p><a href="{{ webcal }}">{% translate "Open in the calendar of this device" %}</a></p>
+<h2>{% translate "On an iPhone (recommended)" %}</h2>
+<p>{% translate "Settings › Calendar › Accounts › Add Account › Other › Add Subscribed Calendar, then paste the link." %}</p>
+<p class="muted">{% translate "A subscription added in iCloud (from a Mac or iCloud.com) is read again by Apple's servers: prefer adding it on the device." %}</p>
+<p><a href="{{ back }}">{% translate "Back to my notifications" %}</a></p>
+{% endblock %}

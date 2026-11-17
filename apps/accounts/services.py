@@ -203,6 +203,10 @@ def end_membership(
         activity.record(
             kind="MEMBER_LEFT", obj=m, object_type="MEMBERSHIP", thesis=m.thesis, actor=by
         )
+        # M12: the person's iCal feed dies with their membership.
+        from apps.feeds.services import revoke_for
+
+        revoke_for(m.user, m.thesis, reason="membership_ended", actor=by)
         audit(AuditAction.MEMBER_REMOVED, actor=by, obj=m, request=request, role=m.role)
         return m
 
@@ -243,6 +247,11 @@ def change_role(
             thesis=m.thesis,
             actor=by,
         )
+        # M12: the iCal feed belonged to the former role: revoked, even if the new
+        # one may have a feed too.
+        from apps.feeds.services import revoke_for
+
+        revoke_for(m.user, m.thesis, reason="role_changed", actor=by)
         audit(
             AuditAction.MEMBER_ROLE_CHANGED,
             actor=by,

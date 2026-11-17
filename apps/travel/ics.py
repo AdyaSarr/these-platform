@@ -18,7 +18,9 @@ from django.utils import translation
 from django.utils.translation import gettext as _
 from django.utils.translation import pgettext
 
-from apps.meetings.ics import CRLF, escape, fold
+from apps.core.ics import CRLF as CRLF
+from apps.core.ics import escape as escape
+from apps.core.ics import fold as fold
 
 from .choices import Destination, MissionStatus
 from .models import Mission

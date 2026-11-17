@@ -25,7 +25,35 @@ def _shared(team: SimpleNamespace, user: Any) -> None:
     for destination, payer, day in (("LIRMM", "LIRMM", 2), ("ROUSSET", "ST", 3),
                                     ("CONFERENCE", "LIRMM", 4)):  # fmt: skip
         h.mission(team, destination, payer, start=h.D(2027, 2, day))
+    from apps.conferences.tests.helpers import deadline_of, default_edition
+
     h.submission(team, L.PUBLIC)
+    deadline_of(team, default_edition(team))  # a deadline the role reads
+    _approved(h.objective(team, L.PUBLIC), team.director)
+
+
+def _approved(objective: Any, by: Any) -> None:
+    """Approved, without the director (who does not read INTERNAL_ST): a fixture."""
+    from apps.objectives.models import Objective
+
+    Objective.objects.filter(pk=objective.pk).update(approved_at=h.NOW, approved_by=by)
+
+
+def _hidden_deadline(team: SimpleNamespace, level: L, tag: str) -> None:
+    """A deadline of an edition that only a submission at ``level`` aims at."""
+    from apps.conferences.tests.helpers import (
+        deadline_of,
+        edition_of,
+        submission_of,
+        venue_of,
+    )
+
+    host = tag.lower().replace("_", "-")
+    venue = venue_of(team, acronym=f"HID{tag}"[:20], url=f"https://hid-{host}.example.org/")
+    edition = edition_of(team, venue=venue)
+    deadline_of(team, edition)
+    submission_of(team, edition=edition, level=level, title="TEMOIN-FUITE-TITRE-ARTICLE",
+                  st_work=level != L.INTERNAL_LIRMM and level != L.PUBLIC)  # fmt: skip
 
 
 def _hidden(team: SimpleNamespace, role: Role, world: str) -> None:
@@ -39,7 +67,10 @@ def _hidden(team: SimpleNamespace, role: Role, world: str) -> None:
                    if r in LEVEL_ROLES[level] and r is not role]  # fmt: skip
         for n in range(2 if world == "a" else 1):
             h.meeting(team, level, days=5 + n, attendees=[team.student, *readers[:1]])
-            h.submission(team, level)
+            h.submission(team, level)  # the shared edition: its deadline is shown anyway
+            _hidden_deadline(team, level, f"{world}{level.value}{n}")
+            if level is not L.INTERNAL_ST:  # an objective is never INTERNAL_ST (M4)
+                _approved(h.objective(team, level), team.director)
     h.meeting(team, L.PUBLIC, days=9, attendees=[team.student, *others[:1]])  # not invited
     if role is R.CO_SUPERVISOR:
         h.mission(team, "ROUSSET", "ST", start=h.D(2027, 3, 1 + (world == "b")))

@@ -35,7 +35,8 @@ def _ics(user: Any, team: SimpleNamespace) -> str:
     _feed, token = h.new_feed(user, team.thesis)
     response = h.fetch(token)
     assert response.status_code == 200
-    return response.content.decode()
+    text: str = response.content.decode()
+    return text
 
 
 def _unfold(text: str) -> str:
@@ -46,7 +47,12 @@ def test_a_meeting_of_the_invitee_only(team: SimpleNamespace) -> None:
     session = h.meeting(team, L.PUBLIC, attendees=[team.student, team.director])
     director = _unfold(_ics(team.director, team))
     assert f"UID:{session.pk}@" in director  # the UID of the M5a export
-    assert "SUMMARY:Réunion d'encadrement" in director
+    from django.utils import translation
+
+    from apps.meetings.ics import summary
+
+    with translation.override("fr"):
+        assert f"SUMMARY:{summary(session)}" in director  # the M5a export's label
     assert "TEMOIN-FUITE" not in director
     assert f"/meetings/{session.pk}/" in director  # a link to its page
     assert str(session.pk) not in _ics(team.co_supervisor, team)  # not invited

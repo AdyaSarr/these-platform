@@ -7,7 +7,7 @@ from typing import Any
 from django.test import Client
 from django.urls import reverse
 
-from apps.activity.tests.helpers import (  # noqa: F401  (re-exported for the tests)
+from apps.activity.tests.helpers import (
     NOW,
     PASSWORD,
     ROLE_ATTRS,
@@ -46,3 +46,10 @@ def fetch(token: str, client: Client | None = None) -> Any:
 
 def page(team: Any, name: str) -> str:
     return reverse(f"feeds:{name}", kwargs={"thesis_id": team.thesis.pk})
+
+
+__all__ = [
+    "ALLOWED_ROLES", "NOW", "PASSWORD", "ROLE_ATTRS", "SITE_ORIGIN", "D", "browser_for",
+    "browser_post", "client_for", "document", "feed_url", "fetch", "item", "make_team",
+    "meeting", "mission", "new_feed", "objective", "page", "pdf", "submission",
+]  # fmt: skip

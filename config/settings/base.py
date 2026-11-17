@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     "apps.conferences",
     "apps.travel",
     "apps.activity",
+    "apps.feeds",
     "apps.ui",  # visual layer: navigation, theme, icons (presentation only)
     # Authentication: sign-in, password reset, mandatory second factor (M1).
     "allauth",
@@ -278,7 +279,15 @@ LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {"plain": {"format": "{asctime} {levelname} {name} {message}", "style": "{"}},
-    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "plain"}},
+    # M12: the token of an iCal feed never reaches a journal (apps.core.logging).
+    "filters": {"token_path": {"()": "apps.core.logging.TokenPathFilter"}},
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "plain",
+            "filters": ["token_path"],
+        }
+    },
     "root": {"handlers": ["console"], "level": "INFO"},
     # SQL queries carry wrapped DEKs and document titles: never logged with their
     # parameters, whatever the root level or DEBUG (tests/test_security_audit_m2.py).

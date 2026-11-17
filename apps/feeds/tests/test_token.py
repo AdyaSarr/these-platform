@@ -39,7 +39,7 @@ def test_256_random_bits_and_the_fingerprint_only(team: SimpleNamespace) -> None
         )
         tables = [row[0] for row in cursor.fetchall()]
         for table in tables:
-            cursor.execute(f'SELECT CAST(t AS text) FROM "{table}" t')  # noqa: S608
+            cursor.execute(f'SELECT CAST(t AS text) FROM "{table}" t')  # noqa: S608  # nosec B608
             assert not any(token in row[0] for row in cursor.fetchall()), table
 
 
@@ -84,7 +84,8 @@ def test_journal_holds_codes_only(team: SimpleNamespace) -> None:
     assert [e.action for e in events] == [
         "CALENDAR_FEED_CREATED", "CALENDAR_FEED_REGENERATED", "CALENDAR_FEED_REVOKED",
     ]  # fmt: skip
-    assert events.last().details_json == {"reason": "user"}
+    last = events.last()
+    assert last is not None and last.details_json == {"reason": "user"}
     for event in events:
         text = str(event.details_json)
         assert token not in text and feed.token_hash not in text
