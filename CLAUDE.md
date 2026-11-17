@@ -98,6 +98,9 @@ la contourner.
 
 - Code, identifiants, commentaires et messages de commit en anglais ; interface en
   français (`gettext`, `LANGUAGE_CODE = "fr-fr"`, `TIME_ZONE = "Europe/Paris"`).
+- Interface : règles de la refonte dans `docs/decisions.md` (2026-11-17) : couches CSS,
+  composants `templates/ui/`, `{% page_header %}`, onglets en `<nav>`, un seul bouton plein
+  par bloc, confirmation `<details>`, plafond CSS de 40 Kio maintenu.
 - Une app Django par module (voir `docs/ARCHITECTURE.md`). Modèles métier hérités de
   `core.TimeStampedModel` ; clés primaires UUID pour tout objet exposé dans une URL.
 - Logique métier dans `services.py`, vues fines, requêtes complexes dans des managers.
