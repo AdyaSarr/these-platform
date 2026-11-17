@@ -216,3 +216,99 @@ entrée « Activité » dans la barre latérale.
     passée à un niveau illisible).
 12. Résumé M4 par `deliver_once` ; lien `ACTION_OVERDUE` vers l'action ; courriels
     existants de M3, M5a, M6, M7 inchangés.
+
+---
+
+# M11b — Courriels existants sous les préférences
+
+Plan validé le 2026-11-17.
+
+## Catégories et fréquences
+
+| Catégorie | Fréquences permises | Défaut |
+|---|---|---|
+| Informations (`INFO`) | immédiat, quotidien, hebdomadaire, fil seulement | quotidien (doctorant), hebdomadaire (encadrants, CSI) |
+| À faire (`ACTION`) | immédiat, quotidien, hebdomadaire | immédiat |
+| Échéances (`DEADLINE`) | immédiat, quotidien | immédiat |
+
+Refusé par `activity.preferences.set_preference` **et** par une contrainte en base
+(`activity_preference_frequencies`) : « fil seulement » hors Informations,
+« hebdomadaire » pour Échéances.
+
+| Module | Courriel | Catégorie |
+|---|---|---|
+| M3 | `J14`, `J3`, `OVERDUE` (doctorant et validateurs) | Échéances |
+| M3 | `DUE_PROPOSED` | À faire |
+| M3 | `DUE_ACCEPTED`, `DUE_REFUSED`, `DUE_CHANGED` | Échéances |
+| M3 | `REOPENED` | Informations |
+| M5a | `INVITED`, `CHANGED`, `CANCELLED`, `REMINDER`, `ACTION_OVERDUE` | Échéances |
+| M5a | `MINUTES` (compte rendu à approuver) | À faire |
+| M6 | `DEADLINE`, `REQUEST_DUE`, `APPROVAL_PENDING` (relance) | Échéances |
+| M6 | `APPROVAL_REQUESTED` | À faire |
+| M6 | `APPROVAL_DECIDED`, `POLICY_CHANGED` | Informations |
+| M7 | `ORDER_TO_REQUEST`, `RECEIPTS_MISSING`, `ORDER_PENDING` (relance) | Échéances |
+| M7 | `ORDER_REQUESTED` | À faire |
+| M7 | `ORDER_DECIDED`, `RULES_CHANGED` | Informations |
+| M11a | pièce déposée, pièce refusée, action assignée | À faire |
+| M4 | objectif changé ou résultat déclaré, à prendre en connaissance (directeur) | À faire |
+| M4 | objectif en retard (`OBJECTIVE_OVERDUE`) : doctorant / autres lecteurs | Échéances / Informations |
+
+## Fondre un courriel dans un résumé
+
+- Chaque file de module (`ReminderLog`, `ItemNotification`, `MeetingNotification`,
+  `ConferenceNotification`, `TravelNotification`) et `ActivityNotification`
+  gagnent deux statuts : `DEFERRED` (attend un résumé) et `DIGESTED` (pris par le
+  résumé `digest`, clé étrangère nullable vers `ActivityNotification`).
+- **Mise en file** (`_queue` de chaque module → `activity.routing.dispatch`) :
+  immédiat → envoi comme aujourd'hui ; quotidien ou hebdomadaire → `DEFERRED`,
+  rien au broker ; fil seulement (Informations) → `SKIPPED`, code `not_wanted`.
+- **Envoi** : `deliver_once(..., route=...)`, contrôlé après thèse ouverte,
+  `concerned` et `still_due` : une ligne dont la préférence est passée à un
+  résumé entre-temps devient `DEFERRED` (jamais perdue) ; passée à fil seulement :
+  `SKIPPED` (`not_wanted`).
+- **Résumé** (`digests.run`, chaque jour à 07:00 ; le lundi aussi
+  l'hebdomadaire) : pour chaque destinataire, toutes ses lignes `DEFERRED` des
+  catégories à cette fréquence, **quelle que soit leur date**, verrouillées,
+  revérifiées par le `skip_reason` de leur module (`SKIPPED` sinon), puis
+  `DIGESTED` ; plus les éléments du fil de la période si Informations est à cette
+  fréquence. Rien → pas de résumé. À l'envoi du résumé, `still_due` : une de ses
+  lignes tient encore, ou il reste un élément du fil lisible et non lu.
+- **Retour à « immédiat »** : `set_preference` libère les lignes `DEFERRED` de la
+  catégorie (`PENDING`, mise en file après commit), revérifiées à l'envoi.
+- **Aucun doublon** : une ligne `DIGESTED` ou `DEFERRED` n'est jamais envoyée
+  seule ; le résumé est unique par (thèse, type, période, destinataire).
+
+## Page « Résumé »
+
+`/t/<id>/activity/digest/<uuid>/` : le destinataire seulement (tout autre, ou un
+identifiant inconnu : même réponse). Contenu **recalculé à l'affichage** : les
+lignes du résumé qui tiennent encore et les éléments du fil de la période encore
+lisibles, chacun nommé (métadonnées en clair) et lié à sa page.
+
+## Résumé M4 du lundi
+
+Fondu : les objectifs changés ou au résultat déclaré à prendre en connaissance
+sont des événements « À faire » pour le directeur ; un objectif en retard devient
+l'événement `OBJECTIVE_OVERDUE` (écrit une fois par `activity_digests`, sans
+auteur). `WeeklySummaryLog` reste en lecture, ses lignes soumises à la purge de
+13 mois ; la commande `objectives_weekly_summary` et son timer sont retirés. La
+suppression de la table viendra plus tard, dans une migration séparée (ROADMAP).
+
+## Critères d'acceptation (M11b)
+
+1. Chaque courriel de chaque module a une catégorie (test exhaustif).
+2. `set_preference` et la base refusent « fil seulement » hors Informations et
+   « hebdomadaire » pour Échéances ; même refus par un `POST` forgé.
+3. Une ligne naît `DEFERRED` en quotidien ou hebdomadaire, dans chaque module ; le
+   résumé la prend une fois ; elle n'est jamais envoyée seule.
+4. Aucune perte : mise en file en immédiat, préférence passée à un résumé avant
+   l'envoi → `DEFERRED` puis dans le résumé ; résumé → immédiat : libérée.
+5. Aucun doublon : deux `digests.run()` simultanés ; une ligne `FAILED` remise en
+   file par un module n'est pas aussi dans un résumé.
+6. Revérification à la construction et à l'envoi du résumé (`SKIPPED`).
+7. Deux mondes étendus aux résumés qui regroupent des courriels de modules ; page
+   Résumé autorisée et refusée (indiscernable), mutants.
+8. **Avec les valeurs par défaut, aucun test existant de M3, M5a, M6, M7 n'est
+   modifié** ; si l'un doit l'être, arrêt et liste avant d'y toucher.
+9. Le test sauté « objectif `INTERNAL_ST` » est remplacé par un test qui vérifie
+   qu'un objectif ne peut pas avoir ce niveau (service et base).
