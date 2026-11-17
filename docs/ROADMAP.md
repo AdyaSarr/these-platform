@@ -15,7 +15,8 @@ critères d'acceptation de la fiche tous validés.
 | [x] | M6 — Conférences et soumissions | `modules/M06-conferences.md` | M1 | févr. 2027 |
 | | **MVP — mise en service avec les encadrants** | | M0–M6 | **mars 2027** |
 | [x] | M7 — Déplacements et temps ST / LIRMM | `modules/M07-deplacements.md` | M1 | printemps 2027 |
-| [ ] | Activité et notifications (prochain module après la refonte visuelle) | fiche à écrire | M2–M7 | après le frontend |
+| [ ] | M11a — Activité et notifications : fil, cloche, préférences « informations » | `modules/M11-activite.md` | M2–M7 | après le frontend |
+| [ ] | M11b — Courriels existants sous les préférences, résumé M4 fondu dans le résumé hebdomadaire | `modules/M11-activite.md` | M11a | plus tard |
 | [ ] | M8 — Rapports CSI et ANRT | `modules/M08-rapports.md` | M4, M5, M9 | avant mars 2028 |
 | [ ] | M9 — Portfolio, formations, publications | `modules/M09-portfolio.md` | M2 | été 2027 |
 | [ ] | M10 — Bout en bout et signatures post-quantiques | `modules/M10-e2e-pq.md` | M2 | 2028 |
@@ -87,7 +88,7 @@ Idées validées, sans module ni date pour l'instant.
   « Bloquer tous les cookies », pas de la plateforme : la piste `SameSite` n'a pas
   été démontrée, et la prod n'a pas été changée.
 
-- **Activité et notifications** (prochain module après la refonte visuelle ; remplace
+- **Activité et notifications** (devenu M11a et M11b, fiche `modules/M11-activite.md` ; remplace
   « Activité récente sur le tableau de bord », écartée de l'étape 8 le 2026-11-16) :
   une source d'événements filtrée par lecteur (nouveau document ou nouvelle version,
   document lié à une réunion ou une soumission, pièce déposée, compte rendu publié…),

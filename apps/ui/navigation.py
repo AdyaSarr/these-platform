@@ -33,6 +33,8 @@ class NavItem:
 NAV: tuple[NavItem, ...] = (
     NavItem("home", _("Home"), "house", "accounts:dashboard", Action.VIEW_THESIS,
             ("accounts", "dashboard")),
+    NavItem("activity", _("Activity"), "bell", "activity:feed", Action.VIEW_THESIS,
+            ("activity", "")),
     NavItem("admin_file", _("Administrative file"), "folder-open", "admin_file:file",
             Action.CIFRE_FILE_READ, ("admin_file", "")),
     NavItem("objectives", _("Objectives"), "target", "objectives:dashboard",

@@ -46,6 +46,7 @@ from apps.accounts.permissions import (
     roles_of,
 )
 from apps.accounts.roles import Role
+from apps.activity import events as activity
 from apps.core.confidentiality import ConfidentialityLevel
 from apps.vault import services as vault
 from apps.vault.models import Document
@@ -360,6 +361,13 @@ def submit(
                 _("This document belongs to another item."), code="document"
             ) from None
         extra = {"version": locked.submitted_version} if locked.document_id else {}
+        activity.record(
+            kind="ITEM_SUBMITTED",
+            obj=locked,
+            object_type="ITEM",
+            thesis=locked.thesis,
+            actor=user,
+        )
         audit(
             AuditAction.ADMIN_ITEM_SUBMITTED,
             actor=user,
@@ -456,6 +464,14 @@ def approve(*, item: RequiredItem, user: User) -> RequiredItem:
                 thesis.status = Thesis.Status.ACTIVE
                 thesis.save(update_fields=["status", "updated_at"])
                 activated = True
+        if complete:
+            activity.record(
+                kind="ITEM_VALIDATED",
+                obj=locked,
+                object_type="ITEM",
+                thesis=locked.thesis,
+                actor=user,
+            )
         audit(
             AuditAction.ADMIN_ITEM_APPROVED,
             actor=user,
@@ -496,6 +512,13 @@ def reject(*, item: RequiredItem, user: User, reason: Any, comment: str = "") ->
         locked.reason_code, locked.reason_comment = code, comment
         locked.submitted_at = None
         locked.save()
+        activity.record(
+            kind="ITEM_REJECTED",
+            obj=locked,
+            object_type="ITEM",
+            thesis=locked.thesis,
+            actor=user,
+        )
         audit(
             AuditAction.ADMIN_ITEM_REJECTED,
             actor=user,
@@ -568,6 +591,13 @@ def reopen(*, item: RequiredItem, user: User, reason: Any, comment: str = "") ->
             ItemNotification.Kind.REOPENED,
             reopening.pk,
             _cancelled_validators(locked, user),
+        )
+        activity.record(
+            kind="ITEM_REOPENED",
+            obj=locked,
+            object_type="ITEM",
+            thesis=locked.thesis,
+            actor=user,
         )
         audit(
             AuditAction.ADMIN_ITEM_REOPENED,

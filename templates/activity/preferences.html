@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% load i18n ui %}
+{% block title %}{% translate "My notifications" %}{% endblock %}
+{% block content %}
+{% page_header %}{% translate "My notifications" %}{% subtitle %}{% translate "For this thesis only." %}{% endpage_header %}
+<form class="stack" method="post" action="{% url 'activity:preferences' thesis_id=thesis.pk %}">{% csrf_token %}{% include "conferences/_form.html" %}
+  <p class="muted">{% translate "Information: a new document, piece, submission, mission, objective, comment or team change you can read. Each e-mail holds a link only." %}</p>
+  <button type="submit" class="btn-primary">{% translate "Save" %}</button></form>
+<h2>{% translate "Always sent at once, for now" %}</h2>
+<p>{% translate "What asks you to act (ST approvals, mission approvals, pieces to validate, a refused piece, an action assigned to you) and the reminders of your own deadlines stay immediate e-mails for now: they cannot be turned off." %}</p>
+<p><a href="{% url 'activity:feed' thesis_id=thesis.pk %}">{% translate "Back to the activity" %}</a></p>
+{% endblock %}

@@ -22,4 +22,15 @@ def ui(request: HttpRequest) -> dict[str, Any]:
         "ui_themes": THEMES,
         "ui_nav": SimpleLazyObject(lambda: nav_for(request)),
         "ui_thesis": SimpleLazyObject(lambda: thesis_for_header(request)),
+        # The bell (M11a): on a page of a thesis the guard authorised, to a reader.
+        "ui_bell": SimpleLazyObject(lambda: _bell(request)),
     }
+
+
+def _bell(request: HttpRequest) -> Any:
+    thesis = thesis_for_header(request)
+    if thesis is None:
+        return None
+    from apps.activity.services import bell
+
+    return {"thesis": thesis, "state": bell(request.user, thesis)}

@@ -1,13 +1,6 @@
-/* Design system of the platform, hand-written (no build step).
-   No inline style anywhere: the CSP forbids it (docs/decisions.md).
-
-   Cascade layers: a later layer wins whatever the specificity.
-
-   Colour tokens are #rrggbb only: tests/test_design_tokens.py and
-   apps/objectives/tests/test_chart_contrast.py read them from this file and check
-   WCAG AA contrast in both themes. The dark values are written twice, under
-   prefers-color-scheme (no choice, or "auto") and under [data-theme="dark"] (the
-   toggle, apps/ui/theme.py); a test keeps both blocks identical. */
+/* Design system, hand-written; no inline style (CSP). A later layer wins.
+   Colour tokens #rrggbb only: tests check AA contrast in both themes. Dark values
+   twice (prefers-color-scheme, [data-theme="dark"]); a test keeps them equal. */
 
 @layer reset, tokens, base, layout, components, utilities;
 

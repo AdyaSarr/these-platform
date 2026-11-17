@@ -19,8 +19,8 @@ from .helpers import member, nav_keys, signed_in
 pytestmark = pytest.mark.django_db
 
 EXPECTED_ORDER = [
-    "home", "admin_file", "objectives", "meetings", "conferences", "travel", "documents",
-    "team", "csi",
+    "home", "activity", "admin_file", "objectives", "meetings", "conferences", "travel",
+    "documents", "team", "csi",
 ]  # fmt: skip
 
 

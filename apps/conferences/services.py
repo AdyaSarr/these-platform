@@ -45,6 +45,7 @@ from apps.accounts.permissions import (
     roles_of,
 )
 from apps.accounts.roles import Role
+from apps.activity import events as activity
 from apps.core import timezones
 from apps.core.confidentiality import ConfidentialityLevel
 from apps.meetings.members import INTERNAL_ROLES
@@ -749,6 +750,13 @@ def create_submission(
             "venue_kind": venue.kind,
             "authors": len(people),
         }
+        activity.record(
+            kind="SUBMISSION_CREATED",
+            obj=submission,
+            object_type="SUBMISSION",
+            thesis=thesis,
+            actor=user,
+        )
         if resubmission_of is not None:
             audit(
                 AuditAction.SUBMISSION_RESUBMITTED,
@@ -945,6 +953,13 @@ def link_document(*, submission: Submission, user: User, document: Document) -> 
         link = SubmissionDocument.objects.create(
             submission=locked, document=document, created_by=user
         )
+        activity.record(
+            kind="DOCUMENT_LINKED",
+            obj=link,
+            object_type="SUBMISSION_DOCUMENT",
+            thesis=thesis,
+            actor=user,
+        )
         audit(
             AuditAction.SUBMISSION_DOCUMENT_LINKED,
             actor=user,
@@ -1099,6 +1114,13 @@ def request_approval(
             locked.status = S.ST_REQUESTED
             locked.save(update_fields=["status", "updated_at"])
         notify(thesis, NotificationKind.APPROVAL_REQUESTED, approval.pk, tutors, exclude=user)
+        activity.record(
+            kind="APPROVAL_REQUESTED",
+            obj=approval,
+            object_type="APPROVAL",
+            thesis=thesis,
+            actor=user,
+        )
         audit(
             AuditAction.ST_APPROVAL_REQUESTED,
             actor=user,
@@ -1160,6 +1182,13 @@ def decide_approval(
             "purpose": locked.purpose,
             "version_id": str(locked.version_id),
         }
+        activity.record(
+            kind="APPROVAL_DECIDED",
+            obj=locked,
+            object_type="APPROVAL",
+            thesis=thesis,
+            actor=user,
+        )
         if decision == ApprovalDecision.GRANTED:
             audit(AuditAction.ST_APPROVAL_GRANTED, actor=user, obj=locked_submission, **details)
         else:
@@ -1258,6 +1287,13 @@ def set_status(
             raise _transition()
         locked.status = target
         locked.save()
+        activity.record(
+            kind="SUBMISSION_STATUS_CHANGED",
+            obj=locked,
+            object_type="SUBMISSION",
+            thesis=thesis,
+            actor=user,
+        )
         audit(
             AuditAction.SUBMISSION_STATUS_CHANGED,
             actor=user,

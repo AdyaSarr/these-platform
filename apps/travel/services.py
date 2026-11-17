@@ -26,6 +26,7 @@ from django.utils.translation import gettext as _
 from apps.accounts.models import Membership, Thesis, User
 from apps.accounts.permissions import Action, can, can_access_level, roles_of
 from apps.accounts.roles import Role
+from apps.activity import events as activity
 from apps.conferences.models import Edition, Submission
 from apps.core.confidentiality import ConfidentialityLevel
 from apps.meetings.models import Meeting
@@ -875,6 +876,13 @@ def create_mission(
             _changed, corrections = _write_presence(
                 locked, user, _mission_days(locked, mission), kind.value, overwrite=False
             )
+        activity.record(
+            kind="MISSION_PLANNED",
+            obj=mission,
+            object_type="MISSION",
+            thesis=thesis,
+            actor=user,
+        )
         audit(
             AuditAction.MISSION_CREATED,
             actor=user,
@@ -953,6 +961,13 @@ def update_mission(*, mission: Mission, user: User, changes: Mapping[str, Any]) 
                 sealer.seal(locked, name, text)
             else:
                 sealer.erase(locked, name)
+        activity.record(
+            kind="MISSION_CHANGED",
+            obj=locked,
+            object_type="MISSION",
+            thesis=thesis,
+            actor=user,
+        )
         audit(AuditAction.MISSION_UPDATED, actor=user, obj=locked, fields=changed)
         if invalidated is not None:
             audit(
@@ -1038,6 +1053,13 @@ def cancel_mission(*, mission: Mission, user: User) -> Mission:
             _withdraw(pending)
         locked.status, previous = MissionStatus.CANCELLED.value, locked.status
         locked.save()
+        activity.record(
+            kind="MISSION_CANCELLED",
+            obj=locked,
+            object_type="MISSION",
+            thesis=thesis,
+            actor=user,
+        )
         if pending is not None:
             audit(
                 AuditAction.MISSION_ORDER_WITHDRAWN,
@@ -1245,6 +1267,13 @@ def request_order(*, mission: Mission, user: User, estimated_total: str) -> Miss
             mission=locked,
             exclude=user,
         )
+        activity.record(
+            kind="ORDER_REQUESTED",
+            obj=order,
+            object_type="ORDER",
+            thesis=thesis,
+            actor=user,
+        )
         audit(
             AuditAction.MISSION_ORDER_REQUESTED,
             actor=user,
@@ -1354,6 +1383,13 @@ def decide_order(
         details: dict[str, Any] = {"order_id": str(locked.pk), "payer": locked.payer}
         if not granted:
             details["reason"] = locked.reason
+        activity.record(
+            kind="ORDER_DECIDED",
+            obj=locked,
+            object_type="ORDER",
+            thesis=thesis,
+            actor=user,
+        )
         audit(
             AuditAction.MISSION_ORDER_GRANTED if granted else AuditAction.MISSION_ORDER_REFUSED,
             actor=user,
