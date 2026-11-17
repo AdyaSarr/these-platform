@@ -37,6 +37,7 @@ ROLE_OF = {
     Role.DIRECTOR: "director",
     Role.CO_SUPERVISOR: "co_supervisor",
     Role.INDUSTRIAL_TUTOR: "tutor",
+    Role.INDUSTRIAL_CO_SUPERVISOR: "st_co_supervisor",  # created by _user_of() only
     Role.CSI_MEMBER: "csi",
     Role.GUEST: "guest",
 }
@@ -70,13 +71,24 @@ def _functions() -> dict[str, tuple[Any, Action]]:
     }
 
 
+def _user_of(team: SimpleNamespace, role: Role) -> Any:
+    """The member of ``role``; the company co-supervisor is added on demand only, so
+    that the team of the other tests of this file stays the same."""
+    if not hasattr(team, ROLE_OF[role]):
+        from apps.accounts.tests.factories import MembershipFactory
+
+        member = MembershipFactory.create(thesis=team.thesis, role=role).user
+        setattr(team, ROLE_OF[role], member)
+    return getattr(team, ROLE_OF[role])
+
+
 @pytest.mark.parametrize(
     "name", ["next_items", "submission_counts", "latest_documents", "team_summary"]
 )
 @pytest.mark.parametrize("role", list(Role))
 def test_allowed_or_refused_per_role(team: SimpleNamespace, name: str, role: Role) -> None:
     function, action = _functions()[name]
-    user = getattr(team, ROLE_OF[role])
+    user = _user_of(team, role)
     if action in ROLE_ACTIONS[role]:
         function(user, team.thesis)  # no exception
     else:

@@ -17,9 +17,9 @@ from django.core import mail
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.management import call_command
 
+from apps.accounts import services as accounts
 from apps.accounts.models import Membership
 from apps.accounts.roles import Role
-from apps.accounts.tests.factories import MembershipFactory
 from apps.travel import reminders, services, tasks
 from apps.travel.models import Mission, TravelNotification
 from apps.travel.tests.helpers import NOW, D, make_team, marker, mission_of
@@ -297,8 +297,9 @@ def test_the_recipient_is_checked_again_at_sending(team: SimpleNamespace) -> Non
     services.request_order(mission=mission, user=team.student, estimated_total="1")
     (row,) = _rows("ORDER_REQUESTED")
     # The tutor becomes a co-supervisor before the e-mail goes: no longer ST's person.
-    Membership.objects.filter(thesis=team.thesis, user=team.tutor).update(active_until=NOW)
-    MembershipFactory.create(thesis=team.thesis, user=team.tutor, role=Role.CO_SUPERVISOR)
+    # Through the service: the tutor's membership closes at t, the new one opens at t.
+    tutor = Membership.objects.active().get(thesis=team.thesis, user=team.tutor)
+    accounts.change_role(tutor, Role.CO_SUPERVISOR, by=team.student)
     TravelNotification.objects.filter(pk=row.pk).update(status="PENDING", attempts=0)
     mail.outbox.clear()
     tasks.send_travel_notification(str(row.pk))

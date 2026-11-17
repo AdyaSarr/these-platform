@@ -178,15 +178,20 @@ def test_one_approval_per_person_and_cycle_stays_enforced_by_the_database(
 
 
 def test_the_submitter_never_validates_their_cycle(team: SimpleNamespace) -> None:
-    """Correction 1: a student who is ALSO director of the thesis."""
-    MembershipFactory.create(thesis=team.thesis, role=D, user=team.student)
-    item = _submitted(team, section=Section.ACADEMIC, validator_roles=[D])
+    """Correction 1: the submitter of a cycle never validates it. The student can no
+    longer be a director of their thesis (accounts_membership_student_alone): the
+    cycle is written as submitted by a director (put, no service), who is refused;
+    a second director validates."""
+    second = MembershipFactory.create(thesis=team.thesis, role=D, user__mfa=False).user
+    item = put(
+        item_of(team, section=Section.ACADEMIC, validator_roles=[D]), S.SUBMITTED, team.director
+    )
     for call in (
-        lambda: services.approve(item=item, user=team.student),
-        lambda: services.reject(item=item, user=team.student, reason=Reason.OTHER),
+        lambda: services.approve(item=item, user=team.director),
+        lambda: services.reject(item=item, user=team.director, reason=Reason.OTHER),
     ):
-        _refused(call, team.student, item, "submitter")
-    assert services.approve(item=item, user=team.director).status == S.VALIDATED
+        _refused(call, team.director, item, "submitter")
+    assert services.approve(item=item, user=second).status == S.VALIDATED
 
 
 def test_a_new_cycle_needs_new_approvals(team: SimpleNamespace) -> None:

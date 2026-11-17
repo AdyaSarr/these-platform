@@ -105,12 +105,15 @@ def test_submitted_reminds_the_validators_who_have_not_approved() -> None:
 
 @pytest.mark.django_db(transaction=True)
 def test_the_submitter_is_never_reminded_as_validator() -> None:
+    """The student can no longer be a director of their thesis
+    (accounts_membership_student_alone): the cycle is written as submitted by a
+    director (put, no service); only the second director is reminded."""
     team = make_team()
-    MembershipFactory.create(thesis=team.thesis, role=D, user=team.student)
+    second = MembershipFactory.create(thesis=team.thesis, role=D).user
     item = item_of(team, validator_roles=[D], due_date=dt.date(2026, 12, 10))
-    services.submit(item=item, user=team.student)
+    put(item, S.SUBMITTED, team.director)
     _run("2026-12-01T09:00:00+00:00")
-    assert _sent_to() == [team.director.email]
+    assert _sent_to() == [second.email]
 
 
 @pytest.mark.django_db(transaction=True)

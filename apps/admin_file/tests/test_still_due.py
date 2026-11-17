@@ -23,6 +23,7 @@ import pytest
 from django.core import mail
 from django.utils import timezone
 
+from apps.accounts import services as accounts
 from apps.accounts.models import Membership, Thesis
 from apps.accounts.roles import Role
 from apps.accounts.tests.factories import MembershipFactory
@@ -105,9 +106,18 @@ def _end(user: Any, thesis: Thesis) -> None:
 
 
 def _switch(user: Any, thesis: Thesis, role: Role) -> None:
-    """End the memberships of ``user`` and give them ``role`` instead."""
-    _end(user, thesis)
-    MembershipFactory.create(thesis=thesis, user=user, role=role)
+    """``user`` changes role at one instant t: the old membership closes at t, the
+    new one opens at t (no overlap). Through accounts.services.change_role (done by
+    the student, who holds CHANGE_ROLE), except for the student's own role, which
+    the service never changes (M1): then both bounds are set here."""
+    current = Membership.objects.active().get(user=user, thesis=thesis)
+    if current.role == Role.PHD_STUDENT:
+        t = timezone.now()
+        Membership.objects.filter(pk=current.pk).update(active_until=t)
+        MembershipFactory.create(thesis=thesis, user=user, role=role, active_from=t)
+        return
+    student = Membership.objects.active().get(thesis=thesis, role=Role.PHD_STUDENT).user
+    accounts.change_role(current, role, by=student)
 
 
 def _submitted(team: SimpleNamespace, **kwargs: Any) -> RequiredItem:
@@ -383,9 +393,20 @@ def test_due_proposed_is_skipped_for_a_former_validator(team: SimpleNamespace, l
 
 
 def test_due_proposed_is_skipped_for_its_author(team: SimpleNamespace, log: Any) -> None:
-    MembershipFactory.create(thesis=team.thesis, role=D, user=team.student)
+    """The student can no longer be a director of their thesis
+    (accounts_membership_student_alone): the proposal is written in the director's
+    name (no service), and the note to its author, a validator, is skipped."""
     item = item_of(team)
-    row = _note(item, N.DUE_PROPOSED, team.student, _proposal(item, team).pk)
+    proposal = DueDateProposal.objects.create(
+        item=item,
+        proposed_by=team.director,
+        from_date=item.due_date,
+        to_date=_due(item) + dt.timedelta(days=30),
+        reason_code="OTHER",
+        status="PENDING",
+        created_by=team.director,
+    )
+    row = _note(item, N.DUE_PROPOSED, team.director, proposal.pk)
     _skipped(row, "not_concerned", log)
 
 

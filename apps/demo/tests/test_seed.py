@@ -134,7 +134,7 @@ def test_thesis_dates_and_team(demo: scenario.SeedResult) -> None:
     roles = set(Membership.objects.active().filter(thesis=thesis).values_list("role", flat=True))
     assert roles == {
         Role.PHD_STUDENT, Role.DIRECTOR, Role.CO_SUPERVISOR, Role.INDUSTRIAL_TUTOR,
-        Role.CSI_MEMBER,
+        Role.INDUSTRIAL_CO_SUPERVISOR, Role.CSI_MEMBER,
     }  # fmt: skip
     assert thesis.status == Thesis.Status.SETUP
 
