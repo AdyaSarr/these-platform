@@ -40,8 +40,10 @@ R = Role
 # --------------------------------------------------------------------------- expected matrix
 # One block per column of the ARCHITECTURE.md table, plus thesis/team actions (M01).
 
-_ALL_BUT_GUEST = {R.PHD_STUDENT, R.DIRECTOR, R.CO_SUPERVISOR, R.INDUSTRIAL_TUTOR, R.CSI_MEMBER}
-_SUPERVISION = {R.PHD_STUDENT, R.DIRECTOR, R.CO_SUPERVISOR, R.INDUSTRIAL_TUTOR}
+_SUPERVISION = {
+    R.PHD_STUDENT, R.DIRECTOR, R.CO_SUPERVISOR, R.INDUSTRIAL_TUTOR, R.INDUSTRIAL_CO_SUPERVISOR,
+}  # fmt: skip
+_ALL_BUT_GUEST = _SUPERVISION | {R.CSI_MEMBER}
 
 EXPECTED: dict[Action, set[Role]] = {
     # Thesis and team (M01-comptes.md): the PhD student is the thesis super-role.
@@ -66,7 +68,8 @@ EXPECTED: dict[Action, set[Role]] = {
     A.CONFERENCE_WRITE: _SUPERVISION,
     A.SUBMISSION_READ: _SUPERVISION,
     A.SUBMISSION_WRITE: {R.PHD_STUDENT},
-    # Travel (M7): the co-supervisor reads LIRMM days and missions only (the filter is
+    # Travel (M7): the LIRMM co-supervisor reads LIRMM days and missions only, the
+    # company co-supervisor Rousset days and missions to Rousset only (the filter is
     # travel's visible_to); the payer's person decides an order and sets its budget
     # (tutor: ST, director: LIRMM; checked by travel.services).
     A.TRAVEL_READ: _SUPERVISION,
@@ -99,7 +102,7 @@ EXPECTED: dict[Action, set[Role]] = {
 EXPECTED_LEVELS: dict[Level, set[Role]] = {
     Level.PUBLIC: set(Role),
     Level.INTERNAL_LIRMM: {R.PHD_STUDENT, R.DIRECTOR, R.CO_SUPERVISOR},
-    Level.INTERNAL_ST: {R.PHD_STUDENT, R.INDUSTRIAL_TUTOR},
+    Level.INTERNAL_ST: {R.PHD_STUDENT, R.INDUSTRIAL_TUTOR, R.INDUSTRIAL_CO_SUPERVISOR},
     Level.CONFIDENTIAL: {R.PHD_STUDENT, R.DIRECTOR, R.INDUSTRIAL_TUTOR},
 }
 
