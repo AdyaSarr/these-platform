@@ -31,7 +31,7 @@ ICON_NAMES: tuple[str, ...] = (
     # Confidentiality levels (ui/level_badge.html)
     "globe", "flask-conical", "factory", "lock",
     # Page-header actions of the detail pages
-    "pencil", "copy",
+    "pencil", "copy", "download",
 )  # fmt: skip
 
 _OPEN = (
