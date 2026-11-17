@@ -24,6 +24,7 @@ from apps.accounts.permissions import (
     ROLE_ACTIONS,
     Action,
     ThesisPermissionRequiredMixin,
+    actions_for,
     allowed_actions,
     can,
     can_access_level,
@@ -224,12 +225,25 @@ def test_expired_membership_is_refused() -> None:
     assert not can(m.user, A.CSI_FILE_READ, m.thesis)
 
 
+def test_rights_of_cumulated_roles_add_up() -> None:
+    """On a set of roles, without any membership: the database now refuses most
+    cumulations (one side of the supervision, the student alone), the rule of
+    addition stays the one can() and allowed_actions() apply."""
+    combined = actions_for({R.DIRECTOR, R.INDUSTRIAL_TUTOR})
+    assert combined == ROLE_ACTIONS[R.DIRECTOR] | ROLE_ACTIONS[R.INDUSTRIAL_TUTOR]
+    assert A.VALIDATE_CSI in combined  # from DIRECTOR
+    assert A.VALIDATE_PUBLICATION in combined  # from TUTOR
+    assert actions_for(set()) == frozenset()
+    for role in Role:
+        assert actions_for({role}) == ROLE_ACTIONS[role]
+
+
 @pytest.mark.django_db
-def test_rights_of_cumulated_roles_add_up(director: Membership) -> None:
-    MembershipFactory.create(user=director.user, thesis=director.thesis, role=R.INDUSTRIAL_TUTOR)
-    assert roles_of(director.user, director.thesis) == {R.DIRECTOR, R.INDUSTRIAL_TUTOR}
-    assert can(director.user, A.VALIDATE_CSI, director.thesis)  # from DIRECTOR
-    assert can(director.user, A.VALIDATE_PUBLICATION, director.thesis)  # from TUTOR
+def test_allowed_actions_are_the_addition_of_the_roles_held(director: Membership) -> None:
+    MembershipFactory.create(user=director.user, thesis=director.thesis, role=R.CO_SUPERVISOR)
+    held = roles_of(director.user, director.thesis)
+    assert held == {R.DIRECTOR, R.CO_SUPERVISOR}
+    assert allowed_actions(director.user, director.thesis) == actions_for(held)
 
 
 @pytest.mark.django_db

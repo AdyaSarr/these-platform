@@ -240,3 +240,88 @@ def test_the_message_names_no_person(student: Membership) -> None:
     with pytest.raises(TeamError) as refused:
         _invite(student, person.email, ICS)
     assert "temoin.fuite" not in str(refused.value)
+
+
+# --------------------------------------------------------------------------- the student alone
+# Same family: the PhD student holds no other role on their own thesis, periods
+# that overlap (database constraint accounts_membership_student_alone), or they
+# could validate their own items and objectives. Refused early by the services.
+
+STUDENT_ALONE = "aucun autre rôle"
+OTHER_ROLES = [r for r in Role if r is not R.PHD_STUDENT]
+
+
+@pytest.mark.parametrize("role", OTHER_ROLES, ids=lambda r: r.value)
+def test_the_database_refuses_another_role_to_the_student(role: Role) -> None:
+    m = MembershipFactory.create(role=R.PHD_STUDENT)
+    with pytest.raises(IntegrityError), transaction.atomic():
+        MembershipFactory.create(user=m.user, thesis=m.thesis, role=role)
+
+
+@pytest.mark.parametrize("role", [r for r in OTHER_ROLES if r is not R.CSI_MEMBER])
+def test_the_student_constraint_is_the_one_that_refuses(role: Role) -> None:
+    m = MembershipFactory.create(role=R.PHD_STUDENT)
+    with pytest.raises(IntegrityError, match="student_alone"), transaction.atomic():
+        MembershipFactory.create(user=m.user, thesis=m.thesis, role=role)
+
+
+@pytest.mark.parametrize("role", OTHER_ROLES, ids=lambda r: r.value)
+def test_the_database_refuses_the_student_role_to_a_member(role: Role) -> None:
+    m = MembershipFactory.create(role=role)
+    with pytest.raises(IntegrityError), transaction.atomic():
+        MembershipFactory.create(user=m.user, thesis=m.thesis, role=R.PHD_STUDENT)
+
+
+@pytest.mark.parametrize("role", OTHER_ROLES, ids=lambda r: r.value)
+def test_after_the_student_period_another_role_is_accepted(role: Role) -> None:
+    with time_machine.travel(NOW, tick=False):
+        m = MembershipFactory.create(role=R.PHD_STUDENT, active_from=NOW - dt.timedelta(days=30))
+        Membership.objects.filter(pk=m.pk).update(active_until=NOW)
+        MembershipFactory.create(user=m.user, thesis=m.thesis, role=role, active_from=NOW)
+
+
+@pytest.mark.parametrize("role", OTHER_ROLES, ids=lambda r: r.value)
+def test_another_role_on_another_thesis_is_accepted(role: Role) -> None:
+    m = MembershipFactory.create(role=R.PHD_STUDENT)
+    other = MembershipFactory.create(user=m.user, role=role)
+    assert other.thesis_id != m.thesis_id
+
+
+@pytest.mark.parametrize(
+    "role", [r for r in OTHER_ROLES if r is not R.CSI_MEMBER], ids=lambda r: r.value
+)
+def test_inviting_the_student_to_another_role_is_refused_early(
+    student: Membership, role: Role
+) -> None:
+    with pytest.raises(TeamError) as refused:
+        _invite(student, student.user.email, role)
+    assert STUDENT_ALONE in str(refused.value)
+    assert not Invitation.objects.filter(thesis=student.thesis, role=role).exists()
+
+
+def test_inviting_the_student_to_the_csi_keeps_the_csi_message(student: Membership) -> None:
+    with pytest.raises(TeamError) as refused:
+        _invite(student, student.user.email, R.CSI_MEMBER)
+    assert "CSI" in str(refused.value)
+
+
+def test_the_acceptance_by_the_student_is_refused_clearly(student: Membership) -> None:
+    """The invitation went to an address the student takes afterwards."""
+    inv = _invite(student, "nouvelle-adresse@example.org", R.DIRECTOR)
+    student.user.email = "nouvelle-adresse@example.org"
+    student.user.save(update_fields=["email"])
+    with pytest.raises(TeamError) as refused:
+        services.accept_invitation(inv.pk, user=student.user)
+    assert STUDENT_ALONE in str(refused.value)
+    inv.refresh_from_db()
+    assert inv.used_at is None
+    held = Membership.objects.active().filter(user=student.user, thesis=student.thesis)
+    assert {m.role for m in held} == {R.PHD_STUDENT.value}
+
+
+@pytest.mark.parametrize("role", OTHER_ROLES, ids=lambda r: r.value)
+def test_the_student_role_is_never_changed(student: Membership, role: Role) -> None:
+    with pytest.raises(TeamError):
+        services.change_role(student, role, by=student.user)
+    student.refresh_from_db()
+    assert student.active_until is None
