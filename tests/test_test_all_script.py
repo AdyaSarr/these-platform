@@ -126,3 +126,20 @@ def test_with_extra_arguments_a_phase_without_tests_is_not_a_failure(tmp_path: P
     assert code == 0, output
     code, output, _ = _run(tmp_path, "apps/travel", codes="5 5")
     assert code == 5, output
+
+
+@pytest.mark.parametrize("module", ["config.settings.dev", "config.settings.prod", ""])
+def test_other_exported_settings_are_refused_before_pytest(tmp_path: Path, module: str) -> None:
+    """A DJANGO_SETTINGS_MODULE sourced from .env would win over pyproject.toml: the
+    script stops at once, without starting pytest (conftest.py refuses it too)."""
+    code, output, calls = _run(tmp_path, DJANGO_SETTINGS_MODULE=module)
+    assert code == 2, output
+    assert calls == []
+    assert "unset DJANGO_SETTINGS_MODULE" in output and "config.settings.test" in output
+    assert "phase 1/2" not in output
+
+
+def test_the_test_settings_may_be_exported(tmp_path: Path) -> None:
+    code, output, calls = _run(tmp_path, DJANGO_SETTINGS_MODULE="config.settings.test")
+    assert code == 0, output
+    assert len(calls) == 2
