@@ -272,7 +272,7 @@ def test_the_database_refuses_a_second_row_and_a_week_not_starting_on_monday(
 
 def test_a_failed_sending_is_retried_up_to_the_limit(team: SimpleNamespace) -> None:
     _objective(team, IN_THE_WEEK, level=L.CONFIDENTIAL)  # director and tutor
-    with mock.patch("apps.objectives.tasks.send_mail", side_effect=OSError("down")):
+    with mock.patch("apps.core.delivery.send_mail", side_effect=OSError("down")):
         for minutes in (0, 10, 20, 30):
             _run(f"2027-03-15T07:{minutes:02d}:00+00:00")
     logs = list(WeeklySummaryLog.objects.all())
@@ -339,7 +339,7 @@ def test_logs_hold_no_title_address_or_body(
         return 1
 
     out = io.StringIO()
-    with mock.patch("apps.objectives.tasks.send_mail", side_effect=fake_send_mail), _at(RUN):
+    with mock.patch("apps.core.delivery.send_mail", side_effect=fake_send_mail), _at(RUN):
         call_command("objectives_weekly_summary", stdout=out)
     captured = " ".join(f"{r.getMessage()} {r.args}" for r in caplog.records) + out.getvalue()
     for secret in (title, team.director.email, team.thesis.title, "point hebdomadaire"):

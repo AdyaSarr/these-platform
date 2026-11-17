@@ -42,6 +42,20 @@ def _at(text: str) -> time_machine.travel:
     return time_machine.travel(dt.datetime.fromisoformat(text), tick=False)
 
 
+def _deposit_e_mails_then_clear(team: Any, item: RequiredItem, validators: list[Any]) -> None:
+    """A deposit sends the « pièce déposée » e-mail of M11a (apps.activity): exactly
+    one per validator who has not approved the cycle, never to the submitter, a
+    link to the item only. Checked, then the mailbox is emptied: what follows
+    counts the reminders only."""
+    url = reverse("admin_file:item", kwargs={"thesis_id": team.thesis.pk, "item_id": item.pk})
+    assert sorted(address for m in mail.outbox for address in m.to) == sorted(
+        v.email for v in validators
+    )
+    assert all(len(m.to) == 1 and url in m.body for m in mail.outbox)
+    assert team.student.email not in [a for m in mail.outbox for a in m.to]
+    mail.outbox.clear()
+
+
 def _run(text: str) -> dict[str, int]:
     with _at(text):
         return reminders.run()
@@ -98,6 +112,7 @@ def test_submitted_reminds_the_validators_who_have_not_approved() -> None:
         team, section=Section.CIFRE, validator_roles=[D, T], due_date=dt.date(2026, 12, 10)
     )
     services.submit(item=item, user=team.student)
+    _deposit_e_mails_then_clear(team, item, [team.director, team.tutor])
     services.approve(item=item, user=team.director)
     _run("2026-12-01T09:00:00+00:00")
     assert _sent_to() == [team.tutor.email]
@@ -251,6 +266,7 @@ def test_one_message_per_recipient() -> None:
         team, section=Section.CIFRE, validator_roles=[D, T], due_date=dt.date(2026, 12, 10)
     )
     services.submit(item=item, user=team.student)
+    _deposit_e_mails_then_clear(team, item, [team.director, team.tutor])
     _run("2026-12-01T09:00:00+00:00")
     assert sorted(len(m.to) for m in mail.outbox) == [1, 1]
     assert all(not m.cc and not m.bcc for m in mail.outbox)
@@ -383,6 +399,7 @@ def test_two_concurrent_runs_send_each_reminder_once(monkeypatch: pytest.MonkeyP
         team, section=Section.CIFRE, validator_roles=[D, T], due_date=dt.date(2026, 12, 10)
     )
     services.submit(item=two_party, user=team.student)
+    _deposit_e_mails_then_clear(team, two_party, [team.director, team.tutor])
     barrier = threading.Barrier(2, timeout=5)
     real_claim = reminders._claim
 
