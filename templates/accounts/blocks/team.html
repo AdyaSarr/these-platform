@@ -1,2 +1,6 @@
-{% load i18n %}
+{% load i18n ui %}{# data = accounts.services.team_summary: the members by role, the end of the CSI when near. #}
+<ul class="card-list">
+  {% for role, names in data.roles %}<li>{{ role }}&nbsp;: {{ names|join:", " }}</li>{% endfor %}
+</ul>
+{% if data.csi_end %}<p class="missing-validator">{% icon "clock" %} {% blocktranslate with date=data.csi_end|short_date %}The CSI ends on {{ date }}.{% endblocktranslate %}</p>{% endif %}
 <p><a href="{% url 'accounts:team' thesis_id=thesis.pk %}">{% translate "See the team" %}</a></p>

@@ -512,6 +512,8 @@
   .segment-label { min-width: 9rem; justify-content: center; }
   .segment-disabled { color: var(--muted); }
 
+  .card-list { padding-inline-start: 1.1rem; }
+  .card-list li + li { margin-block-start: var(--space-1); }
   .alert-list, .alert-list ul { margin: 0; padding: 0; list-style: none; }
   .alert-list > li + li { margin-block-start: var(--space-2); }
   .alert-list ul li { font-size: var(--text-sm); }

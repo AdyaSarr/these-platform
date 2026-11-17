@@ -145,3 +145,11 @@ def level_badge(value: Any) -> dict[str, Any]:
         "tone": LEVEL_TONES[level.value],
         "icon": LEVEL_ICONS[level.value],
     }
+
+
+@register.simple_tag
+def latest_document_rows(data: dict[str, Any]) -> list[tuple[Any, str]]:
+    """(document, label) of the dashboard's latest documents, numbered among all
+    the readable ones, like the list (vault.services.dashboard_block)."""
+    labels = numbered_titles(data.get("readable", []))
+    return [(d, labels.get(d.pk, d.title)) for d in data.get("latest", [])]

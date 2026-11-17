@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-17 11:32+0100\n"
+"POT-Creation-Date: 2026-11-17 11:47+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -393,41 +393,41 @@ msgstr "Invitation révoquée."
 msgid "Active"
 msgstr "Active"
 
-#: apps/accounts/views.py:39 apps/ui/navigation.py:48
+#: apps/accounts/views.py:42 apps/ui/navigation.py:48
 #: templates/accounts/team.html:3 templates/accounts/team.html:5
 msgid "Team"
 msgstr "Équipe"
 
-#: apps/accounts/views.py:43 apps/ui/navigation.py:38
+#: apps/accounts/views.py:49 apps/ui/navigation.py:38
 #: templates/objectives/dashboard.html:2 templates/objectives/dashboard.html:4
 #: templates/objectives/detail.html:5
 msgid "Objectives"
 msgstr "Objectifs"
 
-#: apps/accounts/views.py:51 apps/ui/navigation.py:40 apps/ui/tabs.py:57
+#: apps/accounts/views.py:57 apps/ui/navigation.py:40 apps/ui/tabs.py:57
 #: apps/ui/tabs.py:59 templates/meetings/list.html:2
 #: templates/meetings/list.html:5
 msgid "Meetings"
 msgstr "Réunions"
 
-#: apps/accounts/views.py:58 apps/ui/navigation.py:42 apps/ui/tabs.py:64
+#: apps/accounts/views.py:64 apps/ui/navigation.py:42 apps/ui/tabs.py:64
 #: templates/conferences/deadlines.html:2
 #: templates/conferences/deadlines.html:5
 msgid "Conferences"
 msgstr "Conférences"
 
-#: apps/accounts/views.py:65 apps/ui/navigation.py:44 apps/ui/tabs.py:79
+#: apps/accounts/views.py:71 apps/ui/navigation.py:44 apps/ui/tabs.py:79
 #: templates/travel/_links.html:3
 msgid "Travel"
 msgstr "Déplacements"
 
-#: apps/accounts/views.py:72 apps/ui/navigation.py:46
+#: apps/accounts/views.py:78 apps/ui/navigation.py:46
 #: templates/conferences/submission.html:40
 #: templates/vault/document_list.html:2 templates/vault/document_list.html:4
 msgid "Documents"
 msgstr "Documents"
 
-#: apps/accounts/views.py:81 apps/admin_file/services.py:278
+#: apps/accounts/views.py:87 apps/admin_file/services.py:278
 #: apps/ui/navigation.py:36 templates/accounts/dashboard.html:32
 #: templates/admin_file/file.html:2 templates/admin_file/file.html:4
 #: templates/admin_file/item_page.html:6 templates/admin_file/new_item.html:5
@@ -607,7 +607,7 @@ msgid "Attachment required"
 msgstr "Pièce jointe obligatoire"
 
 #: apps/admin_file/forms.py:148 apps/admin_file/forms.py:150
-#: apps/admin_file/services.py:736
+#: apps/admin_file/services.py:772
 msgid "These validators are not allowed."
 msgstr "Ces validateurs ne sont pas permis."
 
@@ -807,19 +807,19 @@ msgid "item notifications"
 msgstr "notifications de pièce"
 
 #: apps/admin_file/services.py:214 apps/admin_file/services.py:308
-#: apps/admin_file/services.py:769 apps/admin_file/views.py:66
+#: apps/admin_file/services.py:805 apps/admin_file/views.py:66
 msgid "The thesis is finished: its administrative file is frozen."
 msgstr "La thèse est terminée : son dossier administratif est gelé."
 
-#: apps/admin_file/services.py:261 apps/admin_file/services.py:961
+#: apps/admin_file/services.py:261 apps/admin_file/services.py:997
 msgid "Choose a reason."
 msgstr "Choisissez un motif."
 
-#: apps/admin_file/services.py:264 apps/admin_file/services.py:944
+#: apps/admin_file/services.py:264 apps/admin_file/services.py:980
 msgid "The comment is too long."
 msgstr "Le commentaire est trop long."
 
-#: apps/admin_file/services.py:266 apps/admin_file/services.py:946
+#: apps/admin_file/services.py:266 apps/admin_file/services.py:982
 msgid "The comment contains a control character."
 msgstr "Le commentaire contient un caractère de contrôle."
 
@@ -831,7 +831,7 @@ msgstr "Un validateur ne pourrait pas lire ce document."
 msgid "This document belongs to another item."
 msgstr "Ce document appartient déjà à une autre pièce."
 
-#: apps/admin_file/services.py:326 apps/admin_file/services.py:742
+#: apps/admin_file/services.py:326 apps/admin_file/services.py:778
 msgid "A validator could not read the file at this level."
 msgstr "Un validateur ne pourrait pas lire le fichier à ce niveau."
 
@@ -843,48 +843,48 @@ msgstr "Cette pièce demande une pièce jointe."
 msgid "The attachment changed since it was submitted."
 msgstr "La pièce jointe a changé depuis le dépôt."
 
-#: apps/admin_file/services.py:723
+#: apps/admin_file/services.py:759
 msgid "A label is required."
 msgstr "Un libellé est obligatoire."
 
-#: apps/admin_file/services.py:725
+#: apps/admin_file/services.py:761
 msgid "The label is too long."
 msgstr "Le libellé est trop long."
 
-#: apps/admin_file/services.py:727
+#: apps/admin_file/services.py:763
 msgid "The label contains a control character."
 msgstr "Le libellé contient un caractère de contrôle."
 
-#: apps/admin_file/services.py:739
+#: apps/admin_file/services.py:775
 msgid "A validator would not see this section."
 msgstr "Un validateur ne verrait pas cette partie du dossier."
 
-#: apps/admin_file/services.py:825
+#: apps/admin_file/services.py:861
 msgid "Enter a valid date."
 msgstr "Saisissez une date valide."
 
-#: apps/admin_file/services.py:828
+#: apps/admin_file/services.py:864
 msgid "The due date cannot be before the CIFRE start date."
 msgstr "L'échéance ne peut pas précéder la date d'effet CIFRE."
 
-#: apps/admin_file/services.py:832
+#: apps/admin_file/services.py:868
 msgid "The due date cannot be after the planned end of the thesis."
 msgstr "L'échéance ne peut pas dépasser la fin prévue de la thèse."
 
-#: apps/admin_file/services.py:888
+#: apps/admin_file/services.py:924
 msgid "A mandatory item of the catalogue keeps a due date."
 msgstr "Une pièce obligatoire du catalogue garde une échéance."
 
-#: apps/admin_file/services.py:931 apps/conferences/services.py:1051
+#: apps/admin_file/services.py:967 apps/conferences/services.py:1065
 msgid "No industrial tutor in the team: invite them first."
 msgstr ""
 "Aucun·e tuteur·rice industriel·le dans l'équipe : invitez-le·la d'abord."
 
-#: apps/admin_file/services.py:932
+#: apps/admin_file/services.py:968
 msgid "No thesis director in the team: invite them first."
 msgstr "Aucun·e directeur·rice de thèse dans l'équipe : invitez-le·la d'abord."
 
-#: apps/admin_file/services.py:934
+#: apps/admin_file/services.py:970
 msgid ""
 "Neither a thesis director nor an industrial tutor in the team: invite one "
 "first."
@@ -892,27 +892,27 @@ msgstr ""
 "Ni directeur·rice de thèse ni tuteur·rice industriel·le dans l'équipe : "
 "invitez l'un·e d'eux d'abord."
 
-#: apps/admin_file/services.py:941
+#: apps/admin_file/services.py:977
 msgid "The comment is not text."
 msgstr "Le commentaire n'est pas du texte."
 
-#: apps/admin_file/services.py:969
+#: apps/admin_file/services.py:1005
 msgid "The due date of a custom item is changed directly."
 msgstr "L'échéance d'une pièce personnalisée se modifie directement."
 
-#: apps/admin_file/services.py:972
+#: apps/admin_file/services.py:1008
 msgid "Give the proposed due date."
 msgstr "Indiquez l'échéance proposée."
 
-#: apps/admin_file/services.py:975
+#: apps/admin_file/services.py:1011
 msgid "This is already the due date."
 msgstr "C'est déjà l'échéance actuelle."
 
-#: apps/admin_file/services.py:978
+#: apps/admin_file/services.py:1014
 msgid "A proposal is already waiting for a decision."
 msgstr "Une proposition attend déjà une décision."
 
-#: apps/admin_file/services.py:1030
+#: apps/admin_file/services.py:1066
 msgid "This proposal has already been decided."
 msgstr "Cette proposition a déjà été tranchée."
 
@@ -1452,11 +1452,11 @@ msgstr "Cette échéance a été annulée."
 msgid "Between 0 and %(max)d days."
 msgstr "Entre 0 et %(max)d jours."
 
-#: apps/conferences/services.py:783 apps/conferences/services.py:1285
+#: apps/conferences/services.py:797 apps/conferences/services.py:1299
 msgid "This submission is closed."
 msgstr "Cette soumission est close."
 
-#: apps/conferences/services.py:792
+#: apps/conferences/services.py:806
 msgid ""
 "ST's approval was requested for this target: submit elsewhere instead (a new "
 "submission, a new approval)."
@@ -1464,77 +1464,77 @@ msgstr ""
 "L'accord de ST a été demandé pour cette cible : soumettez plutôt ailleurs "
 "(une nouvelle soumission, un nouvel accord)."
 
-#: apps/conferences/services.py:811 apps/conferences/services.py:865
-#: apps/conferences/services.py:1130 apps/conferences/services.py:1295
+#: apps/conferences/services.py:825 apps/conferences/services.py:879
+#: apps/conferences/services.py:1144 apps/conferences/services.py:1309
 msgid "The submission changed meanwhile: try again."
 msgstr "La soumission a été modifiée entre-temps : recommencez."
 
-#: apps/conferences/services.py:908
+#: apps/conferences/services.py:922
 msgid "An ST approval is pending: decide it first."
 msgstr "Un accord ST est en attente : décidez-le d'abord."
 
-#: apps/conferences/services.py:930 apps/meetings/services.py:1216
+#: apps/conferences/services.py:944 apps/meetings/services.py:1216
 msgid "This document is already linked."
 msgstr "Ce document est déjà lié."
 
-#: apps/conferences/services.py:952 apps/meetings/services.py:1235
+#: apps/conferences/services.py:966 apps/meetings/services.py:1235
 msgid "This document is no longer linked."
 msgstr "Ce document n'est plus lié."
 
-#: apps/conferences/services.py:971
+#: apps/conferences/services.py:985
 msgid "Choose a version of a document linked to this submission."
 msgstr "Choisissez une version d'un document lié à cette soumission."
 
-#: apps/conferences/services.py:989
+#: apps/conferences/services.py:1003
 msgid "ST's approval of this exact version is required first."
 msgstr "L'accord de ST sur cette version exacte est d'abord nécessaire."
 
-#: apps/conferences/services.py:1040
+#: apps/conferences/services.py:1054
 msgid "Unknown purpose."
 msgstr "Objet inconnu."
 
-#: apps/conferences/services.py:1044
+#: apps/conferences/services.py:1058
 msgid "This submission does not concern ST work: no approval is needed."
 msgstr ""
 "Cette soumission ne concerne pas des travaux ST : aucun accord n'est "
 "nécessaire."
 
-#: apps/conferences/services.py:1056
+#: apps/conferences/services.py:1070
 msgid "The industrial tutor cannot read this document: change its level first."
 msgstr ""
 "Le tuteur industriel ne peut pas lire ce document : changez d'abord son "
 "niveau."
 
-#: apps/conferences/services.py:1066
+#: apps/conferences/services.py:1080
 msgid "A request is already pending."
 msgstr "Une demande est déjà en attente."
 
-#: apps/conferences/services.py:1116 apps/travel/services.py:1298
+#: apps/conferences/services.py:1130 apps/travel/services.py:1298
 #: apps/travel/views.py:790
 msgid "Grant or refuse."
 msgstr "Accordez ou refusez."
 
-#: apps/conferences/services.py:1118
+#: apps/conferences/services.py:1132
 msgid "A refusal needs its reason."
 msgstr "Un refus a besoin de son motif."
 
-#: apps/conferences/services.py:1120
+#: apps/conferences/services.py:1134
 msgid "A grant has no refusal reason."
 msgstr "Un accord n'a pas de motif de refus."
 
-#: apps/conferences/services.py:1128 apps/conferences/services.py:1170
+#: apps/conferences/services.py:1142 apps/conferences/services.py:1184
 msgid "This request was already decided."
 msgstr "Cette demande a déjà été décidée."
 
-#: apps/conferences/services.py:1217
+#: apps/conferences/services.py:1231
 msgid "The document has a newer version than the one ST approved."
 msgstr "Le document a une version plus récente que celle que ST a accordée."
 
-#: apps/conferences/services.py:1275
+#: apps/conferences/services.py:1289
 msgid "Unknown platform."
 msgstr "Plateforme inconnue."
 
-#: apps/conferences/services.py:1282
+#: apps/conferences/services.py:1296
 msgid "The date of a preprint is today or earlier."
 msgstr "La date d'une prépublication est aujourd'hui ou avant."
 
@@ -3354,15 +3354,15 @@ msgstr "textes scellés"
 msgid "A title is required."
 msgstr "Un titre est obligatoire."
 
-#: apps/vault/services.py:434
+#: apps/vault/services.py:450
 msgid "Only confidential documents take explicit access."
 msgstr "Seuls les documents confidentiels acceptent un accès explicite."
 
-#: apps/vault/services.py:437
+#: apps/vault/services.py:453
 msgid "You already have access."
 msgstr "Vous avez déjà accès."
 
-#: apps/vault/services.py:440
+#: apps/vault/services.py:456
 msgid "Access can only be given to an active member of the thesis."
 msgstr "L'accès ne peut être donné qu'à un membre actif de la thèse."
 
@@ -3430,7 +3430,12 @@ msgstr ""
 "L'accès se fait uniquement sur invitation. Un second facteur "
 "d'authentification est obligatoire."
 
-#: templates/accounts/blocks/team.html:2
+#: templates/accounts/blocks/team.html:5
+#, python-format
+msgid "The CSI ends on %(date)s."
+msgstr "Le comité de suivi individuel prend fin le %(date)s."
+
+#: templates/accounts/blocks/team.html:6
 msgid "See the team"
 msgstr "Voir l'équipe"
 
@@ -3559,6 +3564,7 @@ msgstr[0] "%(counter)s mission avec des justificatifs manquants"
 msgstr[1] "%(counter)s missions avec des justificatifs manquants"
 
 #: templates/accounts/dashboard.html:75
+#: templates/admin_file/blocks/dashboard.html:6
 msgctxt "before a date"
 msgid "due"
 msgstr "échéance"
@@ -3753,7 +3759,38 @@ msgstr "Révoquer l'invitation"
 msgid "No pending invitation."
 msgstr "Aucune invitation en attente."
 
-#: templates/admin_file/blocks/dashboard.html:2
+#: templates/admin_file/blocks/dashboard.html:6
+#: templates/admin_file/item_row.html:12
+#: templates/meetings/_objective_actions.html:4
+#: templates/meetings/blocks/dashboard.html:5
+#: templates/meetings/detail.html:129 templates/objectives/dashboard.html:38
+#: templates/objectives/dashboard.html:71
+msgid "overdue"
+msgstr "en retard"
+
+#: templates/admin_file/blocks/dashboard.html:6
+#: templates/admin_file/item_row.html:14
+msgid "awaiting validation"
+msgstr "en attente de validation"
+
+#: templates/admin_file/blocks/dashboard.html:6
+#: templates/admin_file/item_row.html:14
+msgid "awaiting validation since today"
+msgstr "en attente de validation depuis aujourd'hui"
+
+#: templates/admin_file/blocks/dashboard.html:6
+#: templates/admin_file/item_row.html:14
+#, python-format
+msgid "awaiting validation for %(counter)s day"
+msgid_plural "awaiting validation for %(counter)s days"
+msgstr[0] "en attente de validation depuis %(counter)s jour"
+msgstr[1] "en attente de validation depuis %(counter)s jours"
+
+#: templates/admin_file/blocks/dashboard.html:10
+msgid "Nothing to deposit or validate."
+msgstr "Rien à déposer ni à valider."
+
+#: templates/admin_file/blocks/dashboard.html:12
 msgid "Open the administrative file"
 msgstr "Ouvrir le dossier administratif"
 
@@ -3799,29 +3836,6 @@ msgstr "Pièce du dossier administratif"
 #: templates/admin_file/item_row.html:7
 msgid "optional"
 msgstr "facultative"
-
-#: templates/admin_file/item_row.html:12
-#: templates/meetings/_objective_actions.html:4
-#: templates/meetings/blocks/dashboard.html:5
-#: templates/meetings/detail.html:129 templates/objectives/dashboard.html:38
-#: templates/objectives/dashboard.html:71
-msgid "overdue"
-msgstr "en retard"
-
-#: templates/admin_file/item_row.html:14
-msgid "awaiting validation"
-msgstr "en attente de validation"
-
-#: templates/admin_file/item_row.html:14
-msgid "awaiting validation since today"
-msgstr "en attente de validation depuis aujourd'hui"
-
-#: templates/admin_file/item_row.html:14
-#, python-format
-msgid "awaiting validation for %(counter)s day"
-msgid_plural "awaiting validation for %(counter)s days"
-msgstr[0] "en attente de validation depuis %(counter)s jour"
-msgstr[1] "en attente de validation depuis %(counter)s jours"
 
 #: templates/admin_file/item_row.html:17
 #, python-format
@@ -3956,7 +3970,11 @@ msgstr "Soumissions liées"
 msgid "Show the linked submissions"
 msgstr "Afficher les soumissions liées"
 
-#: templates/conferences/blocks/dashboard.html:2
+#: templates/conferences/blocks/dashboard.html:7
+msgid "No submission yet."
+msgstr "Pas encore de soumission."
+
+#: templates/conferences/blocks/dashboard.html:9
 msgid "Open the conferences"
 msgstr "Ouvrir les conférences"
 
@@ -5259,7 +5277,7 @@ msgid_plural "%(counter)s documents you can read"
 msgstr[0] "%(counter)s document que vous pouvez lire"
 msgstr[1] "%(counter)s documents que vous pouvez lire"
 
-#: templates/vault/blocks/dashboard.html:4
+#: templates/vault/blocks/dashboard.html:12
 msgid "Open the documents"
 msgstr "Ouvrir les documents"
 

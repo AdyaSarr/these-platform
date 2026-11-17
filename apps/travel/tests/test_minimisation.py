@@ -154,6 +154,24 @@ def _world(team: SimpleNamespace, pattern: str) -> None:
                 team, destination="ROUSSET", payer="ST", start_date=day, end_date=day,
                 purpose=pattern,
             )  # fmt: skip
+        # Documents the co-supervisor does not read (INTERNAL_ST), more recent than
+        # every other one: the documents card cuts to 3 after the filter per viewer
+        # (frontend step 8b), so theirs must not change.
+        from apps.core.confidentiality import ConfidentialityLevel
+        from apps.vault import services as vault
+        from apps.vault.models import Document
+
+        for n in range(4):
+            hidden = vault.store(
+                thesis=team.thesis,
+                upload=_pdf(),
+                title=f"Document caché fictif {n}",
+                level=ConfidentialityLevel.INTERNAL_ST,
+                user=team.student,
+            )
+            Document.objects.filter(pk=hidden.pk).update(
+                updated_at=NOW + dt.timedelta(hours=1, minutes=n)
+            )
 
 
 def _lirmm(team: SimpleNamespace) -> list[Mission]:
@@ -376,6 +394,33 @@ def test_the_co_supervisor_cannot_tell_two_worlds_apart(team: SimpleNamespace) -
     co_sup_agenda = _agenda_card(seen_a[dashboard][2])
     assert "12\u00a0févr.".encode() in co_sup_agenda
     assert co_sup_agenda.count(b'class="agenda-item"') == 2  # 26 January, 12 February
+
+    # Cards of step 8b (documents, team, conferences): the co-supervisor's are in the
+    # bytes compared above, identical in both worlds; not vacuous: the student's
+    # documents card counts what the co-supervisor does not read.
+    student_docs = _dashboard_card(student_a[dashboard][2], b"documents")
+    co_sup_docs = _dashboard_card(seen_a[dashboard][2], b"documents")
+    assert student_docs != co_sup_docs
+    # The cut to the 3 latest documents comes after the filter per viewer: the
+    # student's latest ones (receipts and orders of hidden missions, stored after
+    # the shared ones) are not on the co-supervisor's card, which still lists theirs.
+    links = re.compile(rb"documents/([0-9a-f-]{36})/")
+    student_latest = links.findall(student_docs)
+    co_sup_latest = links.findall(co_sup_docs)
+    assert len(student_latest) == 3 and co_sup_latest
+    assert not set(student_latest) & set(co_sup_latest)
+    for key in (b"team", b"conferences"):
+        assert _dashboard_card(seen_a[dashboard][2], key) == _dashboard_card(
+            seen_b[dashboard][2], key
+        )
+
+
+def _dashboard_card(body: bytes, key: bytes) -> bytes:
+    match = re.search(
+        rb'<section class="block" data-block="' + key + rb'">.*?</section>', body, re.S
+    )
+    assert match is not None, key
+    return match.group(0)
 
 
 def _agenda_card(body: bytes) -> bytes:

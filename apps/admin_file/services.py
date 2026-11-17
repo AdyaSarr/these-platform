@@ -706,9 +706,45 @@ def setup_explanation(request: Any, thesis: Thesis) -> SetupExplanation | None:
     return SetupExplanation(progress=seen, partial=seen.total < every)
 
 
+@dataclass(frozen=True)
+class NextItem:
+    item: RequiredItem
+    label: str
+    overdue: bool  # still to deposit (TODO, REJECTED) and past its due date
+    waiting_days: int | None  # deposited: days since (None: before submitted_at existed)
+
+
+def next_items(user: Any, thesis: Thesis, *, limit: int = 3) -> list[NextItem]:
+    """The next items of the file THIS user sees (visible_items: the tutor sees the
+    CIFRE part), not validated: overdue to deposit first, then by due date (none
+    last). Read only; cut after the filter, never before (a hidden item never
+    changes what a viewer gets)."""
+    if not can(user, Action.CIFRE_FILE_READ, thesis):
+        _audit_denial(user, "next_items", "missing_right", thesis=thesis)
+        raise PermissionDenied
+    today = timezone.localdate()
+    rows = []
+    for item in visible_items(user, thesis).exclude(status=ItemStatus.VALIDATED):
+        status = ItemStatus(item.status)
+        overdue = (
+            item.due_date is not None
+            and status in (ItemStatus.TODO, ItemStatus.REJECTED)
+            and item.due_date < today
+        )
+        waiting = None
+        if status == ItemStatus.SUBMITTED and item.submitted_at is not None:
+            waiting = (today - timezone.localdate(item.submitted_at)).days
+        rows.append(NextItem(item, label_of(item), overdue, waiting))
+    rows.sort(key=lambda r: (not r.overdue, r.item.due_date or dt.date.max, r.label))
+    return rows[:limit]
+
+
 def dashboard_context(request: Any, thesis: Thesis) -> dict[str, Any]:
     """Data of the dashboard block (accounts.views.DASHBOARD_BLOCKS)."""
-    return {"progress": progress(request.user, thesis)}
+    return {
+        "progress": progress(request.user, thesis),
+        "next": next_items(request.user, thesis),
+    }
 
 
 # --------------------------------------------------------------------------- edits

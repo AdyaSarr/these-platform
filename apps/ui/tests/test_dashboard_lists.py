@@ -220,3 +220,28 @@ def test_the_team_card_by_role_and_the_end_of_the_csi(team: SimpleNamespace) -> 
     )
     card = _plain(_card(_dashboard(team, "student"), "team"))
     assert "prend fin le 3\u00a0févr." in card
+
+
+def test_the_latest_documents_cut_after_the_filter(
+    team: SimpleNamespace, time_machine: Any
+) -> None:
+    """Four documents the co-supervisor does not read (INTERNAL_ST), stored after
+    theirs: their card still shows their three latest readable documents."""
+    from apps.vault.services import latest_documents
+
+    for n in range(3):
+        time_machine.move_to(NOW + dt.timedelta(minutes=n + 1), tick=False)
+        _store(team, f"Lisible fictif {n}", L.INTERNAL_LIRMM)
+    for n in range(4):
+        time_machine.move_to(NOW + dt.timedelta(minutes=10 + n), tick=False)
+        _store(team, f"Caché fictif {n}", L.INTERNAL_ST)
+    assert [d.title for d in latest_documents(team.co_supervisor, team.thesis)] == [
+        "Lisible fictif 2",
+        "Lisible fictif 1",
+        "Lisible fictif 0",
+    ]
+    card = _card(_dashboard(team, "co_supervisor"), "documents")
+    titles = re.findall(r'documents/[0-9a-f-]{36}/">([^<]+)</a>', card)
+    assert titles == ["Lisible fictif 2", "Lisible fictif 1", "Lisible fictif 0"]
+    student = _card(_dashboard(team, "student"), "documents")
+    assert "Caché fictif 3" in student  # not vacuous: the hidden ones are the latest

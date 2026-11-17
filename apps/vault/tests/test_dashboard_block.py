@@ -1,6 +1,8 @@
-"""The "Documents" card of the thesis dashboard: a link to the list and the number of
+"""The "Documents" card of the thesis dashboard: a link to the list, the number of
 documents THIS user may read (role, level, explicit grant, module restrictions),
-the very rule of the list itself; nothing decrypted, nothing more shown."""
+the very rule of the list itself, and their latest titles, numbered like the list,
+with their level (frontend step 8b); nothing is decrypted (the titles are in clear,
+M2)."""
 
 from __future__ import annotations
 
@@ -107,11 +109,13 @@ def test_the_count_is_the_number_of_documents_on_the_list(team: SimpleNamespace,
     assert _count(_dashboard(team, role)) == shown
 
 
-def test_the_card_holds_a_link_and_a_count_only(team: SimpleNamespace) -> None:
+def test_the_card_shows_only_what_the_viewer_reads(team: SimpleNamespace) -> None:
     card = _card(_dashboard(team, "co_supervisor"))
     url = reverse("vault:documents", kwargs={"thesis_id": team.thesis.pk})
     assert f'href="{url}"' in card
-    assert "Document fictif" not in card  # no title
+    assert "Document fictif INTERNAL_ST" not in card  # not read by a co-supervisor
+    assert "Document fictif CONFIDENTIAL" not in card
+    assert "Document fictif INTERNAL_LIRMM" in card  # positive twin: a title they read
     assert "prochain module" not in card.lower()
 
 

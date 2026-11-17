@@ -36,7 +36,13 @@ class DashboardBlock:
 
 # Each module gives its block template (and its data function, resolved at render time).
 DASHBOARD_BLOCKS: tuple[DashboardBlock, ...] = (
-    DashboardBlock("team", Action.VIEW_TEAM, _("Team"), "accounts/blocks/team.html"),
+    DashboardBlock(
+        "team",
+        Action.VIEW_TEAM,
+        _("Team"),
+        "accounts/blocks/team.html",
+        data="apps.accounts.services.team_block",
+    ),
     DashboardBlock(
         "objectives",
         Action.OBJECTIVE_READ,
