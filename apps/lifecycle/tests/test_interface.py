@@ -140,3 +140,54 @@ def test_an_active_thesis_shows_no_banner(time_machine: Any) -> None:
     )
     assert "Thèse soutenue" not in page.content.decode()
     assert "Thèse close" not in page.content.decode()
+
+
+# --------------------------------------------------------------------------- the banner by role
+
+OPEN_WORDS = ("documents", "conférences", "accords ST", "justificatifs", "missions")
+
+
+def _banner(team: SimpleNamespace, user: Any) -> str:
+    page = (
+        h.client_for(user)
+        .get(reverse("accounts:dashboard", kwargs={"thesis_id": team.thesis.pk}))
+        .content.decode()
+    )
+    match = re.search(r'<p class="message message-warning" role="status">(.*?)</p>', page, re.S)
+    assert match is not None, "no banner"
+    return match.group(1)
+
+
+@pytest.mark.parametrize("attr", ["student", "director", "co_supervisor", "tutor",
+                                  "st_co_supervisor"])  # fmt: skip
+def test_the_banner_names_the_open_modules_the_role_sees(attr: str, time_machine: Any) -> None:
+    time_machine.move_to(h.NOW, tick=True)
+    team = h.make_team()
+    h.defended(team)
+    banner = _banner(team, getattr(team, attr))
+    assert "Thèse soutenue le 1 juin 2027." in banner
+    assert "les documents" in banner and "les conférences et les accords ST" in banner
+    assert "les justificatifs des missions commencées avant la soutenance" in banner
+
+
+def test_the_csi_member_reads_no_module_they_do_not_see(time_machine: Any) -> None:
+    time_machine.move_to(h.NOW, tick=True)
+    team = h.make_team()
+    h.defended(team)
+    banner = _banner(team, team.csi)
+    assert "Thèse soutenue le 1 juin 2027." in banner
+    assert not [w for w in OPEN_WORDS if w in banner], banner
+    assert "Ce que vous voyez de la thèse est en lecture seule." in banner
+
+
+@pytest.mark.parametrize("status", ["DEFENDED", "CLOSED"])
+def test_the_link_of_the_banner_never_breaks(status: str, time_machine: Any) -> None:
+    time_machine.move_to(h.NOW, tick=True)
+    team = h.make_team()
+    if status == "DEFENDED":
+        h.defended(team)
+    else:
+        h.closed(team, time_machine)
+    assert f'<a class="nowrap" href="{h.url(team, "page")}">Fin de thèse</a>' in _banner(
+        team, team.student
+    )
