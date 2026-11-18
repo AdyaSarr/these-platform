@@ -36,8 +36,8 @@ from apps.accounts.permissions import (
     actions_for,
     can,
     can_access_document,
-    can_access_level,
     roles_of,
+    sees,
 )
 from apps.core.confidentiality import ConfidentialityLevel
 
@@ -116,22 +116,20 @@ def load(event: Event) -> Any:
 # --------------------------------------------------------------------------- reads()
 
 
-def _level(user: Any, thesis: Thesis, level: str) -> bool:
-    return can_access_level(user, thesis, ConfidentialityLevel(level))
+# The rule of the meetings, submissions and objectives is permissions.sees / the
+# managers' readable_by (SR-01): the same one as their lists and pages.
 
 
 def _meeting(user: Any, meeting: Any) -> bool:
-    return can(user, Action.MEETING_READ, meeting) and _level(user, meeting.thesis, meeting.level)
+    return sees(user, meeting, Action.MEETING_READ)
 
 
 def _submission(user: Any, submission: Any) -> bool:
-    return can(user, Action.SUBMISSION_READ, submission) and _level(
-        user, submission.thesis, submission.level
-    )
+    return sees(user, submission, Action.SUBMISSION_READ)
 
 
 def _objective(user: Any, objective: Any, action: Action = Action.OBJECTIVE_READ) -> bool:
-    return can(user, action, objective) and _level(user, objective.thesis, objective.level)
+    return sees(user, objective, action)
 
 
 def _mission(user: Any, mission: Any) -> bool:
@@ -253,16 +251,13 @@ def readable_events(user: Any, thesis: Thesis) -> QuerySet[Event]:
     def ids(queryset: QuerySet[Any]) -> Any:
         return queryset.values("pk")
 
-    meetings = Meeting.objects.filter(thesis=thesis, level__in=levels)
-    if Action.MEETING_READ not in actions:
-        meetings = meetings.none()
-    submissions = Submission.objects.filter(thesis=thesis, level__in=levels)
-    if Action.SUBMISSION_READ not in actions:
-        submissions = submissions.none()
-    objectives = Objective.objects.filter(thesis=thesis, level__in=levels)
-    commented = objectives if Action.OBJECTIVE_COMMENT_READ in actions else objectives.none()
-    if Action.OBJECTIVE_READ not in actions:
-        objectives = objectives.none()
+    meetings = Meeting.objects.readable_by(user, thesis, roles)
+    submissions = Submission.objects.readable_by(user, thesis, roles)
+    objectives = Objective.objects.readable_by(user, thesis, roles)
+    # Comments: their own read action, and the level of their objective.
+    commented = Objective.objects.filter(thesis=thesis, level__in=levels)
+    if Action.OBJECTIVE_COMMENT_READ not in actions:
+        commented = commented.none()
     sections = [s for s in Section if SECTION_READ_ACTION[s] in actions]
     missions = Mission.objects.visible_to(user, thesis)
     team = Membership.objects.filter(thesis=thesis)

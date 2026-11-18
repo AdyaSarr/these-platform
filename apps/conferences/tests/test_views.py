@@ -132,7 +132,8 @@ def test_new_submission_page_is_the_students(team: SimpleNamespace, role: str) -
 
 @pytest.mark.parametrize("role", ROLES)
 def test_submission_page_per_role(team: SimpleNamespace, role: str) -> None:
-    submission = submission_of(team)
+    # PUBLIC: the matrix of the roles; the levels are tested elsewhere (SR-01).
+    submission = submission_of(team, level=L.PUBLIC)
     response = _client(team, role).get(_s(team, submission, "submission"))
     assert response.status_code == (200 if role in READERS else 403)
 

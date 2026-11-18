@@ -18,12 +18,12 @@ from collections.abc import Callable, Iterable, Mapping
 from enum import StrEnum
 from functools import wraps
 from types import MappingProxyType
-from typing import TYPE_CHECKING, Any, Concatenate, ParamSpec, Protocol
+from typing import TYPE_CHECKING, Any, ClassVar, Concatenate, ParamSpec, Protocol, TypeVar
 
 from django.apps import apps as django_apps
 from django.contrib.auth.views import redirect_to_login
 from django.core.exceptions import ImproperlyConfigured, PermissionDenied, ValidationError
-from django.db import transaction
+from django.db import models, transaction
 from django.http import HttpRequest, HttpResponseBase
 
 from apps.core.confidentiality import ConfidentialityLevel
@@ -306,6 +306,57 @@ def allowed_actions(user: AnyUser, thesis: Thesis) -> frozenset[Action]:
     if _thesis_of(thesis) is None:
         return frozenset()
     return _permitted(user, thesis)
+
+
+def readable_levels(user: AnyUser, thesis: Thesis) -> frozenset[ConfidentialityLevel]:
+    """The levels ``user`` reads on ``thesis`` now (LEVEL_ROLES of the roles held)."""
+    thesis_or_none = _thesis_of(thesis)
+    if thesis_or_none is None:
+        return frozenset()
+    roles = roles_of(user, thesis_or_none)
+    return frozenset(level for level in ConfidentialityLevel if roles & LEVEL_ROLES[level])
+
+
+_M = TypeVar("_M", bound=models.Model)
+
+
+class ReadableQuerySet(models.QuerySet[_M]):
+    """« On ne voit l'existence que de ce qu'on peut lire » (SR-01, docs/decisions.md):
+    the objects of a thesis whose existence ``user`` may see are those of the
+    module's read action AND of a level ``user`` reads. The one definition of the
+    rule for the meetings, submissions and objectives: their lists, counts,
+    dashboard, agenda, links, the activity feed and the iCal feed use it."""
+
+    read_action: ClassVar[Action]
+
+    def readable_by(
+        self, user: AnyUser, thesis: Thesis, roles: frozenset[Role] | None = None
+    ) -> models.QuerySet[_M]:
+        """``roles``: the roles of ``user`` already read on ``thesis`` (no query
+        then; a read action is never narrowed by the thesis status)."""
+        if roles is None:
+            if not can(user, self.read_action, thesis):
+                return self.none()
+            levels = readable_levels(user, thesis)
+        else:
+            if self.read_action not in actions_for(roles):
+                return self.none()
+            levels = frozenset(
+                level for level in ConfidentialityLevel if roles & LEVEL_ROLES[level]
+            )
+        return self.filter(thesis=thesis, level__in=[level.value for level in levels])
+
+
+def sees(user: AnyUser, obj: Any, action: Action) -> bool:
+    """The same rule for one object (it has ``thesis`` and ``level``)."""
+    thesis = _thesis_of(obj)
+    if thesis is None or not can(user, action, thesis):
+        return False
+    try:
+        level = ConfidentialityLevel(obj.level)
+    except ValueError:
+        return False
+    return level in readable_levels(user, thesis)
 
 
 def can_access_level(user: AnyUser, thesis: Thesis, level: ConfidentialityLevel) -> bool:

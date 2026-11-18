@@ -330,8 +330,8 @@ def by_target(pages: list[Page]) -> dict[str, Page]:
 @dataclass(frozen=True)
 class Module:
     """A module's surfaces. ``surfaces`` renders every GET route at least once;
-    ``expected`` gives (url, needle) a reader must see (200 and the needle), or a
-    403 for a role without ``read_action``; ``probes`` gives (hidden url, the same
+    ``expected`` gives (url, needle) a reader (``read_action``) must see: 200 and
+    the needle; ``probes`` gives (hidden url, the same
     url with an unknown id) pairs."""
 
     namespace: str
@@ -353,23 +353,24 @@ def run(module: Module, role: Role, time_machine: Any) -> None:
     user = getattr(team, h.ROLE_ATTRS[role])
     targets = module.surfaces(team, shared)
     assert_every_route_is_rendered(module.namespace, targets, module.only)
+    # The control: the student's pages of the module and the dashboard (a module
+    # such as « Fin de thèse » shows no hidden object, the dashboard does).
     plain = [t for t in targets if "?" not in t and resolve(urlsplit(t).path).kwargs.keys()
-             == {"thesis_id"}]  # fmt: skip
+             == {"thesis_id"}] + [url(team, "accounts:dashboard")]  # fmt: skip
 
     time_machine.move_to(FIXED, tick=False)
     states = [render(user, targets)]
     mails = [mails_of(user)]
     student = [render(team.student, plain)]
 
-    # Not vacuous: the pages a reader must see, with their content.
+    # Not vacuous: the pages a reader must see, with their content (a role without
+    # the module's read action is only compared).
     pages = by_target(states[0])
-    for target, needle in module.expected(team, shared, role):
-        page = pages[target]
-        if reads(role, module.read_action):
+    if reads(role, module.read_action):
+        for target, needle in module.expected(team, shared, role):
+            page = pages.get(target) or render(user, [target])[0]
             assert page.status == 200, (target, page.status)
             assert needle in page.body, (target, needle)
-        else:
-            assert page.status == 403, (target, page.status)
 
     # E-mails: the shared objects wrote to the director (M5a invitation, M13a
     # closure request); the hidden ones write to their own readers (below).

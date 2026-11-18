@@ -19,6 +19,7 @@ from django.db import models
 from django.db.models import F, Q
 from django.utils.translation import gettext_lazy as _
 
+from apps.accounts.permissions import Action, ReadableQuerySet
 from apps.core.confidentiality import ConfidentialityLevel
 from apps.core.models import TimeStampedModel
 
@@ -216,6 +217,10 @@ SUBMITTED_ONCE = ["SUBMITTED", "ACCEPTED", "REJECTED", "PUBLISHED"]
 ST_LEVELS = ["PUBLIC", "INTERNAL_ST", "CONFIDENTIAL"]
 
 
+class SubmissionQuerySet(ReadableQuerySet["Submission"]):
+    read_action = Action.SUBMISSION_READ
+
+
 class Submission(TimeStampedModel):
     """A paper aimed at an edition (conference, workshop) or a journal."""
 
@@ -257,6 +262,8 @@ class Submission(TimeStampedModel):
     resubmission_of = models.ForeignKey(
         "self", on_delete=models.PROTECT, null=True, blank=True, related_name="resubmissions"
     )
+
+    objects = SubmissionQuerySet.as_manager()
 
     class Meta:
         verbose_name = _("submission")

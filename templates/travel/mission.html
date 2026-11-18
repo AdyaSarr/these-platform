@@ -11,10 +11,10 @@
   <div><dt>{% translate "Confidentiality" %}</dt><dd>{% level_badge mission.level %}</dd></div>
 </dl>
 <ul>
-  {% if mission.destination == "OTHER" %}<li>{% translate "Place:" %} {% include "conferences/_text.html" with value=texts.destination_detail %}</li>{% endif %}
+  {% if mission.destination == "OTHER" %}<li>{% translate "Place:" %} {% include "travel/_text.html" with value=texts.destination_detail %}</li>{% endif %}
   {% if mission.edition %}<li>{% translate "Conference:" %} {{ mission.edition.venue.acronym }} {{ mission.edition.year }}{% if mission.edition.location %}, {{ mission.edition.location }}{% endif %}</li>{% endif %}
   <li>{% translate "Transport:" %} {{ transports|join:", " }}</li>
-  <li>{% translate "Lodging:" %} {{ mission.get_lodging_display }}{% if texts.lodging_note.text or texts.lodging_note.restricted %} — {% include "conferences/_text.html" with value=texts.lodging_note %}{% endif %}</li>
+  <li>{% translate "Lodging:" %} {{ mission.get_lodging_display }}{% if texts.lodging_note.text or texts.lodging_note.restricted %} — {% include "travel/_text.html" with value=texts.lodging_note %}{% endif %}</li>
   <li>{% translate "Tickets booked:" %} {{ mission.tickets_booked|yesno:_("yes,no") }} · {% translate "Lodging booked:" %} {{ mission.lodging_booked|yesno:_("yes,no") }}</li>
   <li>{% translate "Official mission order obtained:" %} {{ mission.official_order_obtained|yesno:_("yes,no") }}{% if official_document %} — <a href="{% url 'vault:document' thesis_id=thesis.pk document_id=official_document.pk %}">{% translate "the document" %}</a>{% endif %}</li>
   {% if zrr %}<li>{% translate "ZRR access (administrative file):" %} {{ zrr.get_status_display }}</li>{% endif %}
@@ -22,7 +22,7 @@
   {% if submission_id %}<li><a href="{% url 'conferences:submission' thesis_id=thesis.pk submission_id=submission_id %}">{% translate "Linked submission" %}</a></li>{% endif %}
 </ul>
 <h2>{% translate "Purpose" %}</h2>
-<p>{% if texts.purpose.text or texts.purpose.restricted %}{% include "conferences/_text.html" with value=texts.purpose %}{% else %}<span class="muted">—</span>{% endif %}</p>
+<p>{% if texts.purpose.text or texts.purpose.restricted %}{% include "travel/_text.html" with value=texts.purpose %}{% else %}<span class="muted">—</span>{% endif %}</p>
 <h2>{% translate "Mission approval" %}</h2>
 <p class="muted">{% translate "This approval does not replace the official mission order of ST or the LIRMM." %}</p>
 {% if orders %}
@@ -32,7 +32,7 @@
     <td>{{ row.order.created_at|date:"d/m/Y" }}</td>
     <td>{% if row.estimate.restricted %}<span class="restricted">{% translate "Restricted content" %}</span>{% else %}{{ row.estimate.text }}{% endif %}</td>
     <td class="status">{{ row.order.get_decision_display }}{% if row.order.reason %} — {{ row.order.get_reason_display }}{% endif %}{% if row.order.decided_by %} ({{ row.order.decided_by.get_full_name|default:row.order.decided_by.email }}, {{ row.order.decided_at|date:"d/m/Y" }}){% endif %}</td>
-    <td>{% include "conferences/_text.html" with value=row.comment %}</td>
+    <td>{% include "travel/_text.html" with value=row.comment %}</td>
   </tr>{% endfor %}</tbody>
 </table>
 {% elif mission.payer == "OTHER" %}<p class="muted">{% translate "Paid by another body: no mission approval in the platform." %}</p>

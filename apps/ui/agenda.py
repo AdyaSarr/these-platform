@@ -4,7 +4,8 @@ Order of the operations, never another one:
 
 1. each source reads only what THIS viewer may see: the module's action (the same
    one as its card), then the module's own filter (Mission.objects.visible_to,
-   admin_file.services.visible_items...); the 30-day window may be part of the same
+   admin_file.services.visible_items, the readable_by of meetings and objectives:
+   action AND level, SR-01); the 30-day window may be part of the same
    query, a conjunction whose order does not matter;
 2. the window, the sort, and only then the cut at MAX_ENTRIES (select()).
 
@@ -73,7 +74,7 @@ def agenda_for(
     if Action.TRAVEL_READ in actions:
         entries += _missions(request.user, thesis, today, last)
     if Action.OBJECTIVE_READ in actions:
-        entries += _objectives(thesis, today, last)
+        entries += _objectives(request.user, thesis, today, last)
     if Action.CIFRE_FILE_READ in actions:
         entries += _items(request.user, thesis, today, last)
     return select(entries, today)
@@ -94,13 +95,12 @@ def _start_of(day: dt.date) -> dt.datetime:
 
 
 def _meetings(user: Any, thesis: Any, today: dt.date, last: dt.date) -> list[Entry]:
-    """Every scheduled meeting of the thesis (MEETING_READ shows the list of all
-    of them, meetings.services.meeting_list); the title is never opened."""
+    """The scheduled meetings the viewer reads (meetings.services.meeting_list: action
+    AND level, SR-01); the title is never opened."""
     from apps.meetings.models import Attendee, Meeting
 
     meetings = list(
-        Meeting.objects.filter(
-            thesis=thesis,
+        Meeting.objects.readable_by(user, thesis).filter(
             status=Meeting.Status.SCHEDULED,
             starts_at__gte=_start_of(today),
             starts_at__lt=_start_of(last + dt.timedelta(days=1)),
@@ -186,13 +186,12 @@ def _missions(user: Any, thesis: Any, today: dt.date, last: dt.date) -> list[Ent
     ]
 
 
-def _objectives(thesis: Any, today: dt.date, last: dt.date) -> list[Entry]:
-    """Every objective of the thesis is listed to OBJECTIVE_READ (its title is
-    sealed): the category only."""
+def _objectives(user: Any, thesis: Any, today: dt.date, last: dt.date) -> list[Entry]:
+    """The objectives the viewer reads (action AND level, SR-01): the category only
+    (the title is sealed)."""
     from apps.objectives.models import Objective, Status
 
-    objectives = Objective.objects.filter(
-        thesis=thesis,
+    objectives = Objective.objects.readable_by(user, thesis).filter(
         status__in=(Status.PLANNED, Status.IN_PROGRESS),
         due_date__gte=today,
         due_date__lte=last,

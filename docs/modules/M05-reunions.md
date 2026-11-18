@@ -82,9 +82,21 @@ seule transaction.
 | `MEETING_WRITE` | ✓ | ✓ | ✓ | ✓ | — | — |
 | `MEETING_ACKNOWLEDGE` (nouvelle) | ✓ | ✓ | ✓ | ✓ | — (M5b) | — (M5b) |
 
+
+**Règle d'existence (lot B, SR-01, `docs/decisions.md` du 2026-11-18).** On ne voit
+l'existence que de ce qu'on peut lire : un objet de ce module n'existe pour un
+lecteur que s'il a l'action de lecture du module **et** lit son niveau
+(`Meeting.objects.readable_by`, `permissions.sees`). Un objet d'un autre niveau
+n'est ni listé, ni compté, ni lié ; sa page répond comme un identifiant inconnu.
+Aucun signal non plus d'un document lié illisible. Test des deux mondes :
+`apps/meetings/tests/test_two_worlds.py` (méthode : `tests/two_worlds.py`).
+
 Règles par objet, dans les services :
-- tout titulaire de `MEETING_READ` voit chaque réunion (date, type, lieu) ; ses
-  textes s'il peut lire le niveau, « contenu restreint » sinon (comme M4) ;
+- `MEETING_READ` **et** niveau lisible voient la réunion et ses textes ; sans le
+  niveau, la réunion n'existe pas pour le lecteur (ni liste, ni agenda, ni
+  registre des décisions, ni actions liées, ni décompte ; sa page et son export
+  répondent comme un identifiant inconnu). Règle remplacée le 2026-11-18 (lot B,
+  SR-01) : l'ancienne montrait la réunion avec « contenu restreint » ;
 - modifier une réunion, son ordre du jour, son compte rendu, ses décisions, ses
   actions et ses documents : `MEETING_WRITE` **et** (créateur ou participant)
   **et** niveau lisible ;
@@ -127,7 +139,7 @@ lier un document ni télécharger le `.ics`.
    annulée ; rappel du même début, avant celui-ci ; action encore ouverte, de même
    échéance et même assigné. Une annulation reste due. Sinon `SKIPPED`.
 9. Carte « Réunions » du tableau de bord : prochaine réunion visible, actions en
-   retard (toutes et les miennes).
+   retard (toutes et les miennes), parmi les réunions lisibles seulement (SR-01).
 10. Fiche d'un objectif : fragment « Actions liées ».
 11. Réunion de type `CSI` : planifiable (date, lieu, participants internes, ordre
     du jour, documents), mais **compte rendu, décisions, actions et lu / approuvé

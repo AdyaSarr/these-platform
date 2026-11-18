@@ -15,6 +15,7 @@
   <div><dt>{% translate "Drafts awaiting approval" %}</dt><dd>{{ stats.drafts }}</dd></div>
   <div><dt>{% translate "Dropped" %}</dt><dd>{{ stats.dropped }}</dd></div>
 </dl>
+{% if data.partial %}<p class="muted">{% translate "Computed on the objectives you can read." %}</p>{% endif %}
 
 {% if can_validate and pending %}
 <section class="pending" aria-labelledby="pending-title">

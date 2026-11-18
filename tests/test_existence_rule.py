@@ -29,6 +29,11 @@ from apps.vault.models import AuditEvent
 pytestmark = pytest.mark.django_db(transaction=True)
 R = Role
 MENTION = "Calculé sur les objectifs que vous pouvez lire."
+CSRF = re.compile(r'(name="csrfmiddlewaretoken" value=|"X-CSRFToken": )"[^"]+"')
+
+
+def _plain(html: str) -> str:
+    return CSRF.sub(r'\1"-"', html)
 
 
 @pytest.fixture
@@ -121,7 +126,8 @@ def test_lists_and_counts_leave_out_unreadable_objects(team: SimpleNamespace) ->
     h.submission(team, L.INTERNAL_LIRMM)
     year = ThesisYear.objects.get(thesis=team.thesis, number=1)
     assert len(meetings.meeting_list(team.co_supervisor, team.thesis, past=False)) == 1
-    assert len(meetings.meeting_list(team.tutor, team.thesis, past=False)) == 1
+    assert len(meetings.meeting_list(team.tutor, team.thesis, past=False)) == 2  # reads ST
+    assert len(meetings.meeting_list(team.director, team.thesis, past=False)) == 1
     assert objectives.stats_for(team.tutor, team.thesis, year).stats.drafts == 1
     assert objectives.stats_for(team.director, team.thesis, year).stats.drafts == 2
     assert len(conferences.submission_list(team.tutor, team.thesis)) == 1
@@ -274,8 +280,11 @@ def test_a_posted_hidden_objective_id_is_refused_as_an_unknown_one(
     absent = "00000000-0000-4000-8000-000000000000"
     unknown = h.browser_post(client, edit, edit, {**base, "objective": absent})
     assert hidden.status_code == unknown.status_code == 400
-    strip = lambda r: re.sub(r'value="[^"]*"', "", r.content.decode())  # noqa: E731
-    assert strip(hidden) == strip(unknown)
+
+    def strip(response: Any, posted: str) -> str:
+        return _plain(response.content.decode()).replace(posted, "ID")
+
+    assert strip(hidden, str(goal.pk)) == strip(unknown, absent)
 
 
 def test_the_choices_offer_readable_objectives_only(team: SimpleNamespace) -> None:
@@ -318,8 +327,8 @@ def test_the_mention_depends_on_the_role_not_on_the_objectives(
 ) -> None:
     client = h.client_for(team.tutor)
     time_machine.move_to(h.NOW + dt.timedelta(hours=1), tick=False)
-    before = client.get(_url(team, "objectives:dashboard")).content.decode()
+    before = _plain(client.get(_url(team, "objectives:dashboard")).content.decode())
     assert MENTION in before
     h.objective(team, L.INTERNAL_LIRMM)  # hidden from the tutor
-    after = client.get(_url(team, "objectives:dashboard")).content.decode()
+    after = _plain(client.get(_url(team, "objectives:dashboard")).content.decode())
     assert before == after

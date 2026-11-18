@@ -38,6 +38,7 @@ from apps.accounts.permissions import (
     can,
     can_access_document,
     roles_of,
+    sees,
 )
 from apps.accounts.reauth import RecentAuthRequiredMixin, authenticated_recently, reauth_response
 from apps.accounts.statuses import is_open_for
@@ -504,14 +505,15 @@ class MissionView(_MissionMixin, View):
             user, Action.ADMIN_FILE_READ, self.thesis
         ):
             zrr = RequiredItem.objects.filter(thesis=self.thesis, code="fsd_zrr_clearance").first()
+        # SR-01: a linked meeting or submission shows only to who reads it (level too).
         meeting = (
             mission.meeting
-            if mission.meeting_id and can(user, Action.MEETING_READ, self.thesis)
+            if mission.meeting_id and sees(user, mission.meeting, Action.MEETING_READ)
             else None
         )
         submission_id = (
             mission.submission_id
-            if mission.submission_id and can(user, Action.SUBMISSION_READ, self.thesis)
+            if mission.submission_id and sees(user, mission.submission, Action.SUBMISSION_READ)
             else None
         )
         transports = dict(Transport.choices)

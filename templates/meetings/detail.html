@@ -18,9 +18,8 @@
   {% endif %}
 {% endpage_header %}
 {% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
-{% if texts.location_detail.text or texts.location_detail.restricted %}<p>{% translate "Room or address" %}&nbsp;: {% include "meetings/_text.html" with value=texts.location_detail %}</p>{% endif %}
-{% if texts.visio_link.restricted %}<p>{% translate "Video link" %}&nbsp;: {% include "meetings/_text.html" with value=texts.visio_link %}</p>
-{% elif texts.visio_link.text %}<p>{% translate "Video link" %}&nbsp;: <a href="{{ texts.visio_link.text }}" target="_blank" rel="noopener noreferrer">{{ texts.visio_link.text }}</a></p>{% endif %}
+{% if texts.location_detail.text %}<p>{% translate "Room or address" %}&nbsp;: {% include "meetings/_text.html" with value=texts.location_detail %}</p>{% endif %}
+{% if texts.visio_link.text %}<p>{% translate "Video link" %}&nbsp;: <a href="{{ texts.visio_link.text }}" target="_blank" rel="noopener noreferrer">{{ texts.visio_link.text }}</a></p>{% endif %}
 
 <p class="muted">{% translate "The calendar file contains the type, date and place only, never the title or the texts." %}</p>
 
@@ -53,7 +52,7 @@
       {% csrf_token %}<button type="submit">{% translate "Add the open actions and overdue objectives" %}</button>
       <span class="helptext">{% translate "Only items that every reader of this meeting may read are copied." %}</span>
     </form>
-  {% elif texts.agenda.text or texts.agenda.restricted %}
+  {% elif texts.agenda.text %}
     <p>{% include "meetings/_text.html" with value=texts.agenda %}</p>
   {% else %}
     <p class="muted">{% translate "No agenda." %}</p>
@@ -75,7 +74,7 @@
         {% for field in minutes_form %}{% if field.is_hidden %}{{ field }}{% else %}<p>{{ field.label_tag }} {{ field }}{% if field.help_text %}<span class="helptext">{{ field.help_text }}</span>{% endif %}{{ field.errors }}</p>{% endif %}{% endfor %}
         <button type="submit" class="btn-primary">{% translate "Save the minutes" %}</button>
       </form>
-    {% elif texts.minutes.text or texts.minutes.restricted %}
+    {% elif texts.minutes.text %}
       <p>{% include "meetings/_text.html" with value=texts.minutes %}</p>
     {% else %}
       <p class="muted">{% translate "No minutes yet." %}</p>
@@ -127,7 +126,7 @@
   <ul>
     {% for row in actions %}
       <li id="action-{{ row.action.pk }}">{% include "meetings/_text.html" with value=row.title %} — {{ row.action.assignee.get_full_name|default:row.action.assignee.email }}, {{ row.action.due_date|date:"SHORT_DATE_FORMAT" }} · {{ row.action.get_status_display }}{% if row.overdue %} <strong class="overdue">{% translate "overdue" %}</strong>{% endif %}
-        {% if row.action.objective_id %}(<a href="{% url 'objectives:detail' thesis_id=thesis.pk objective_id=row.action.objective_id %}">{% translate "linked objective" %}</a>){% endif %}
+        {% if row.objective_shown %}(<a href="{% url 'objectives:detail' thesis_id=thesis.pk objective_id=row.action.objective_id %}">{% translate "linked objective" %}</a>){% endif %}
         {% if row.can_status %}
           <form class="form-secondary" method="post" action="{% url 'meetings:action_status' thesis_id=thesis.pk meeting_id=meeting.pk action_id=row.action.pk %}">
             {% csrf_token %}
@@ -162,8 +161,7 @@
     {% endfor %}
   </ul>
   {% endif %}
-  {% if hidden_documents %}<p class="muted">{% blocktranslate count counter=hidden_documents %}{{ counter }} linked document you may not read.{% plural %}{{ counter }} linked documents you may not read.{% endblocktranslate %}</p>{% endif %}
-  {% if not documents and not hidden_documents %}<p class="muted">{% translate "No linked document." %}</p>{% endif %}
+  {% if not documents %}<p class="muted">{% translate "No linked document." %}</p>{% endif %}
   {% if document_form and document_form.fields.document.choices %}
     <form class="stack" method="post" action="{% url 'meetings:document' thesis_id=thesis.pk meeting_id=meeting.pk %}">
       {% csrf_token %}{{ document_form.as_p }}

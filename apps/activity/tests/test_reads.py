@@ -141,14 +141,14 @@ def test_the_list_rule_and_the_level(team: SimpleNamespace, make: Any, kind: str
     assert _readers(team, _event(kind)) == expected
 
 
-def test_the_meetings_list_itself_does_not_change(team: SimpleNamespace) -> None:
-    """Option B is the feed's rule, not the list's: the co-supervisor still sees an
-    INTERNAL_ST meeting listed, with its texts restricted."""
+def test_the_meetings_list_follows_the_same_rule(team: SimpleNamespace) -> None:
+    """SR-01 (lot B): option B is now the rule of the lists too: the co-supervisor
+    neither reads the event of an INTERNAL_ST meeting nor sees it listed."""
     from apps.meetings import services as meetings
 
     session = h.meeting(team, L.INTERNAL_ST)
     listed = meetings.meeting_list(team.co_supervisor, team.thesis, past=False)
-    assert session.pk in {row.meeting.pk for row in listed}
+    assert session.pk not in {row.meeting.pk for row in listed}
     assert not reads(team.co_supervisor, _event("MEETING_PLANNED"))
 
 

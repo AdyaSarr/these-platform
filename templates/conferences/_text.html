@@ -1,1 +1,1 @@
-{% load i18n %}{# A sealed text (views.Shown): the text, or "Restricted content". #}{% if value.restricted %}<span class="restricted">{% translate "Restricted content" %}</span>{% else %}{{ value.text|linebreaksbr }}{% endif %}
+{# A sealed text (views.Shown): only readable submissions reach a page (SR-01). #}{{ value.text|linebreaksbr }}

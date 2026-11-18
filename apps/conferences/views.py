@@ -102,31 +102,28 @@ def _status(exc: ValidationError) -> int:
 
 @dataclass(frozen=True)
 class Shown:
+    """A sealed text as the page shows it: only readable submissions reach a page
+    (SR-01), and every text of a submission is at its level."""
+
     text: str
-    restricted: bool
 
 
 def shown(value: Any) -> Shown:
-    if value is vault.RESTRICTED:
-        return Shown(text="", restricted=True)
-    return Shown(text=str(value or ""), restricted=False)
+    if value is vault.RESTRICTED:  # a bug upstream: refuse rather than hint (SR-01)
+        raise PermissionDenied("a text of an unreadable submission reached a page")
+    return Shown(text=str(value or ""))
 
 
 def _objectives(user: User, thesis: Any) -> list[tuple[str, str]]:
-    objectives = list(Objective.objects.filter(thesis=thesis).order_by("due_date", "pk"))
-    opened = (
-        vault.open_texts(
-            user, thesis, [(o, "title") for o in objectives], action=Action.OBJECTIVE_READ
-        )
-        if can(user, Action.OBJECTIVE_READ, thesis)
-        else {}
+    """Objectives to link a submission to: those the user reads only (SR-01)."""
+    objectives = list(Objective.objects.readable_by(user, thesis).order_by("due_date", "pk"))
+    opened = vault.open_texts(
+        user, thesis, [(o, "title") for o in objectives], action=Action.OBJECTIVE_READ
     )
-    choices = []
-    for o in objectives:
-        title = opened.get((o.pk, "title"), "")
-        label = _("Restricted content") if title is vault.RESTRICTED else str(title)
-        choices.append((str(o.pk), f"{label} ({o.due_date:%d/%m/%Y})"))
-    return choices
+    return [
+        (str(o.pk), f"{shown(opened.get((o.pk, 'title'), '')).text} ({o.due_date:%d/%m/%Y})")
+        for o in objectives
+    ]
 
 
 def _documents(user: User, thesis: Any) -> list[tuple[str, str]]:
@@ -496,7 +493,14 @@ class EditSubmissionView(_Mixin, View):
         initial = {
             **texts,
             "target": target,
-            "objective": str(submission.objective_id or ""),
+            # Point C: a linked objective the user does not read never reaches the
+            # page (neither as a choice nor as an initial value); the server keeps it.
+            "objective": str(submission.objective_id or "")
+            if submission.objective_id
+            and Objective.objects.readable_by(_user(request), self.thesis)
+            .filter(pk=submission.objective_id)
+            .exists()
+            else "",
             "authors": [str(u.pk) for u in detail.authors],
         }
         return self._page(submission, self._form(initial=initial))
@@ -571,7 +575,6 @@ def render_submission(
         ],
         "preprints": [(p.preprint, shown(p.url)) for p in detail.preprints],
         "documents": detail.documents,
-        "hidden_documents": detail.hidden_documents,
         "deadlines": [services.deadline_display(d) for d in detail.deadlines],
         "can_write": writer and live,
         "can_decide": tutor,
@@ -798,8 +801,8 @@ class ObjectiveSubmissionsView(_Mixin, View):
         self, request: HttpRequest, *args: Any, objective_id: Any, **kwargs: Any
     ) -> HttpResponse:
         user = _user(request)
-        objective = Objective.objects.filter(pk=objective_id, thesis=self.thesis).first()
-        if objective is None:
+        objective = Objective.objects.readable_by(user, self.thesis).filter(pk=objective_id).first()
+        if objective is None:  # unknown or unreadable: the same refusal (SR-01)
             raise services.deny_unknown(user, self.thesis, "objective")
         rows = services.submissions_for_objective(user, objective)
         context = {"thesis": self.thesis, "rows": [(r.submission, shown(r.title)) for r in rows]}

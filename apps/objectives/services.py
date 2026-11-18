@@ -5,7 +5,11 @@ Rights are decided HERE (accounts.permissions), even when a view checked too:
 - approve, acknowledge changes: VALIDATE_OBJECTIVES (the director) AND a second
   factor less than 10 minutes old (``recent_mfa``, given by the view);
 - comment, read comments: OBJECTIVE_COMMENT (the CSI member has not);
-- read objectives, revisions, progress: OBJECTIVE_READ.
+- read objectives, revisions, progress: OBJECTIVE_READ AND the objective's level
+  (SR-01: « on ne voit l'existence que de ce qu'on peut lire »): an objective of
+  another level is neither listed, counted nor reachable, and its page answers
+  as an unknown id (Objective.objects.readable_by). The statistics are those of
+  the objectives the reader reads (``partial`` says so, never a total).
 A refusal is audited (OBJECTIVE_ACCESS_DENIED) in its own transaction, then
 PermissionDenied is raised; the vault refuses on its own too (level).
 
@@ -34,7 +38,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.accounts.models import Thesis, User
-from apps.accounts.permissions import Action, can, can_access_document
+from apps.accounts.permissions import Action, can, can_access_document, readable_levels, sees
 from apps.accounts.statuses import open_statuses
 from apps.activity import events as activity
 from apps.core.confidentiality import ConfidentialityLevel
@@ -274,7 +278,22 @@ def objective_for(user: User, thesis: Thesis, objective_id: Any, *, operation: s
     if objective is None:
         raise _deny(user, operation, "unknown_objective", thesis=thesis)
     _require(user, Action.OBJECTIVE_READ, thesis, operation)
+    _require_level(user, objective, operation)
     return objective
+
+
+def _require_level(user: Any, objective: Objective, operation: str) -> None:
+    """SR-01: an objective of a level ``user`` does not read does not exist for
+    them: the same PermissionDenied as an unknown id (the journal says why)."""
+    if not sees(user, objective, Action.OBJECTIVE_READ):
+        raise _deny(user, operation, "unreadable_level", thesis=_thesis(objective))
+
+
+def _partial(user: Any, thesis: Thesis) -> bool:
+    """True when ``user`` does not read every level an objective may have: the
+    statistics then say they count the objectives the user reads. A function of
+    the roles only, never of the objectives (two worlds)."""
+    return not set(OBJECTIVE_LEVELS) <= readable_levels(user, thesis)
 
 
 def objective_texts(
@@ -316,6 +335,7 @@ def comments_for(user: User, objective: Objective) -> list[CommentView]:
     a read right, so a closed thesis keeps it readable."""
     thesis = _thesis(objective)
     _require(user, Action.OBJECTIVE_COMMENT_READ, thesis, "comments")
+    _require_level(user, objective, "comments")
     comments = list(ObjectiveComment.objects.filter(objective=objective).order_by("created_at"))
     opened = vault.open_texts(
         user, thesis, [(c, "body") for c in comments], action=Action.OBJECTIVE_COMMENT_READ
@@ -327,8 +347,7 @@ def comments_for(user: User, objective: Objective) -> list[CommentView]:
 class ProgressView:
     update: ProgressUpdate
     note: Any
-    evidence: Document | None  # None when absent OR not readable by this user
-    has_hidden_evidence: bool
+    evidence: Document | None  # None when absent OR not readable (never hinted, SR-01)
 
 
 def progress_for(user: User, objective: Objective) -> list[ProgressView]:
@@ -352,6 +371,7 @@ def objective_detail(user: User, objective: Objective) -> ObjectiveDetail:
     here: they need OBJECTIVE_COMMENT (comments_for, a fragment of their own)."""
     thesis = _thesis(objective)
     _require(user, Action.OBJECTIVE_READ, thesis, "detail")
+    _require_level(user, objective, "detail")
     revisions = list(ObjectiveRevision.objects.filter(objective=objective).order_by("created_at"))
     updates = list(
         ProgressUpdate.objects.filter(objective=objective)
@@ -382,7 +402,6 @@ def objective_detail(user: User, objective: Objective) -> ObjectiveDetail:
                 update=u,
                 note=opened.get((u.pk, "note"), ""),
                 evidence=visible,
-                has_hidden_evidence=u.evidence_id is not None and visible is None,
             )
         )
     return ObjectiveDetail(
@@ -826,7 +845,9 @@ def stats_for(user: User, thesis: Thesis, year: ThesisYear) -> YearStats:
     if year.thesis_id != thesis.pk:
         raise _deny(user, "stats", "other_thesis", thesis=thesis)
     objectives = list(
-        Objective.objects.filter(thesis=thesis, year=year).prefetch_related("progress_updates")
+        Objective.objects.readable_by(user, thesis)
+        .filter(year=year)
+        .prefetch_related("progress_updates")
     )
     rows = [
         stats_module.Row(
@@ -869,7 +890,8 @@ class Dashboard:
     year: ThesisYear
     years: list[ThesisYear]
     stats: YearStats
-    objectives: list[Listed]  # of the year
+    objectives: list[Listed]  # of the year, those the user reads (SR-01)
+    partial: bool  # the user does not read every objective level: say so
     overdue: list[Listed]  # of the year, approved, still open, due before today
     pending: list[Listed]  # every year: to acknowledge (the director's list only)
 
@@ -886,11 +908,13 @@ def dashboard(user: User, thesis: Thesis, year: ThesisYear) -> Dashboard:
     """The objectives page of one year; every title opened in ONE vault call."""
     year_stats = stats_for(user, thesis, year)  # rights and year checked there
     today = timezone.localdate()
-    of_year = list(
-        Objective.objects.filter(thesis=thesis, year=year).order_by("due_date", "created_at")
-    )
+    readable = Objective.objects.readable_by(user, thesis)
+    of_year = list(readable.filter(year=year).order_by("due_date", "created_at"))
+    readable_ids = set(readable.values_list("pk", flat=True))
     pending = (
-        pending_acknowledgements(thesis) if can(user, Action.VALIDATE_OBJECTIVES, thesis) else []
+        [o for o in pending_acknowledgements(thesis) if o.pk in readable_ids]
+        if can(user, Action.VALIDATE_OBJECTIVES, thesis)
+        else []
     )
     unique = {o.pk: o for o in [*of_year, *pending]}
     texts = objective_texts(user, thesis, unique.values())
@@ -904,6 +928,7 @@ def dashboard(user: User, thesis: Thesis, year: ThesisYear) -> Dashboard:
         years=list(ThesisYear.objects.filter(thesis=thesis).order_by("number")),
         stats=year_stats,
         objectives=rows,
+        partial=_partial(user, thesis),
         overdue=[r for r in rows if r.overdue],
         pending=[listed(o) for o in pending],
     )
@@ -922,4 +947,5 @@ def dashboard_block(request: Any, thesis: Thesis) -> dict[str, Any]:
         "attainment": stats_module.as_percent(result.stats.attainment),
         "drafts": result.stats.drafts,
         "overdue": result.stats.overdue,
+        "partial": _partial(request.user, thesis),
     }

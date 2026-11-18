@@ -182,8 +182,9 @@ def test_the_file_card_lists_three_items_with_links(team: SimpleNamespace) -> No
 def test_the_conferences_card_counts_by_status(team: SimpleNamespace) -> None:
     from apps.conferences.tests.helpers import submission_of
 
-    submission_of(team)
-    submission_of(team, title="Deuxième article fictif")
+    submission_of(team, level=L.PUBLIC)
+    submission_of(team, level=L.PUBLIC, title="Deuxième article fictif")
+    submission_of(team, title="Troisième article fictif")  # CONFIDENTIAL: not counted (SR-01)
     card = _card(_dashboard(team, "co_supervisor"), "conferences")
     assert re.search(r"En préparation\s*:?\s*2", _plain(card).replace("\u00a0", " "))
 

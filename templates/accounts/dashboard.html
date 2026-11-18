@@ -41,6 +41,7 @@
           <span class="tile-label">{% icon "target" %}{% translate "Weighted attainment" %}</span>
           <span class="tile-value">{% if tiles.objectives.attainment is None %}—{% else %}{{ tiles.objectives.attainment }}&nbsp;%{% endif %}</span>
           <p class="tile-detail">{% if tiles.objectives.year %}{% blocktranslate with number=tiles.objectives.year.number %}Year {{ number }}{% endblocktranslate %} · {% blocktranslate with overdue=tiles.objectives.overdue drafts=tiles.objectives.drafts %}{{ overdue }} overdue, {{ drafts }} awaiting approval{% endblocktranslate %}{% else %}{% translate "No objective yet." %}{% endif %}</p>
+          {% if tiles.objectives.partial %}<p class="tile-detail">{% translate "Computed on the objectives you can read." %}</p>{% endif %}
           <a href="{% url 'objectives:dashboard' thesis_id=thesis.pk %}">{% translate "Open the objectives" %}</a>
         </li>
       {% endif %}

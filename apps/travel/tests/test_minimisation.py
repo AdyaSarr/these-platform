@@ -40,6 +40,7 @@ from django.urls import URLPattern, URLResolver, get_resolver, resolve, reverse
 
 from apps.conferences.models import Submission
 from apps.conferences.tests.helpers import submission_of
+from apps.core.confidentiality import ConfidentialityLevel
 from apps.meetings.models import Meeting
 from apps.meetings.tests.helpers import meeting_of
 from apps.travel import holidays, services
@@ -182,7 +183,7 @@ def _lirmm(team: SimpleNamespace) -> list[Mission]:
         thesis=team.thesis, user=team.director, recent_mfa=True, min_lab_days_per_month=3
     )
     meeting_of(team)  # shared objects a mission may link (?meeting=, ?submission=)
-    submission_of(team)
+    submission_of(team, level=ConfidentialityLevel.PUBLIC)  # read by the co-supervisor
     shared = [  # shared missions to the LIRMM: one the co-supervisor reads, one not
         mission_of(team, payer="LIRMM", start_date=D(2027, 1, 26), end_date=D(2027, 1, 26)),
         mission_of(team, payer="ST", start_date=D(2027, 3, 2), end_date=D(2027, 3, 2)),

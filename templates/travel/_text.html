@@ -1,0 +1,1 @@
+{% load i18n %}{# A sealed text (travel.views._shown): the text, or "Restricted content" (M7: amounts and texts sealed at another level than the reader reads). #}{% if value.restricted %}<span class="restricted">{% translate "Restricted content" %}</span>{% else %}{{ value.text|linebreaksbr }}{% endif %}

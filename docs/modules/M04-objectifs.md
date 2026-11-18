@@ -32,7 +32,10 @@ avec des statistiques de suivi visibles par les encadrants.
 3. Encadrants : commentaires sur un objectif (fil simple).
 4. Tableau de bord : taux d'atteinte pondéré par année, objectifs en retard,
    évolution mensuelle (graphique simple, données agrégées côté serveur),
-   répartition par catégorie.
+   répartition par catégorie. Depuis le lot B (SR-01), calculés sur les objectifs
+   que le lecteur lit ; un lecteur qui ne lit pas tous les niveaux possibles
+   d'un objectif voit « Calculé sur les objectifs que vous pouvez lire. »,
+   jamais un total ni le nombre d'objectifs cachés.
 5. Résumé hebdomadaire envoyé aux encadrants (lien seulement).
 
 ## Critères d'acceptation
@@ -58,6 +61,14 @@ Ajoutés au plan validé de M4 :
       quelque chose à voir sur les objectifs qu'ils peuvent lire.
 - [x] Années de thèse : double bornage (CIFRE, universitaire), dates à Paris ;
       `Objective.year` est l'année CIFRE.
+
+**Règle d'existence (lot B, SR-01, `docs/decisions.md` du 2026-11-18).** On ne voit
+l'existence que de ce qu'on peut lire : un objet de ce module n'existe pour un
+lecteur que s'il a l'action de lecture du module **et** lit son niveau
+(`Objective.objects.readable_by`, `permissions.sees`). Un objet d'un autre niveau
+n'est ni listé, ni compté, ni lié ; sa page répond comme un identifiant inconnu.
+Aucun signal non plus d'un document lié illisible. Test des deux mondes :
+`apps/objectives/tests/test_two_worlds.py` (méthode : `tests/two_worlds.py`).
 
 ## Notes issues de M1
 - Droits (`apps/accounts/permissions.py`) : `OBJECTIVE_READ` donne accès aux
