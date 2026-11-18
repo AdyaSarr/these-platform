@@ -1,0 +1,47 @@
+# Example Caddyfile of the platform (docs/DEPLOYMENT.md). these.example.org is a
+# placeholder. Every behaviour noted here is to be checked on the deployed Caddy
+# version (commands in DEPLOYMENT.md): `caddy validate` checks the syntax only.
+
+these.example.org {
+	log {
+		output file /var/log/caddy/these-access.log {
+			roll_keep_for 720h
+		}
+		format filter {
+			wrap json
+			fields {
+				# Tokens: 43 base64url characters; /invitation/accept/ stays readable.
+				# Invitations (M1) and iCal feeds (M12) in one expression.
+				request>uri regexp ^/(invitation|ical)/[A-Za-z0-9_-]{20,} /${1}/[masque]
+				request>headers>Referer delete
+				request>headers>Cookie delete
+			}
+		}
+	}
+
+	# Upload routes (SR-14): the five views that read request.FILES. Django keeps
+	# every multipart body in memory (FILE_UPLOAD_HANDLERS, global), up to
+	# MAX_UPLOAD_BYTES = 25 MiB: only these routes get a large body, and at most
+	# two of them reach Django at a time. A new upload view missing here gets a
+	# 413 above 1 MiB (visible), never a larger limit.
+	@upload path_regexp upload ^/t/[0-9a-f-]{36}/(documents/new|documents/[0-9a-f-]{36}/versions/new|admin-file/[0-9a-f-]{36}/submit|travel/missions/[0-9a-f-]{36}/official-order|travel/expenses/[0-9a-f-]{36}/receipt)/$
+	handle @upload {
+		request_body {
+			# 25 MiB of file + multipart headers. MiB, not MB: 26MB < 25 MiB.
+			max_size 26MiB
+		}
+		reverse_proxy 127.0.0.1:8000 {
+			transport http {
+				# Connections of THIS proxy handler to Django, idle ones included.
+				max_conns_per_host 2
+			}
+		}
+	}
+
+	handle {
+		request_body {
+			max_size 1MiB
+		}
+		reverse_proxy 127.0.0.1:8000
+	}
+}

@@ -67,6 +67,29 @@ Le statut est une condition **de `permissions.py`**, pas des modules :
   (`PermissionDenied`) ; `ensure_usable` refuse une invitation d'une thèse non
   ouverte (`InvalidInvitationError`, comme une invitation expirée).
 
+### Fenêtre entre `can()` et la clôture (SR-13, accepté)
+
+La clôture verrouille la ligne `Thesis` (`select_for_update`) ; les services qui
+écrivent ne la verrouillent pas. Une écriture dont `can()` a lu le statut
+`ACTIVE` (ou `DEFENDED`) **juste avant** la validation de la clôture peut donc
+être enregistrée **juste après** : ni `can()` ni les gardes `OPEN_THESIS` ne
+relisent le statut sous verrou.
+
+- **Fenêtre** : le temps entre le `can()` d'une requête et la fin de sa
+  transaction, de l'ordre de la milliseconde (un dépôt : le temps du chiffrement).
+- **Effet borné** : une seule écriture, déjà autorisée au moment de son contrôle,
+  par un membre qui avait le droit ; aucun droit gagné, aucune lecture ouverte.
+  L'écriture est journalisée normalement, avec un `seq` supérieur à celui de
+  `THESIS_CLOSED` : elle se repère dans le journal.
+- **Pourquoi ne pas fermer la fenêtre** : il faudrait verrouiller la ligne
+  `Thesis` dans chaque service qui écrit, ce qui sérialise toutes les écritures
+  d'une thèse et ajoute un verrou à l'ordre des verrous du coffre
+  (`vault.locks`), pour un gain nul en pratique (moins de 15 utilisateurs, une
+  clôture par thèse).
+- À reconsidérer si une écriture faite après la clôture devenait un problème
+  (par exemple un export M13b qui doit être complet) : verrouiller alors la
+  thèse dans les services concernés seulement.
+
 ### Contrôles statiques
 
 1. **Une seule liste de statuts** : aucun code hors de `apps/accounts/statuses.py`

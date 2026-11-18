@@ -1,8 +1,17 @@
 # Local development services only. Ports are bound to 127.0.0.1: nothing is
 # reachable from the network. Passwords come from .env (compose fails if missing).
+#
+# Images are pinned by the digest of their multi-architecture index (SR-17): a
+# moving tag would change the servers under the tests without a commit. To move
+# to a newer image, pull the tag, read its digest, put it in db, db-test (the same
+# image, tests/test_test_database.py) and redis, then run the full suite:
+#   docker pull postgres:16-alpine && docker buildx imagetools inspect postgres:16-alpine
+#   docker pull redis:7-alpine && docker buildx imagetools inspect redis:7-alpine
+# (the first "Digest:" line, an image index; also given by
+#  docker image inspect --format '{{index .RepoDigests 0}}' <tag>)
 services:
   db:
-    image: postgres:16-alpine
+    image: postgres:16-alpine@sha256:aa6cb33cf4c19c765cefcf48d96176258800870a9a1e930ad126200f9d825139
     environment:
       POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in .env}
       POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in .env}
@@ -22,7 +31,7 @@ services:
   # the development image, its data in memory (lost when the container stops), and
   # no fsync. Only durability after a crash differs, never SQL (docs/decisions.md).
   db-test:
-    image: postgres:16-alpine
+    image: postgres:16-alpine@sha256:aa6cb33cf4c19c765cefcf48d96176258800870a9a1e930ad126200f9d825139
     command: ["postgres", "-c", "fsync=off", "-c", "synchronous_commit=off", "-c", "full_page_writes=off"]
     environment:
       POSTGRES_DB: theses
@@ -40,17 +49,24 @@ services:
     restart: unless-stopped
 
   redis:
-    image: redis:7-alpine
-    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}", "--appendonly", "yes"]
-    environment:
-      # Lets redis-cli authenticate without putting the password on its command line.
-      REDISCLI_AUTH: ${REDIS_PASSWORD}
+    image: redis:7-alpine@sha256:7f7d30b7fdd09467bac58198a1f166dd69789d348d4fe859cccb20e0cf287fbe
+    # The password is in a configuration file (SR-17), never on a command line nor
+    # in the container's environment: neither `docker inspect` nor `ps` shows it.
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    configs:
+      - source: redis_conf
+        target: /usr/local/etc/redis/redis.conf
+        uid: "999"  # the redis user of the image
+        gid: "1000"
+        mode: 0400
     ports:
       - "127.0.0.1:6379:6379"
     volumes:
       - redisdata:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      # The password goes from the file to redis-cli's environment only. redis-cli
+      # exits 0 on a NOAUTH answer too, hence the test of the PONG reply.
+      test: ["CMD-SHELL", "REDISCLI_AUTH=\"$$(sed -n 's/^requirepass //p' /usr/local/etc/redis/redis.conf)\" redis-cli ping | grep -qx PONG"]
       interval: 5s
       timeout: 3s
       retries: 10
@@ -59,3 +75,14 @@ services:
 volumes:
   pgdata:
   redisdata:
+
+# Written by compose into the container (no file on the host). REDIS_PASSWORD:
+# no space nor quote (a single token of redis.conf). Same eviction policy as in
+# production (docs/DEPLOYMENT.md, Redis): only keys with a TTL are evicted.
+configs:
+  redis_conf:
+    content: |
+      requirepass ${REDIS_PASSWORD:?set REDIS_PASSWORD in .env}
+      appendonly yes
+      maxmemory 256mb
+      maxmemory-policy volatile-lru

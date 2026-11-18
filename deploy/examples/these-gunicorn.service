@@ -1,0 +1,30 @@
+# Example systemd unit of the application server (docs/DEPLOYMENT.md, SR-19).
+# Paths and the user are placeholders. The environment file is root:these 0640,
+# outside the repository; it holds DJANGO_SETTINGS_MODULE=config.settings.prod
+# and the variables of .env.example, never GUNICORN_CMD_ARGS.
+[Unit]
+Description=Thesis platform (gunicorn)
+After=network.target postgresql.service redis-server.service
+
+[Service]
+User=these
+Group=these
+WorkingDirectory=/srv/these
+EnvironmentFile=/etc/these/these.env
+# No --access-logfile: no access log (paths carry invitation and iCal tokens).
+# No --config: a gunicorn.conf.py in WorkingDirectory would be read (to check).
+ExecStart=/srv/these/.venv/bin/gunicorn config.wsgi:application \
+    --bind 127.0.0.1:8000 \
+    --worker-class gthread --workers 2 --threads 4 \
+    --timeout 60 --graceful-timeout 30 \
+    --max-requests 1000 --max-requests-jitter 100
+Restart=on-failure
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+# The vault's blobs (VAULT_STORAGE_DIR) are the only place the server writes.
+ReadWritePaths=/var/lib/these
+
+[Install]
+WantedBy=multi-user.target
