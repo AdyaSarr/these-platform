@@ -172,7 +172,8 @@ def test_create_seals_every_text_and_audits_codes_only(team: SimpleNamespace) ->
     _no_text_in_audit(title, abstract, external, notes)
     detail = services.submission_detail(team.tutor, submission)
     assert detail.texts["title"] == title and detail.texts["external_authors"] == external
-    assert services.submission_detail(team.co_supervisor, submission).texts["title"] is RESTRICTED
+    with pytest.raises(PermissionDenied):  # SR-01: not readable, not there
+        services.submission_detail(team.co_supervisor, submission)
 
 
 @pytest.mark.parametrize("role", ["director", "co_supervisor", "tutor", "csi", "guest"])

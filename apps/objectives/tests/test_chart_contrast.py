@@ -62,11 +62,10 @@ def test_contrast(theme: str, fg: str, bg: str, minimum: float) -> None:
 
 
 def test_states_are_not_told_by_colour_alone() -> None:
-    """The line is solid with dot markers, the grid dashed; overdue and restricted
-    items carry a word (templates), and the chart has a data table."""
+    """The line is solid with dot markers, the grid dashed; overdue items carry a
+    word (templates), and the chart has a data table."""
     assert re.search(r"\.chart-grid\s*\{[^}]*stroke-dasharray", CSS)
     assert re.search(r"\.chart-dot\s*\{", CSS)
     templates = Path(__file__).resolve().parents[3] / "templates" / "objectives"
     text = "".join(p.read_text() for p in templates.glob("*.html"))
     assert 'class="overdue"' in text and '{% translate "overdue" %}' in text
-    assert '{% translate "Restricted content" %}' in text

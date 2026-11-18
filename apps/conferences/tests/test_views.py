@@ -226,11 +226,23 @@ def test_create_a_submission_posted_like_a_browser(team: SimpleNamespace) -> Non
     assert title in html and title not in _title_tag(html)
 
 
-def test_restricted_content_for_a_reader_without_the_level(team: SimpleNamespace) -> None:
+def test_a_submission_at_an_unreadable_level_does_not_exist_for_the_reader(
+    team: SimpleNamespace,
+) -> None:
+    """SR-01: neither listed nor reachable; its page answers as an unknown id."""
     title = marker()
     submission = submission_of(team, title=title)  # CONFIDENTIAL
-    html = _client(team, "co_supervisor").get(_s(team, submission, "submission")).content.decode()
-    assert title not in html and "Contenu restreint" in html
+    client = _client(team, "co_supervisor")
+    page = client.get(_s(team, submission, "submission"))
+    unknown = client.get(
+        _s(team, submission, "submission").replace(
+            str(submission.pk), "00000000-0000-4000-8000-000000000000"
+        )
+    )
+    assert (page.status_code, page.content) == (unknown.status_code, unknown.content)
+    assert page.status_code == 403
+    listing = client.get(_url(team, "submissions")).content.decode()
+    assert title not in listing and str(submission.pk) not in listing
 
 
 # =========================================================================== ST approval

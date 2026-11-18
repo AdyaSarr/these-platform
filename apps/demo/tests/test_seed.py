@@ -191,9 +191,10 @@ def test_objectives_and_a_real_curve(demo: scenario.SeedResult) -> None:
 
 
 def test_meetings_past_and_upcoming(demo: scenario.SeedResult) -> None:
+    from django.core.exceptions import PermissionDenied
+
     from apps.meetings import services as meetings
     from apps.meetings.models import Meeting, MinutesAcknowledgement
-    from apps.vault.services import RESTRICTED
 
     thesis = _thesis()
     student, director = _user(Role.PHD_STUDENT), _user(Role.DIRECTOR)
@@ -213,9 +214,12 @@ def test_meetings_past_and_upcoming(demo: scenario.SeedResult) -> None:
     assert overdue and overdue[0].objective is not None
     block = meetings.dashboard_block(type("R", (), {"user": student})(), thesis)
     assert block["next_meeting"] is not None and block["overdue_count"] >= 1
-    # The tutor's meeting is INTERNAL_ST: the director sees it, its texts restricted.
+    # The tutor's meeting is INTERNAL_ST: it does not exist for the director (SR-01).
     tutor_meeting = past.get(kind=Meeting.Kind.ST_TUTOR)
-    assert meetings.meeting_detail(director, tutor_meeting).texts["title"] is RESTRICTED
+    with pytest.raises(PermissionDenied):
+        meetings.meeting_detail(director, tutor_meeting)
+    listed = {r.meeting.pk for r in meetings.meeting_list(director, thesis, past=True)}
+    assert tutor_meeting.pk not in listed
 
 
 def test_conferences_and_submissions(demo: scenario.SeedResult) -> None:

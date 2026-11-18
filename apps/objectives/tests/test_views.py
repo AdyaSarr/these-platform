@@ -450,16 +450,20 @@ def test_the_csi_dashboard_links_to_the_objectives(team: SimpleNamespace) -> Non
     ("level", "role"),
     [(L.INTERNAL_LIRMM, "tutor"), (L.INTERNAL_LIRMM, "csi"), (L.CONFIDENTIAL, "co_supervisor")],
 )
-def test_restricted_content_for_roles_without_the_level(
+def test_an_objective_at_an_unreadable_level_does_not_exist_for_the_reader(
     team: SimpleNamespace, level: L, role: str
 ) -> None:
+    """SR-01: neither listed nor reachable; its page answers as an unknown id."""
     title = marker()
     objective = _approved(team, level=level, title=title)
     client = _client(team, role)
-    for url in (_url(team, "dashboard"), _url(team, "detail", objective_id=objective.pk)):
-        html = client.get(url).content.decode()
-        assert title not in html, url
-        assert RESTRICTED_TEXT in html, url
+    html = client.get(_url(team, "dashboard")).content.decode()
+    assert title not in html and str(objective.pk) not in html
+    assert RESTRICTED_TEXT not in html
+    page = client.get(_url(team, "detail", objective_id=objective.pk))
+    unknown = client.get(_url(team, "detail", objective_id="00000000-0000-4000-8000-000000000000"))
+    assert (page.status_code, page.content) == (unknown.status_code, unknown.content)
+    assert page.status_code == 403
 
 
 def test_the_public_warning_is_in_the_forms(team: SimpleNamespace) -> None:

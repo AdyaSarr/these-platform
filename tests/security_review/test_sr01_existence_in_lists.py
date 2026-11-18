@@ -5,7 +5,7 @@ n'apprend pas qu'une réunion INTERNAL_ST est planifiée ».
 
 Two worlds that differ only by objects at a level the viewer does not read, the
 pages rendered at the same frozen instant: they should be identical. They are
-not: these tests are expected to fail (xfail strict) until the finding is fixed.
+not before the fix of lot B (they failed in xfail strict); the markers are gone.
 """
 
 from __future__ import annotations
@@ -35,7 +35,6 @@ def _pages(user: Any, thesis: Any, names: tuple[str, ...]) -> dict[str, str]:
     return out
 
 
-@pytest.mark.xfail(strict=True, reason="SR-01: a meeting at an unreadable level is listed")
 def test_sr01_the_lirmm_co_supervisor_does_not_learn_of_an_st_meeting(time_machine: Any) -> None:
     time_machine.move_to(a.NOW, tick=True)
     team = a.make_team()
@@ -50,7 +49,6 @@ def test_sr01_the_lirmm_co_supervisor_does_not_learn_of_an_st_meeting(time_machi
     assert _pages(team.co_supervisor, team.thesis, names) == before
 
 
-@pytest.mark.xfail(strict=True, reason="SR-01: counts include objects at unreadable levels")
 def test_sr01_the_tutor_does_not_count_an_unreadable_objective(time_machine: Any) -> None:
     time_machine.move_to(a.NOW, tick=True)
     team = a.make_team()
