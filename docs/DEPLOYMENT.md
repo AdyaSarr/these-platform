@@ -87,14 +87,43 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       (`curl -s -o /dev/null <url>`), puis
       `grep -c '/ical/[A-Za-z0-9_-]\{20,\}' /var/log/caddy/these-access.log` : `0`.
 
-- [ ] **Vraie adresse IP du client transmise à Django (M1).** Le proxy fixe
-      `REMOTE_ADDR` (ou un en-tête de confiance lu par un middleware dédié) à
-      l'adresse du client, en écrasant toute valeur envoyée par celui-ci.
-      *Pourquoi* : `ip_hash` du journal d'audit et la limitation des tentatives
-      de connexion s'appuient sur l'adresse du client ; derrière un proxy,
-      `REMOTE_ADDR` vaut sinon `127.0.0.1` pour tout le monde.
-      *Vérifier* : deux connexions depuis deux machines produisent deux `ip_hash`
-      différents dans `vault_auditevent`.
+- [ ] **Vraie adresse IP du client transmise à Django (M1, SR-02).**
+      `prod.py` fixe `ALLAUTH_TRUSTED_PROXY_COUNT = 1` : un seul proxy (Caddy)
+      devant Django, et l'adresse du client est la **dernière** entrée de
+      `X-Forwarded-For`, celle qu'ajoute ce proxy ; les entrées précédentes
+      viennent du client et sont ignorées. Les limites d'allauth (échecs de
+      connexion), l'`ip_hash` du journal d'audit et la limite par adresse du flux
+      iCal lisent toutes cette adresse par la même fonction
+      (`vault.audit.client_ip`).
+      *Pourquoi* : derrière un proxy, `REMOTE_ADDR` vaut l'adresse du proxy pour
+      tout le monde : dix échecs par minute d'un seul attaquant bloqueraient la
+      connexion de tous, et tous les `ip_hash` seraient identiques.
+      *À vérifier sur la version de Caddy déployée* (ne pas le supposer) : que
+      Caddy ajoute l'adresse du pair à `X-Forwarded-For` et qu'aucun autre proxy
+      ne s'intercale (sinon, ajuster `ALLAUTH_TRUSTED_PROXY_COUNT`).
+      *Vérifier* : depuis une machine dont l'adresse publique est connue, une
+      connexion échouée portant un `X-Forwarded-For` forgé (jeton CSRF compris,
+      sinon Django refuse la requête avant toute tentative) :
+      ```bash
+      url=https://these.example.org/accounts/login/; jar="$(mktemp)"
+      tok="$(curl -s -c "$jar" "$url" | sed -n 's/.*name="csrfmiddlewaretoken" value="\([^"]*\)".*/\1/p')"
+      curl -s -o /dev/null -b "$jar" -H "Referer: $url" -H 'Origin: https://these.example.org' \
+           -H 'X-Forwarded-For: 198.51.100.66' --data-urlencode "csrfmiddlewaretoken=$tok" \
+           -d 'login=inconnu@example.org' -d 'password=x' "$url"; rm -f "$jar"
+      ```
+      Puis, sur le serveur, comparer l'`ip_hash` de cet échec au pseudonyme de
+      l'adresse réelle et à celui de l'adresse forgée :
+      ```bash
+      manage.py shell -c "
+      from apps.vault import crypto; from apps.vault.models import AuditEvent
+      e = AuditEvent.objects.filter(action='LOGIN_FAILED').latest('seq')
+      print(e.ip_hash == crypto.pseudonym('<adresse réelle>', purpose='ip'),
+            e.ip_hash == crypto.pseudonym('198.51.100.66', purpose='ip'))"
+      ```
+      Attendu : `True False`. `False True` : l'en-tête du client est cru (Caddy
+      le transmet sans y ajouter l'adresse du pair, ou trop de proxys déclarés).
+      `False False` : l'adresse lue est celle d'un proxy (un second proxy
+      s'intercale, ou l'en-tête n'arrive pas à Django).
 
 - [ ] **Secrets MFA scellés par le coffre (M2).**
       La graine TOTP et la graine des codes de récupération passent par
@@ -117,7 +146,7 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       ```bash
       manage.py migrate
       manage.py vault_init                                 # dossier des blobs 0700, KEK v1 de chaque domaine
-      manage.py check --deploy --database default          # dont vault.E001 et vault.E002
+      manage.py check --deploy --database default          # dont vault.E001 à vault.E003
       manage.py create_thesis ...                          # refuse tant que vault_init n'a pas été lancé
       ```
       *Pourquoi* : la première connexion d'un utilisateur active son second
@@ -195,9 +224,12 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       triggers ordinaires de la session, et `ALTER TABLE … DISABLE TRIGGER`
       (propriétaire de la table) les désactive pour tous. Contre ces rôles, seuls
       les points de contrôle copiés hors de la plateforme protègent.
-      *Vérifier* : `SELECT rolsuper FROM pg_roles WHERE rolname = current_user` →
-      `f`, et `SELECT tableowner FROM pg_tables WHERE tablename = 'vault_auditevent'`
-      ≠ le rôle de l'application.
+      *Vérifier* : `manage.py check --deploy --database default` (contrôle
+      `vault.E003`, SR-07) échoue si le rôle de l'application est superutilisateur,
+      propriétaire de `vault_auditevent` ou de `vault_auditcheckpoint`, ou membre du
+      rôle propriétaire. À la main : `SELECT rolsuper FROM pg_roles WHERE rolname =
+      current_user` → `f`, et `SELECT tableowner FROM pg_tables WHERE tablename =
+      'vault_auditevent'` ≠ le rôle de l'application.
       *Timers systemd* (environnement de prod, utilisateur du serveur) :
       ```
       # chaque jour
@@ -328,7 +360,7 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
   développeur seulement, il lit `.env`). Il charge `.env` dans un sous-shell
   `( set -a; . ./.env; … )`, impose des valeurs fictives de production
   (`DJANGO_SITE_URL=https://these.example.org`,
-  `DJANGO_ALLOWED_HOSTS=these.example.org`, origines CSRF, `EMAIL_URL` SMTP et
+  `DJANGO_ALLOWED_HOSTS=these.example.org`, origines CSRF, `EMAIL_URL` SMTP (`smtp+tls://`) et
   `DEFAULT_FROM_EMAIL` fictifs), prend un `VAULT_STORAGE_DIR` temporaire
   (`mktemp -d`, supprimé à la fin) et lance ce même contrôle avec
   `config.settings.prod`. Aucune variable ne reste dans le shell appelant, même

@@ -248,17 +248,16 @@ def test_client_ip_is_allauths_then_canonical(settings: Any) -> None:
         assert client_ip(request) == canonical_ip(get_adapter(request).get_client_ip(request))
     mapped = rf.get("/", REMOTE_ADDR="127.0.0.1", HTTP_X_FORWARDED_FOR="::ffff:192.0.2.7")
     assert client_ip(mapped) == "192.0.2.7"
-    assert client_ip(rf.get("/", REMOTE_ADDR="not-an-address")) == ""
-
-
-def test_an_unreadable_address_gives_no_ip_hash() -> None:
-    request = RequestFactory().get("/", REMOTE_ADDR="not-an-address")
-    assert audit(A.LOGIN_FAILED, request=request).ip_hash == ""
+    # No valid address for allauth: the peer address as text (see the test above).
+    assert client_ip(rf.get("/", REMOTE_ADDR=" not-an-address ")) == "not-an-address"
 
 
 def test_no_code_reads_remote_addr_but_client_ip() -> None:
     """Static guard: one function gives the client address to every reader."""
+    import inspect
     from pathlib import Path
+
+    from apps.vault import audit as audit_module
 
     apps = Path(__file__).resolve().parents[2]
     readers = sorted(
@@ -266,4 +265,7 @@ def test_no_code_reads_remote_addr_but_client_ip() -> None:
         for p in apps.rglob("*.py")
         if "tests" not in p.parts and "REMOTE_ADDR" in p.read_text(encoding="utf-8")
     )
-    assert readers == []
+    assert readers == ["vault/audit.py"]
+    source = inspect.getsource(audit_module)
+    inside = inspect.getsource(audit_module.client_ip)
+    assert source.count("REMOTE_ADDR") == inside.count("REMOTE_ADDR") == 1

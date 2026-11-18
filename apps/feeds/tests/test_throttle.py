@@ -38,4 +38,4 @@ def test_behind_the_proxy_each_client_has_its_own_count(
 def test_the_throttle_reads_the_shared_client_ip() -> None:
     from apps.vault.audit import client_ip
 
-    assert throttle.client_ip is client_ip
+    assert vars(throttle)["client_ip"] is client_ip

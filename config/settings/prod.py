@@ -43,6 +43,11 @@ if not SITE_URL.startswith("https://"):
 SECURE_SSL_REDIRECT = True
 # Caddy/Nginx terminates TLS and tells Django the original scheme.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+# One proxy (Caddy) in front of Django: the client address is the last entry of
+# X-Forwarded-For, the one the proxy appended; the earlier ones come from the
+# client and are ignored. Read by allauth's rate limits, the audit ip_hash and the
+# iCal limit, all through vault.audit.client_ip (SR-02, docs/DEPLOYMENT.md).
+ALLAUTH_TRUSTED_PROXY_COUNT = 1
 SECURE_HSTS_SECONDS = 31_536_000
 SECURE_HSTS_INCLUDE_SUBDOMAINS = True
 SECURE_HSTS_PRELOAD = True
@@ -61,13 +66,14 @@ STORAGES = {
 }
 
 # --------------------------------------------------------------------------- e-mail
-# SMTP only: a console or dummy backend in production would print the e-mails
-# to the logs or drop them silently.
+# Encrypted SMTP only: a console or dummy backend in production would print the
+# e-mails to the logs or drop them silently, and plain smtp:// would carry the
+# invitation and reset links (bearer tokens) and the SMTP password in clear (SR-03).
 _email_url = require_scheme(
     "EMAIL_URL",
     required("EMAIL_URL", "an smtp+tls:// URL with user, password, host and port"),
-    ("smtp", "smtp+tls", "smtp+ssl"),
-    "an SMTP URL: smtp://, smtp+tls:// or smtp+ssl://, with user, password, host and port",
+    ("smtp+tls", "smtp+ssl"),
+    "an SMTP URL with TLS: smtp+tls:// or smtp+ssl://, with user, password, host and port",
 )
 _email = env.email_url_config(_email_url)
 EMAIL_BACKEND = _email["EMAIL_BACKEND"]

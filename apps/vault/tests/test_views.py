@@ -4,6 +4,7 @@ transaction=True everywhere (CLAUDE.md): signing in is audited, then a vault
 operation follows; each request commits its own transaction, as in production.
 """
 
+import re
 import secrets
 import sys
 from datetime import timedelta
@@ -320,7 +321,11 @@ def test_integrity_failure_is_a_page_without_details(team: SimpleNamespace) -> N
     response = _client(team.student).get(_download(document))
     assert response.status_code == 503
     assert "journalisé" in response.content.decode()
-    assert "integrity" not in response.content.decode().lower()
+    # The SRI attribute of htmx (SR-11) is on every page: removed, then the word is
+    # still absent from everything else.
+    page, sri = re.subn(r'\sintegrity="sha384-[A-Za-z0-9+/=]+"', "", response.content.decode())
+    assert sri == 1
+    assert "integrity" not in page.lower()
     assert AuditEvent.objects.filter(action="DOCUMENT_INTEGRITY_FAILED").exists()
 
 

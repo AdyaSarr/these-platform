@@ -11,7 +11,7 @@ Every function here follows the same rules (docs/modules/M02-coffre.md):
 Re-authentication is a view concern (it needs the request).
 
 The audit log itself lives in vault.audit; ``audit``, ``AuditAction``,
-``canonical_ip`` and ``FORBIDDEN_KEY_FRAGMENTS`` are re-exported here for the
+``canonical_ip``, ``client_ip`` and ``FORBIDDEN_KEY_FRAGMENTS`` are re-exported here for the
 modules that import them from vault.services.
 
 Call each service in its OWN transaction (the default without ATOMIC_REQUESTS):
@@ -41,7 +41,14 @@ from apps.activity import events as activity
 from apps.core.confidentiality import ConfidentialityLevel
 
 from . import crypto, formats, keys, locks, storage
-from .audit import FORBIDDEN_KEY_FRAGMENTS, AuditAction, audit, audit_source, canonical_ip
+from .audit import (
+    FORBIDDEN_KEY_FRAGMENTS,
+    AuditAction,
+    audit,
+    audit_source,
+    canonical_ip,
+    client_ip,
+)
 from .errors import (
     INTEGRITY_MESSAGE,
     AuditError,
@@ -74,6 +81,7 @@ __all__ = [
     "audit_source",
     "canonical_ip",
     "change_level",
+    "client_ip",
     "decrypt_secret",
     "document_for",
     "download_name",
