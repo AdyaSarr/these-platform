@@ -1,4 +1,4 @@
-{% load i18n %}{# Comment thread: OBJECTIVE_COMMENT only (never sent to a CSI member). Returned alone to htmx. #}
+{% load i18n %}{# Comment thread: OBJECTIVE_COMMENT_READ only (never sent to a CSI member); the form with OBJECTIVE_COMMENT. Returned alone to htmx. #}
 <div id="comments-{{ objective.pk }}">
   {% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
   {% if comments %}
@@ -10,6 +10,7 @@
   {% else %}
   <p class="muted">{% translate "No comment yet." %}</p>
   {% endif %}
+  {% if form %}
   <form class="stack" method="post"
         action="{% url 'objectives:comments' thesis_id=thesis.pk objective_id=objective.pk %}"
         hx-post="{% url 'objectives:comments' thesis_id=thesis.pk objective_id=objective.pk %}"
@@ -18,4 +19,5 @@
     {{ form.as_p }}
     <button type="submit" class="btn-primary">{% translate "Comment" %}</button>
   </form>
+  {% endif %}
 </div>

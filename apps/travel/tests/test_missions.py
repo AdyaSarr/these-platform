@@ -338,6 +338,12 @@ def test_done_needs_a_mission_order_for_st_and_lirmm(
 def test_a_finished_thesis_is_frozen(team: SimpleNamespace, status: str) -> None:
     mission = mission_of(team)
     Thesis.objects.filter(pk=team.thesis.pk).update(status=status)
+    if status == Thesis.Status.CLOSED:  # M13a: the status gate of can() refuses first
+        with pytest.raises(PermissionDenied):
+            mission_of(team)
+        with pytest.raises(PermissionDenied):
+            services.cancel_mission(mission=mission, user=team.student)
+        return
     with pytest.raises(ValidationError) as info:
         mission_of(team)
     assert info.value.code == "frozen"

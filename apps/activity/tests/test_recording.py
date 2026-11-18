@@ -257,6 +257,8 @@ def test_the_set_of_kinds_is_closed() -> None:
         "MEMBER_JOINED", "MEMBER_ROLE_CHANGED", "MEMBER_LEFT",
         "OBJECTIVE_OVERDUE",  # M11b
         "CALENDAR_FEED_EXPIRING",  # M12
+        "THESIS_DEFENDED", "THESIS_DEFENSE_CANCELLED", "THESIS_CLOSURE_REQUESTED",
+        "THESIS_CLOSED",  # M13a
     }  # fmt: skip
 
 

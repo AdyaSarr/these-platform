@@ -46,6 +46,7 @@ from apps.accounts.permissions import (
     roles_of,
 )
 from apps.accounts.roles import Role
+from apps.accounts.statuses import open_statuses
 from apps.activity import events as activity
 from apps.core.confidentiality import ConfidentialityLevel
 from apps.vault import services as vault
@@ -100,7 +101,7 @@ __all__ = [
     "withdraw_due_date_proposal",
 ]
 
-OPEN_THESIS = (Thesis.Status.SETUP, Thesis.Status.ACTIVE)
+OPEN_THESIS = open_statuses("admin_file")  # apps/accounts/statuses.py
 COMMENT_MAX = 280
 
 
@@ -211,16 +212,25 @@ def _locked(item: RequiredItem) -> RequiredItem:
     thesis = Thesis.objects.select_for_update().get(pk=item.thesis_id)
     locked = RequiredItem.objects.select_for_update().get(pk=item.pk)
     locked.thesis = thesis
-    if thesis.status not in OPEN_THESIS:
-        raise FrozenFileError(_("The thesis is finished: its administrative file is frozen."))
     return locked
 
 
-def _run(item: RequiredItem, user: Any, operation: str, work: Any) -> RequiredItem:
-    """Run ``work(locked_item)`` in one transaction; audit a refusal after rollback."""
+def _run(item: RequiredItem, user: Any, operation: str, work: Any, *, right: Any) -> RequiredItem:
+    """Run ``work(locked_item)`` in one transaction; audit a refusal after rollback.
+
+    M13a: on a frozen file, ``right(user, item)`` (the operation's own check) comes
+    FIRST: whoever has no right gets the refusal of right, exactly as on an open
+    thesis; only a person with the right learns that the file is frozen.
+    """
     try:
         with transaction.atomic():
-            result: RequiredItem = work(_locked(item))
+            locked = _locked(item)
+            if locked.thesis.status not in OPEN_THESIS:
+                right(user, locked)
+                raise FrozenFileError(
+                    _("The thesis is finished: its administrative file is frozen.")
+                )
+            result: RequiredItem = work(locked)
             return result
     except _DeniedError as denied:
         _audit_denial(user, operation, denied.reason, obj=item, **denied.details)
@@ -242,6 +252,13 @@ def _validator_roles_of(user: Any, item: RequiredItem) -> list[Role]:
     """The user's roles that may validate ``item``, in the item's order."""
     held = roles_of(user, item.thesis)
     return [Role(r) for r in item.validator_roles if Role(r) in held]
+
+
+def _require_reopener(user: Any, item: RequiredItem) -> None:
+    """Reopen: the writer or a validator role of the item."""
+    _require_sees(user, item)
+    if not (can(user, Action.ADMIN_FILE_WRITE, item) or _validator_roles_of(user, item)):
+        raise _DeniedError("not_validator")
 
 
 def _require_decider(user: Any, item: RequiredItem) -> list[Role]:
@@ -376,7 +393,7 @@ def submit(
         )
         return locked
 
-    return _run(fresh, user, "submit", work)
+    return _run(fresh, user, "submit", work, right=_require_writer)
 
 
 def withdraw(*, item: RequiredItem, user: User) -> RequiredItem:
@@ -396,7 +413,7 @@ def withdraw(*, item: RequiredItem, user: User) -> RequiredItem:
         )
         return locked
 
-    return _run(item, user, "withdraw", work)
+    return _run(item, user, "withdraw", work, right=_require_writer)
 
 
 # --------------------------------------------------------------------------- decide
@@ -498,7 +515,7 @@ def approve(*, item: RequiredItem, user: User) -> RequiredItem:
             )
         return locked
 
-    return _run(item, user, "approve", work)
+    return _run(item, user, "approve", work, right=_require_decider)
 
 
 def reject(*, item: RequiredItem, user: User, reason: Any, comment: str = "") -> RequiredItem:
@@ -527,7 +544,7 @@ def reject(*, item: RequiredItem, user: User, reason: Any, comment: str = "") ->
         )
         return locked
 
-    return _run(item, user, "reject", work)
+    return _run(item, user, "reject", work, right=_require_decider)
 
 
 # The student reopens for a change of the piece itself; judging it (wrong
@@ -560,10 +577,8 @@ def reopen(*, item: RequiredItem, user: User, reason: Any, comment: str = "") ->
     code, comment = _clean_reason(reason, comment)
 
     def work(locked: RequiredItem) -> RequiredItem:
-        _require_sees(user, locked)
+        _require_reopener(user, locked)
         validator = bool(_validator_roles_of(user, locked))
-        if not (can(user, Action.ADMIN_FILE_WRITE, locked) or validator):
-            raise _DeniedError("not_validator")
         if not validator and Reason(code) not in STUDENT_REOPEN_REASONS:
             # The student's form never offers it: a forged request, refused as a
             # right (audited 403); an unknown value was already a 400 above.
@@ -609,7 +624,7 @@ def reopen(*, item: RequiredItem, user: User, reason: Any, comment: str = "") ->
         )
         return locked
 
-    return _run(item, user, "reopen", work)
+    return _run(item, user, "reopen", work, right=_require_reopener)
 
 
 # --------------------------------------------------------------------------- pages
@@ -906,6 +921,14 @@ def _require_validator(user: Any, item: RequiredItem) -> None:
         raise _DeniedError("not_validator")
 
 
+def _require_due_date_setter(user: Any, item: RequiredItem) -> None:
+    """A custom item: its writer; a catalogue item: a validator role."""
+    if _is_custom(item):
+        _require_writer(user, item)
+    else:
+        _require_validator(user, item)
+
+
 def require_due_date_validator(user: Any, item: RequiredItem, *, operation: str) -> None:
     """For the views, BEFORE the re-authentication: a refused role gets an audited
     403 without being asked for a second factor (the service checks again)."""
@@ -945,15 +968,12 @@ def update_due_date(*, item: RequiredItem, user: User, due_date: dt.date | None)
 
     def work(locked: RequiredItem) -> RequiredItem:
         custom = _is_custom(locked)
-        if custom:
-            _require_writer(user, locked)
-        else:
-            _require_validator(user, locked)
-            if due_date is None and locked.mandatory:
-                raise ValidationError(
-                    _("A mandatory item of the catalogue keeps a due date."),
-                    code="due_date_required",
-                )
+        _require_due_date_setter(user, locked)
+        if not custom and due_date is None and locked.mandatory:
+            raise ValidationError(
+                _("A mandatory item of the catalogue keeps a due date."),
+                code="due_date_required",
+            )
         if due_date is not None:
             _check_bounds(locked.thesis, due_date)
         before = locked.due_date
@@ -989,7 +1009,7 @@ def update_due_date(*, item: RequiredItem, user: User, due_date: dt.date | None)
             )
         return locked
 
-    return _run(item, user, "update", work)
+    return _run(item, user, "update", work, right=_require_due_date_setter)
 
 
 # "Nobody to decide": a proposal would wait forever.
@@ -1068,7 +1088,7 @@ def propose_due_date(
         )
         return locked
 
-    _run(item, user, "propose_due_date", work)
+    _run(item, user, "propose_due_date", work, right=_require_writer)
     return created[0]
 
 
@@ -1135,7 +1155,10 @@ def _decide(proposal: DueDateProposal, user: User, *, accept: bool) -> DueDatePr
         )
         return locked
 
-    _run(item, user, "accept_due_date" if accept else "refuse_due_date", work)
+    _run(
+        item, user, "accept_due_date" if accept else "refuse_due_date", work,
+        right=_require_validator,
+    )  # fmt: skip
     return decided[0]
 
 
@@ -1172,5 +1195,5 @@ def withdraw_due_date_proposal(*, proposal: DueDateProposal, user: User) -> DueD
         )
         return locked
 
-    _run(item, user, "withdraw_due_date", work)
+    _run(item, user, "withdraw_due_date", work, right=_require_writer)
     return withdrawn[0]

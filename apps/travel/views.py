@@ -40,6 +40,7 @@ from apps.accounts.permissions import (
     roles_of,
 )
 from apps.accounts.reauth import RecentAuthRequiredMixin, authenticated_recently, reauth_response
+from apps.accounts.statuses import is_open_for
 from apps.admin_file.models import RequiredItem
 from apps.conferences.models import Edition
 from apps.core.confidentiality import ConfidentialityLevel
@@ -116,7 +117,8 @@ class _Mixin(ThesisPermissionRequiredMixin):
             view = services.month_view(user, self.thesis, year, month)
         except ValidationError:
             raise Http404 from None
-        writer = can(user, Action.TRAVEL_WRITE, self.thesis)
+        # M13a: after the defence, M7 is read only but for receipts (statuses.py).
+        writer = can(user, Action.TRAVEL_WRITE, self.thesis) and is_open_for(self.thesis, "travel")
         labels = {k.value: k.label for k in ShownKind}
         weeks = [
             [
@@ -420,7 +422,8 @@ class MissionsView(_Mixin, View):
         context = {
             "thesis": self.thesis,
             "missions": missions,
-            "can_plan": can(user, Action.TRAVEL_WRITE, self.thesis),
+            "can_plan": can(user, Action.TRAVEL_WRITE, self.thesis)
+            and is_open_for(self.thesis, "travel"),
         }
         return render(request, "travel/missions.html", context)
 
@@ -494,7 +497,8 @@ class MissionView(_MissionMixin, View):
     def _page(self, mission: Mission, status: int = 200, error: str = "") -> HttpResponse:
         user = _user(self.request)
         texts = services.mission_texts(user, mission)
-        writer = can(user, Action.TRAVEL_WRITE, self.thesis)
+        # M13a: after the defence, the receipts of a mission begun before it only.
+        writer = can(user, Action.TRAVEL_WRITE, self.thesis) and is_open_for(self.thesis, "travel")
         zrr = None
         if mission.destination == Destination.LIRMM and can(
             user, Action.ADMIN_FILE_READ, self.thesis
@@ -529,9 +533,9 @@ class MissionView(_MissionMixin, View):
             "amounts_form": ExpenseAmountsForm(),
             "receipt_form": ReceiptForm(),
             "can_expense": can(user, Action.TRAVEL_WRITE, self.thesis)
+            and services.receipts_open(self.thesis, mission)
             and mission.status not in (MissionStatus.CANCELLED, MissionStatus.REIMBURSED),
-            "can_reimburse": can(user, Action.TRAVEL_WRITE, self.thesis)
-            and mission.status == MissionStatus.DONE,
+            "can_reimburse": writer and mission.status == MissionStatus.DONE,
             "official_form": OfficialOrderForm()
             if writer and mission.status != MissionStatus.CANCELLED
             else None,

@@ -26,6 +26,7 @@ from django.utils.translation import gettext as _
 from apps.accounts.models import Membership, Thesis, User
 from apps.accounts.permissions import Action, can, can_access_level, roles_of
 from apps.accounts.roles import Role
+from apps.accounts.statuses import open_statuses
 from apps.activity import events as activity
 from apps.conferences.models import Edition, Submission
 from apps.core.confidentiality import ConfidentialityLevel
@@ -78,7 +79,7 @@ from .models import (
 )
 from .notifications import members_with_roles, notify
 
-OPEN_THESIS = (Thesis.Status.SETUP, Thesis.Status.ACTIVE)
+OPEN_THESIS = open_statuses("travel")  # apps/accounts/statuses.py
 MAX_RANGE_DAYS = 92  # one quarter in a single request
 _ONE_DAY = dt.timedelta(days=1)
 
@@ -897,9 +898,32 @@ def create_mission(
     return mission
 
 
-def _locked_mission(mission: Mission) -> Mission:
-    _lock_thesis(mission.thesis_id)
+def _locked_mission(mission: Mission, *, expenses: bool = False) -> Mission:
+    if expenses:
+        thesis = Thesis.objects.select_for_update().get(pk=mission.thesis_id)
+        if not receipts_open(thesis, mission):
+            raise _frozen()
+    else:
+        _lock_thesis(mission.thesis_id)
     return Mission.objects.select_for_update().get(pk=mission.pk)
+
+
+def receipts_open(thesis: Thesis, mission: Mission) -> bool:
+    """M13a: after the defence, the receipts and actual amounts of a mission begun
+    before it stay open (writes, reminders, e-mails: reimbursements in progress);
+    nothing else of M7 does (apps/accounts/statuses.py, ``travel_receipts``)."""
+    if thesis.status in OPEN_THESIS:
+        return True
+    return (
+        thesis.status in open_statuses("travel_receipts")
+        and thesis.defended_on is not None
+        and mission.start_date < thesis.defended_on
+    )
+
+
+def _check_receipts_open(thesis: Thesis, mission: Mission) -> None:
+    if not receipts_open(_fresh(thesis), mission):
+        raise _frozen()
 
 
 def _terminal() -> ValidationError:
@@ -1563,8 +1587,8 @@ def add_expense(
 ) -> Expense:
     thesis = _fresh(mission.thesis)
     _require(user, Action.TRAVEL_WRITE, thesis, "expense_add")
-    _check_open(thesis)
     fresh = Mission.objects.get(pk=mission.pk)
+    _check_receipts_open(thesis, fresh)
     if fresh.status in _NO_EXPENSE:
         raise _terminal()
     if category not in ExpenseCategory.values:
@@ -1576,7 +1600,7 @@ def add_expense(
     }
     level = ConfidentialityLevel(fresh.level)
     with vault.sealing(user=user, thesis=thesis, level=level, action=Action.TRAVEL_WRITE) as sealer:
-        locked = _locked_mission(fresh)
+        locked = _locked_mission(fresh, expenses=True)
         if locked.status in _NO_EXPENSE or locked.level != fresh.level:
             raise ValidationError(_("The mission changed meanwhile: try again."), code="stale")
         expense = Expense(
@@ -1668,8 +1692,8 @@ def update_expense(
 ) -> list[str]:
     thesis = _fresh(expense.thesis)
     _require(user, Action.TRAVEL_WRITE, thesis, "expense_update")
-    _check_open(thesis)
     fresh = Expense.objects.select_related("mission").get(pk=expense.pk)
+    _check_receipts_open(thesis, fresh.mission)
     if fresh.mission.status in _NO_EXPENSE:
         raise _terminal()
     current = _open_amounts(user, thesis, [fresh])
@@ -1688,7 +1712,7 @@ def update_expense(
         return []
     level = ConfidentialityLevel(fresh.mission.level)
     with vault.sealing(user=user, thesis=thesis, level=level, action=Action.TRAVEL_WRITE) as sealer:
-        locked_mission = _locked_mission(fresh.mission)
+        locked_mission = _locked_mission(fresh.mission, expenses=True)
         if locked_mission.status in _NO_EXPENSE or locked_mission.level != level.value:
             raise ValidationError(_("The mission changed meanwhile: try again."), code="stale")
         locked = Expense.objects.select_for_update().get(pk=fresh.pk)
@@ -1714,15 +1738,15 @@ def attach_receipt(*, expense: Expense, user: User, upload: Any) -> Document:
     the vault's own transaction, then linked in another."""
     thesis = _fresh(expense.thesis)
     _require(user, Action.TRAVEL_WRITE, thesis, "receipt_attach")
-    _check_open(thesis)
     fresh = Expense.objects.select_related("mission").get(pk=expense.pk)
+    _check_receipts_open(thesis, fresh.mission)
     if fresh.mission.status in _NO_EXPENSE:
         raise _terminal()
     level = ConfidentialityLevel(fresh.mission.level)
     title = RECEIPT_TITLE.format(date=fresh.mission.start_date.isoformat())
     document = vault.store(thesis=thesis, upload=upload, title=title, level=level, user=user)
     with transaction.atomic():
-        _locked_mission(fresh.mission)
+        _locked_mission(fresh.mission, expenses=True)
         ExpenseReceipt.objects.create(expense=fresh, document=document, created_by=user)
         audit(
             AuditAction.EXPENSE_RECEIPT_ATTACHED,

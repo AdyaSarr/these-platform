@@ -35,6 +35,7 @@ from django.utils.translation import gettext as _
 
 from apps.accounts.models import Thesis, User
 from apps.accounts.permissions import Action, can, can_access_document
+from apps.accounts.statuses import open_statuses
 from apps.activity import events as activity
 from apps.core.confidentiality import ConfidentialityLevel
 from apps.vault import services as vault
@@ -139,7 +140,7 @@ def current_academic_year(thesis: Thesis) -> ThesisYear | None:
 
 # =========================================================================== validation
 
-OPEN_THESIS = (Thesis.Status.SETUP, Thesis.Status.ACTIVE)
+OPEN_THESIS = open_statuses("objectives")  # apps/accounts/statuses.py
 TEXT_LIMITS = {"title": (1, 200), "description": (0, 4000), "success_criterion": (0, 1000)}
 NOTE_MAX = 2000
 COMMENT_MAX = 2000
@@ -311,12 +312,13 @@ class CommentView:
 
 
 def comments_for(user: User, objective: Objective) -> list[CommentView]:
-    """The comment thread: OBJECTIVE_COMMENT only (never the CSI member)."""
+    """The comment thread: OBJECTIVE_COMMENT_READ only (never the CSI member); M13a:
+    a read right, so a closed thesis keeps it readable."""
     thesis = _thesis(objective)
-    _require(user, Action.OBJECTIVE_COMMENT, thesis, "comments")
+    _require(user, Action.OBJECTIVE_COMMENT_READ, thesis, "comments")
     comments = list(ObjectiveComment.objects.filter(objective=objective).order_by("created_at"))
     opened = vault.open_texts(
-        user, thesis, [(c, "body") for c in comments], action=Action.OBJECTIVE_COMMENT
+        user, thesis, [(c, "body") for c in comments], action=Action.OBJECTIVE_COMMENT_READ
     )
     return [CommentView(comment=c, body=opened.get((c.pk, "body"), "")) for c in comments]
 

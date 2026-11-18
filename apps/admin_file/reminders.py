@@ -24,15 +24,16 @@ from django.db import IntegrityError, transaction
 from django.db.models import Q
 from django.utils import timezone
 
-from apps.accounts.models import Membership, Thesis, User
+from apps.accounts.models import Membership, User
 from apps.accounts.roles import Role
+from apps.accounts.statuses import open_statuses
 from apps.activity import routing
 
 from .models import ItemApproval, ItemStatus, ReminderLog, RequiredItem
 
 Kind = ReminderLog.Kind
 MAX_ATTEMPTS = 3
-OPEN_THESIS = (Thesis.Status.SETUP, Thesis.Status.ACTIVE)
+OPEN_THESIS = open_statuses("admin_file")  # apps/accounts/statuses.py
 
 
 def reminder_kind(today: dt.date, due: dt.date) -> ReminderLog.Kind | None:

@@ -23,13 +23,14 @@ from dataclasses import dataclass
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 
-from apps.accounts.models import Thesis, User
+from apps.accounts.models import User
+from apps.accounts.statuses import open_statuses
 
 from .members import internal_member_ids
 from .models import ActionItem, Meeting, MeetingNotification
 from .notifications import Kind, _queue, requeue_failed
 
-OPEN_THESIS = (Thesis.Status.SETUP, Thesis.Status.ACTIVE)
+OPEN_THESIS = open_statuses("meetings")  # apps/accounts/statuses.py
 # Fixed namespace of the reminders' event ids (uuid5): never change it, or every
 # reminder already sent would be sent again.
 EVENT_NAMESPACE = uuid.UUID("6f3c2a4e-5b1d-4c8e-9a7f-0d2e4b6c8a10")

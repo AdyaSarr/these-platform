@@ -11,6 +11,7 @@ import pytest
 
 from apps.accounts.models import Invitation, Membership
 from apps.accounts.permissions import Action, can, roles_of
+from apps.accounts.roles import Role
 from apps.lifecycle import services
 from apps.lifecycle.tests import helpers as h
 
@@ -21,7 +22,10 @@ ENDED_AT_CLOSURE = ("co_supervisor", "st_co_supervisor", "tutor", "csi", "guest"
 @pytest.fixture
 def team(time_machine: Any) -> SimpleNamespace:
     time_machine.move_to(h.NOW, tick=True)
-    return h.make_team()
+    team = h.make_team()
+    # The CSI member's period (60 days) would end before the closure: a long one here.
+    Membership.objects.filter(user=team.csi).update(active_until=h.NOW + dt.timedelta(days=365))
+    return team
 
 
 def _active(team: SimpleNamespace, attr: str) -> bool:
@@ -106,7 +110,7 @@ def test_no_one_joins_a_defended_or_closed_thesis(team: SimpleNamespace, time_ma
     inv = accounts.create_invitation(
         thesis=team.thesis,
         email="invite.fictif@example.org",
-        role="CO_SUPERVISOR",
+        role=Role.CO_SUPERVISOR,
         organization=org,
         by=team.student,
     )

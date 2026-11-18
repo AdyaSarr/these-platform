@@ -8,6 +8,7 @@ type, details), same HTTP answer.
 
 from __future__ import annotations
 
+import functools
 from collections.abc import Callable
 from types import SimpleNamespace
 from typing import Any
@@ -16,6 +17,7 @@ import pytest
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from apps.accounts.models import Membership, Thesis
+from apps.accounts.roles import Role
 from apps.core.confidentiality import ConfidentialityLevel as L
 from apps.lifecycle.tests import helpers as h
 from apps.vault.models import AuditEvent
@@ -109,7 +111,7 @@ def _invite(team: SimpleNamespace, user: Any) -> Callable[[], Any]:
     from apps.accounts import services as accounts
 
     return lambda: accounts.create_invitation(
-        thesis=team.thesis, email="invite.fictif@example.org", role="CO_SUPERVISOR",
+        thesis=team.thesis, email="invite.fictif@example.org", role=Role.CO_SUPERVISOR,
         organization=_org(team), by=user,
     )  # fmt: skip
 
@@ -125,7 +127,7 @@ def _change_role(team: SimpleNamespace, user: Any) -> Callable[[], Any]:
     from apps.accounts import services as accounts
 
     member = _member(team, "co_supervisor")
-    return lambda: accounts.change_role(member, "DIRECTOR", by=user)
+    return lambda: accounts.change_role(member, Role.DIRECTOR, by=user)
 
 
 def _extend(team: SimpleNamespace, user: Any) -> Callable[[], Any]:
@@ -189,7 +191,7 @@ def test_add_membership_refuses_a_closed_thesis(time_machine: Any) -> None:
     person = UserFactory.create()
     raised, rows = _outcome(
         lambda: accounts.add_membership(
-            user=person, thesis=team.thesis, role="CO_SUPERVISOR", organization=_org(team)
+            user=person, thesis=team.thesis, role=Role.CO_SUPERVISOR, organization=_org(team)
         )
     )
     assert (raised, rows) == ("PermissionDenied", [])
@@ -211,7 +213,7 @@ def test_an_invitation_of_a_closed_thesis_looks_expired(time_machine: Any) -> No
         team = h.make_team()
         person = UserFactory.create(email=f"invite.{spoiled}@example.org")
         inv = accounts.create_invitation(
-            thesis=team.thesis, email=person.email, role="CO_SUPERVISOR",
+            thesis=team.thesis, email=person.email, role=Role.CO_SUPERVISOR,
             organization=_org(team), by=team.student,
         )  # fmt: skip
         tasks.send_invitation_email(str(inv.pk))
@@ -222,8 +224,9 @@ def test_an_invitation_of_a_closed_thesis_looks_expired(time_machine: Any) -> No
         fresh = Invitation.objects.select_related("thesis").get(pk=inv.pk)
         with pytest.raises(accounts.InvalidInvitationError):
             accounts.ensure_usable(fresh)
-        outcomes.append(_outcome(lambda inv=inv, person=person: accounts.accept_invitation(
-            inv.pk, user=person)))  # fmt: skip
+        outcomes.append(
+            _outcome(functools.partial(accounts.accept_invitation, inv.pk, user=person))
+        )
         assert not Membership.objects.filter(user=person).exists()
     assert outcomes[0] == outcomes[1] == ("InvalidInvitationError", [])
 
@@ -258,5 +261,78 @@ def test_the_views_answer_the_same_403(
         denial = AuditEvent.objects.filter(action="THESIS_ACCESS_DENIED").order_by("-seq").first()
         assert denial is not None
         answers.append((response.status_code, response.content, denial.details_json))
+    assert answers[0][0] == 403
+    assert answers[0] == answers[1]
+
+
+# --------------------------------------------------------------------------- M3: right first
+
+
+def _m3_case(status: str, attr: str) -> tuple[Any, Any, Any]:
+    """A submitted CIFRE item validated by the tutor, on a thesis of ``status``."""
+    from apps.admin_file.models import ItemStatus, Section
+    from apps.admin_file.tests.helpers import item_of, put
+
+    team = h.make_team()
+    item = item_of(team, section=Section.CIFRE, validator_roles=[Role.INDUSTRIAL_TUTOR])
+    put(item, ItemStatus.SUBMITTED, team.student)
+    Thesis.objects.filter(pk=team.thesis.pk).update(status=status)
+    return team, item, getattr(team, attr)
+
+
+# The director sees a CIFRE item without validating it; the co-supervisor does not
+# see it; the outsider is no member.
+WITHOUT_RIGHT = ("director", "co_supervisor", "outsider")
+
+
+@pytest.mark.parametrize("operation", ["approve", "reject"])
+@pytest.mark.parametrize("attr", WITHOUT_RIGHT)
+def test_m3_refuses_whoever_has_no_right_as_on_an_open_thesis(
+    attr: str, operation: str, time_machine: Any
+) -> None:
+    from apps.admin_file import services
+
+    def call(item: Any, user: Any) -> Callable[[], Any]:
+        if operation == "approve":
+            return lambda: services.approve(item=item, user=user)
+        return lambda: services.reject(item=item, user=user, reason="ILLEGIBLE")
+
+    time_machine.move_to(h.NOW, tick=True)
+    outcomes = []
+    for status in (Thesis.Status.ACTIVE, Thesis.Status.CLOSED):
+        _team, item, user = _m3_case(status, attr)
+        outcomes.append(_outcome(call(item, user)))
+    assert outcomes[0][0] == "PermissionDenied"
+    assert outcomes[0] == outcomes[1]
+
+
+def test_m3_tells_the_validator_only_that_the_file_is_frozen(time_machine: Any) -> None:
+    from apps.admin_file import services
+    from apps.admin_file.transitions import FrozenFileError
+
+    time_machine.move_to(h.NOW, tick=True)
+    _team, item, tutor = _m3_case(Thesis.Status.CLOSED, "tutor")
+    with pytest.raises(FrozenFileError):
+        services.approve(item=item, user=tutor)
+
+
+@pytest.mark.parametrize("attr", WITHOUT_RIGHT)
+def test_m3_views_answer_the_same(attr: str, time_machine: Any) -> None:
+    from django.test import Client
+    from django.urls import reverse
+
+    from apps.accounts.tests.helpers import mfa_login
+
+    time_machine.move_to(h.NOW, tick=True)
+    answers = []
+    for status in (Thesis.Status.ACTIVE, Thesis.Status.CLOSED):
+        team, item, user = _m3_case(status, attr)
+        client = Client()
+        mfa_login(client, user, h.PASSWORD)  # a recent second factor: only the right decides
+        url = reverse(
+            "admin_file:approve", kwargs={"thesis_id": team.thesis.pk, "item_id": item.pk}
+        )
+        response = client.post(url)
+        answers.append((response.status_code, response.content))
     assert answers[0][0] == 403
     assert answers[0] == answers[1]

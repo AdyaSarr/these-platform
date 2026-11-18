@@ -251,7 +251,7 @@ def test_the_comment_never_reaches_the_audit_log(team: SimpleNamespace) -> None:
 def test_a_finished_thesis_freezes_its_file(status: str) -> None:
     team = make_team(status=status)
     item = item_of(team)
-    with pytest.raises(FrozenFileError):
+    with pytest.raises(PermissionDenied):  # M13a: the status gate of can()
         services.submit(item=item, user=team.student)
     put(item, S.SUBMITTED, team.student)
     with pytest.raises(FrozenFileError):

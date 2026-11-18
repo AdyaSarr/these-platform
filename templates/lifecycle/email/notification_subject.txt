@@ -1,0 +1,1 @@
+{% load i18n %}{% if kind == "CLOSURE_REQUESTED" %}{% translate "CIFRE thesis: a closure to confirm" %}{% else %}{% translate "CIFRE thesis: the end of the thesis has changed" %}{% endif %}

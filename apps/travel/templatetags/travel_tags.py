@@ -26,6 +26,7 @@ def travel_links(context: Any, obj: Any) -> dict[str, Any]:
     from django.urls import reverse
 
     from apps.accounts.permissions import Action, can
+    from apps.accounts.statuses import is_open_for
     from apps.conferences.models import Submission
     from apps.meetings.models import Meeting
     from apps.travel.models import Mission
@@ -42,7 +43,8 @@ def travel_links(context: Any, obj: Any) -> dict[str, Any]:
         Mission.objects.visible_to(user, thesis).filter(**{field: obj}).order_by("start_date")
     )
     plan_url = ""
-    if can(user, Action.TRAVEL_WRITE, thesis):
+    # M13a: no new mission after the defence (apps/accounts/statuses.py).
+    if can(user, Action.TRAVEL_WRITE, thesis) and is_open_for(thesis, "travel"):
         plan_url = (
             reverse("travel:new_mission", kwargs={"thesis_id": thesis.pk}) + f"?{field}={obj.pk}"
         )

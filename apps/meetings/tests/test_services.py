@@ -656,9 +656,8 @@ def test_a_finished_thesis_freezes_its_meetings(team: SimpleNamespace) -> None:
     meeting = meeting_of(team)
     team.thesis.status = team.thesis.Status.DEFENDED
     team.thesis.save()
-    with pytest.raises(ValidationError) as exc:
+    with pytest.raises(PermissionDenied):  # M13a: the status gate of can()
         services.save_agenda(meeting=meeting, user=team.student, agenda="Trop tard")
-    assert _code(exc) == "frozen"
 
 
 def test_an_unrelated_thesis_cannot_be_used(team: SimpleNamespace) -> None:

@@ -58,7 +58,10 @@ def objects_of(events: Iterable[Event]) -> dict[Any, Any]:
     for object_type, ids in by_type.items():
         model = _models()[object_type]
         path = THESIS_PATH[object_type]
-        query = model.objects.filter(pk__in=ids, **{f"{path}_id": thesis_of[object_type]})
+        if path:
+            query = model.objects.filter(pk__in=ids, **{f"{path}_id": thesis_of[object_type]})
+        else:  # M13a: the thesis itself
+            query = model.objects.filter(pk__in=ids, pk=thesis_of[object_type])
         if object_type in _RELATED:
             query = query.select_related(*_RELATED[object_type])
         found.update({o.pk: o for o in query})
@@ -124,6 +127,10 @@ def name_of(event: Event, obj: Any) -> str:
         return joined(obj.user.get_full_name() or _("A member"), obj.get_role_display())
     if t == T.FEED:
         return _("expires %(date)s") % {"date": short_date(obj.expires_on)}
+    if t == T.THESIS:
+        return str(obj.get_status_display())
+    if t == T.CLOSURE_REQUEST:
+        return str(obj.get_reason_display())
     raise ValueError(t)
 
 
@@ -158,4 +165,6 @@ def target_of(event: Event, obj: Any) -> str:
         return reverse("accounts:team", kwargs=kw)
     if t == T.FEED:
         return reverse("activity:preferences", kwargs=kw)
+    if t in (T.THESIS, T.CLOSURE_REQUEST):
+        return reverse("lifecycle:page", kwargs=kw)
     raise ValueError(t)

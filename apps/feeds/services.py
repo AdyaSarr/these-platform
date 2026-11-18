@@ -18,6 +18,7 @@ from django.utils import timezone
 from apps.accounts.models import Membership, Thesis
 from apps.accounts.permissions import roles_of
 from apps.accounts.roles import Role
+from apps.accounts.statuses import open_statuses
 from apps.vault.crypto import hash_token, new_token, tokens_match
 
 from .models import CalendarFeed
@@ -33,13 +34,15 @@ ALLOWED_ROLES = frozenset(
 )
 LIFETIME_MONTHS = 12
 NOTICE_DAYS = 14
-OPEN = (Thesis.Status.SETUP, Thesis.Status.ACTIVE)
+OPEN = open_statuses("feeds")  # apps/accounts/statuses.py
 
 
 def allowed(user: Any, thesis: Thesis) -> bool:
     """A member of an open thesis, holding a role that may have a feed (never the
     CSI member nor a guest)."""
-    return thesis.status in OPEN and bool(roles_of(user, thesis) & ALLOWED_ROLES)
+    # The status is read in the database, never on a possibly stale object (M13a).
+    is_open = Thesis.objects.filter(pk=thesis.pk, status__in=OPEN).exists()
+    return is_open and bool(roles_of(user, thesis) & ALLOWED_ROLES)
 
 
 def _months_later(day: dt.date, months: int) -> dt.date:

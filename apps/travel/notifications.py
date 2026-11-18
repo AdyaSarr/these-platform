@@ -23,6 +23,7 @@ from django.utils import timezone
 from apps.accounts.models import Membership, Thesis, User
 from apps.accounts.permissions import can_access_level, roles_of
 from apps.accounts.roles import Role
+from apps.accounts.statuses import is_open_for
 from apps.activity import routing
 from apps.core import delivery
 from apps.core.confidentiality import ConfidentialityLevel
@@ -100,9 +101,19 @@ def still_due(row: TravelNotification) -> bool:
     return False
 
 
+def _thesis_open(row: TravelNotification) -> bool:
+    """M13a: the receipts of a mission begun before the defence stay open in
+    DEFENDED (apps/accounts/statuses.py, ``travel_receipts``); the rest of M7 not."""
+    from . import services
+
+    if row.kind == NotificationKind.RECEIPTS_MISSING:
+        return row.mission is not None and services.receipts_open(row.thesis, row.mission)
+    return is_open_for(row.thesis, "travel")
+
+
 def skip_reason(row: TravelNotification) -> str | None:
     return delivery.skip_reason(
-        row, thesis_open=row.thesis.is_open, concerned=concerned, still_due=still_due
+        row, thesis_open=_thesis_open(row), concerned=concerned, still_due=still_due
     )
 
 

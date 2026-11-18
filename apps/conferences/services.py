@@ -45,6 +45,7 @@ from apps.accounts.permissions import (
     roles_of,
 )
 from apps.accounts.roles import Role
+from apps.accounts.statuses import open_statuses
 from apps.activity import events as activity
 from apps.core import timezones
 from apps.core.confidentiality import ConfidentialityLevel
@@ -79,7 +80,9 @@ from .models import (
 )
 from .notifications import members_with_role, notify
 
-OPEN_THESIS = (Thesis.Status.SETUP, Thesis.Status.ACTIVE)
+# M13a: conferences and ST approvals stay writable after the defence (the ST
+# approval of a publication is still due); frozen once the thesis is CLOSED.
+WRITABLE_THESIS = open_statuses("conferences")  # apps/accounts/statuses.py
 DEFAULT_REVIEW_DAYS = 30
 SUBMISSION_TEXTS = ("title", "abstract", "external_authors", "notes")
 TEXT_LIMITS = {
@@ -231,13 +234,13 @@ def _frozen() -> ValidationError:
 
 
 def _check_open(thesis: Thesis) -> None:
-    if Thesis.objects.get(pk=thesis.pk).status not in OPEN_THESIS:
+    if Thesis.objects.get(pk=thesis.pk).status not in WRITABLE_THESIS:
         raise _frozen()
 
 
 def _lock_thesis(thesis_id: Any) -> Thesis:
     thesis = Thesis.objects.select_for_update().get(pk=thesis_id)
-    if thesis.status not in OPEN_THESIS:
+    if thesis.status not in WRITABLE_THESIS:
         raise _frozen()
     return thesis
 

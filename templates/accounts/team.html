@@ -97,4 +97,5 @@
       <p class="muted">{% translate "No pending invitation." %}</p>
     {% endif %}
   {% endif %}
+  <p><a href="{% url 'lifecycle:page' thesis_id=thesis.pk %}">{% translate "End of the thesis: defence and closure" %}</a></p>
 {% endblock %}

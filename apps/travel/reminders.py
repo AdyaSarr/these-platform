@@ -23,6 +23,7 @@ from django.utils import timezone
 
 from apps.accounts.models import Thesis
 from apps.accounts.roles import Role
+from apps.accounts.statuses import is_open_for, open_statuses
 from apps.core import timezones
 
 from . import services
@@ -30,7 +31,7 @@ from .choices import MissionStatus, NotificationKind, OrderDecision, Window
 from .models import ORDER_PAYERS, Mission, MissionOrder
 from .notifications import members_with_roles, notify, requeue_failed
 
-OPEN_THESIS = (Thesis.Status.SETUP, Thesis.Status.ACTIVE)
+OPEN_THESIS = open_statuses("travel_receipts")  # apps/accounts/statuses.py
 # Fixed namespace of the reminders' event ids (uuid5): never change it.
 EVENT_NAMESPACE = uuid.UUID("6f3b2a1c-4d5e-4f6a-8b9c-0d1e2f3a4b5c")
 TO_REQUEST = (MissionStatus.PLANNED, MissionStatus.ORDER_REFUSED)
@@ -83,9 +84,16 @@ def run(now: dt.datetime | None = None) -> RunResult:
         policy = services.policy_of(thesis)
         students = members_with_roles(thesis, Role.PHD_STUDENT)
         deciders = members_with_roles(thesis, Role.INDUSTRIAL_TUTOR, Role.DIRECTOR)
-        for mission in Mission.objects.filter(
-            thesis=thesis, status__in=TO_REQUEST, payer__in=ORDER_PAYERS, start_date__gte=today
-        ).order_by("start_date", "pk"):
+        # M13a: the approvals follow M7 (frozen after the defence); the receipts of
+        # a mission begun before the defence stay due (apps/accounts/statuses.py).
+        orders_open = is_open_for(thesis, "travel")
+        for mission in (
+            Mission.objects.filter(
+                thesis=thesis, status__in=TO_REQUEST, payer__in=ORDER_PAYERS, start_date__gte=today
+            ).order_by("start_date", "pk")
+            if orders_open
+            else []
+        ):
             window = order_window(
                 (mission.start_date - today).days, lead_days=policy.order_lead_days
             )
@@ -98,9 +106,13 @@ def run(now: dt.datetime | None = None) -> RunResult:
                     window=window,
                     mission=mission,
                 )
-        for order in MissionOrder.objects.filter(
-            thesis=thesis, decision=OrderDecision.PENDING, mission__start_date__gte=today
-        ).select_related("mission"):
+        for order in (
+            MissionOrder.objects.filter(
+                thesis=thesis, decision=OrderDecision.PENDING, mission__start_date__gte=today
+            ).select_related("mission")
+            if orders_open
+            else []
+        ):
             window = pending_window((order.mission.start_date - today).days)
             if window is not None:
                 pending += notify(
@@ -117,7 +129,11 @@ def run(now: dt.datetime | None = None) -> RunResult:
             window = receipt_window(
                 (today - mission.end_date).days, grace_days=policy.receipt_grace_days
             )
-            if window is not None and services.expenses_incomplete(mission):
+            if (
+                window is not None
+                and services.receipts_open(thesis, mission)
+                and services.expenses_incomplete(mission)
+            ):
                 receipts += notify(
                     thesis,
                     NotificationKind.RECEIPTS_MISSING,

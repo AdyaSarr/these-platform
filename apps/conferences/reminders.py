@@ -29,6 +29,7 @@ from django.utils import timezone
 
 from apps.accounts.models import Thesis, User
 from apps.accounts.roles import Role
+from apps.accounts.statuses import open_statuses
 from apps.core import timezones
 
 from . import services
@@ -46,7 +47,7 @@ from .models import (
 )
 from .notifications import members_with_role, notify, requeue_failed
 
-OPEN_THESIS = (Thesis.Status.SETUP, Thesis.Status.ACTIVE)
+OPEN_THESIS = open_statuses("conferences")  # apps/accounts/statuses.py
 # Fixed namespace of the reminders' event ids (uuid5): never change it.
 EVENT_NAMESPACE = uuid.UUID("2c6f1e0a-8d4b-4f3e-9b7a-5e1d3c9f7a20")
 S = SubmissionStatus

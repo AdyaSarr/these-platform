@@ -20,6 +20,7 @@ from django.db import IntegrityError, transaction
 from django.utils import timezone
 
 from apps.accounts.models import Thesis
+from apps.accounts.statuses import any_open, is_open_for
 
 from .choices import Category, EventKind, Frequency, NotificationKind
 from .models import ActivityNotification, Event
@@ -98,9 +99,11 @@ def run(today: dt.date | None = None) -> dict[str, int]:
     today = today or timezone.localdate()
     started = timezone.now()  # a row failing in THIS run is retried by the next one
     queued = again = overdue = 0
-    open_theses = Thesis.objects.filter(status__in=[Thesis.Status.SETUP, Thesis.Status.ACTIVE])
-    for thesis in open_theses:
-        overdue += _overdue_objectives(thesis, today)
+    # M13a: wherever one module is open (apps/accounts/statuses.py); each row is
+    # then checked by its own module (skip_reason), the Informations by theirs.
+    for thesis in Thesis.objects.filter(status__in=any_open()):
+        if is_open_for(thesis, "objectives"):
+            overdue += _overdue_objectives(thesis, today)
         for user in _members(thesis.pk):
             frequencies = {c: frequency_of(user, thesis, c) for c in Category}
             for kind, wanted, start in _due(today):

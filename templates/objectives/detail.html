@@ -61,7 +61,7 @@
 
 {% linked_submissions objective %}
 
-{% if can_comment %}
+{% if can_read_comments %}
 <section aria-labelledby="comments-title">
   <h2 id="comments-title">{% translate "Comments of the supervision" %}</h2>
   <div hx-get="{% url 'objectives:comments' thesis_id=thesis.pk objective_id=objective.pk %}" hx-trigger="load" hx-swap="innerHTML">

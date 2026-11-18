@@ -184,7 +184,7 @@ def test_frozen_thesis(team: SimpleNamespace) -> None:
     Thesis.objects.filter(pk=team.thesis.pk).update(status=Thesis.Status.DEFENDED)
     with pytest.raises(FrozenFileError):
         services.update_due_date(item=item, user=team.director, due_date=LATER)
-    with pytest.raises(FrozenFileError):
+    with pytest.raises(PermissionDenied):  # M13a: the right first (status gate of can())
         services.propose_due_date(
             item=item, user=team.student, due_date=LATER, reason=DueDateReason.OTHER
         )

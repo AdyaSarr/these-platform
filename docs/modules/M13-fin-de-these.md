@@ -58,8 +58,8 @@ Le statut est une condition **de `permissions.py`**, pas des modules :
   lecture `OBJECTIVE_COMMENT_READ`, tenue par les mêmes rôles ; les lectures
   passent par elle, l'écriture garde `OBJECTIVE_COMMENT`. Sans cela, une thèse
   close aurait caché ses commentaires à ceux qui les lisaient.
-- Les gardes `OPEN_THESIS` des modules restent (défense en profondeur). M6
-  remplace la sienne par `WRITABLE_THESIS = OPEN_THESIS + (DEFENDED,)`. M7 :
+- Les gardes `OPEN_THESIS` des modules restent (défense en profondeur), lues dans
+  `apps/accounts/statuses.py` (ci-dessous). M6 écrit en `DEFENDED`. M7 :
   `add_expense`, `update_expense` et `attach_receipt` passent en `DEFENDED`
   **seulement** pour une mission commencée avant la date de soutenance
   (`start_date < defended_on`) ; tout le reste de M7 reste gelé.
@@ -69,9 +69,8 @@ Le statut est une condition **de `permissions.py`**, pas des modules :
 
 ### Contrôles statiques
 
-1. **Copies de `OPEN_THESIS`** : toute constante de module nommée `OPEN*` qui
-   énumère des statuts de thèse vaut exactement `(SETUP, ACTIVE)` ; `WRITABLE_THESIS`
-   de M6 vaut `OPEN_THESIS + (DEFENDED,)`.
+1. **Une seule liste de statuts** : aucun code hors de `apps/accounts/statuses.py`
+   ne nomme une liste de statuts de thèse ; chaque module concerné lit la table.
 2. **Matrice service × statut** (`tests/test_status_matrix.py`) : chaque fonction
    publique de chaque `apps/*/services.py` est classée (lecture, lecture
    journalisée, personnelle, système, réduction d'accès, écriture). La liste est
@@ -130,20 +129,44 @@ Le statut est une condition **de `permissions.py`**, pas des modules :
   vers la page « Fin de thèse » seulement) :
   - soutenance déclarée → le doctorant ; soutenance annulée → le doctorant ;
   - clôture demandée → l'autre partie (le doctorant, ou chaque directeur).
-- `thesis_open` propre au module : `ACTIVE` ou `DEFENDED` ; `deliver_once`
+- `thesis_open` du module (table) : `ACTIVE` ou `DEFENDED` ; `deliver_once`
   inchangé ; `concerned` (compte et adhésion actifs avec le rôle) et `still_due`
   (soutenance toujours déclarée, toujours annulée, demande toujours ouverte et non
   expirée) revérifiés à l'envoi.
-- **Choix du module, à valider** : ces courriels partent tout de suite et ne
-  suivent pas les préférences de M11b. Les résumés ne sont construits que pour une
-  thèse ouverte, si bien qu'un courriel différé d'une thèse `DEFENDED` ne partirait
-  jamais ; une demande de clôture expire en 14 jours. Ils sont rares (quelques-uns
-  par thèse).
-- Rappels et résumés : arrêtés en `DEFENDED` et `CLOSED` (inchangé). Les courriels
-  de M6 restent sautés en `DEFENDED` (`thesis_open` de M6 inchangé) : **question
-  ouverte**, l'accord de publication ST reste visible dans le fil et la cloche.
+- **Choix validé (2026-11-18)** : ces courriels partent tout de suite et ne
+  suivent pas les préférences de M11b (rares ; une demande expire en 14 jours).
+
+### Les notifications d'un module suivent son droit d'écriture (2026-11-18)
+
+Une seule table, `apps/accounts/statuses.py` (`MODULE_STATUSES`), dit dans quels
+statuts chaque module est ouvert. Elle est lue par les gardes d'écriture des
+modules, leurs rappels, le `thesis_open` de leurs notifications et la construction
+des résumés (`activity.digests`) ; aucun autre code ne nomme une liste de statuts
+(contrôle statique).
+
+| Module | Ouvert en |
+|---|---|
+| équipe, dossier administratif, objectifs, réunions, déplacements, flux iCal | `SETUP`, `ACTIVE` |
+| documents (M2) | `SETUP`, `ACTIVE`, `DEFENDED` |
+| conférences et accords ST (M6) | `SETUP`, `ACTIVE`, `DEFENDED` |
+| justificatifs de M7 (`travel_receipts`, mission commencée avant la soutenance) | `SETUP`, `ACTIVE`, `DEFENDED` |
+| cycle de vie | `ACTIVE`, `DEFENDED` |
+
+En `DEFENDED`, les documents (M2 : version finale, corrections), M6 (demande
+d'accord, relances, échéances, Informations) et les justificatifs de M7 gardent
+courriels, rappels et résumés ; tout le reste est sauté (décision du 2026-11-18 :
+M2 suit la règle comme les autres modules). Un
+courriel d'activité suit le module de son objet ; un résumé se construit dès
+qu'un module est ouvert, chaque ligne revérifiée par son module.
 
 ## Interface
+
+**Bandeau** sur chaque page d'une thèse `DEFENDED` ou `CLOSED` : l'état, la date, ce
+qui reste modifiable, un lien vers « Fin de thèse ». **Boutons d'écriture masqués**
+là où le droit est refusé (les pages lisent `can()`, qui tient compte du statut ;
+M7 masque aussi ce qui n'est pas un justificatif). Un test parcourt toutes les
+pages de la thèse et n'y trouve aucun formulaire d'écriture refusé.
+
 
 Page « Fin de thèse » (`/t/<thèse>/lifecycle/`, `VIEW_THESIS`) : statut, date de
 soutenance, demande en cours (qui, motif, expiration), date de clôture et fin
@@ -197,3 +220,26 @@ journal en ajout seul, codes seulement.
 9. Vues : un test autorisé et un test refusé par rôle concerné, `POST` avec CSRF et
    `HTTP_ORIGIN`, ré-authentification.
 10. Assertions existantes modifiées : listées avant d'y toucher.
+11. En `DEFENDED`, l'accord ST demandé part au tuteur, sa relance part, chaque
+    type de courriel de M6 part, un justificatif manquant d'une mission antérieure
+    est rappelé, un document ajouté est annoncé, un résumé garde M6 ; un courriel
+    de M4 ou de M5a reste `SKIPPED` ; mutants (M6 sans `DEFENDED`, M2 sans
+    `DEFENDED`).
+13. M3 : sur un dossier gelé, le droit est contrôlé avant le gel ; un non-membre
+    ou un membre sans droit sur la pièce reçoit exactement le refus de droit d'une
+    thèse ouverte (service et vue) ; seul le validateur apprend que le dossier est
+    gelé ; mutant (contrôle du droit retiré).
+12. Bandeau sur chaque page ; aucun formulaire d'écriture refusé (parcours).
+
+## Modules terminés touchés
+
+- M1 : `permissions.py` (garde de statut, trois actions), gardes de `add_membership`
+  et `ensure_usable`, `end_membership_for_closure`, `revoke_open_invitations`.
+- M4 et M11 : lecture des commentaires par `OBJECTIVE_COMMENT_READ`.
+- M6 : écritures et notifications ouvertes en `DEFENDED`. M7 : justificatifs en
+  `DEFENDED`, boutons masqués hors justificatifs.
+- M3, M4, M5a, M6, M7, M11, M12 : statuts lus dans `apps/accounts/statuses.py`.
+- M3 : `_run` contrôle le droit de l'opération avant le gel du dossier.
+- M2 : courriels des documents ouverts en `DEFENDED`.
+- M12 : `feeds.allowed` lit le statut en base (un objet périmé laissait créer un
+  lien sur une thèse non ouverte ; trouvé par la matrice).

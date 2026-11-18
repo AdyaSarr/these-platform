@@ -25,7 +25,7 @@ def team(time_machine: Any) -> SimpleNamespace:
 
 
 def _sent() -> list[tuple[str, str]]:
-    return [(m.to[0], m.body) for m in mail.outbox]
+    return [(str(m.to[0]), str(m.body)) for m in mail.outbox]
 
 
 def test_every_send_goes_through_the_shared_delivery() -> None:
@@ -131,16 +131,18 @@ def test_its_own_open_statuses_are_active_and_defended(team: SimpleNamespace) ->
     assert notifications.skip_reason(row) == "thesis_closed"
 
 
-def test_no_other_e_mail_leaves_a_defended_thesis(team: SimpleNamespace) -> None:
+def test_a_document_added_after_the_defence_is_announced(team: SimpleNamespace) -> None:
+    """M2 is open in DEFENDED (apps/accounts/statuses.py): its e-mails go too."""
+    from apps.activity.models import ActivityNotification
     from apps.activity.preferences import set_preference
     from apps.activity.tests.helpers import document
 
-    for attr in ("director", "co_supervisor", "tutor"):  # every Information at once
-        set_preference(getattr(team, attr), team.thesis, "INFO", "IMMEDIATE")
+    set_preference(team.director, team.thesis, "INFO", "IMMEDIATE")
     h.defended(team)
     mail.outbox.clear()
-    document(team, h_level())  # allowed in DEFENDED: a document of the final version
-    assert mail.outbox == []
+    document(team, h_level())  # the final version, say
+    row = ActivityNotification.objects.get(recipient=team.director, event__kind="DOCUMENT_ADDED")
+    assert row.status == "SENT" and [team.director.email] in [m.to for m in mail.outbox]
 
 
 def h_level() -> Any:

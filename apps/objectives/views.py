@@ -154,6 +154,7 @@ class _Mixin(ThesisPermissionRequiredMixin):
             for action in (
                 Action.OBJECTIVE_WRITE,
                 Action.OBJECTIVE_COMMENT,
+                Action.OBJECTIVE_COMMENT_READ,
                 Action.VALIDATE_OBJECTIVES,
             )
             if can(user, action, self.thesis)
@@ -184,6 +185,7 @@ class _Mixin(ThesisPermissionRequiredMixin):
             ],
             "can_write": writer,
             "can_comment": Action.OBJECTIVE_COMMENT in allowed,
+            "can_read_comments": Action.OBJECTIVE_COMMENT_READ in allowed,
             "can_approve": Action.VALIDATE_OBJECTIVES in allowed
             and open_objective
             and not fresh.is_approved,
@@ -514,9 +516,11 @@ class ProgressView(_Mixin, View):
 
 
 class CommentsView(_Mixin, View):
-    """The comment thread: OBJECTIVE_COMMENT only (the CSI member gets 403)."""
+    """The comment thread: read with OBJECTIVE_COMMENT_READ (the CSI member gets 403);
+    writing a comment needs OBJECTIVE_COMMENT, checked again by add_comment (M13a:
+    a closed thesis keeps the thread readable, never writable)."""
 
-    required_action = Action.OBJECTIVE_COMMENT
+    required_action = Action.OBJECTIVE_COMMENT_READ
 
     def get(
         self, request: HttpRequest, *args: Any, objective_id: Any, **kwargs: Any
@@ -549,7 +553,9 @@ class CommentsView(_Mixin, View):
             "thesis": self.thesis,
             "objective": objective,
             "comments": [(c.comment, shown(c.body)) for c in comments],
-            "form": form,
+            "form": form
+            if can(_user(self.request), Action.OBJECTIVE_COMMENT, self.thesis)
+            else None,
             "error": error,
         }
         return render(self.request, "objectives/_comments.html", context, status=status)

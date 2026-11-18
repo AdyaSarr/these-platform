@@ -114,6 +114,11 @@ class Thesis(TimeStampedModel):
     status = models.CharField(
         _("status"), max_length=20, choices=Status.choices, default=Status.SETUP
     )
+    # M13a (apps/lifecycle): set by its services only. No database rule ties them
+    # to the status (tests put a thesis in DEFENDED or CLOSED by a plain update).
+    defended_on = models.DateField(_("defence date"), null=True, blank=True)
+    closed_at = models.DateTimeField(_("closed at"), null=True, blank=True)
+    access_until = models.DateField(_("director's access until"), null=True, blank=True)
 
     objects: ClassVar[ThesisQuerySet] = ThesisQuerySet.as_manager()  # type: ignore[assignment]
 
@@ -132,8 +137,11 @@ class Thesis(TimeStampedModel):
 
     @property
     def is_open(self) -> bool:
-        """SETUP or ACTIVE: a DEFENDED or CLOSED thesis is frozen and sends nothing."""
-        return self.status in (self.Status.SETUP, self.Status.ACTIVE)
+        """SETUP or ACTIVE: open for the team (M1). What each module still does at
+        each status: apps/accounts/statuses.py (M13a), the only list."""
+        from .statuses import is_open_for
+
+        return is_open_for(self, "team")
 
 
 def _active_period() -> TsTzRange:

@@ -132,6 +132,10 @@ def test_a_datetime_is_refused(team: SimpleNamespace) -> None:
 @pytest.mark.parametrize("status", [Thesis.Status.DEFENDED, Thesis.Status.CLOSED])
 def test_a_finished_thesis_is_frozen(team: SimpleNamespace, status: str) -> None:
     Thesis.objects.filter(pk=team.thesis.pk).update(status=status)
+    if status == Thesis.Status.CLOSED:  # M13a: the status gate of can() refuses first
+        with pytest.raises(PermissionDenied):
+            _set(team, D(2027, 1, 25), D(2027, 1, 25), "LIRMM")
+        return
     with pytest.raises(ValidationError) as info:
         _set(team, D(2027, 1, 25), D(2027, 1, 25), "LIRMM")
     assert info.value.code == "frozen"

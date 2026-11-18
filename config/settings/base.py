@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     "apps.travel",
     "apps.activity",
     "apps.feeds",
+    "apps.lifecycle",
     "apps.ui",  # visual layer: navigation, theme, icons (presentation only)
     # Authentication: sign-in, password reset, mandatory second factor (M1).
     "allauth",
@@ -293,3 +294,8 @@ LOGGING = {
     # parameters, whatever the root level or DEBUG (tests/test_security_audit_m2.py).
     "loggers": {"django.db.backends": {"level": "INFO", "propagate": True}},
 }
+
+# End of the thesis (M13a, docs/modules/M13-fin-de-these.md). The delay between the
+# defence and the closure is « à confirmer (Q4) » (docs/specs/questions-fin-de-these.md).
+THESIS_CLOSE_MIN_MONTHS = 3
+THESIS_DIRECTOR_ACCESS_MONTHS = 3

@@ -1,0 +1,5 @@
+{% load i18n %}{% if kind == "CLOSURE_REQUESTED" %}{% translate "A closure of the thesis waits for your confirmation on the platform:" %}{% else %}{% translate "A step of the end of the thesis concerns you on the platform:" %}{% endif %}
+
+{{ url }}
+
+{% translate "This message contains no detail: sign in to see it." %}

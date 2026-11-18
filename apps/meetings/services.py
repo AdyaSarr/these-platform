@@ -52,6 +52,7 @@ from apps.accounts.permissions import (
     can_access_document,
     roles_of,
 )
+from apps.accounts.statuses import open_statuses
 from apps.activity import events as activity
 from apps.core.confidentiality import ConfidentialityLevel
 from apps.objectives.models import Objective
@@ -75,7 +76,7 @@ from .models import (
 from .notifications import Kind as Notify
 from .notifications import notify
 
-OPEN_THESIS = (Thesis.Status.SETUP, Thesis.Status.ACTIVE)
+OPEN_THESIS = open_statuses("meetings")  # apps/accounts/statuses.py
 MEETING_TEXTS = ("title", "agenda", "minutes", "location_detail", "visio_link")
 FRAME_FIELDS = ("kind", "presentation_venue", "starts_at", "duration_minutes", "location")
 EDITABLE_TEXTS = ("title", "location_detail", "visio_link")

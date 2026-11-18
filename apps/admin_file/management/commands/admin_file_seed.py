@@ -8,9 +8,10 @@ from typing import Any
 from django.core.management.base import BaseCommand, CommandError, CommandParser
 
 from apps.accounts.models import Thesis
+from apps.accounts.statuses import open_statuses
 from apps.admin_file.services import seed_items
 
-OPEN_STATUSES = (Thesis.Status.SETUP, Thesis.Status.ACTIVE)
+OPEN_STATUSES = open_statuses("admin_file")  # apps/accounts/statuses.py
 
 
 def _uuid(value: str) -> uuid.UUID:

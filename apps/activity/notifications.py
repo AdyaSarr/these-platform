@@ -23,6 +23,7 @@ from django.utils import timezone
 from apps.accounts.models import Membership, User
 from apps.accounts.permissions import can_access_level, roles_of
 from apps.accounts.roles import Role
+from apps.accounts.statuses import any_open, is_open_for
 from apps.core import delivery
 from apps.core.confidentiality import ConfidentialityLevel
 
@@ -175,6 +176,7 @@ def unread_in_period(user: Any, thesis: Any, kind: str, start: dt.date) -> bool:
     return (
         readable_events(user, thesis)
         .filter(created_at__gte=first, created_at__lt=end)
+        .filter(object_type__in=open_object_types(thesis))  # M13a
         .exclude(reads__user_id=user.pk)
         .exists()
     )
@@ -274,7 +276,26 @@ def digest_still_due(digest: ActivityNotification) -> bool:
     return unread_in_period(digest.recipient, digest.thesis, digest.kind, digest.period_start)
 
 
+def _thesis_open(row: ActivityNotification) -> bool:
+    """M13a: an e-mail of an element follows the module of its object; a digest
+    goes wherever one module is still open (its content is checked by still_due)."""
+    from .choices import MODULE_OF
+
+    if row.kind != NotificationKind.EVENT:
+        return row.thesis.status in any_open()
+    if row.event is None:
+        return False
+    return is_open_for(row.thesis, MODULE_OF[row.event.object_type])
+
+
+def open_object_types(thesis: Any) -> list[str]:
+    """The object types whose module is open on ``thesis`` (its Informations)."""
+    from .choices import MODULE_OF
+
+    return [t for t, module in MODULE_OF.items() if is_open_for(thesis, module)]
+
+
 def skip_reason(row: ActivityNotification) -> str | None:
     return delivery.skip_reason(
-        row, thesis_open=row.thesis.is_open, concerned=concerned, still_due=still_due
+        row, thesis_open=_thesis_open(row), concerned=concerned, still_due=still_due
     )

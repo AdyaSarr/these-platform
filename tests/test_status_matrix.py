@@ -146,6 +146,7 @@ CLASSIFICATION: dict[str, str] = {
     "travel.official_order_missing": READ, "travel.order_covers": READ,
     "travel.order_for": READ_AUDITED, "travel.orders_of": READ,
     "travel.pending_orders_for": READ, "travel.policy_of": SYSTEM,
+    "travel.receipts_open": READ,
     "travel.record_ics_export": READ_AUDITED, "travel.request_order": WRITE,
     "travel.rules_of": READ, "travel.set_budget": WRITE, "travel.set_presence": WRITE,
     "travel.set_reminders": WRITE, "travel.set_rules": WRITE, "travel.set_target": WRITE,

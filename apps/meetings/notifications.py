@@ -17,6 +17,7 @@ from django.utils import timezone
 
 from apps.accounts.models import User
 from apps.accounts.permissions import can_access_level
+from apps.accounts.statuses import is_open_for
 from apps.activity import routing
 from apps.core import delivery
 from apps.core.confidentiality import ConfidentialityLevel
@@ -80,7 +81,10 @@ def still_due(row: MeetingNotification) -> bool:
 
 def skip_reason(row: MeetingNotification) -> str | None:
     return delivery.skip_reason(
-        row, thesis_open=row.meeting.thesis.is_open, concerned=concerned, still_due=still_due
+        row,
+        thesis_open=is_open_for(row.meeting.thesis, "meetings"),
+        concerned=concerned,
+        still_due=still_due,
     )
 
 

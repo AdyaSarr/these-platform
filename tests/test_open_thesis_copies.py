@@ -1,76 +1,72 @@
-"""M13a, static: every copy of « the open statuses » says (SETUP, ACTIVE).
-
-The tuple is copied in several modules (services and reminders). A copy that
-drifted (DEFENDED added by mistake) would reopen a frozen module. M6 alone keeps
-writing in DEFENDED, through WRITABLE_THESIS = OPEN_THESIS + (DEFENDED,).
-"""
+"""M13a, static: the open statuses of each module are listed in ONE place,
+apps/accounts/statuses.py. No other code names a list of thesis statuses (a copy
+that drifted would reopen a frozen module, or keep sending its e-mails)."""
 
 from __future__ import annotations
 
 import ast
 from pathlib import Path
 
+from apps.accounts.models import Thesis
+from apps.accounts.statuses import MODULE_STATUSES, any_open
+
 ROOT = Path(__file__).resolve().parent.parent
-OPEN = ("SETUP", "ACTIVE")
+TABLE = ROOT / "apps/accounts/statuses.py"
+S = Thesis.Status
 
 
-def _statuses(node: ast.AST) -> tuple[str, ...] | None:
-    """The thesis statuses a tuple or list literal names (Thesis.Status.X), or None."""
-    if not isinstance(node, ast.Tuple | ast.List):
-        return None
-    names = []
-    for element in node.elts:
-        if not (isinstance(element, ast.Attribute) and isinstance(element.value, ast.Attribute)):
-            return None
-        if element.value.attr != "Status":
-            return None
-        names.append(element.attr)
-    return tuple(names) or None
+def _thesis_statuses(node: ast.AST) -> list[str]:
+    """The names SETUP or DEFENDED (thesis statuses only) in a tuple, list or set."""
+    if not isinstance(node, ast.Tuple | ast.List | ast.Set):
+        return []
+    return [
+        e.attr
+        for e in node.elts
+        if isinstance(e, ast.Attribute) and e.attr in ("SETUP", "DEFENDED")
+    ]
 
 
-def _constants() -> dict[str, tuple[Path, ast.AST]]:
-    found: dict[str, tuple[Path, ast.AST]] = {}
+def test_no_list_of_thesis_statuses_outside_the_table() -> None:
+    found = {}
     for path in sorted((ROOT / "apps").rglob("*.py")):
-        if "tests" in path.parts or "migrations" in path.parts:
+        if "tests" in path.parts or "migrations" in path.parts or path == TABLE:
             continue
-        tree = ast.parse(path.read_text(), filename=str(path))
-        for node in tree.body:
-            targets = node.targets if isinstance(node, ast.Assign) else []
-            for target in targets:
-                if isinstance(target, ast.Name) and target.id.isupper():
-                    found[f"{path.relative_to(ROOT)}:{target.id}"] = (path, node.value)
-    return found
+        for node in ast.walk(ast.parse(path.read_text(), filename=str(path))):
+            if names := _thesis_statuses(node):
+                found[f"{path.relative_to(ROOT)}:{node.lineno}"] = names
+    assert found == {}
 
 
-def test_every_open_constant_is_setup_and_active() -> None:
-    copies = {
-        key: _statuses(value)
-        for key, (_path, value) in _constants().items()
-        if key.rsplit(":", 1)[1].startswith("OPEN") and _statuses(value) is not None
-    }
-    assert len(copies) >= 8, copies  # not vacuous: M3, M4, M5a, M6, M7, M11, M12...
-    assert {key: names for key, names in copies.items() if names != OPEN} == {}
+def test_every_module_reads_the_table() -> None:
+    users = [
+        p.relative_to(ROOT).as_posix()
+        for p in sorted((ROOT / "apps").rglob("*.py"))
+        if "tests" not in p.parts and "statuses import" in p.read_text()
+    ]
+    for expected in (
+        "apps/admin_file/services.py", "apps/admin_file/reminders.py",
+        "apps/admin_file/notifications.py", "apps/objectives/services.py",
+        "apps/meetings/services.py", "apps/meetings/reminders.py",
+        "apps/meetings/notifications.py", "apps/conferences/services.py",
+        "apps/conferences/reminders.py", "apps/conferences/notifications.py",
+        "apps/travel/services.py", "apps/travel/reminders.py", "apps/travel/notifications.py",
+        "apps/activity/notifications.py", "apps/activity/digests.py", "apps/feeds/services.py",
+        "apps/accounts/services.py", "apps/lifecycle/notifications.py",
+    ):  # fmt: skip
+        assert expected in users, expected
 
 
-def test_no_other_constant_lists_open_statuses_under_another_name() -> None:
-    """A tuple of statuses under another name is either WRITABLE_THESIS (M6) or
-    names no SETUP: no hidden copy of the open statuses."""
-    others = {
-        key: names
-        for key, (_path, value) in _constants().items()
-        if not key.rsplit(":", 1)[1].startswith("OPEN")
-        and (names := _statuses(value)) is not None
-        and "SETUP" in names
-    }
-    assert others == {}, others
+def test_the_table_is_the_sheet() -> None:
+    open_, defended = (S.SETUP, S.ACTIVE), (S.SETUP, S.ACTIVE, S.DEFENDED)
+    assert dict(MODULE_STATUSES) == {
+        "team": open_, "documents": defended, "admin_file": open_, "objectives": open_,
+        "meetings": open_, "conferences": defended, "travel": open_,
+        "travel_receipts": defended, "feeds": open_, "lifecycle": (S.ACTIVE, S.DEFENDED),
+    }  # fmt: skip
+    assert any_open() == (S.SETUP, S.ACTIVE, S.DEFENDED)  # never CLOSED
 
 
-def test_conferences_writes_in_defended_through_one_constant() -> None:
-    source = (ROOT / "apps/conferences/services.py").read_text()
-    assert "WRITABLE_THESIS = OPEN_THESIS + (Thesis.Status.DEFENDED,)" in source
-    from apps.accounts.models import Thesis
+def test_conferences_writes_in_defended_through_the_table() -> None:
     from apps.conferences import services
 
-    assert services.WRITABLE_THESIS == (
-        Thesis.Status.SETUP, Thesis.Status.ACTIVE, Thesis.Status.DEFENDED,
-    )  # fmt: skip
+    assert MODULE_STATUSES["conferences"] == services.WRITABLE_THESIS

@@ -59,6 +59,8 @@ EXPECTED: dict[Action, set[Role]] = {
     A.OBJECTIVE_READ: _SUPERVISION | {R.CSI_MEMBER},
     A.OBJECTIVE_WRITE: {R.PHD_STUDENT},
     A.OBJECTIVE_COMMENT: _SUPERVISION,
+    # M13a: reading the comment thread, the same roles (a read: kept on a closed thesis).
+    A.OBJECTIVE_COMMENT_READ: _SUPERVISION,
     # Réunions: écrire x4 / — / une réunion (per-object grant, M5)
     A.MEETING_READ: _SUPERVISION,
     A.MEETING_WRITE: _SUPERVISION,
@@ -98,6 +100,10 @@ EXPECTED: dict[Action, set[Role]] = {
     A.VALIDATE_CSI: {R.DIRECTOR},
     A.VALIDATE_ANRT: {R.DIRECTOR, R.INDUSTRIAL_TUTOR},
     A.VALIDATE_PUBLICATION: {R.INDUSTRIAL_TUTOR},
+    # End of the thesis (M13a): a director declares the defence; a director or the
+    # PhD student requests (and the other confirms) the closure.
+    A.DECLARE_DEFENSE: {R.DIRECTOR},
+    A.REQUEST_CLOSURE: {R.PHD_STUDENT, R.DIRECTOR},
 }
 
 EXPECTED_LEVELS: dict[Level, set[Role]] = {

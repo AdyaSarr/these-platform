@@ -18,6 +18,7 @@ from django.utils import timezone
 from apps.accounts.models import User
 from apps.accounts.permissions import can, roles_of
 from apps.accounts.roles import Role
+from apps.accounts.statuses import is_open_for
 from apps.activity import routing
 from apps.core import delivery
 
@@ -104,7 +105,10 @@ def still_due(row: ReminderLog | ItemNotification) -> bool:
 
 def skip_reason(row: ReminderLog | ItemNotification) -> str | None:
     return delivery.skip_reason(
-        row, thesis_open=row.item.thesis.is_open, concerned=concerned, still_due=still_due
+        row,
+        thesis_open=is_open_for(row.item.thesis, "admin_file"),
+        concerned=concerned,
+        still_due=still_due,
     )
 
 

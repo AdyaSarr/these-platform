@@ -85,6 +85,21 @@ Accès à un document = rôle autorisé **ET** niveau compatible :
 | INTERNAL_ST | doctorant, tuteur industriel, co-encadrants entreprise |
 | CONFIDENTIAL | doctorant, directeur, tuteur industriel (+ liste explicite) |
 
+Fin de thèse (M13a) : un directeur déclare la soutenance (`DECLARE_DEFENSE`) ; un
+directeur ou le doctorant demande la clôture, l'autre partie la confirme
+(`REQUEST_CLOSURE`). La lecture du fil de commentaires des objectifs est une action
+de lecture à part (`OBJECTIVE_COMMENT_READ`), tenue par les mêmes rôles que
+« commenter ».
+
+**Statut de la thèse** (M13a, fiche `modules/M13-fin-de-these.md`) : `can()` lit le
+statut dans la même requête que les rôles. Une lecture ne dépend jamais du statut ;
+une écriture est permise en `SETUP` et `ACTIVE`, en `DEFENDED` seulement pour les
+documents, les conférences et accords ST, les justificatifs des missions commencées
+avant la soutenance, la fin d'adhésion et le cycle de vie
+(`permissions.WRITES_BY_STATUS`), jamais en `CLOSED`. Les statuts ouverts de chaque
+module (gardes, rappels, courriels, résumés) sont dans une seule table :
+`apps/accounts/statuses.py`.
+
 Déplacements (M7) : le co-encadrant LIRMM ne voit que les jours au LIRMM et les
 missions vers le LIRMM ; le co-encadrant entreprise, symétriquement, que les jours
 à Rousset et les missions vers Rousset (ni télétravail, ni conférences, ni congés,

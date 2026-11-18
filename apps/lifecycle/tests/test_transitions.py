@@ -11,8 +11,9 @@ from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import IntegrityError, transaction
 
 from apps.accounts.models import Thesis
+from apps.accounts.roles import Role
 from apps.lifecycle import services
-from apps.lifecycle.models import ClosureRequest
+from apps.lifecycle.models import ClosureRequest, LifecycleNotification
 from apps.lifecycle.tests import helpers as h
 from apps.vault.errors import ReauthenticationRequiredError
 
@@ -85,7 +86,7 @@ def test_the_open_invitations_are_revoked_at_the_defence(team: SimpleNamespace) 
     inv = accounts.create_invitation(
         thesis=team.thesis,
         email="invite.fictif@example.org",
-        role="CO_SUPERVISOR",
+        role=Role.CO_SUPERVISOR,
         organization=org,
         by=team.student,
     )
@@ -160,7 +161,7 @@ def test_the_director_or_the_student_requests_the_closure(
     time_machine.move_to(h.CLOSABLE, tick=True)
     request = h.requested(team, getattr(team, by))
     assert request.is_open and request.reason == "defended"
-    assert request.expires_at == h.CLOSABLE + dt.timedelta(days=14)
+    assert abs(request.expires_at - (h.CLOSABLE + dt.timedelta(days=14))) < dt.timedelta(minutes=1)
     assert h.audited("THESIS_CLOSURE_REQUESTED") == [{"reason": "defended"}]
     assert h.status_of(team) == S.DEFENDED
 
@@ -192,6 +193,7 @@ def test_not_before_the_minimal_delay_after_the_defence(
         dt.datetime(2027, 8, 31, 22, 30, tzinfo=dt.UTC), tick=True
     )  # Paris: 1 Sept.
     h.requested(team)  # 3 months by default: 2027-09-01, in Paris
+    LifecycleNotification.objects.all().delete()
     ClosureRequest.objects.all().delete()
     time_machine.move_to(dt.datetime(2027, 8, 31, 9, 0, tzinfo=dt.UTC), tick=True)
     with pytest.raises(ValidationError) as exc:

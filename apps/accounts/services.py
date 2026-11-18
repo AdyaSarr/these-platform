@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import datetime as dt
 import uuid
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from allauth.account.models import EmailAddress
 from django.core.exceptions import PermissionDenied, ValidationError
@@ -24,6 +24,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 from django.utils.translation import gettext_noop
 
+from apps.accounts.statuses import open_statuses
 from apps.activity import events as activity
 from apps.vault import crypto
 from apps.vault.services import AuditAction, audit
@@ -38,6 +39,8 @@ if TYPE_CHECKING:
     from django.http import HttpRequest
 
 CSI_DEFAULT_PERIOD = dt.timedelta(days=60)
+# M13a: no one joins a DEFENDED or CLOSED thesis (invitation, acceptance, membership).
+OPEN_THESIS = open_statuses("team")  # apps/accounts/statuses.py
 CSI_MAX_EXTENSION_DAYS = 90
 CSI_DEFAULT_EXTENSION_DAYS = 60
 MAX_TOKEN_LENGTH = 128
@@ -163,6 +166,9 @@ def add_membership(
     """
     role = Role(role)
     with transaction.atomic():
+        # M13a: refused like a missing right (the status is read in the database).
+        if not Thesis.objects.filter(pk=thesis.pk, status__in=OPEN_THESIS).exists():
+            raise PermissionDenied
         m = _create(
             user=user,
             thesis=thesis,
@@ -193,22 +199,40 @@ def end_membership(
     with transaction.atomic():
         m = _locked(membership)
         _require(by, Action.REMOVE_MEMBER, m.thesis)
-        if m.role == Role.PHD_STUDENT:
-            raise TeamError(_("The PhD student cannot be removed from their thesis."))
-        now = timezone.now()
-        if not _is_active(m, now):
-            raise TeamError(_("This membership is not active."))
-        m.active_until = now
-        m.save(update_fields=["active_until", "updated_at"])
-        activity.record(
-            kind="MEMBER_LEFT", obj=m, object_type="MEMBERSHIP", thesis=m.thesis, actor=by
-        )
-        # M12: the person's iCal feed dies with their membership.
-        from apps.feeds.services import revoke_for
+        return _end(m, by=by, request=request)
 
-        revoke_for(m.user, m.thesis, reason="membership_ended", actor=by)
-        audit(AuditAction.MEMBER_REMOVED, actor=by, obj=m, request=request, role=m.role)
-        return m
+
+def end_membership_for_closure(membership: Membership, *, reason: str) -> Membership:
+    """The system ends a membership of a CLOSED thesis (M13a, apps/lifecycle): at the
+    closure, or when the director's access period ends. No actor, so no right to
+    check; journaled with ``reason`` (``thesis_closed`` or ``access_period_ended``)."""
+    if reason not in ("thesis_closed", "access_period_ended"):
+        raise ValueError("unknown reason")
+    with transaction.atomic():
+        m = _locked(membership)
+        if m.thesis.status != Thesis.Status.CLOSED:
+            raise TeamError(_("This membership is not active."))
+        return _end(m, by=None, request=None, reason=reason)
+
+
+def _end(
+    m: Membership, *, by: User | None, request: HttpRequest | None, reason: str | None = None
+) -> Membership:
+    if m.role == Role.PHD_STUDENT:
+        raise TeamError(_("The PhD student cannot be removed from their thesis."))
+    now = timezone.now()
+    if not _is_active(m, now):
+        raise TeamError(_("This membership is not active."))
+    m.active_until = now
+    m.save(update_fields=["active_until", "updated_at"])
+    activity.record(kind="MEMBER_LEFT", obj=m, object_type="MEMBERSHIP", thesis=m.thesis, actor=by)
+    # M12: the person's iCal feed dies with their membership.
+    from apps.feeds.services import revoke_for
+
+    revoke_for(m.user, m.thesis, reason="membership_ended", actor=by)
+    details: dict[str, Any] = {"reason": reason} if reason else {}
+    audit(AuditAction.MEMBER_REMOVED, actor=by, obj=m, request=request, role=m.role, **details)
+    return m
 
 
 def change_role(
@@ -462,7 +486,11 @@ def revoke_invitation(
 
 
 def ensure_usable(inv: Invitation | None) -> Invitation:
-    """Raise InvalidInvitationError unless ``inv`` can be accepted right now."""
+    """Raise InvalidInvitationError unless ``inv`` can be accepted right now.
+
+    M13a: an invitation of a DEFENDED or CLOSED thesis is refused like an expired
+    one (the status is read in the database).
+    """
     if (
         inv is None
         or inv.used_at is not None
@@ -471,9 +499,34 @@ def ensure_usable(inv: Invitation | None) -> Invitation:
         or inv.email_status != Invitation.EmailStatus.SENT
         or inv.expires_at is None
         or timezone.now() >= inv.expires_at
+        or not Thesis.objects.filter(pk=inv.thesis_id, status__in=OPEN_THESIS).exists()
     ):
         raise InvalidInvitationError
     return inv
+
+
+def revoke_open_invitations(thesis: Thesis, *, reason: str) -> int:
+    """M13a: at the defence or the closure, every open invitation of ``thesis`` is
+    revoked, each journaled with ``reason`` (``thesis_defended``, ``thesis_closed``).
+    One transaction per invitation (audit() last)."""
+    if reason not in ("thesis_defended", "thesis_closed"):
+        raise ValueError("unknown reason")
+    count = 0
+    ids = list(
+        Invitation.objects.filter(
+            thesis=thesis, used_at__isnull=True, revoked_at__isnull=True
+        ).values_list("pk", flat=True)
+    )
+    for invitation_id in ids:
+        with transaction.atomic():
+            inv = Invitation.objects.select_for_update().get(pk=invitation_id)
+            if inv.used_at is not None or inv.revoked_at is not None:
+                continue
+            inv.revoked_at = timezone.now()
+            inv.save(update_fields=["revoked_at", "updated_at"])
+            audit(AuditAction.INVITATION_REVOKED, actor=None, obj=inv, reason=reason)
+            count += 1
+    return count
 
 
 def check_token(token: str) -> Invitation:

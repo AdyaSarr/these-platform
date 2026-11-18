@@ -38,6 +38,11 @@ class EventKind(models.TextChoices):
     MEMBER_LEFT = "MEMBER_LEFT", _("Member left")
     OBJECTIVE_OVERDUE = "OBJECTIVE_OVERDUE", _("Objective overdue")
     CALENDAR_FEED_EXPIRING = "CALENDAR_FEED_EXPIRING", _("Calendar subscription expiring")
+    # M13a: the end of the thesis.
+    THESIS_DEFENDED = "THESIS_DEFENDED", _("Defence declared")
+    THESIS_DEFENSE_CANCELLED = "THESIS_DEFENSE_CANCELLED", _("Defence declaration cancelled")
+    THESIS_CLOSURE_REQUESTED = "THESIS_CLOSURE_REQUESTED", _("Closure requested")
+    THESIS_CLOSED = "THESIS_CLOSED", _("Thesis closed")
 
 
 class ObjectType(models.TextChoices):
@@ -56,6 +61,8 @@ class ObjectType(models.TextChoices):
     ORDER = "ORDER", "ORDER"
     MEMBERSHIP = "MEMBERSHIP", "MEMBERSHIP"
     FEED = "FEED", "FEED"  # M12: one's own iCal feed
+    THESIS = "THESIS", "THESIS"  # M13a: the thesis itself (its status)
+    CLOSURE_REQUEST = "CLOSURE_REQUEST", "CLOSURE_REQUEST"  # M13a
 
 
 # The module each type belongs to: the filter of the Activity page.
@@ -75,6 +82,8 @@ MODULE_OF: dict[str, str] = {
     ObjectType.ORDER: "travel",
     ObjectType.MEMBERSHIP: "team",
     ObjectType.FEED: "team",
+    ObjectType.THESIS: "team",
+    ObjectType.CLOSURE_REQUEST: "team",
 }
 MODULES = ("documents", "admin_file", "objectives", "meetings", "conferences", "travel", "team")
 
@@ -143,6 +152,11 @@ EMAIL_OF: dict[str, str] = {
     K.MEMBER_LEFT: "INFO",
     K.OBJECTIVE_OVERDUE: "INFO",  # Échéances for the student (notifications.category_for)
     K.CALENDAR_FEED_EXPIRING: "INFO",  # Échéances for its owner (notifications.category_for)
+    # M13a: the lifecycle sends its own e-mails (apps/lifecycle, at once).
+    K.THESIS_DEFENDED: "NONE",
+    K.THESIS_DEFENSE_CANCELLED: "NONE",
+    K.THESIS_CLOSURE_REQUESTED: "NONE",
+    K.THESIS_CLOSED: "NONE",
 }
 
 

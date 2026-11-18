@@ -223,7 +223,8 @@ def test_each_kind_still_due_is_sent(team: SimpleNamespace) -> None:
         assert [m.to for m in mail.outbox] == [[row.recipient.email]]
 
 
-@pytest.mark.parametrize("status", [Thesis.Status.DEFENDED, Thesis.Status.CLOSED])
+# M13a: M6 stays open after the defence (apps/lifecycle/tests/test_defended_notifications.py).
+@pytest.mark.parametrize("status", [Thesis.Status.CLOSED])
 def test_a_finished_thesis_skips_every_kind(team: SimpleNamespace, status: str, log: Any) -> None:
     rows = _one_of_each(team)
     Thesis.objects.filter(pk=team.thesis.pk).update(status=status)

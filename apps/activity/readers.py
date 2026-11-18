@@ -52,6 +52,7 @@ def _models() -> dict[str, Any]:
     from apps.admin_file.models import RequiredItem
     from apps.conferences.models import StApproval, Submission, SubmissionDocument
     from apps.feeds.models import CalendarFeed
+    from apps.lifecycle.models import ClosureRequest
     from apps.meetings.models import ActionItem, Meeting, MeetingDocument
     from apps.objectives.models import Objective, ObjectiveComment
     from apps.travel.models import Mission, MissionOrder
@@ -73,6 +74,8 @@ def _models() -> dict[str, Any]:
         T.ORDER: MissionOrder,
         T.MEMBERSHIP: Membership,
         T.FEED: CalendarFeed,
+        T.THESIS: Thesis,
+        T.CLOSURE_REQUEST: ClosureRequest,
     }
 
 
@@ -94,6 +97,8 @@ THESIS_PATH: dict[str, str] = {
     T.ORDER: "mission__thesis",
     T.MEMBERSHIP: "thesis",
     T.FEED: "thesis",
+    T.THESIS: "",  # the thesis itself: its pk is the event's thesis
+    T.CLOSURE_REQUEST: "thesis",
 }
 
 
@@ -101,6 +106,10 @@ def load(event: Event) -> Any:
     """The object of ``event`` on the event's thesis, or None."""
     model = _models()[event.object_type]
     path = THESIS_PATH[event.object_type]
+    if not path:  # M13a: the thesis itself
+        if str(event.object_id) != str(event.thesis_id):
+            return None
+        return model.objects.filter(pk=event.thesis_id).first()
     return model.objects.filter(pk=event.object_id, **{f"{path}_id": event.thesis_id}).first()
 
 
@@ -154,7 +163,7 @@ RULES: dict[str, Callable[[Any, Any], bool]] = {
     ),
     T.ITEM: _item,
     T.OBJECTIVE: _objective,
-    T.OBJECTIVE_COMMENT: lambda u, o: _objective(u, o.objective, Action.OBJECTIVE_COMMENT),
+    T.OBJECTIVE_COMMENT: lambda u, o: _objective(u, o.objective, Action.OBJECTIVE_COMMENT_READ),
     T.MEETING: _meeting,
     T.ACTION: lambda u, o: _meeting(u, o.meeting),
     T.SUBMISSION: _submission,
@@ -164,6 +173,9 @@ RULES: dict[str, Callable[[Any, Any], bool]] = {
     T.MEMBERSHIP: lambda u, o: can(u, Action.VIEW_TEAM, o.thesis),
     # M12: one's own live feed only.
     T.FEED: lambda u, o: o.user_id == u.pk and o.revoked_at is None,
+    # M13a: every member who sees the thesis (the « Fin de thèse » page).
+    T.THESIS: lambda u, o: can(u, Action.VIEW_THESIS, o),
+    T.CLOSURE_REQUEST: lambda u, o: can(u, Action.VIEW_THESIS, o.thesis),
 }
 
 
@@ -222,6 +234,7 @@ def readable_events(user: Any, thesis: Thesis) -> QuerySet[Event]:
     from apps.admin_file.models import SECTION_READ_ACTION, RequiredItem, Section
     from apps.conferences.models import StApproval, Submission, SubmissionDocument
     from apps.feeds.models import CalendarFeed
+    from apps.lifecycle.models import ClosureRequest
     from apps.meetings.models import ActionItem, Meeting, MeetingDocument
     from apps.objectives.models import Objective, ObjectiveComment
     from apps.travel.models import Mission, MissionOrder
@@ -247,7 +260,7 @@ def readable_events(user: Any, thesis: Thesis) -> QuerySet[Event]:
     if Action.SUBMISSION_READ not in actions:
         submissions = submissions.none()
     objectives = Objective.objects.filter(thesis=thesis, level__in=levels)
-    commented = objectives if Action.OBJECTIVE_COMMENT in actions else objectives.none()
+    commented = objectives if Action.OBJECTIVE_COMMENT_READ in actions else objectives.none()
     if Action.OBJECTIVE_READ not in actions:
         objectives = objectives.none()
     sections = [s for s in Section if SECTION_READ_ACTION[s] in actions]
@@ -255,6 +268,7 @@ def readable_events(user: Any, thesis: Thesis) -> QuerySet[Event]:
     team = Membership.objects.filter(thesis=thesis)
     if Action.VIEW_TEAM not in actions:
         team = team.none()
+    seen = Action.VIEW_THESIS in actions
     grants = DocumentAccessGrant.objects.filter(
         user_id=user.pk, revoked_at__isnull=True, document__in=docs
     )
@@ -279,6 +293,10 @@ def readable_events(user: Any, thesis: Thesis) -> QuerySet[Event]:
         T.MEMBERSHIP: ids(team),
         T.FEED: ids(
             CalendarFeed.objects.filter(thesis=thesis, user_id=user.pk, revoked_at__isnull=True)
+        ),
+        T.THESIS: ids(Thesis.objects.filter(pk=thesis.pk) if seen else Thesis.objects.none()),
+        T.CLOSURE_REQUEST: ids(
+            ClosureRequest.objects.filter(thesis=thesis) if seen else ClosureRequest.objects.none()
         ),
     }
     condition = Q()

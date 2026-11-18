@@ -300,6 +300,17 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       seulement). La relancer ne fait rien deux fois. *Vérifier* : la sortie ne
       contient que des nombres.
 
+- [ ] **Fin de thèse (M13a) : un timer quotidien.**
+      *Timer systemd*, chaque jour à 06 h 45 Europe/Paris (`Persistent=true`) :
+      ```
+      manage.py lifecycle_daily
+      ```
+      Expire les demandes de clôture de plus de 14 jours, termine les adhésions dues
+      d'une thèse close (rattrapage des fins manquées à la clôture, puis le
+      directeur à la fin de sa période de lecture) ; journalisé, codes seulement. La
+      relancer ne fait rien deux fois. *Vérifier* : la sortie ne contient que des
+      nombres.
+
 ## Rappels de configuration
 
 - `EMAIL_TIMEOUT = 10` (base et prod) : un serveur SMTP qui ne répond pas fait

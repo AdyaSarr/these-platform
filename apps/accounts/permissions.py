@@ -55,6 +55,9 @@ class Action(StrEnum):
     OBJECTIVE_READ = "OBJECTIVE_READ"
     OBJECTIVE_WRITE = "OBJECTIVE_WRITE"
     OBJECTIVE_COMMENT = "OBJECTIVE_COMMENT"
+    # M13a: reading the comment thread, held by the same roles as OBJECTIVE_COMMENT
+    # (which stays the right to WRITE a comment): a closed thesis keeps it readable.
+    OBJECTIVE_COMMENT_READ = "OBJECTIVE_COMMENT_READ"
     # Meetings (M5).
     MEETING_READ = "MEETING_READ"
     MEETING_WRITE = "MEETING_WRITE"
@@ -91,6 +94,10 @@ class Action(StrEnum):
     VALIDATE_ANRT = "VALIDATE_ANRT"
     VALIDATE_PUBLICATION = "VALIDATE_PUBLICATION"
     VALIDATE_MISSION_ORDER = "VALIDATE_MISSION_ORDER"  # M7
+    # End of the thesis (M13a): declare or cancel the defence (a director); request,
+    # confirm or withdraw the closure (a director or the PhD student).
+    DECLARE_DEFENSE = "DECLARE_DEFENSE"
+    REQUEST_CLOSURE = "REQUEST_CLOSURE"
 
 
 _A = Action
@@ -104,6 +111,7 @@ ROLE_ACTIONS: Mapping[Role, frozenset[Action]] = MappingProxyType(
                 _A.VIEW_THESIS, _A.VIEW_TEAM,
                 _A.INVITE_MEMBER, _A.CHANGE_ROLE, _A.REMOVE_MEMBER, _A.EXTEND_MEMBERSHIP,
                 _A.OBJECTIVE_READ, _A.OBJECTIVE_WRITE, _A.OBJECTIVE_COMMENT,  # écrire
+                _A.OBJECTIVE_COMMENT_READ,                              # M13a
                 _A.MEETING_READ, _A.MEETING_WRITE, _A.MEETING_ACKNOWLEDGE,  # écrire
                 _A.CONFERENCE_READ, _A.CONFERENCE_WRITE,                # M6
                 _A.SUBMISSION_READ, _A.SUBMISSION_WRITE,                # M6
@@ -111,12 +119,13 @@ ROLE_ACTIONS: Mapping[Role, frozenset[Action]] = MappingProxyType(
                 _A.DOCUMENT_READ, _A.DOCUMENT_WRITE, _A.DOCUMENT_COMMENT,  # écrire
                 _A.DOCUMENT_GRANT,                                      # + liste explicite
                 _A.ADMIN_FILE_READ, _A.ADMIN_FILE_WRITE, _A.CIFRE_FILE_READ,  # écrire
+                _A.REQUEST_CLOSURE,                                     # M13a
             }
         ),
         Role.DIRECTOR: frozenset(
             {
                 _A.VIEW_THESIS, _A.VIEW_TEAM,
-                _A.OBJECTIVE_READ, _A.OBJECTIVE_COMMENT,                # commenter
+                _A.OBJECTIVE_READ, _A.OBJECTIVE_COMMENT, _A.OBJECTIVE_COMMENT_READ,  # commenter
                 _A.MEETING_READ, _A.MEETING_WRITE, _A.MEETING_ACKNOWLEDGE,  # écrire
                 _A.CONFERENCE_READ, _A.CONFERENCE_WRITE, _A.SUBMISSION_READ,  # M6
                 _A.TRAVEL_READ, _A.TRAVEL_RULES_SET, _A.TRAVEL_BUDGET_SET,  # M7
@@ -124,12 +133,13 @@ ROLE_ACTIONS: Mapping[Role, frozenset[Action]] = MappingProxyType(
                 _A.DOCUMENT_READ, _A.DOCUMENT_COMMENT,                  # lire, commenter
                 _A.ADMIN_FILE_READ, _A.CIFRE_FILE_READ,                 # lire
                 _A.VALIDATE_OBJECTIVES, _A.VALIDATE_CSI, _A.VALIDATE_ANRT,  # objectifs, CSI, ANRT
+                _A.DECLARE_DEFENSE, _A.REQUEST_CLOSURE,                 # M13a
             }
         ),
         Role.CO_SUPERVISOR: frozenset(
             {
                 _A.VIEW_THESIS, _A.VIEW_TEAM,
-                _A.OBJECTIVE_READ, _A.OBJECTIVE_COMMENT,                # commenter
+                _A.OBJECTIVE_READ, _A.OBJECTIVE_COMMENT, _A.OBJECTIVE_COMMENT_READ,  # commenter
                 _A.MEETING_READ, _A.MEETING_WRITE, _A.MEETING_ACKNOWLEDGE,  # écrire
                 _A.CONFERENCE_READ, _A.CONFERENCE_WRITE, _A.SUBMISSION_READ,  # M6
                 _A.TRAVEL_READ,                                         # M7: LIRMM only
@@ -139,7 +149,7 @@ ROLE_ACTIONS: Mapping[Role, frozenset[Action]] = MappingProxyType(
         Role.INDUSTRIAL_TUTOR: frozenset(
             {
                 _A.VIEW_THESIS, _A.VIEW_TEAM,
-                _A.OBJECTIVE_READ, _A.OBJECTIVE_COMMENT,                # commenter
+                _A.OBJECTIVE_READ, _A.OBJECTIVE_COMMENT, _A.OBJECTIVE_COMMENT_READ,  # commenter
                 _A.MEETING_READ, _A.MEETING_WRITE, _A.MEETING_ACKNOWLEDGE,  # écrire
                 _A.CONFERENCE_READ, _A.CONFERENCE_WRITE, _A.SUBMISSION_READ,  # M6
                 _A.TRAVEL_READ, _A.TRAVEL_RULES_SET, _A.TRAVEL_BUDGET_SET,  # M7
@@ -154,7 +164,7 @@ ROLE_ACTIONS: Mapping[Role, frozenset[Action]] = MappingProxyType(
         Role.INDUSTRIAL_CO_SUPERVISOR: frozenset(
             {
                 _A.VIEW_THESIS, _A.VIEW_TEAM,
-                _A.OBJECTIVE_READ, _A.OBJECTIVE_COMMENT,                # commenter
+                _A.OBJECTIVE_READ, _A.OBJECTIVE_COMMENT, _A.OBJECTIVE_COMMENT_READ,  # commenter
                 _A.MEETING_READ, _A.MEETING_WRITE, _A.MEETING_ACKNOWLEDGE,  # écrire
                 _A.CONFERENCE_READ, _A.CONFERENCE_WRITE, _A.SUBMISSION_READ,  # M6
                 _A.TRAVEL_READ,                                         # M7: Rousset only
@@ -191,6 +201,42 @@ LEVEL_ROLES: Mapping[ConfidentialityLevel, frozenset[Role]] = MappingProxyType(
 )
 
 
+# --------------------------------------------------------------------------- status (M13a)
+# docs/modules/M13-fin-de-these.md, « Garde de statut ». A read never depends on the
+# status; a write is allowed in SETUP and ACTIVE, in DEFENDED only for the whitelist
+# (documents, conferences and ST approvals, receipts of earlier missions, the end of
+# a membership, the lifecycle itself), never in CLOSED. A write refused for the
+# status is a refusal of right: same exception, same journal line, same 403.
+
+READ_ACTIONS: frozenset[Action] = frozenset(
+    {
+        _A.VIEW_THESIS, _A.VIEW_TEAM,
+        _A.OBJECTIVE_READ, _A.OBJECTIVE_COMMENT_READ, _A.MEETING_READ,
+        _A.CONFERENCE_READ, _A.SUBMISSION_READ, _A.TRAVEL_READ, _A.DOCUMENT_READ,
+        _A.ADMIN_FILE_READ, _A.CIFRE_FILE_READ, _A.CSI_FILE_READ, _A.CSI_REPORT_READ,
+    }
+)  # fmt: skip
+_WRITES = frozenset(Action) - READ_ACTIONS
+_S = Thesis.Status
+
+WRITES_BY_STATUS: Mapping[str, frozenset[Action]] = MappingProxyType(
+    {
+        _S.SETUP: _WRITES,
+        _S.ACTIVE: _WRITES,
+        _S.DEFENDED: frozenset(
+            {
+                _A.DOCUMENT_WRITE, _A.DOCUMENT_COMMENT, _A.DOCUMENT_GRANT,      # M2
+                _A.CONFERENCE_WRITE, _A.SUBMISSION_WRITE, _A.VALIDATE_PUBLICATION,  # M6
+                _A.TRAVEL_WRITE,  # M7: receipts and actual amounts only (travel.services)
+                _A.REMOVE_MEMBER,                                           # M1
+                _A.DECLARE_DEFENSE, _A.REQUEST_CLOSURE,                     # M13a
+            }
+        ),
+        _S.CLOSED: frozenset(),
+    }
+)  # fmt: skip
+
+
 class ThesisOwned(Protocol):
     @property
     def thesis(self) -> Thesis: ...
@@ -223,21 +269,43 @@ def actions_for(roles: Iterable[Role]) -> frozenset[Action]:
     return frozenset().union(*(ROLE_ACTIONS[role] for role in roles))
 
 
+def _permitted(user: AnyUser, thesis: Thesis) -> frozenset[Action]:
+    """The rights of the roles ``user`` holds, narrowed by the thesis status (M13a).
+
+    One query: the roles and the status are read together from the database, never
+    from the ``Thesis`` object in memory (it may be stale). An unknown status
+    allows no write.
+    """
+    if not user.is_authenticated or not user.is_active or thesis.pk is None:
+        return frozenset()
+    rows = list(
+        Membership.objects.active()
+        .filter(user_id=user.pk, thesis_id=thesis.pk)
+        .values_list("role", "thesis__status")
+    )
+    if not rows:
+        return frozenset()
+    rights = actions_for(Role(role) for role, _status in rows)
+    writes = WRITES_BY_STATUS.get(rows[0][1], frozenset())
+    return frozenset(a for a in rights if a in READ_ACTIONS or a in writes)
+
+
 def can(user: AnyUser, action: Action, obj: Thesis | ThesisOwned) -> bool:
-    """Whether ``user`` may perform ``action`` on ``obj`` (a thesis or an object of one)."""
+    """Whether ``user`` may perform ``action`` on ``obj`` (a thesis or an object of one):
+    the right of a role held now, and the status of the thesis (M13a)."""
     if not isinstance(action, Action):
         return False
     thesis = _thesis_of(obj)
     if thesis is None:
         return False
-    return action in actions_for(roles_of(user, thesis))
+    return action in _permitted(user, thesis)
 
 
 def allowed_actions(user: AnyUser, thesis: Thesis) -> frozenset[Action]:
     """Every action ``user`` may perform on ``thesis``: one query for a whole page."""
     if _thesis_of(thesis) is None:
         return frozenset()
-    return actions_for(roles_of(user, thesis))
+    return _permitted(user, thesis)
 
 
 def can_access_level(user: AnyUser, thesis: Thesis, level: ConfidentialityLevel) -> bool:

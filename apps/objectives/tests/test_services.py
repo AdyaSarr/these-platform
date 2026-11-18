@@ -172,10 +172,9 @@ def test_texts_are_stripped_and_nfc_normalized(team: SimpleNamespace) -> None:
 def test_a_finished_thesis_freezes_its_objectives(team: SimpleNamespace) -> None:
     objective = objective_of(team)
     Thesis.objects.filter(pk=team.thesis.pk).update(status=Thesis.Status.DEFENDED)
-    with pytest.raises(ValidationError) as caught:
+    with pytest.raises(PermissionDenied):  # M13a: the status gate of can()
         objective_of(team)
-    assert caught.value.code == "frozen"
-    with pytest.raises(ValidationError):
+    with pytest.raises(PermissionDenied):
         _revise(team, objective, title="Nouveau titre fictif")
 
 
