@@ -3,6 +3,8 @@ allauth flows end to end (transaction=True: commits as in production)."""
 
 import datetime as dt
 import secrets
+from collections.abc import Iterator
+from contextlib import contextmanager
 from io import StringIO
 from typing import Any
 
@@ -11,6 +13,7 @@ from allauth.mfa.models import Authenticator
 from allauth.mfa.recovery_codes.internal.auth import RecoveryCodes
 from allauth.mfa.totp.internal.auth import SECRET_SESSION_KEY
 from django.core.management import call_command
+from django.db import connection
 from django.test import Client
 from django.urls import reverse
 
@@ -24,6 +27,32 @@ T0 = dt.datetime(2026, 12, 1, 10, 0, tzinfo=dt.UTC)
 
 
 # --------------------------------------------------------------------------- deploy check
+
+
+@contextmanager
+def as_application_role(*member_of: str) -> Iterator[str]:
+    """Run as a role like the one docs/DEPLOYMENT.md asks for: not superuser, owner
+    of nothing, SELECT and INSERT only on the append-only tables. Created inside
+    the test's transaction (CREATE ROLE is transactional): rolled back with it."""
+    q = connection.ops.quote_name
+    name = q(f"app_{secrets.token_hex(6)}")
+    with connection.cursor() as cursor:
+        cursor.execute(f"CREATE ROLE {name} NOLOGIN")
+        cursor.execute(
+            f"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO {name}"
+        )
+        cursor.execute(
+            f"REVOKE UPDATE, DELETE ON vault_auditevent, vault_auditcheckpoint FROM {name}"
+        )
+        cursor.execute(f"GRANT USAGE ON ALL SEQUENCES IN SCHEMA public TO {name}")
+        for role in member_of:
+            cursor.execute(f"GRANT {q(role)} TO {name}")
+        cursor.execute(f"SET LOCAL ROLE {name}")
+    try:
+        yield name.strip('"')
+    finally:
+        with connection.cursor() as cursor:
+            cursor.execute("RESET ROLE")
 
 
 @pytest.mark.django_db
@@ -53,8 +82,12 @@ def test_deploy_check_fails_on_a_broken_round_trip(monkeypatch: pytest.MonkeyPat
 
 @pytest.mark.django_db
 def test_check_command_runs_it_with_deploy_and_database() -> None:
+    """As in production: the application's role is neither superuser nor owner
+    (vault.E003); the test database's own role is both."""
     out = StringIO()
-    call_command("check", "--deploy", "--database", "default", "--tag", "database", stdout=out)
+    with as_application_role():
+        call_command("check", "--deploy", "--database", "default", "--tag", "database",
+                     stdout=out)  # fmt: skip
     assert "no issues" in out.getvalue()
 
 
@@ -194,3 +227,57 @@ def test_missing_kek_domains_are_reported() -> None:
     assert "vault_init" in (error.hint or "")
     assert "CONFIDENTIAL" in error.msg
     assert "PUBLIC" not in error.msg
+
+
+# --------------------------------------------------------------------------- vault.E003 (SR-07)
+
+
+def _owner_of(table: str) -> str:
+    with connection.cursor() as cursor:
+        cursor.execute("SELECT tableowner FROM pg_tables WHERE tablename = %s", [table])
+        (owner,) = cursor.fetchone()
+    return str(owner)
+
+
+def test_the_role_check_needs_the_database_option() -> None:
+    assert checks.role_cannot_bypass_the_append_only_triggers(None, databases=None) == []
+
+
+@pytest.mark.django_db
+def test_the_test_database_role_is_reported() -> None:
+    """The test role (docker-compose) is superuser and owner: the check fires."""
+    errors = checks.role_cannot_bypass_the_append_only_triggers(None, databases=["default"])
+    assert [e.id for e in errors] == ["vault.E003"]
+    assert "superuser" in errors[0].msg
+    assert "vault_auditevent" in errors[0].msg and "vault_auditcheckpoint" in errors[0].msg
+
+
+@pytest.mark.django_db
+def test_an_application_role_passes() -> None:
+    with as_application_role():
+        assert checks.role_cannot_bypass_the_append_only_triggers(None, databases=["default"]) == []
+
+
+@pytest.mark.django_db
+def test_a_member_of_the_owner_role_is_reported() -> None:
+    """A member may SET ROLE to the owner, then ALTER TABLE ... DISABLE TRIGGER."""
+    with as_application_role(_owner_of("vault_auditevent")):
+        (error,) = checks.role_cannot_bypass_the_append_only_triggers(None, databases=["default"])
+    assert error.id == "vault.E003"
+    assert "superuser" not in error.msg
+    assert "vault_auditevent" in error.msg
+
+
+@pytest.mark.django_db
+def test_the_owner_of_one_table_is_reported() -> None:
+    with as_application_role() as role, connection.cursor() as cursor:
+        cursor.execute("RESET ROLE")
+        cursor.execute(
+            f"ALTER TABLE vault_auditcheckpoint OWNER TO {connection.ops.quote_name(role)}"
+        )
+        cursor.execute(f"SET LOCAL ROLE {connection.ops.quote_name(role)}")
+        (error,) = checks.role_cannot_bypass_the_append_only_triggers(None, databases=["default"])
+    assert error.id == "vault.E003"
+    assert "vault_auditcheckpoint" in error.msg
+    assert "vault_auditevent" not in error.msg
+    assert "superuser" not in error.msg

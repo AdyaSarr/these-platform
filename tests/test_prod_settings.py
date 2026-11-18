@@ -185,7 +185,6 @@ def test_a_missing_or_unusable_variable_has_a_clear_message(
 @pytest.mark.parametrize(
     "email_url",
     [
-        "smtp://smtp.example.org:25",
         "smtp+tls://u:p@smtp.example.org:587",  # pragma: allowlist secret
         "smtp+ssl://u:p@smtp.example.org:465",  # pragma: allowlist secret
     ],
@@ -193,6 +192,56 @@ def test_a_missing_or_unusable_variable_has_a_clear_message(
 def test_every_smtp_url_is_accepted(email_url: str) -> None:
     result = run_python("import django; django.setup()", prod_env(EMAIL_URL=email_url))
     assert result.returncode == 0, result.stderr
+
+
+@pytest.mark.parametrize(
+    "email_url",
+    [
+        "smtp://smtp.example.org:25",
+        "smtp://u:p@smtp.example.org:587",  # pragma: allowlist secret
+    ],
+)
+def test_smtp_without_tls_is_refused(email_url: str) -> None:
+    """SR-03: invitation and reset links (bearer tokens) never cross in clear."""
+    result = run_python("import django; django.setup()", prod_env(EMAIL_URL=email_url))
+    assert result.returncode != 0
+    last = result.stderr.strip().splitlines()[-1]
+    assert last.startswith("django.core.exceptions.ImproperlyConfigured: EMAIL_URL"), last
+    assert "smtp+tls://" in last and "smtp+ssl://" in last, last
+    assert "u:p@" not in result.stderr
+
+
+_CLIENT_IP = """
+import json, django
+django.setup()
+from allauth.account.adapter import get_adapter
+from django.test import RequestFactory
+from apps.vault import crypto
+from apps.vault.audit import client_ip
+from apps.feeds import throttle
+rf = RequestFactory()
+proxy = "127.0.0.1"
+forged = rf.get("/", REMOTE_ADDR=proxy, HTTP_X_FORWARDED_FOR="198.51.100.66, 203.0.113.9")
+direct = rf.get("/", REMOTE_ADDR=proxy, HTTP_X_FORWARDED_FOR="203.0.113.10")
+print(json.dumps({
+    "allauth": get_adapter(forged).get_client_ip(forged),
+    "ours": client_ip(forged),
+    "other": client_ip(direct),
+    "uses": throttle.client_ip is client_ip,
+}))
+"""
+
+
+def test_behind_the_proxy_the_client_address_is_the_one_the_proxy_appended() -> None:
+    """SR-02: one proxy (Caddy) is trusted; its X-Forwarded-For entry is the client.
+    allauth's limits, the audit ip_hash and the iCal limit read the same function."""
+    result = run_python(_CLIENT_IP, prod_env())
+    assert result.returncode == 0, result.stderr
+    import json
+
+    out = json.loads(result.stdout.strip().splitlines()[-1])
+    assert out == {"allauth": "203.0.113.9", "ours": "203.0.113.9", "other": "203.0.113.10",
+                   "uses": True}  # fmt: skip
 
 
 def test_the_message_never_echoes_a_secret() -> None:

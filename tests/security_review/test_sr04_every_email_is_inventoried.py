@@ -10,13 +10,13 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-import pytest
+from apps.core.tests.test_delivery import DIRECT_SENDERS, MAIL_API_READERS
 
 ROOT = Path(__file__).resolve().parents[2]
-DECLARED: set[str] = {"apps/core/delivery.py"}  # the reviewed list (empty but delivery)
+# The reviewed lists of the static guard (fixed: apps/core/tests/test_delivery.py).
+DECLARED: set[str] = set(DIRECT_SENDERS) | set(MAIL_API_READERS)
 
 
-@pytest.mark.xfail(strict=True, reason="SR-04: senders outside deliver_once are not declared")
 def test_sr04_no_undeclared_sender() -> None:
     senders = {
         path.relative_to(ROOT).as_posix()

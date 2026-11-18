@@ -210,3 +210,60 @@ def test_values_outside_the_canonical_json_subset_are_refused(value: Any) -> Non
 @pytest.mark.parametrize("value", [2**53 - 1, -(2**53 - 1), 0, True, False, None, "1.5"])
 def test_values_inside_the_subset_are_accepted(value: Any) -> None:
     assert audit(A.MEMBER_ROLE_CHANGED, count=value).details_json == {"count": value}
+
+
+# --------------------------------------------------------------------------- client address (SR-02)
+
+
+@pytest.mark.parametrize(
+    ("forwarded", "expected"),
+    [("203.0.113.9", "203.0.113.9"), ("198.51.100.66, 203.0.113.9", "203.0.113.9")],
+)
+def test_behind_one_proxy_the_audit_hashes_the_address_it_appended(
+    settings: Any, forwarded: str, expected: str
+) -> None:
+    """The client may forge the first entries; the one appended by the proxy counts."""
+    settings.ALLAUTH_TRUSTED_PROXY_COUNT = 1
+    request = RequestFactory().get("/", REMOTE_ADDR="127.0.0.1", HTTP_X_FORWARDED_FOR=forwarded)
+    event = audit(A.LOGIN_FAILED, request=request)
+    assert event.ip_hash == crypto.pseudonym(expected, purpose="ip")
+
+
+def test_without_a_trusted_proxy_x_forwarded_for_is_ignored() -> None:
+    request = RequestFactory().get("/", REMOTE_ADDR="192.0.2.7", HTTP_X_FORWARDED_FOR="203.0.113.9")
+    assert audit(A.LOGIN_FAILED, request=request).ip_hash == crypto.pseudonym(
+        "192.0.2.7", purpose="ip"
+    )
+
+
+def test_client_ip_is_allauths_then_canonical(settings: Any) -> None:
+    from allauth.account.adapter import get_adapter
+
+    from apps.vault.services import canonical_ip, client_ip
+
+    settings.ALLAUTH_TRUSTED_PROXY_COUNT = 1
+    rf = RequestFactory()
+    for forwarded in ("203.0.113.9", "2001:DB8::1", "::ffff:192.0.2.7"):
+        request = rf.get("/", REMOTE_ADDR="127.0.0.1", HTTP_X_FORWARDED_FOR=forwarded)
+        assert client_ip(request) == canonical_ip(get_adapter(request).get_client_ip(request))
+    mapped = rf.get("/", REMOTE_ADDR="127.0.0.1", HTTP_X_FORWARDED_FOR="::ffff:192.0.2.7")
+    assert client_ip(mapped) == "192.0.2.7"
+    assert client_ip(rf.get("/", REMOTE_ADDR="not-an-address")) == ""
+
+
+def test_an_unreadable_address_gives_no_ip_hash() -> None:
+    request = RequestFactory().get("/", REMOTE_ADDR="not-an-address")
+    assert audit(A.LOGIN_FAILED, request=request).ip_hash == ""
+
+
+def test_no_code_reads_remote_addr_but_client_ip() -> None:
+    """Static guard: one function gives the client address to every reader."""
+    from pathlib import Path
+
+    apps = Path(__file__).resolve().parents[2]
+    readers = sorted(
+        str(p.relative_to(apps))
+        for p in apps.rglob("*.py")
+        if "tests" not in p.parts and "REMOTE_ADDR" in p.read_text(encoding="utf-8")
+    )
+    assert readers == []
