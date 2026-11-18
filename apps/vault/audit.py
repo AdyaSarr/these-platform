@@ -317,6 +317,26 @@ def canonical_ip(raw: str) -> str:
     return str(address)
 
 
+def client_ip(request: Any) -> str:
+    """The client's address, in canonical form.
+
+    The one function for every reader of the address (the audit ip_hash, the iCal
+    limit per address): it asks allauth's adapter, as allauth's own rate limits do,
+    so all of them trust the same proxy (ALLAUTH_TRUSTED_PROXY_COUNT, prod.py) and
+    read the same entry of X-Forwarded-For (SR-02); without a trusted proxy, the
+    peer address. When allauth finds no valid address, the peer address is kept as
+    text (canonical_ip), so a request always gets a pseudonym, as before.
+    """
+    from allauth.account.adapter import get_adapter
+    from django.core.exceptions import PermissionDenied
+
+    try:
+        raw = get_adapter(request).get_client_ip(request)
+    except PermissionDenied:  # allauth: no valid address
+        raw = request.META.get("REMOTE_ADDR") or ""
+    return canonical_ip(raw)
+
+
 def _thesis_of(obj: object) -> Thesis | None:
     candidate = obj if isinstance(obj, Thesis) else getattr(obj, "thesis", None)
     return candidate if isinstance(candidate, Thesis) else None
@@ -365,7 +385,7 @@ def audit(
     for path, text in (("action", action.value), ("object_type", object_type)):
         check_text(text, path)
     check_text(object_id, "object_id")
-    ip = canonical_ip(request.META.get("REMOTE_ADDR") or "") if request is not None else ""
+    ip = client_ip(request) if request is not None else ""
 
     with transaction.atomic():
         # Last lock of the transaction (vault.locks); serializes the writers.

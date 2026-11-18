@@ -13,7 +13,8 @@
   <link rel="stylesheet" href="{% static 'css/base.css' %}">
   <link rel="stylesheet" href="{% static 'css/layout.css' %}">
   <link rel="stylesheet" href="{% static 'css/components.css' %}">
-  <script src="{% static 'vendor/htmx/htmx.min.js' %}" defer></script>
+  {# integrity: the line of static/vendor/SHA384SUMS (tests/test_ui_static.py checks both). #}
+  <script src="{% static 'vendor/htmx/htmx.min.js' %}" integrity="sha384-2OatzQy1H+Zd/IIrjr1TcuDGqLXeHhbooAyJY1KdQMKnr4LZ22k31GBLdYKHmVjg" defer></script>{# pragma: allowlist secret #}
 </head>
 {# htmx sends the CSRF token as a header on every non-GET request. #}
 <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>

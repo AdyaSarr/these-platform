@@ -11,8 +11,12 @@ has the same fields (status, attempts, sent_at, recipient).
 from __future__ import annotations
 
 import logging
+import re
 import smtplib
-from typing import Any
+from collections.abc import Mapping
+from pathlib import Path
+from types import MappingProxyType
+from typing import Any, Final
 from unittest import mock
 
 import pytest
@@ -183,7 +187,7 @@ def test_the_thesis_says_whether_it_is_open() -> None:
     ]
 
 
-NOTIFYING_MODULES = ("admin_file", "meetings", "conferences", "travel", "activity")
+NOTIFYING_MODULES = ("admin_file", "meetings", "conferences", "travel", "activity", "lifecycle")
 
 
 @pytest.mark.parametrize("module", NOTIFYING_MODULES)
@@ -199,3 +203,88 @@ def test_every_notification_task_goes_through_the_shared_delivery(module: str) -
     notifications = importlib.import_module(f"apps.{module}.notifications")
     for name in ("concerned", "still_due", "skip_reason"):
         assert callable(getattr(notifications, name, None)), (module, name)
+
+
+# --------------------------------------------------------------------------- every sender (SR-04)
+
+APPS = Path(__file__).resolve().parents[2]
+ROOT = APPS.parent
+# Any use of Django's or Python's mail API, call or not.
+MAIL_API = re.compile(
+    r"\b(send_mail|send_mass_mail|mail_admins|mail_managers|EmailMessage|"
+    r"EmailMultiAlternatives|get_connection|smtplib)\b"
+)
+# A call that sends (or builds a message to send).
+SEND_CALL = re.compile(
+    r"\b(send_mail|send_mass_mail|mail_admins|mail_managers|EmailMessage|"
+    r"EmailMultiAlternatives)\s*\("
+)
+
+# Closed list of the files that send e-mail without apps.core.delivery.deliver_once.
+# A new entry is a reviewed decision (docs/security/revue-2026-11.md, SR-04).
+DIRECT_SENDERS: Final[Mapping[str, str]] = MappingProxyType(
+    {
+        # The shared delivery itself: the send-time checks of every notification module.
+        "apps/core/delivery.py": "deliver_once",
+        # Invitation and password-reset links: a request of the person, sent at once,
+        # nothing to re-check later (no thesis state, no recurring row).
+        "apps/accounts/tasks.py": "invitation and password-reset links",
+        # Weekly audit checkpoint to the PHD_STUDENT only: the one exception of rule 7
+        # (seq, hash, signature, timestamp), docs/decisions.md.
+        "apps/vault/tasks.py": "audit checkpoint",
+    }
+)
+# Files that use the mail API without sending anything: closed list as well.
+MAIL_API_READERS: Final[Mapping[str, str]] = MappingProxyType(
+    {
+        # The demonstration reads the in-memory (locmem) outbox to take the links that
+        # accounts.tasks sent; mail.EmailMessage appears in type annotations only.
+        "apps/demo/scenario.py": "reads the locmem outbox",
+    }
+)
+
+
+def _mail_api_users() -> set[str]:
+    return {
+        path.relative_to(ROOT).as_posix()
+        for path in APPS.rglob("*.py")
+        if "tests" not in path.parts and "migrations" not in path.parts
+        and MAIL_API.search(path.read_text(encoding="utf-8"))
+    }  # fmt: skip
+
+
+def test_every_use_of_the_mail_api_is_declared() -> None:
+    """Static guard over the whole of apps/, not a list of modules: a new sender
+    anywhere fails here until it is reviewed and declared."""
+    found = _mail_api_users()
+    declared = set(DIRECT_SENDERS) | set(MAIL_API_READERS)
+    assert found - declared == set(), "undeclared"
+    assert declared - found == set(), "stale entry: no use of the mail API any more"
+
+
+@pytest.mark.parametrize("path", sorted(DIRECT_SENDERS))
+def test_every_declared_sender_still_sends(path: str) -> None:
+    """No stale exception: an entry that no longer sends must leave the list."""
+    assert SEND_CALL.search((ROOT / path).read_text(encoding="utf-8")), path
+
+
+@pytest.mark.parametrize("path", sorted(MAIL_API_READERS))
+def test_a_declared_reader_sends_nothing_and_still_reads(path: str) -> None:
+    source = (ROOT / path).read_text(encoding="utf-8")
+    assert not SEND_CALL.search(source), path
+    assert "mail.outbox" in source, path
+
+
+def test_every_module_that_delivers_is_in_the_notifying_list() -> None:
+    delivering = {
+        path.parent.name
+        for path in APPS.glob("*/tasks.py")
+        if "deliver_once(" in path.read_text(encoding="utf-8")
+    }
+    assert delivering == set(NOTIFYING_MODULES)
+
+
+def test_the_send_call_pattern_sees_what_it_must() -> None:
+    assert SEND_CALL.search("        send_mail(subject, body, None, [to])")
+    assert SEND_CALL.search("EmailMultiAlternatives (subject)")
+    assert not SEND_CALL.search("outbox: list[mail.EmailMessage]")

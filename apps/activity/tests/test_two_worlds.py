@@ -134,9 +134,13 @@ def _state(team: SimpleNamespace, role: Role, user: Any) -> tuple[Any, ...]:
     for target in _surfaces(team, role):
         response = client.get(target)
         body = _CSRF.sub(r'\1"-"', response.content.decode())
+        # Not vacuous (SR-05): every surface is a rendered page with the bell, so
+        # no comparison is of "" with "" (a 403, a redirect, a page without bell).
+        assert response.status_code == 200, (target, response.status_code)
+        match = _BELL.search(body)
+        assert match is not None, target
         if "activity/" not in target:  # another module's page: its bell only
-            match = _BELL.search(body)
-            body = match.group(0) if match else ""
+            body = match.group(0)
         pages.append((target, response.status_code, body))
     digests.run()
     e_mails = [(m.subject, m.body) for m in mail.outbox if user.email in m.to]

@@ -149,6 +149,9 @@ ACCOUNT_EMAIL_UNKNOWN_ACCOUNTS = False
 ACCOUNT_LOGIN_BY_CODE_ENABLED = False
 ACCOUNT_PASSWORD_RESET_BY_CODE_ENABLED = False
 ACCOUNT_LOGIN_ON_PASSWORD_RESET = False  # a reset never bypasses the second factor
+# One hour (Django's default: three days, SR-08). allauth's reset tokens come from
+# a subclass of Django's PasswordResetTokenGenerator, whose check_token reads it.
+PASSWORD_RESET_TIMEOUT = 3600
 ACCOUNT_SESSION_REMEMBER = False
 ACCOUNT_EMAIL_SUBJECT_PREFIX = ""
 # Re-authentication: password or second factor (never a code sent by e-mail).
@@ -183,7 +186,10 @@ MFA_ENCRYPTION_REQUIRED = False
 CACHES = {"default": {"BACKEND": "django.core.cache.backends.locmem.LocMemCache"}}
 
 # --------------------------------------------------------------------------- sessions & cookies
-SESSION_COOKIE_AGE = 8 * 3600
+SESSION_COOKIE_AGE = 8 * 3600  # still enforced by the server (expire_date)
+# No persistent cookie: on a shared computer, closing the browser ends the session
+# (SR-18). allauth already asks it at password login (ACCOUNT_SESSION_REMEMBER).
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Strict"
 CSRF_COOKIE_SAMESITE = "Strict"

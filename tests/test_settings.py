@@ -34,6 +34,22 @@ def test_session_defaults() -> None:
     assert settings.SESSION_COOKIE_HTTPONLY is True
 
 
+def test_the_session_ends_with_the_browser() -> None:
+    """SR-18: a shared computer does not hand the session to the next person."""
+    assert settings.SESSION_EXPIRE_AT_BROWSER_CLOSE is True
+
+
+def test_a_password_reset_link_lasts_one_hour() -> None:
+    """SR-08 (Django's default: three days)."""
+    assert settings.PASSWORD_RESET_TIMEOUT == 3600
+
+
+def test_no_proxy_is_trusted_outside_prod() -> None:
+    """SR-02: without a proxy, X-Forwarded-For comes from the client itself."""
+    assert getattr(settings, "ALLAUTH_TRUSTED_PROXY_COUNT", 0) == 0
+    assert getattr(settings, "ALLAUTH_TRUSTED_CLIENT_IP_HEADER", None) is None
+
+
 def test_cookie_names_are_default_outside_prod() -> None:
     """__Host- needs HTTPS, so it is set in prod.py only (docs/decisions.md)."""
     assert not hasattr(base, "SESSION_COOKIE_NAME")

@@ -368,3 +368,48 @@ def test_manifest_fingerprint_is_recorded_in_decisions() -> None:
 def test_vendored_licences_are_present() -> None:
     assert (VENDOR / "inter" / "OFL.txt").is_file()
     assert (VENDOR / "lucide" / "LICENSE").is_file()
+
+
+# --------------------------------------------------------------------------- SRI (SR-11)
+
+SCRIPT_TAG = re.compile(r"<script\b[^>]*\bsrc=[^>]*>", re.S)
+VENDOR_SRC = re.compile(r"""\{% static ['"]vendor/([^'"]+)['"] %\}""")
+INTEGRITY = re.compile(r'\bintegrity="(sha384-[A-Za-z0-9+/=]+)"')
+
+
+def _manifest() -> dict[str, str]:
+    lines = MANIFEST.read_text(encoding="utf-8").splitlines()
+    return {name: digest for digest, name in (line.split("  ", 1) for line in lines)}
+
+
+def _script_tags() -> list[tuple[Path, str]]:
+    return [
+        (path, tag)
+        for path in sorted((BASE_DIR / "templates").rglob("*.html"))
+        for tag in SCRIPT_TAG.findall(path.read_text(encoding="utf-8"))
+    ]
+
+
+def test_every_vendored_script_has_the_integrity_of_the_manifest() -> None:
+    """The browser checks the file too, not only the tests (SR-11)."""
+    tags = _script_tags()
+    assert tags  # not vacuous: base.html loads htmx
+    manifest = _manifest()
+    for path, tag in tags:
+        source, integrity = VENDOR_SRC.search(tag), INTEGRITY.search(tag)
+        assert source and integrity, (path, tag)
+        assert integrity.group(1) == manifest[source.group(1)] == _sha384(VENDOR / source.group(1))
+
+
+def test_the_manifest_storage_leaves_htmx_unchanged() -> None:
+    """ManifestStaticFilesStorage (prod) rewrites source maps and imports of a .js
+    file: htmx has neither, so the served bytes keep the digest."""
+    text = (VENDOR / "htmx" / "htmx.min.js").read_text(encoding="utf-8")
+    assert "sourceMappingURL" not in text
+    assert not re.search(r"\bimport\s*[\"'{*]|\bexport\s", text)
+
+
+@pytest.mark.django_db
+def test_the_rendered_page_carries_the_integrity(client: Client) -> None:
+    body = client.get(reverse("account_login")).content.decode()
+    assert f'integrity="{_manifest()["htmx/htmx.min.js"]}"' in body
