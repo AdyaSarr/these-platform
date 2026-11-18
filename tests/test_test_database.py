@@ -239,11 +239,12 @@ def test_the_development_server_keeps_its_volume_and_the_same_image() -> None:
     assert re.search(r"^    volumes:\n      - pgdata:/var/lib/postgresql/data$", services["db"],
                      flags=re.MULTILINE)  # fmt: skip
     image = re.compile(r"^    image: (\S+)$", re.MULTILINE)
-    assert (
-        image.findall(services["db-test"])
-        == image.findall(services["db"])
-        == ["postgres:16-alpine"]
-    )
+    # Pinned by digest (SR-17): a moving tag would change the server under the tests.
+    (pinned,) = image.findall(services["db"])
+    assert image.findall(services["db-test"]) == [pinned]
+    assert re.fullmatch(r"postgres:16-alpine@sha256:[0-9a-f]{64}", pinned), pinned
+    (redis,) = image.findall(services["redis"])
+    assert re.fullmatch(r"redis:7-alpine@sha256:[0-9a-f]{64}", redis), redis
     assert '"127.0.0.1:5433:5432"' in services["db-test"]  # local only, beside db
     assert "${TEST_POSTGRES_PASSWORD:?" in services["db-test"]
 
