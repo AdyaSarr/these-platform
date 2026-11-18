@@ -47,7 +47,7 @@
   fieldset { border: 1px solid var(--border); border-radius: var(--radius); padding: var(--space-4); }
   legend { font-weight: 650; padding-inline: var(--space-1); }
 
-  table { border-collapse: collapse; width: 100%; }
+  table, .table { border-collapse: collapse; width: 100%; }
   th { text-align: left; font-weight: 600; }
 
   progress {
@@ -72,14 +72,9 @@
      white background in both themes, for the authenticator app. */
   .stack { display: grid; gap: var(--space-4); max-width: 26rem; padding: 0; list-style: none; }
   .stack label { display: block; font-weight: 550; margin-bottom: var(--space-1); }
-    .actions { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
+  .actions, .btn-row, .page-actions, .item-inline { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
   .actions form { display: flex; gap: var(--space-2); align-items: center; margin: 0; }
   .delivery-not_sent, .delivery-failed { color: var(--error); font-weight: 600; }
-    button.danger, button.btn-danger {
-    color: var(--danger-solid-fg);
-    background: var(--danger-solid);
-    border-color: var(--danger-solid);
-  }
   button.danger:hover, button.btn-danger:hover { background: var(--danger-solid-hover); }
     .item {
     background: var(--surface);
@@ -110,7 +105,7 @@
     border-radius: var(--radius);
     padding: var(--space-2) var(--space-3);
   }
-  .stats dt { color: var(--muted); font-size: var(--text-sm); }
+  .stats dt, .progress-label, .member-facts dt { color: var(--muted); font-size: var(--text-sm); }
   .stats dd { margin: 0; font-size: 1.4rem; font-weight: 650; font-variant-numeric: tabular-nums; }
   .stats dd.helptext { font-size: 0.85rem; font-weight: normal; color: var(--muted); }
   .revisions, .progress-list, .comment-list { padding-left: 1.25rem; }
@@ -157,14 +152,13 @@
     border-color: transparent;
   }
   .btn-ghost:hover, a.btn-ghost:hover { background: var(--accent-soft); border-color: transparent; }
-  .btn-danger, a.btn-danger {
+  .btn-danger, a.btn-danger, button.danger, button.btn-danger {
     color: var(--danger-solid-fg);
     background: var(--danger-solid);
     border-color: var(--danger-solid);
   }
   .btn-danger:hover, a.btn-danger:hover { background: var(--danger-solid-hover); border-color: var(--danger-solid-hover); }
   .btn-sm { min-height: 2rem; padding: var(--space-1) var(--space-3); font-size: var(--text-sm); }
-  .btn-row { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
   .btn-row form { margin: 0; }
 
   /* ---------------------------------------------------------------- cards */
@@ -259,15 +253,11 @@
     white-space: nowrap;
   }
   .badge .icon { width: 1em; height: 1em; }
-  .badge-success { color: var(--success-fg); background: var(--success-bg); border-color: var(--success-border); }
-  .badge-warning { color: var(--warning-fg); background: var(--warning-bg); border-color: var(--warning-border); }
-  .badge-danger { color: var(--danger-fg); background: var(--danger-bg); border-color: var(--danger-border); }
   .badge-info { color: var(--info-fg); background: var(--info-bg); border-color: var(--info-border); }
   .badge-neutral { color: var(--fg); background: var(--surface-2); border-color: var(--border); }
 
   /* ---------------------------------------------------------------- tables */
   .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
-  .table { border-collapse: collapse; width: 100%; }
   .table th, .table td {
     padding: var(--space-3) var(--space-4);
     border-bottom: 1px solid var(--border);
@@ -320,15 +310,14 @@
     border-radius: var(--radius-sm);
   }
   .message > *, .alert > * { margin: 0; }
-  .message-success, .alert-success { color: var(--success-fg); background: var(--success-bg); border-color: var(--success-border); }
-  .message-warning, .alert-warning { color: var(--warning-fg); background: var(--warning-bg); border-color: var(--warning-border); }
-  .message-error, .alert-danger { color: var(--danger-fg); background: var(--danger-bg); border-color: var(--danger-border); }
+  .message-success, .alert-success, .badge-success { color: var(--success-fg); background: var(--success-bg); border-color: var(--success-border); }
+  .message-warning, .alert-warning, .badge-warning { color: var(--warning-fg); background: var(--warning-bg); border-color: var(--warning-border); }
+  .message-error, .alert-danger, .badge-danger { color: var(--danger-fg); background: var(--danger-bg); border-color: var(--danger-border); }
   .alert .icon { margin-top: 0.15em; }
   .alert-title { font-weight: 650; }
 
   /* ---------------------------------------------------------------- progress */
   .progress { display: grid; gap: var(--space-1); }
-  .progress-label { font-size: var(--text-sm); color: var(--muted); }
 
   /* ---------------------------------------------------------------- empty states */
   .empty {
@@ -390,11 +379,11 @@
   .confirm-panel p { margin-bottom: var(--space-3); }
   .confirm-panel form { margin: 0; }
 
-  /* ---------------------------------------------------------------- bell (M11a) */
+  /* ---------------------------------------------------------------- bell, activity (M11a) */
   .bell { position: relative; }
   .bell-menu > summary { display: inline-flex; gap: var(--space-1); align-items: center; list-style: none; cursor: pointer; }
   .bell-menu > summary::-webkit-details-marker { display: none; }
-  .bell-count { font-weight: 600; }
+  .bell-count { min-width: 1.5em; padding: 0 0.35em; border-radius: 999px; background: var(--accent); color: var(--accent-fg); font-size: var(--text-sm); font-weight: 650; text-align: center; }
   .bell-panel {
     position: absolute;
     inset-inline-end: 0;
@@ -407,6 +396,16 @@
     border-radius: var(--radius-sm);
     box-shadow: var(--shadow);
   }
+
+  .activity-list li + li { border-top: 1px solid var(--border); }
+  .activity-row { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0 var(--space-2); padding: var(--space-2); color: inherit; text-decoration: none; }
+  .activity-row:hover { background: var(--surface-2); }
+  .activity-row .icon { grid-row: span 2; color: var(--muted); }
+  .activity-row span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .activity-meta, .activity-group { font-size: var(--text-sm); color: var(--muted); }
+  .activity-group { margin: var(--space-3) 0 var(--space-1); font-weight: 650; }
+  .is-unread { background: var(--accent-soft); }
+  .is-unread strong::before { content: ""; display: inline-block; width: 0.5em; height: 0.5em; margin-inline-end: var(--space-1); border-radius: 50%; background: var(--accent); }
 
   /* ---------------------------------------------------------------- theme toggle */
   .theme-toggle {
@@ -464,7 +463,6 @@
   .page-heading { flex: 1 1 18rem; min-width: 0; }
   .page-heading h1 { margin: 0; overflow-wrap: anywhere; }
   .page-subtitle { margin: var(--space-1) 0 0; color: var(--muted); }
-  .page-actions { display: flex; flex-wrap: wrap; gap: var(--space-2); align-items: center; }
   .page-actions .btn-ghost { background: var(--surface); border-color: var(--border); }
 
   /* ---------------------------------------------------------------- tabs */
@@ -531,15 +529,14 @@
 
   .card-list { padding-inline-start: 1.1rem; }
   .card-list li + li { margin-block-start: var(--space-1); }
-  .alert-list, .alert-list ul { margin: 0; padding: 0; list-style: none; }
+  .alert-list, .alert-list ul, .agenda-list { margin: 0; padding: 0; list-style: none; }
   .alert-list > li + li { margin-block-start: var(--space-2); }
-  .alert-list ul li { font-size: var(--text-sm); }
+  .alert-list ul li, .calendar .day-kind { font-size: var(--text-sm); }
 
   /* ---------------------------------------------------------------- « À venir » */
   /* ui/agenda.html: one line per element, the date first (tabular figures). */
   .agenda { margin-block-end: var(--space-5); }
   .agenda h2 { display: flex; align-items: center; gap: var(--space-2); }
-  .agenda-list { margin: 0; padding: 0; list-style: none; }
   .agenda-item {
     display: flex;
     flex-wrap: wrap;
@@ -555,7 +552,6 @@
   /* ---------------------------------------------------------------- administrative file */
   /* Item forms: buttons at their width, due date on one line (ui-notes). */
   .item form button { justify-self: start; }
-  .item-inline { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); }
   .item-inline input { width: auto; }
   .item .badge { align-self: center; }
   .missing-validator { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-1) var(--space-2); color: var(--warning-fg); }
@@ -565,7 +561,6 @@
   .calendar { table-layout: fixed; min-width: 42rem; }
   .calendar td { height: 4.5rem; vertical-align: top; overflow-wrap: anywhere; }
   .calendar .day-number { font-weight: 650; font-variant-numeric: tabular-nums; }
-  .calendar .day-kind { font-size: var(--text-sm); }
   .calendar .day-off, .calendar .day-outside { background: var(--surface-2); }
   .calendar .day-today { outline: 2px solid var(--accent); outline-offset: -2px; }
 
@@ -583,7 +578,6 @@
   .member-head { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-2); margin-block-end: var(--space-3); }
   .member-name { margin: 0; font-size: var(--text-lg); overflow-wrap: anywhere; }
   .member-facts { display: grid; gap: var(--space-2); margin: 0 0 var(--space-3); }
-  .member-facts dt { color: var(--muted); font-size: var(--text-sm); }
   .member-facts dd { margin: 0; overflow-wrap: anywhere; }
 
   /* An actions menu: a <details>, the panel below its summary (no script). */

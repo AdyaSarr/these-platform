@@ -4,14 +4,12 @@
 {% page_header %}{% translate "Activity" %}{% subtitle %}{% translate "What happened on the thesis, among what you can read." %}{% actions %}{% url 'activity:preferences' thesis_id=thesis.pk as prefs_url %}{% include "ui/action.html" with url=prefs_url label=_("My notifications") icon="bell" %}{% endpage_header %}
 <nav class="segmented" aria-label="{% translate 'Modules' %}">{% for key, label, link in filters %}<a class="segment" href="{{ link }}"{% if key == page.module %} aria-current="page"{% endif %}>{{ label }}</a>{% endfor %}</nav>
 {% if page.rows %}
-<ul class="alert-list">
-  {% for row in page.rows %}<li class="activity-item"><a href="{% url 'activity:open' thesis_id=thesis.pk event_id=row.event.pk %}">{% if row.unread %}<strong>{{ row.event.get_kind_display }}</strong>{% else %}{{ row.event.get_kind_display }}{% endif %}</a>{% if row.name %} · {{ row.name }}{% endif %} · {{ row.event.created_at|short_date }}</li>{% endfor %}
-</ul>
+{% include "activity/_rows.html" with groups=groups item_class="activity-item" %}
 {% else %}
 <p class="muted">{% translate "Nothing to show here." %}</p>
 {% endif %}
 {% if page.has_previous or page.has_next %}
 <nav class="segmented" aria-label="{% translate 'Pages' %}">{% if page.has_previous %}<a class="segment" href="{{ base }}?{% if page.module %}module={{ page.module }}&amp;{% endif %}page={{ page.number|add:'-1' }}">{% translate "Newer" %}</a>{% endif %}{% if page.has_next %}<a class="segment" href="{{ base }}?{% if page.module %}module={{ page.module }}&amp;{% endif %}page={{ page.number|add:'1' }}">{% translate "Older" %}</a>{% endif %}</nav>
 {% endif %}
-<form method="post" action="{% url 'activity:read_all' thesis_id=thesis.pk %}">{% csrf_token %}<button type="submit" class="btn-primary">{% translate "Mark everything as read" %}</button></form>
+<form method="post" action="{% url 'activity:read_all' thesis_id=thesis.pk %}">{% csrf_token %}<button type="submit" class="btn-secondary">{% translate "Mark everything as read" %}</button></form>
 {% endblock %}

@@ -335,7 +335,8 @@ def submit(
         if fresh.document is not None:
             if level is not None:
                 raise ValueError("the level of an attached document is changed in Documents")
-            vault.add_version(document=fresh.document, upload=upload, user=user)
+            # M13a review: « Pièce déposée » covers its attachment (one line).
+            vault.add_version(document=fresh.document, upload=upload, user=user, announce=False)
             document = fresh.document
         else:
             chosen = ConfidentialityLevel(level or fresh.default_level)
@@ -349,6 +350,7 @@ def submit(
                 title=_document_title(fresh),
                 level=chosen,
                 user=user,
+                announce=False,
             )
 
     def work(locked: RequiredItem) -> RequiredItem:

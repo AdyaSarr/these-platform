@@ -125,7 +125,7 @@ def test_the_count_stops_at_99_plus(team: SimpleNamespace) -> None:
                thesis=team.thesis, actor=team.student)  # fmt: skip
     bell = _bell(_page(team, team.director))
     assert re.search(r'class="bell-count"[^>]*>\s*99\+\s*<', bell)
-    assert 'aria-label="101 non lus"' in bell  # the exact number, said
+    assert re.search(r'aria-label="[^"]*101 non lus"', bell)  # the exact number, said
 
 
 def test_no_count_when_everything_is_read(team: SimpleNamespace) -> None:
@@ -154,3 +154,39 @@ def test_the_page_offers_the_same_and_one_filled_button_at_most(team: SimpleName
     main = _main(_page(team, team.director))
     assert "Tout marquer comme lu" in main
     assert main.count("btn-primary") <= 1
+
+
+TIME = re.compile(r'<time datetime="([^"]+)">([^<]*)</time>')
+
+
+@pytest.mark.parametrize("where", ["bell", "page"])
+def test_every_time_says_exactly_its_own_datetime(
+    team: SimpleNamespace, where: str, time_machine: Any
+) -> None:
+    """The text of each <time> is the relative date of its datetime attribute and
+    nothing else (no other value can slip in)."""
+    from django.utils.dateparse import parse_datetime
+
+    from apps.ui.templatetags.ui import ago
+
+    final = h.NOW + dt.timedelta(days=9)
+    for before, title in (
+        (dt.timedelta(days=9), "Note A"),  # beyond a week: the short date
+        (dt.timedelta(days=2), "Note B"),
+        (dt.timedelta(hours=3), "Note C"),
+        (dt.timedelta(minutes=7), "Note D"),
+    ):
+        time_machine.move_to(final - before, tick=False)
+        h.document(team, L.PUBLIC, title=f"{title} fictive")
+    time_machine.move_to(final, tick=False)
+    html = _page(team, team.director)
+    fragment = _bell(html) if where == "bell" else _main(html)
+    times = TIME.findall(fragment)
+    assert len(times) == 4
+    shown = {text for _attr, text in times}
+    assert len(shown) == 4  # four different texts: minutes, hours, days, a date
+    for attribute, text in times:
+        instant = parse_datetime(attribute)
+        assert instant is not None, attribute
+        assert text == ago(instant), (attribute, text)
+    assert fragment.count("<time") == len(times)  # no <time> of another shape

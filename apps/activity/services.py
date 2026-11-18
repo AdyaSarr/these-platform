@@ -41,11 +41,36 @@ PAGE_SIZE = 20
 RETENTION_MONTHS = 13
 
 
+# The icon of each module (the navigation's), shown on each row of the feed.
+MODULE_ICONS = {
+    "documents": "file-lock", "admin_file": "folder-open", "objectives": "target",
+    "meetings": "calendar-days", "conferences": "presentation", "travel": "plane",
+    "team": "users",
+}  # fmt: skip
+
+
 @dataclass(frozen=True)
 class Row:
     event: Event
     name: str
     unread: bool
+
+    @property
+    def module(self) -> str:
+        return MODULE_OF[self.event.object_type]
+
+    @property
+    def icon(self) -> str:
+        return MODULE_ICONS[self.module]
+
+
+def grouped(rows: list[Row]) -> list[tuple[str, list[Row]]]:
+    """« Nouveau » (unread) then « Plus tôt » (read), each newest first; no empty group."""
+    groups = (
+        ("new", [r for r in rows if r.unread]),
+        ("earlier", [r for r in rows if not r.unread]),
+    )
+    return [(key, items) for key, items in groups if items]
 
 
 @dataclass(frozen=True)

@@ -88,15 +88,23 @@ def _hidden(team: SimpleNamespace, role: Role, world: str) -> None:
         h.meeting(team, level, attendees=[team.student, *readers[:1]])
 
 
-def _state(team: SimpleNamespace, user: Any) -> tuple[Any, ...]:
+def _state(team: SimpleNamespace, user: Any, time_machine: Any) -> tuple[Any, ...]:
+    """The digests run at the current (frozen) instant of the state; its pages are
+    rendered at RENDER, the same frozen instant for every state, so that a relative
+    date (« il y a … ») compares byte for byte too (M13a review); then back."""
+    from django.utils import timezone
+
     digests.run()
     own = ActivityNotification.objects.filter(recipient=user).exclude(kind="EVENT")
-    client = h.client_for(user)
+    day = timezone.now()
+    time_machine.move_to(RENDER, tick=False)
+    client = h.client_for(user)  # signed in at RENDER: a session of the render instant
     pages = sorted(
         (str(d.kind), _CSRF.sub(r'\1"-"', client.get(
             h.url(team, "digest", digest_id=d.pk)).content.decode()))
         for d in own
     )  # fmt: skip
+    time_machine.move_to(day, tick=False)
     e_mails = [(m.subject, m.body) for m in mail.outbox if user.email in m.to]
     rows = sorted(
         (str(r.kind), str(r.period_start), str(r.status))
@@ -107,6 +115,7 @@ def _state(team: SimpleNamespace, user: Any) -> tuple[Any, ...]:
 
 DAY = dt.timedelta(days=1)
 THURSDAY = dt.datetime(2027, 1, 21, 6, 0, tzinfo=dt.UTC)  # 07:00 in Paris
+RENDER = THURSDAY + 3 * DAY  # after the last state, before the meeting (27 Jan)
 
 
 @pytest.mark.parametrize("role", ROLES, ids=lambda r: r.value)
@@ -125,19 +134,22 @@ def test_the_digests_of_a_role_cannot_tell_the_worlds_apart(role: Role, time_mac
     mail.outbox.clear()
     _shared(team, role, user)
     time_machine.move_to(THURSDAY, tick=False)
-    shared_only = _state(team, user)
+    shared_only = _state(team, user, time_machine)
 
     time_machine.move_to(THURSDAY + DAY / 4, tick=True)
     _hidden(team, role, "a")
     time_machine.move_to(THURSDAY + DAY, tick=False)
-    world_a = _state(team, user)
+    world_a = _state(team, user, time_machine)
     time_machine.move_to(THURSDAY + DAY + DAY / 4, tick=True)
     _hidden(team, role, "b")
     time_machine.move_to(THURSDAY + 2 * DAY, tick=False)
-    world_b = _state(team, user)
+    world_b = _state(team, user, time_machine)
 
-    # Not vacuous: the role's rows were digested; others' wait for their Monday.
+    # Not vacuous: the role's rows were digested; others' wait for their Monday; the
+    # pages are the digest pages themselves, with the bell and its relative dates.
     assert shared_only[0] and any(s == "DIGESTED" for _k, _kind, s, _d in shared_only[3])
+    for _kind, page in shared_only[0]:
+        assert 'class="bell-item"' in page and "<time datetime=" in page, page[:300]
     from apps.activity.routing import SOURCES
 
     waiting = sum(

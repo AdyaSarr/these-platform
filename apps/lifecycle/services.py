@@ -25,6 +25,7 @@ from django.conf import settings
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.db import transaction
 from django.utils import timezone
+from django.utils.formats import date_format
 from django.utils.translation import gettext as _
 
 from apps.accounts.models import Membership, Thesis
@@ -139,7 +140,11 @@ def declare_defense(*, thesis: Thesis, user: Any, defended_on: dt.date, recent_m
         if locked.status != S.ACTIVE:
             raise _invalid(_("Only a thesis in progress can be declared defended."), "status")
         if not locked.first_enrollment_date <= defended_on <= timezone.localdate():
-            raise _invalid(_("The defence date is past and after the first enrollment."), "date")
+            raise _invalid(
+                _("The defence date must be past and after the first enrollment (%(date)s).")
+                % {"date": date_format(locked.first_enrollment_date, "j F Y")},
+                "date",
+            )
         locked.status = S.DEFENDED
         locked.defended_on = defended_on
         locked.save(update_fields=["status", "defended_on", "updated_at"])
@@ -347,17 +352,35 @@ def page(user: Any, thesis: Thesis) -> dict[str, Any]:
             or (fresh.status == S.DEFENDED and start is not None and timezone.localdate() >= start)
         )
     )
-    return {
-        "thesis": fresh,
-        "request": request,
-        "closable_from": start,
+    possible = {
         "can_declare": declares and fresh.status == S.ACTIVE,
         "can_cancel": declares and fresh.status == S.DEFENDED,
         "can_request": can_request,
-        "abandon": fresh.status == S.ACTIVE,
         "can_confirm": closes and confirmer,
         "can_withdraw": closes and request is not None,
+    }
+    return {
+        **possible,
+        "why": None if any(possible.values()) else _why(fresh, held, request, start),
+        "thesis": fresh,
+        "request": request,
+        "closable_from": start,
+        "abandon": fresh.status == S.ACTIVE,
         "cancel_reasons": CancelReason.choices,
         "abandon_reasons": [(r.value, r.label) for r in ClosureReason if r in ABANDON_REASONS],
         "today": timezone.localdate(),
     }
+
+
+def _why(thesis: Thesis, held: frozenset[Role], request: Any, start: dt.date | None) -> str:
+    """Why no step is offered (a code; the page says it): nothing the viewer does
+    not read already on the page (its status and dates)."""
+    if thesis.status == S.CLOSED:
+        return "closed"
+    if thesis.status == S.SETUP:
+        return "setup"
+    if not held & {Role.DIRECTOR, Role.PHD_STUDENT}:
+        return "roles"
+    if thesis.status == S.DEFENDED and request is None and start is not None:
+        return "too_early"
+    return "waiting"

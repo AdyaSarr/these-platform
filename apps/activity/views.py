@@ -59,7 +59,13 @@ class FeedView(_Mixin, View):
         return render(
             request,
             "activity/feed.html",
-            {"thesis": self.thesis, "page": page, "filters": filters, "base": base},
+            {
+                "thesis": self.thesis,
+                "page": page,
+                "filters": filters,
+                "base": base,
+                "groups": services.grouped(page.rows),
+            },
         )
 
 

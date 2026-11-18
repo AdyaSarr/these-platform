@@ -201,9 +201,19 @@ def _clean_title(title: str) -> str:
 
 @sensitive_variables()
 def store(
-    *, thesis: Thesis, upload: Upload, title: str, level: ConfidentialityLevel, user: User
+    *,
+    thesis: Thesis,
+    upload: Upload,
+    title: str,
+    level: ConfidentialityLevel,
+    user: User,
+    announce: bool = True,
 ) -> Document:
     """Store a new document (version 1).
+
+    ``announce=False``: no « Nouveau document » in the activity feed, because the
+    caller's own event covers it (a piece of the administrative file, M13a review).
+    The audit journal is the same.
 
     Outside any transaction and lock: validation, encryption, blob written (the
     content AD does not contain the kek_id). Then one transaction: wrap the DEK
@@ -237,10 +247,11 @@ def store(
             mime_type=checked.mime_type,
             created_by=user,
         )
-        activity.record(
-            kind="DOCUMENT_ADDED", obj=document, object_type="DOCUMENT",
-            thesis=document.thesis, actor=user,
-        )  # fmt: skip
+        if announce:
+            activity.record(
+                kind="DOCUMENT_ADDED", obj=document, object_type="DOCUMENT",
+                thesis=document.thesis, actor=user,
+            )  # fmt: skip
         audit(
             AuditAction.DOCUMENT_CREATED,
             actor=user,
@@ -254,9 +265,12 @@ def store(
 
 
 @sensitive_variables()
-def add_version(*, document: Document, upload: Upload, user: User) -> DocumentVersion:
+def add_version(
+    *, document: Document, upload: Upload, user: User, announce: bool = True
+) -> DocumentVersion:
     """Add the next version. The version number is in the AD and is known only once
     the document row is locked: encryption and blob happen inside the transaction.
+    ``announce=False``: no activity line (see store()).
     """
     checked = None
     for _attempt in range(2):  # retried once if the level changed meanwhile
@@ -288,10 +302,11 @@ def add_version(*, document: Document, upload: Upload, user: User) -> DocumentVe
             )
             locked.current_version = number
             locked.save(update_fields=["current_version", "updated_at"])
-            activity.record(
-                kind="DOCUMENT_VERSION_ADDED", obj=locked, object_type="DOCUMENT",
-                thesis=locked.thesis, actor=user,
-            )  # fmt: skip
+            if announce:
+                activity.record(
+                    kind="DOCUMENT_VERSION_ADDED", obj=locked, object_type="DOCUMENT",
+                    thesis=locked.thesis, actor=user,
+                )  # fmt: skip
             audit(AuditAction.DOCUMENT_VERSION_ADDED, actor=user, obj=locked, version=number)
             return version
     raise RuntimeError("the document's level changed twice during add_version(); retry")

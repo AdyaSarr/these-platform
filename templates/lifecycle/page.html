@@ -11,7 +11,6 @@
   {% if thesis.defended_on %}<li>{% blocktranslate with date=thesis.defended_on|date:"j F Y" %}Defended on {{ date }}{% endblocktranslate %}</li>{% endif %}
   {% if thesis.closed_at %}<li>{% blocktranslate with date=thesis.closed_at|date:"j F Y" %}Closed on {{ date }}{% endblocktranslate %}</li>{% endif %}
   {% if thesis.access_until %}<li>{% blocktranslate with date=thesis.access_until|date:"j F Y" %}The director reads the thesis until {{ date }}{% endblocktranslate %}</li>{% endif %}
-  {% if thesis.status == "DEFENDED" and closable_from and not can_request %}<li>{% blocktranslate with date=closable_from|date:"j F Y" %}The closure can be requested from {{ date }}{% endblocktranslate %}</li>{% endif %}
 </ul>
 <p class="muted">{% translate "After the defence, documents, conferences and ST approvals, and the receipts of missions begun before it stay open; everything else is read only. A closed thesis is read only everywhere: the supervision leaves it, the director after three months." %}</p>
 </section>
@@ -31,28 +30,28 @@
 {% if can_declare or can_cancel or can_request %}
 <section aria-labelledby="passages-title">
 <h2 id="passages-title">{% translate "Steps" %}</h2>
-<div class="confirm-row">
+<div class="stack">
 {% if can_declare %}
 <details class="confirm">
-  <summary class="btn btn-danger">{% icon "triangle-alert" %}{% translate "Declare the defence" %}</summary>
+  <summary class="btn btn-secondary">{% translate "Declare the defence" %}</summary>
   <div class="confirm-panel">
     <p>{% translate "The thesis becomes defended: most of it is read only. You can cancel this declaration until the closure. Asks for your second factor." %}</p>
     <form class="stack" method="post" action="{% url 'lifecycle:defend' thesis_id=thesis.pk %}">{% csrf_token %}
       <label for="defended_on">{% translate "Date of the defence" %}</label>
       <input type="date" id="defended_on" name="defended_on" required max="{{ today|date:'Y-m-d' }}">
-      <button type="submit" class="btn btn-danger">{% translate "Yes, declare it" %}</button>
+      <button type="submit" class="btn btn-primary">{% translate "Yes, declare it" %}</button>
     </form>
   </div>
 </details>
 {% endif %}
 {% if can_cancel %}
 <details class="confirm">
-  <summary class="btn btn-danger">{% icon "triangle-alert" %}{% translate "Cancel the declaration" %}</summary>
+  <summary class="btn btn-ghost">{% translate "Cancel the declaration" %}</summary>
   <div class="confirm-panel">
     <p>{% translate "The thesis is in progress again; an open closure request is withdrawn. Asks for your second factor." %}</p>
     <form class="stack" method="post" action="{% url 'lifecycle:cancel' thesis_id=thesis.pk %}">{% csrf_token %}
       <label for="cancel-reason">{% translate "Reason" %}</label>
-      <select id="cancel-reason" name="reason" required>{% for value, label in cancel_reasons %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
+      <select id="cancel-reason" name="reason" required><option value="">{% translate "Choose a reason" %}</option>{% for value, label in cancel_reasons %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
       <button type="submit" class="btn btn-danger">{% translate "Yes, cancel it" %}</button>
     </form>
   </div>
@@ -60,13 +59,13 @@
 {% endif %}
 {% if can_request %}
 <details class="confirm">
-  <summary class="btn btn-danger">{% icon "triangle-alert" %}{% translate "Request the closure" %}</summary>
+  <summary class="btn {% if abandon %}btn-ghost{% else %}btn-danger{% endif %}">{% if abandon %}{% translate "Close without a defence (abandonment)" %}{% else %}{% translate "Request the closure" %}{% endif %}</summary>
   <div class="confirm-panel">
-    <p>{% translate "The other party (a director, or the PhD student) confirms within 14 days. A closed thesis cannot be reopened. Asks for your second factor." %}</p>
+    {% if abandon %}<p>{% translate "For a thesis stopped before its defence: the PhD student stops, or the CIFRE contract ends early. The other party (a director, or the PhD student) confirms within 14 days; the thesis then becomes read only for good. Asks for your second factor." %}</p>{% else %}<p>{% translate "The other party (a director, or the PhD student) confirms within 14 days. A closed thesis cannot be reopened. Asks for your second factor." %}</p>{% endif %}
     <form class="stack" method="post" action="{% url 'lifecycle:request' thesis_id=thesis.pk %}">{% csrf_token %}
       {% if abandon %}
       <label for="closure-reason">{% translate "Reason" %}</label>
-      <select id="closure-reason" name="reason" required>{% for value, label in abandon_reasons %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
+      <select id="closure-reason" name="reason" required><option value="">{% translate "Choose a reason" %}</option>{% for value, label in abandon_reasons %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
       {% else %}<input type="hidden" name="reason" value="defended">{% endif %}
       <button type="submit" class="btn btn-danger">{% translate "Yes, request it" %}</button>
     </form>
@@ -76,4 +75,5 @@
 </div>
 </section>
 {% endif %}
+{% if why %}<p class="muted">{% if why == "closed" %}{% translate "The thesis is closed: there is no step left." %}{% elif why == "setup" %}{% translate "The defence can be declared once the thesis is active, that is once the enrolment file is validated." %}{% elif why == "roles" %}{% translate "Only the director and the PhD student move the end of the thesis forward." %}{% elif why == "too_early" %}{% blocktranslate with date=closable_from|date:"j F Y" %}The closure can be requested from {{ date }}.{% endblocktranslate %}{% else %}{% translate "The other party has to act now." %}{% endif %}</p>{% endif %}
 {% endblock %}

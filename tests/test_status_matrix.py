@@ -56,7 +56,8 @@ CLASSIFICATION: dict[str, str] = {
     "accounts.revoke_invitation": WRITE, "accounts.revoke_open_invitations": SYSTEM,
     "accounts.team_block": READ, "accounts.team_summary": READ,
     # activity (M11)
-    "activity.bell": READ, "activity.digest_page": READ, "activity.feed": READ,
+    "activity.bell": READ, "activity.grouped": READ, "activity.digest_page": READ,
+    "activity.feed": READ,
     "activity.mark_all_read": PERSONAL, "activity.open_event": PERSONAL,
     "activity.purge": SYSTEM,
     # admin_file (M3)

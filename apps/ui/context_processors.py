@@ -31,6 +31,7 @@ def _bell(request: HttpRequest) -> Any:
     thesis = thesis_for_header(request)
     if thesis is None:
         return None
-    from apps.activity.services import bell
+    from apps.activity.services import bell, grouped
 
-    return {"thesis": thesis, "state": bell(request.user, thesis)}
+    state = bell(request.user, thesis)
+    return {"thesis": thesis, "state": state, "groups": grouped(state.latest)}

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-18 02:29+0100\n"
+"POT-Creation-Date: 2026-11-18 14:13+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -459,7 +459,7 @@ msgid "Documents"
 msgstr "Documents"
 
 #: apps/accounts/views.py:87 apps/activity/views.py:29
-#: apps/admin_file/services.py:280 apps/ui/navigation.py:38
+#: apps/admin_file/services.py:296 apps/ui/navigation.py:38
 #: templates/accounts/dashboard.html:32 templates/admin_file/file.html:2
 #: templates/admin_file/file.html:4 templates/admin_file/item_page.html:6
 #: templates/admin_file/new_item.html:5
@@ -610,16 +610,16 @@ msgstr "Clôture demandée"
 msgid "Thesis closed"
 msgstr "Thèse close"
 
-#: apps/activity/choices.py:92 apps/activity/views.py:97
+#: apps/activity/choices.py:92 apps/activity/views.py:103
 #: templates/activity/digest.html:10
 msgid "Information"
 msgstr "Informations"
 
-#: apps/activity/choices.py:93 apps/activity/views.py:99
+#: apps/activity/choices.py:93 apps/activity/views.py:105
 msgid "Asks you to act"
 msgstr "Vous demande d'agir"
 
-#: apps/activity/choices.py:94 apps/activity/views.py:102
+#: apps/activity/choices.py:94 apps/activity/views.py:108
 msgid "Deadline reminders"
 msgstr "Rappels d'échéance"
 
@@ -831,8 +831,8 @@ msgid "Give a new file or an existing document, not both."
 msgstr "Donnez un nouveau fichier ou un document existant, pas les deux."
 
 #: apps/admin_file/forms.py:69 apps/admin_file/forms.py:99
-#: templates/admin_file/item_row.html:32 templates/lifecycle/page.html:54
-#: templates/lifecycle/page.html:68 templates/objectives/detail.html:51
+#: templates/admin_file/item_row.html:32 templates/lifecycle/page.html:53
+#: templates/lifecycle/page.html:67 templates/objectives/detail.html:51
 msgid "Reason"
 msgstr "Motif"
 
@@ -879,7 +879,7 @@ msgid "Attachment required"
 msgstr "Pièce jointe obligatoire"
 
 #: apps/admin_file/forms.py:148 apps/admin_file/forms.py:150
-#: apps/admin_file/services.py:803
+#: apps/admin_file/services.py:819
 msgid "These validators are not allowed."
 msgstr "Ces validateurs ne sont pas permis."
 
@@ -1067,85 +1067,85 @@ msgstr "notification de pièce"
 msgid "item notifications"
 msgstr "notifications de pièce"
 
-#: apps/admin_file/services.py:216 apps/admin_file/services.py:310
-#: apps/admin_file/services.py:836 apps/admin_file/views.py:66
+#: apps/admin_file/services.py:231 apps/admin_file/services.py:326
+#: apps/admin_file/services.py:852 apps/admin_file/views.py:66
 msgid "The thesis is finished: its administrative file is frozen."
 msgstr "La thèse est terminée : son dossier administratif est gelé."
 
-#: apps/admin_file/services.py:263 apps/admin_file/services.py:1028
+#: apps/admin_file/services.py:279 apps/admin_file/services.py:1049
 msgid "Choose a reason."
 msgstr "Choisissez un motif."
 
-#: apps/admin_file/services.py:266 apps/admin_file/services.py:1011
+#: apps/admin_file/services.py:282 apps/admin_file/services.py:1032
 msgid "The comment is too long."
 msgstr "Le commentaire est trop long."
 
-#: apps/admin_file/services.py:268 apps/admin_file/services.py:1013
+#: apps/admin_file/services.py:284 apps/admin_file/services.py:1034
 msgid "The comment contains a control character."
 msgstr "Le commentaire contient un caractère de contrôle."
 
-#: apps/admin_file/services.py:315
+#: apps/admin_file/services.py:331
 msgid "A validator could not read this document."
 msgstr "Un validateur ne pourrait pas lire ce document."
 
-#: apps/admin_file/services.py:317 apps/admin_file/services.py:362
+#: apps/admin_file/services.py:333 apps/admin_file/services.py:380
 msgid "This document belongs to another item."
 msgstr "Ce document appartient déjà à une autre pièce."
 
-#: apps/admin_file/services.py:328 apps/admin_file/services.py:809
+#: apps/admin_file/services.py:345 apps/admin_file/services.py:825
 msgid "A validator could not read the file at this level."
 msgstr "Un validateur ne pourrait pas lire le fichier à ce niveau."
 
-#: apps/admin_file/services.py:351
+#: apps/admin_file/services.py:369
 msgid "This item needs an attachment."
 msgstr "Cette pièce demande une pièce jointe."
 
-#: apps/admin_file/services.py:429
+#: apps/admin_file/services.py:447
 msgid "The attachment changed since it was submitted."
 msgstr "La pièce jointe a changé depuis le dépôt."
 
-#: apps/admin_file/services.py:790
+#: apps/admin_file/services.py:806
 msgid "A label is required."
 msgstr "Un libellé est obligatoire."
 
-#: apps/admin_file/services.py:792
+#: apps/admin_file/services.py:808
 msgid "The label is too long."
 msgstr "Le libellé est trop long."
 
-#: apps/admin_file/services.py:794
+#: apps/admin_file/services.py:810
 msgid "The label contains a control character."
 msgstr "Le libellé contient un caractère de contrôle."
 
-#: apps/admin_file/services.py:806
+#: apps/admin_file/services.py:822
 msgid "A validator would not see this section."
 msgstr "Un validateur ne verrait pas cette partie du dossier."
 
-#: apps/admin_file/services.py:892
+#: apps/admin_file/services.py:908
 msgid "Enter a valid date."
 msgstr "Saisissez une date valide."
 
-#: apps/admin_file/services.py:895
+#: apps/admin_file/services.py:911
 msgid "The due date cannot be before the CIFRE start date."
 msgstr "L'échéance ne peut pas précéder la date d'effet CIFRE."
 
-#: apps/admin_file/services.py:899
+#: apps/admin_file/services.py:915
 msgid "The due date cannot be after the planned end of the thesis."
 msgstr "L'échéance ne peut pas dépasser la fin prévue de la thèse."
 
-#: apps/admin_file/services.py:955
+#: apps/admin_file/services.py:976
 msgid "A mandatory item of the catalogue keeps a due date."
 msgstr "Une pièce obligatoire du catalogue garde une échéance."
 
-#: apps/admin_file/services.py:998 apps/conferences/services.py:1083
+#: apps/admin_file/services.py:1019 apps/conferences/services.py:1083
 msgid "No industrial tutor in the team: invite them first."
 msgstr ""
 "Aucun·e tuteur·rice industriel·le dans l'équipe : invitez-le·la d'abord."
 
-#: apps/admin_file/services.py:999
+#: apps/admin_file/services.py:1020
 msgid "No thesis director in the team: invite them first."
 msgstr "Aucun·e directeur·rice de thèse dans l'équipe : invitez-le·la d'abord."
 
-#: apps/admin_file/services.py:1001
+#: apps/admin_file/services.py:1022
 msgid ""
 "Neither a thesis director nor an industrial tutor in the team: invite one "
 "first."
@@ -1153,27 +1153,27 @@ msgstr ""
 "Ni directeur·rice de thèse ni tuteur·rice industriel·le dans l'équipe : "
 "invitez l'un·e d'eux d'abord."
 
-#: apps/admin_file/services.py:1008
+#: apps/admin_file/services.py:1029
 msgid "The comment is not text."
 msgstr "Le commentaire n'est pas du texte."
 
-#: apps/admin_file/services.py:1036
+#: apps/admin_file/services.py:1057
 msgid "The due date of a custom item is changed directly."
 msgstr "L'échéance d'une pièce personnalisée se modifie directement."
 
-#: apps/admin_file/services.py:1039
+#: apps/admin_file/services.py:1060
 msgid "Give the proposed due date."
 msgstr "Indiquez l'échéance proposée."
 
-#: apps/admin_file/services.py:1042
+#: apps/admin_file/services.py:1063
 msgid "This is already the due date."
 msgstr "C'est déjà l'échéance actuelle."
 
-#: apps/admin_file/services.py:1045
+#: apps/admin_file/services.py:1066
 msgid "A proposal is already waiting for a decision."
 msgstr "Une proposition attend déjà une décision."
 
-#: apps/admin_file/services.py:1097
+#: apps/admin_file/services.py:1118
 msgid "This proposal has already been decided."
 msgstr "Cette proposition a déjà été tranchée."
 
@@ -1763,7 +1763,7 @@ msgid "A request is already pending."
 msgstr "Une demande est déjà en attente."
 
 #: apps/conferences/services.py:1155 apps/travel/services.py:1369
-#: apps/travel/views.py:791
+#: apps/travel/views.py:795
 msgid "Grant or refuse."
 msgstr "Accordez ou refusez."
 
@@ -1847,7 +1847,7 @@ msgid "Request withdrawn."
 msgstr "Demande retirée."
 
 #: apps/conferences/views.py:698 apps/meetings/views.py:569
-#: apps/travel/views.py:806
+#: apps/travel/views.py:810
 msgid "Decision recorded."
 msgstr "Décision enregistrée."
 
@@ -1860,7 +1860,7 @@ msgid "Preprint recorded."
 msgstr "Prépublication enregistrée."
 
 #: apps/conferences/views.py:738 apps/meetings/views.py:494
-#: apps/objectives/views.py:415 apps/travel/views.py:636
+#: apps/objectives/views.py:415 apps/travel/views.py:640
 msgid "Confidentiality changed."
 msgstr "Confidentialité modifiée."
 
@@ -1995,50 +1995,63 @@ msgstr "Soutenance reportée"
 msgid "reason"
 msgstr "motif"
 
-#: apps/lifecycle/services.py:136
+#: apps/lifecycle/services.py:137 apps/lifecycle/views.py:63
 msgid "Give the date of the defence."
 msgstr "Indiquez la date de la soutenance."
 
-#: apps/lifecycle/services.py:140
+#: apps/lifecycle/services.py:141
 msgid "Only a thesis in progress can be declared defended."
 msgstr "Seule une thèse en cours peut être déclarée soutenue."
 
-#: apps/lifecycle/services.py:142
-msgid "The defence date is past and after the first enrollment."
-msgstr ""
-"La date de soutenance est passée et postérieure à la première inscription."
+#: apps/lifecycle/services.py:144
+#, python-format
+msgid ""
+"The defence date must be past and after the first enrollment (%(date)s)."
+msgstr "La date de soutenance doit être passée et postérieure à la première inscription (le %(date)s)."
 
-#: apps/lifecycle/services.py:158 apps/lifecycle/services.py:220
+#: apps/lifecycle/services.py:163 apps/lifecycle/services.py:225
 msgid "Choose a reason in the list."
 msgstr "Choisissez un motif dans la liste."
 
-#: apps/lifecycle/services.py:162
+#: apps/lifecycle/services.py:167
 msgid "The thesis is not declared defended."
 msgstr "La thèse n'est pas déclarée soutenue."
 
-#: apps/lifecycle/services.py:184
+#: apps/lifecycle/services.py:189
 msgid "A thesis in progress is closed on abandonment only."
 msgstr "Une thèse en cours n'est close qu'en cas d'abandon."
 
-#: apps/lifecycle/services.py:187
+#: apps/lifecycle/services.py:192
 msgid "A defended thesis is closed as defended."
 msgstr "Une thèse soutenue est close au motif de la soutenance."
 
-#: apps/lifecycle/services.py:190
+#: apps/lifecycle/services.py:195
 msgid "Too early: the closure comes after the minimal delay."
 msgstr "Trop tôt : la clôture vient après le délai minimal."
 
-#: apps/lifecycle/services.py:192
+#: apps/lifecycle/services.py:197
 msgid "This thesis cannot be closed."
 msgstr "Cette thèse ne peut pas être close."
 
-#: apps/lifecycle/services.py:227
+#: apps/lifecycle/services.py:232
 msgid "A closure request is already open."
 msgstr "Une demande de clôture est déjà en cours."
 
-#: apps/lifecycle/services.py:247 apps/lifecycle/services.py:274
+#: apps/lifecycle/services.py:252 apps/lifecycle/services.py:279
 msgid "This request is no longer open."
 msgstr "Cette demande n'est plus en cours."
+
+#: apps/lifecycle/templatetags/lifecycle_tags.py:26
+msgid "the documents"
+msgstr "les documents"
+
+#: apps/lifecycle/templatetags/lifecycle_tags.py:27
+msgid "the conferences and ST approvals"
+msgstr "les conférences et les accords ST"
+
+#: apps/lifecycle/templatetags/lifecycle_tags.py:29
+msgid "the receipts of the missions begun before the defence"
+msgstr "les justificatifs des missions commencées avant la soutenance"
 
 #: apps/meetings/forms.py:23
 msgid ""
@@ -3330,7 +3343,7 @@ msgstr "%(max)d caractères au plus."
 msgid "The person who decides for this payer must be able to read the mission."
 msgstr "La personne qui décide pour ce payeur doit pouvoir lire la mission."
 
-#: apps/travel/services.py:756 apps/travel/views.py:377
+#: apps/travel/services.py:756 apps/travel/views.py:379
 msgid "Unknown linked object."
 msgstr "Objet lié inconnu."
 
@@ -3411,7 +3424,7 @@ msgid "A mission approval is already pending."
 msgstr "Une demande d'accord de mission est déjà en attente."
 
 #: apps/travel/services.py:1258 apps/travel/services.py:1562
-#: apps/travel/services.py:1814 apps/travel/views.py:731
+#: apps/travel/services.py:1814 apps/travel/views.py:735
 msgid "An amount in euros, such as 123,45."
 msgstr "Un montant en euros, par exemple 123,45."
 
@@ -3447,42 +3460,42 @@ msgstr "Chaque ligne de frais doit avoir un justificatif, sauf un forfait."
 msgid "This year is outside the thesis."
 msgstr "Cette année est hors de la thèse."
 
-#: apps/travel/views.py:189
+#: apps/travel/views.py:191
 #, python-format
 msgid "%(n)d days updated."
 msgstr "%(n)d jours mis à jour."
 
-#: apps/travel/views.py:282
+#: apps/travel/views.py:284
 msgid "Settings saved."
 msgstr "Réglages enregistrés."
 
-#: apps/travel/views.py:406
+#: apps/travel/views.py:408
 #, python-format
 msgid "Meeting: %(kind)s, %(when)s"
 msgstr "Réunion : %(kind)s, %(when)s"
 
-#: apps/travel/views.py:412
+#: apps/travel/views.py:414
 #, python-format
 msgid "Submission to %(target)s"
 msgstr "Soumission à %(target)s"
 
-#: apps/travel/views.py:486
+#: apps/travel/views.py:489
 msgid "Mission planned."
 msgstr "Mission prévue."
 
-#: apps/travel/views.py:610
+#: apps/travel/views.py:614
 msgid "Mission saved."
 msgstr "Mission enregistrée."
 
-#: apps/travel/views.py:666
+#: apps/travel/views.py:670
 msgid "Mission cancelled."
 msgstr "Mission annulée."
 
-#: apps/travel/views.py:673
+#: apps/travel/views.py:677
 msgid "Mission marked as done."
 msgstr "Mission marquée comme effectuée."
 
-#: apps/travel/views.py:683
+#: apps/travel/views.py:687
 msgid ""
 "Mission marked as done, but the official mission order is not ticked as "
 "obtained in the checklist."
@@ -3490,51 +3503,51 @@ msgstr ""
 "Mission marquée comme effectuée, mais l'ordre de mission officiel n'est pas "
 "coché comme obtenu dans la liste de préparation."
 
-#: apps/travel/views.py:741
+#: apps/travel/views.py:745
 msgid "Mission approval requested."
 msgstr "Accord de mission demandé."
 
-#: apps/travel/views.py:764
+#: apps/travel/views.py:768
 msgid "Mission approval request withdrawn."
 msgstr "Demande d'accord de mission retirée."
 
-#: apps/travel/views.py:820 apps/travel/views.py:900
+#: apps/travel/views.py:824 apps/travel/views.py:904
 msgid "Choose a file."
 msgstr "Choisissez un fichier."
 
-#: apps/travel/views.py:827
+#: apps/travel/views.py:831
 msgid "Official mission order stored."
 msgstr "Ordre de mission officiel enregistré."
 
-#: apps/travel/views.py:842
+#: apps/travel/views.py:846
 msgid "Check the expense line."
 msgstr "Vérifiez la ligne de frais."
 
-#: apps/travel/views.py:855
+#: apps/travel/views.py:859
 msgid "Expense line added."
 msgstr "Ligne de frais ajoutée."
 
-#: apps/travel/views.py:876
+#: apps/travel/views.py:880
 msgid "Check the amounts."
 msgstr "Vérifiez les montants."
 
-#: apps/travel/views.py:888
+#: apps/travel/views.py:892
 msgid "Amounts saved."
 msgstr "Montants enregistrés."
 
-#: apps/travel/views.py:909
+#: apps/travel/views.py:913
 msgid "Receipt stored."
 msgstr "Justificatif enregistré."
 
-#: apps/travel/views.py:914
+#: apps/travel/views.py:918
 msgid "Mission marked as reimbursed."
 msgstr "Mission marquée comme remboursée."
 
-#: apps/travel/views.py:983
+#: apps/travel/views.py:987
 msgid "Check the budget."
 msgstr "Vérifiez le budget."
 
-#: apps/travel/views.py:1000
+#: apps/travel/views.py:1004
 msgid "Budget saved."
 msgstr "Budget enregistré."
 
@@ -3623,6 +3636,11 @@ msgctxt "module tab"
 msgid "To decide"
 msgstr "À décider"
 
+#: apps/ui/templatetags/ui.py:74
+#, python-format
+msgid "%(delta)s ago"
+msgstr "il y a %(delta)s"
+
 #: apps/vault/forms.py:14 templates/vault/upload.html:6
 msgid ""
 "The title is not encrypted: do not put any confidential information in it."
@@ -3701,15 +3719,15 @@ msgstr "textes scellés"
 msgid "A title is required."
 msgstr "Un titre est obligatoire."
 
-#: apps/vault/services.py:459
+#: apps/vault/services.py:474
 msgid "Only confidential documents take explicit access."
 msgstr "Seuls les documents confidentiels acceptent un accès explicite."
 
-#: apps/vault/services.py:462
+#: apps/vault/services.py:477
 msgid "You already have access."
 msgstr "Vous avez déjà accès."
 
-#: apps/vault/services.py:465
+#: apps/vault/services.py:480
 msgid "Access can only be given to an active member of the thesis."
 msgstr "L'accès ne peut être donné qu'à un membre actif de la thèse."
 
@@ -4111,8 +4129,11 @@ msgid "End of the thesis: defence and closure"
 msgstr "Fin de thèse : soutenance et clôture"
 
 #: templates/activity/_bell.html:1
-msgid "Unread"
-msgstr "Non lus"
+#, python-format
+msgid "Notifications, %(count)s unread"
+msgid_plural "Notifications, %(count)s unread"
+msgstr[0] "Notifications, %(count)s non lu"
+msgstr[1] "Notifications, %(count)s non lus"
 
 #: templates/activity/_bell.html:1
 msgid "Nothing new."
@@ -4121,6 +4142,23 @@ msgstr "Rien de nouveau."
 #: templates/activity/_bell.html:1 templates/activity/digest.html:14
 msgid "All the activity"
 msgstr "Toute l'activité"
+
+#: templates/activity/_bell.html:1 templates/activity/feed.html:14
+msgid "Mark everything as read"
+msgstr "Tout marquer comme lu"
+
+#: templates/activity/_rows.html:1
+msgid "New"
+msgstr "Nouveau"
+
+#: templates/activity/_rows.html:1
+msgid "Earlier"
+msgstr "Plus tôt"
+
+#: templates/activity/_rows.html:1
+msgctxt "one row"
+msgid "Unread"
+msgstr "Non lu"
 
 #: templates/activity/digest.html:2 templates/activity/digest.html:4
 msgid "Digest"
@@ -4186,25 +4224,21 @@ msgstr "Mes notifications"
 msgid "Modules"
 msgstr "Modules"
 
-#: templates/activity/feed.html:11
+#: templates/activity/feed.html:9
 msgid "Nothing to show here."
 msgstr "Rien à afficher ici."
 
-#: templates/activity/feed.html:14
+#: templates/activity/feed.html:12
 msgid "Pages"
 msgstr "Pages"
 
-#: templates/activity/feed.html:14
+#: templates/activity/feed.html:12
 msgid "Newer"
 msgstr "Plus récents"
 
-#: templates/activity/feed.html:14
+#: templates/activity/feed.html:12
 msgid "Older"
 msgstr "Plus anciens"
-
-#: templates/activity/feed.html:16
-msgid "Mark everything as read"
-msgstr "Tout marquer comme lu"
 
 #: templates/activity/preferences.html:4
 msgid "For this thesis only."
@@ -4634,7 +4668,7 @@ msgstr "délai %(days)s jours"
 msgid "to request by %(date)s"
 msgstr "à demander avant le %(date)s"
 
-#: templates/conferences/submission.html:67 templates/lifecycle/page.html:26
+#: templates/conferences/submission.html:67 templates/lifecycle/page.html:25
 #: templates/travel/mission.html:46
 msgid "Withdraw the request"
 msgstr "Retirer la demande"
@@ -4870,11 +4904,13 @@ msgid "Thesis defended."
 msgstr "Thèse soutenue."
 
 #: templates/lifecycle/_banner.html:3
-msgid ""
-"Still open: the documents, the conferences and ST approvals, and the "
-"receipts of the missions begun before the defence. Everything else is read "
-"only."
-msgstr "Restent modifiables : les documents, les conférences et les accords ST, et les justificatifs des missions commencées avant la soutenance. Tout le reste est en lecture seule."
+#, python-format
+msgid "Still open: %(parts)s. Everything else is read only."
+msgstr "Restent modifiables : %(parts)s. Tout le reste est en lecture seule."
+
+#: templates/lifecycle/_banner.html:3
+msgid "Everything you see of the thesis is read only."
+msgstr "Ce que vous voyez de la thèse est en lecture seule."
 
 #: templates/lifecycle/_banner.html:3 templates/lifecycle/_banner.html:5
 #: templates/lifecycle/page.html:2 templates/lifecycle/page.html:4
@@ -4934,12 +4970,7 @@ msgstr "Close le %(date)s"
 msgid "The director reads the thesis until %(date)s"
 msgstr "Le directeur lit la thèse jusqu'au %(date)s"
 
-#: templates/lifecycle/page.html:14
-#, python-format
-msgid "The closure can be requested from %(date)s"
-msgstr "La clôture peut être demandée à partir du %(date)s"
-
-#: templates/lifecycle/page.html:16
+#: templates/lifecycle/page.html:15
 msgid ""
 "After the defence, documents, conferences and ST approvals, and the receipts "
 "of missions begun before it stay open; everything else is read only. A "
@@ -4951,28 +4982,28 @@ msgstr ""
 "le reste est en lecture seule. Une thèse close est en lecture seule "
 "partout : l'encadrement la quitte, le directeur au bout de trois mois."
 
-#: templates/lifecycle/page.html:21
+#: templates/lifecycle/page.html:20
 msgid "Closure request"
 msgstr "Demande de clôture"
 
-#: templates/lifecycle/page.html:22
+#: templates/lifecycle/page.html:21
 #, python-format
 msgid "Reason: %(reason)s. Expires on %(date)s."
 msgstr "Motif : %(reason)s. Expire le %(date)s."
 
-#: templates/lifecycle/page.html:23
+#: templates/lifecycle/page.html:22
 msgid "Requested by the PhD student: a director confirms it."
 msgstr "Demandée par le doctorant : un directeur la confirme."
 
-#: templates/lifecycle/page.html:23
+#: templates/lifecycle/page.html:22
 msgid "Requested by a director: the PhD student confirms it."
 msgstr "Demandée par un directeur : le doctorant la confirme."
 
-#: templates/lifecycle/page.html:25
+#: templates/lifecycle/page.html:24
 msgid "Confirm the closure"
 msgstr "Confirmer la clôture"
 
-#: templates/lifecycle/page.html:25
+#: templates/lifecycle/page.html:24
 msgid ""
 "The thesis becomes read only everywhere, for good. Asks for your second "
 "factor."
@@ -4980,27 +5011,27 @@ msgstr ""
 "La thèse passe en lecture seule partout, définitivement. Demande votre "
 "second facteur."
 
-#: templates/lifecycle/page.html:25
+#: templates/lifecycle/page.html:24
 msgid "Yes, close the thesis"
 msgstr "Oui, clore la thèse"
 
-#: templates/lifecycle/page.html:26
+#: templates/lifecycle/page.html:25
 msgid "The request is withdrawn; nothing else changes."
 msgstr "La demande est retirée ; rien d'autre ne change."
 
-#: templates/lifecycle/page.html:26
+#: templates/lifecycle/page.html:25
 msgid "Yes, withdraw"
 msgstr "Oui, retirer"
 
-#: templates/lifecycle/page.html:33
+#: templates/lifecycle/page.html:32
 msgid "Steps"
 msgstr "Étapes"
 
-#: templates/lifecycle/page.html:37
+#: templates/lifecycle/page.html:36
 msgid "Declare the defence"
 msgstr "Déclarer la soutenance"
 
-#: templates/lifecycle/page.html:39
+#: templates/lifecycle/page.html:38
 msgid ""
 "The thesis becomes defended: most of it is read only. You can cancel this "
 "declaration until the closure. Asks for your second factor."
@@ -5008,19 +5039,19 @@ msgstr ""
 "La thèse devient soutenue : l'essentiel passe en lecture seule. Vous pouvez "
 "annuler cette déclaration jusqu'à la clôture. Demande votre second facteur."
 
-#: templates/lifecycle/page.html:41
+#: templates/lifecycle/page.html:40
 msgid "Date of the defence"
 msgstr "Date de la soutenance"
 
-#: templates/lifecycle/page.html:43
+#: templates/lifecycle/page.html:42
 msgid "Yes, declare it"
 msgstr "Oui, la déclarer"
 
-#: templates/lifecycle/page.html:50
+#: templates/lifecycle/page.html:49
 msgid "Cancel the declaration"
 msgstr "Annuler la déclaration"
 
-#: templates/lifecycle/page.html:52
+#: templates/lifecycle/page.html:51
 msgid ""
 "The thesis is in progress again; an open closure request is withdrawn. Asks "
 "for your second factor."
@@ -5028,15 +5059,31 @@ msgstr ""
 "La thèse redevient en cours ; une demande de clôture en cours est retirée. "
 "Demande votre second facteur."
 
-#: templates/lifecycle/page.html:56
+#: templates/lifecycle/page.html:54 templates/lifecycle/page.html:68
+msgid "Choose a reason"
+msgstr "Choisir un motif"
+
+#: templates/lifecycle/page.html:55
 msgid "Yes, cancel it"
 msgstr "Oui, l'annuler"
 
-#: templates/lifecycle/page.html:63
+#: templates/lifecycle/page.html:62
+msgid "Close without a defence (abandonment)"
+msgstr "Clore sans soutenance (abandon)"
+
+#: templates/lifecycle/page.html:62
 msgid "Request the closure"
 msgstr "Demander la clôture"
 
-#: templates/lifecycle/page.html:65
+#: templates/lifecycle/page.html:64
+msgid ""
+"For a thesis stopped before its defence: the PhD student stops, or the CIFRE "
+"contract ends early. The other party (a director, or the PhD student) "
+"confirms within 14 days; the thesis then becomes read only for good. Asks "
+"for your second factor."
+msgstr "Pour une thèse arrêtée avant sa soutenance : le doctorant arrête, ou le contrat CIFRE prend fin plus tôt. L'autre partie (un directeur, ou le doctorant) confirme sous 14 jours ; la thèse passe alors en lecture seule, définitivement. Demande votre second facteur."
+
+#: templates/lifecycle/page.html:64
 msgid ""
 "The other party (a director, or the PhD student) confirms within 14 days. A "
 "closed thesis cannot be reopened. Asks for your second factor."
@@ -5044,9 +5091,33 @@ msgstr ""
 "L'autre partie (un directeur, ou le doctorant) confirme sous 14 jours. Une "
 "thèse close ne peut pas être rouverte. Demande votre second facteur."
 
-#: templates/lifecycle/page.html:71
+#: templates/lifecycle/page.html:70
 msgid "Yes, request it"
 msgstr "Oui, la demander"
+
+#: templates/lifecycle/page.html:78
+msgid "The thesis is closed: there is no step left."
+msgstr "La thèse est close : il n'y a plus d'étape."
+
+#: templates/lifecycle/page.html:78
+msgid ""
+"The defence can be declared once the thesis is active, that is once the "
+"enrolment file is validated."
+msgstr "La soutenance pourra être déclarée une fois la thèse active, c'est-à-dire le dossier d'inscription validé."
+
+#: templates/lifecycle/page.html:78
+msgid ""
+"Only the director and the PhD student move the end of the thesis forward."
+msgstr "Seuls le directeur et le doctorant font avancer la fin de thèse."
+
+#: templates/lifecycle/page.html:78
+#, python-format
+msgid "The closure can be requested from %(date)s."
+msgstr "La clôture pourra être demandée à partir du %(date)s."
+
+#: templates/lifecycle/page.html:78
+msgid "The other party has to act now."
+msgstr "C'est maintenant à l'autre partie d'agir."
 
 #: templates/meetings/_objective_actions.html:9
 msgid "No action linked to this objective."

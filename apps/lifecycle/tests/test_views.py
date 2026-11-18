@@ -185,7 +185,8 @@ def test_closing_without_a_defence_is_the_discreet_way(team: SimpleNamespace) ->
     page = h.client_for(team.director).get(h.url(team, "page")).content.decode()
     declare = _details(page, h.url(team, "defend"))
     abandon = _details(page, h.url(team, "request"))
-    assert re.search(r'<summary class="btn btn-primary">', declare)
+    # Declaring stands out (outlined, its submit filled); abandoning is a ghost.
+    assert re.search(r'<summary class="btn btn-secondary">', declare)
     assert re.search(r'<summary class="btn btn-ghost">', abandon)
     assert "Clore sans soutenance (abandon)" in abandon
     assert "Demander la clôture" not in page

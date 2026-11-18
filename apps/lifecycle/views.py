@@ -13,6 +13,7 @@ from typing import Any
 from django.core.exceptions import ValidationError
 from django.http import Http404, HttpRequest, HttpResponse, HttpResponseBase
 from django.shortcuts import redirect, render
+from django.utils.translation import gettext as _
 from django.views import View
 
 from apps.accounts.permissions import Action, ThesisPermissionRequiredMixin
@@ -59,7 +60,7 @@ class DefendView(_Passage):
         try:
             day = dt.date.fromisoformat(request.POST.get("defended_on", ""))
         except ValueError as exc:
-            raise ValidationError("", code="date") from exc
+            raise ValidationError(_("Give the date of the defence."), code="date") from exc
         return services.declare_defense(
             thesis=self.thesis, user=request.user, defended_on=day, recent_mfa=True
         )

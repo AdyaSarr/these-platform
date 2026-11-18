@@ -4,6 +4,7 @@ the event of the piece (« Pièce déposée ») covers the document it carries; 
 
 from __future__ import annotations
 
+import secrets
 from types import SimpleNamespace
 from typing import Any
 
@@ -32,7 +33,7 @@ def _piece(team: SimpleNamespace) -> Any:
     from apps.core.confidentiality import ConfidentialityLevel as L
 
     return RequiredItemFactory.create(
-        thesis=team.thesis, code="custom-piece-jointe", label="Pièce jointe fictive",
+        thesis=team.thesis, code=f"custom-{secrets.token_hex(6)}", label="Pièce jointe fictive",
         section="ACADEMIC", validator_roles=[Role.DIRECTOR], default_level=L.INTERNAL_LIRMM,
         attachment_required=True,
     )  # fmt: skip
@@ -76,6 +77,7 @@ def test_the_attached_document_is_still_a_document(team: SimpleNamespace) -> Non
     from apps.vault.models import AuditEvent, Document
 
     piece = services.submit(item=_piece(team), user=team.student, upload=h.pdf())
+    assert piece.document_id is not None
     assert Document.objects.filter(pk=piece.document_id).exists()
     assert AuditEvent.objects.filter(action="DOCUMENT_CREATED").exists()
 

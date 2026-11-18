@@ -59,6 +59,21 @@ def short_date(value: dt.date | dt.datetime | None) -> str:
     return formats.date_format(value, "j\u00a0N")
 
 
+@register.filter
+def ago(value: dt.datetime | None) -> str:
+    """« il y a 5 minutes » within a week (one unit, a no-break space before it),
+    the short date beyond (M13a review of the activity rows)."""
+    from django.utils.timesince import timesince
+    from django.utils.translation import gettext
+
+    if value is None:
+        return ""
+    if timezone.now() - value >= dt.timedelta(days=7):
+        return short_date(value)
+    delta = timesince(value, depth=1).replace(" ", "\u00a0")
+    return gettext("%(delta)s ago") % {"delta": delta}
+
+
 # --------------------------------------------------------------------------- page header
 
 # {% page_header [parent_url=... parent_label=...] %}title

@@ -148,9 +148,10 @@ OPEN_WORDS = ("documents", "conférences", "accords ST", "justificatifs", "missi
 
 
 def _banner(team: SimpleNamespace, user: Any) -> str:
+    # The Activity page: every member who sees the thesis reads it (the CSI too).
     page = (
         h.client_for(user)
-        .get(reverse("accounts:dashboard", kwargs={"thesis_id": team.thesis.pk}))
+        .get(reverse("activity:feed", kwargs={"thesis_id": team.thesis.pk}))
         .content.decode()
     )
     match = re.search(r'<p class="message message-warning" role="status">(.*?)</p>', page, re.S)

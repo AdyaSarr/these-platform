@@ -1,4 +1,4 @@
-{% load static i18n ui %}<!doctype html>
+{% load static i18n ui lifecycle_tags %}<!doctype html>
 {# data-theme: only a value of the closed list (apps/ui/theme.py); absent = follow the system. #}
 <html lang="fr"{% if ui_theme == "light" or ui_theme == "dark" %} data-theme="{{ ui_theme }}"{% endif %}>
 <head>
@@ -58,7 +58,7 @@
             {% for message in messages %}<li class="message message-{{ message.tags }}">{{ message }}</li>{% endfor %}
           </ul>
         {% endif %}
-        {% if ui_thesis %}{% include "lifecycle/_banner.html" with thesis=ui_thesis %}{% endif %}
+        {% if ui_thesis %}{% lifecycle_banner ui_thesis %}{% endif %}
         {% block content %}{% endblock %}
       </main>
     </div>
