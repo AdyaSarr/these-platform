@@ -18,6 +18,7 @@ from django.db import models
 from django.db.models import Q
 from django.utils.translation import gettext_lazy as _
 
+from apps.accounts.permissions import Action, ReadableQuerySet
 from apps.core.confidentiality import ConfidentialityLevel
 from apps.core.models import TimeStampedModel
 
@@ -76,6 +77,10 @@ class MeetingStatus(models.TextChoices):
     CANCELLED = "CANCELLED", _("Cancelled")
 
 
+class MeetingQuerySet(ReadableQuerySet["Meeting"]):
+    read_action = Action.MEETING_READ
+
+
 class Meeting(TimeStampedModel):
     """A meeting of a thesis; its texts are sealed (slots meetings.Meeting.*)."""
 
@@ -116,6 +121,8 @@ class Meeting(TimeStampedModel):
         related_name="+",
     )
     ics_sequence = models.PositiveIntegerField(default=0, editable=False)
+
+    objects = MeetingQuerySet.as_manager()
 
     class Meta:
         verbose_name = _("meeting")

@@ -17,6 +17,7 @@ from django.db import models
 from django.db.models import Deferrable, Func, Q
 from django.utils.translation import gettext_lazy as _
 
+from apps.accounts.permissions import Action, ReadableQuerySet
 from apps.core.confidentiality import ConfidentialityLevel
 from apps.core.models import TimeStampedModel
 
@@ -110,6 +111,10 @@ OBJECTIVE_LEVELS = (
 )
 
 
+class ObjectiveQuerySet(ReadableQuerySet["Objective"]):
+    read_action = Action.OBJECTIVE_READ
+
+
 class Objective(TimeStampedModel):
     """An objective of one CIFRE year. Its texts are sealed (slots objectives.Objective.*).
 
@@ -162,6 +167,8 @@ class Objective(TimeStampedModel):
         editable=False,
     )
     acknowledged_at = models.DateTimeField(null=True, blank=True, editable=False)
+
+    objects = ObjectiveQuerySet.as_manager()
 
     class Meta:
         verbose_name = _("objective")

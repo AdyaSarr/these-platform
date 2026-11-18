@@ -24,7 +24,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 
 from apps.accounts.models import Membership, Thesis, User
-from apps.accounts.permissions import Action, can, can_access_level, roles_of
+from apps.accounts.permissions import Action, can, can_access_level, roles_of, sees
 from apps.accounts.roles import Role
 from apps.accounts.statuses import open_statuses
 from apps.activity import events as activity
@@ -1187,7 +1187,8 @@ LINKS: Mapping[str, tuple[type[Any], Action]] = {
 def link_for(user: Any, thesis: Thesis, kind: str, raw: Any) -> Any | None:
     """The object of ``thesis`` named by ``raw`` (a meeting, a submission, an
     edition) if ``user`` may read it; None otherwise. A malformed id, an unknown
-    one, one of another thesis and an object ``user`` may not read are refused
+    one, one of another thesis and an object ``user`` may not read (its module's
+    action, and for a meeting or a submission its level too, SR-01) are refused
     ALIKE: the same None, the same journal entry (reason unknown_link and the kind,
     nothing about which case). An empty ``raw`` is no link: None, no entry."""
     model, action = LINKS[kind]
@@ -1200,6 +1201,8 @@ def link_for(user: Any, thesis: Thesis, kind: str, raw: Any) -> Any | None:
         pass
     else:
         found = model.objects.filter(pk=str(raw), thesis=thesis).first()
+    if found is not None and kind != "edition" and not sees(user, found, action):
+        found = None  # a meeting or a submission of a level user does not read
     if found is None or not can(user, action, thesis):
         _deny(user, "mission_link", "unknown_link", thesis=thesis, kind=kind)
         return None

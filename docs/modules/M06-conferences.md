@@ -14,6 +14,19 @@ relecture décompté à rebours.
   demande d'accord ; `core_rank`, `topics` retirés ; **budget reporté à M7**.
 - Alertes J-30, J-14, J-7, J-1 (au lieu de J-7 seulement).
 
+
+**Règle d'existence (lot B, SR-01, `docs/decisions.md` du 2026-11-18).** On ne voit
+l'existence que de ce qu'on peut lire : un objet de ce module n'existe pour un
+lecteur que s'il a l'action de lecture du module **et** lit son niveau
+(`Submission.objects.readable_by`, `permissions.sees`). Un objet d'un autre niveau
+n'est ni listé, ni compté, ni lié ; sa page répond comme un identifiant inconnu.
+Aucun signal non plus d'un document lié illisible. Test des deux mondes :
+`apps/conferences/tests/test_two_worlds.py` (méthode : `tests/two_worlds.py`).
+Exception assumée et documentée : le **catalogue** (lieux, éditions, échéances)
+est partagé par l'équipe ; mais les éditions « visées » de la carte du tableau de
+bord et les dates de demande d'accord ne se déduisent que des soumissions
+lisibles. Un accord de ST reste affiché sans le nom d'un document illisible.
+
 ## Modèles (`apps/conferences/`)
 
 Tous héritent de `core.TimeStampedModel`, clé primaire UUID, FK `thesis` (catalogue

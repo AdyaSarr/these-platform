@@ -1,8 +1,10 @@
 """Business logic of the meetings (M5a: internal members only).
 
 Rights are decided HERE (accounts.permissions), even when a view checked too:
-- read meetings, the decision register, linked actions: MEETING_READ; every
-  holder sees every meeting (date, type, place), its texts at their level;
+- read meetings, the decision register, linked actions: MEETING_READ AND the
+  meeting's level (SR-01: « on ne voit l'existence que de ce qu'on peut lire »):
+  a meeting of another level is neither listed, counted nor reachable, and its
+  page answers as an unknown id (Meeting.objects.readable_by);
 - write (edit, agenda, minutes, decisions, actions, documents, cancel,
   duplicate): MEETING_WRITE AND (author or attendee); the vault also requires
   read access to the meeting's level;
@@ -51,6 +53,7 @@ from apps.accounts.permissions import (
     can,
     can_access_document,
     roles_of,
+    sees,
 )
 from apps.accounts.statuses import open_statuses
 from apps.activity import events as activity
@@ -359,7 +362,19 @@ def meeting_for(user: User, thesis: Thesis, meeting_id: Any, *, operation: str) 
     if meeting is None:
         raise _deny(user, operation, "unknown_meeting", thesis=thesis)
     _require(user, Action.MEETING_READ, thesis, operation)
+    _require_level(user, meeting, operation)
     return meeting
+
+
+def _require_level(user: Any, meeting: Meeting, operation: str) -> None:
+    """SR-01: a meeting of a level ``user`` does not read does not exist for them:
+    the same PermissionDenied as an unknown id (the journal says why)."""
+    if not sees(user, meeting, Action.MEETING_READ):
+        raise _deny(user, operation, "unreadable_level", thesis=_thesis(meeting))
+
+
+def _readable_meetings(user: Any, thesis: Thesis) -> QuerySet[Meeting]:
+    return Meeting.objects.readable_by(user, thesis)
 
 
 @dataclass(frozen=True)
@@ -373,6 +388,7 @@ class ActionView:
     action: ActionItem
     title: Any
     overdue: bool
+    objective_shown: bool  # its linked objective, if any, is readable (SR-01)
 
 
 @dataclass(frozen=True)
@@ -385,7 +401,6 @@ class MeetingDetail:
     actions: list[ActionView]
     documents: list[Document]
     document_links: dict[uuid.UUID, MeetingDocument]  # by document id, shown ones only
-    hidden_documents: int
     marks: dict[Any, str]  # user pk -> READ / APPROVED, on the current version
     older_marks: dict[Any, str]  # user pk -> mark on an older version only
     is_attendee: bool
@@ -420,6 +435,7 @@ def meeting_detail(user: User, meeting: Meeting) -> MeetingDetail:
     thesis = _thesis(meeting)
     _require(user, Action.MEETING_READ, thesis, "detail")
     meeting = Meeting.objects.get(pk=meeting.pk)
+    _require_level(user, meeting, "detail")
     decisions = list(Decision.objects.filter(meeting=meeting).order_by("created_at", "pk"))
     actions = list(
         ActionItem.objects.filter(meeting=meeting)
@@ -437,6 +453,11 @@ def meeting_detail(user: User, meeting: Meeting) -> MeetingDetail:
     )
     shown = [link for link in links if can_access_document(user, link.document)]
     marks, older = _marks(meeting)
+    goals = set(
+        Objective.objects.readable_by(user, thesis)
+        .filter(pk__in=[a.objective_id for a in actions if a.objective_id])
+        .values_list("pk", flat=True)
+    )
     attendee = is_attendee(user, meeting)
     everyone, current = _attendee_users(meeting), _current_attendees(meeting)
     today = timezone.localdate()
@@ -447,11 +468,13 @@ def meeting_detail(user: User, meeting: Meeting) -> MeetingDetail:
         former_attendees=[u for u in everyone if u.pk not in {c.pk for c in current}],
         decisions=[DecisionView(d, opened.get((d.pk, "text"), "")) for d in decisions],
         actions=[
-            ActionView(a, opened.get((a.pk, "title"), ""), _overdue(a, today)) for a in actions
+            ActionView(
+                a, opened.get((a.pk, "title"), ""), _overdue(a, today), a.objective_id in goals
+            )
+            for a in actions
         ],
         documents=[link.document for link in shown],
         document_links={link.document_id: link for link in shown},
-        hidden_documents=len(links) - len(shown),
         marks=marks,
         older_marks=older,
         is_attendee=attendee,
@@ -477,7 +500,7 @@ def meeting_list(
 ) -> list[MeetingRow]:
     """Upcoming (from today in Paris) or past meetings; titles in one vault call."""
     _require(user, Action.MEETING_READ, thesis, "list")
-    rows = Meeting.objects.filter(thesis=thesis)
+    rows = _readable_meetings(user, thesis)
     start = _start_of_today()
     rows = (
         rows.filter(starts_at__lt=start).order_by("-starts_at", "pk")
@@ -533,7 +556,7 @@ def decision_register(
     withdrawn ones only on request. Texts and meeting titles in one vault call."""
     _require(user, Action.MEETING_READ, thesis, "register")
     rows = (
-        Decision.objects.filter(thesis=thesis)
+        Decision.objects.filter(thesis=thesis, meeting__in=_readable_meetings(user, thesis))
         .select_related("meeting")
         .filter(_paris_range(start, end))
     )
@@ -574,7 +597,9 @@ def actions_for_objective(user: User, objective: Objective) -> list[LinkedAction
     thesis = _thesis(objective)
     _require(user, Action.MEETING_READ, thesis, "objective_actions")
     actions = list(
-        ActionItem.objects.filter(objective=objective, thesis=thesis)
+        ActionItem.objects.filter(
+            objective=objective, thesis=thesis, meeting__in=_readable_meetings(user, thesis)
+        )
         .select_related("meeting", "assignee")
         .order_by("due_date", "pk")
     )
@@ -594,11 +619,12 @@ def dashboard_block(request: Any, thesis: Thesis) -> dict[str, Any]:
     only: the dashboard opens sealed texts once (frontend step 8a)."""
     user = request.user
     _require(user, Action.MEETING_READ, thesis, "dashboard")
-    upcoming = Meeting.objects.filter(
-        thesis=thesis, status=Meeting.Status.SCHEDULED, starts_at__gte=timezone.now()
+    readable = _readable_meetings(user, thesis)
+    upcoming = readable.filter(
+        status=Meeting.Status.SCHEDULED, starts_at__gte=timezone.now()
     ).order_by("starts_at", "pk")
     following = upcoming.filter(attendees__user_id=user.pk).first() or upcoming.first()
-    overdue = list(overdue_actions(thesis).select_related("meeting"))
+    overdue = list(overdue_actions(thesis).filter(meeting__in=readable).select_related("meeting"))
     mine = [a for a in overdue if a.assignee_id == user.pk]
     items: list[tuple[Any, str]] = [(a, "title") for a in mine]
     opened = vault.open_texts(user, thesis, items, action=Action.MEETING_READ)
@@ -611,10 +637,11 @@ def dashboard_block(request: Any, thesis: Thesis) -> dict[str, Any]:
 
 
 def _shown(value: Any) -> dict[str, Any]:
-    """What the templates' meetings/_text.html expects (like views.Shown)."""
+    """What the templates' meetings/_text.html expects (like views.Shown). Only
+    readable meetings are shown (SR-01): a restricted text here is a bug, refused."""
     if value is vault.RESTRICTED:
-        return {"text": "", "restricted": True}
-    return {"text": str(value or ""), "restricted": False}
+        raise PermissionDenied("a text of an unreadable meeting reached a page")
+    return {"text": str(value or "")}
 
 
 # =========================================================================== create

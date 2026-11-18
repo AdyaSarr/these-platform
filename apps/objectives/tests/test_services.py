@@ -602,7 +602,7 @@ def test_evidence_is_shown_only_to_who_may_read_it(team: SimpleNamespace) -> Non
     (for_director,) = services.progress_for(team.director, objective)
     assert for_tutor.evidence == document
     assert for_director.evidence is None  # INTERNAL_ST: not the director's
-    assert for_director.has_hidden_evidence
+    assert not hasattr(for_director, "has_hidden_evidence")  # never hinted (SR-01, B)
 
 
 def test_evidence_of_another_thesis_is_refused(team: SimpleNamespace) -> None:

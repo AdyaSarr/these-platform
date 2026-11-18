@@ -3,5 +3,6 @@
 <p>{% blocktranslate with number=data.year.number %}Year {{ number }}{% endblocktranslate %} ·
   {% translate "Weighted attainment" %}&nbsp;: {% if data.attainment is None %}—{% else %}{{ data.attainment }}&nbsp;%{% endif %}</p>
 <p>{% blocktranslate with overdue=data.overdue drafts=data.drafts %}{{ overdue }} overdue, {{ drafts }} awaiting approval{% endblocktranslate %}</p>
+{% if data.partial %}<p class="muted">{% translate "Computed on the objectives you can read." %}</p>{% endif %}
 {% endif %}
 <p><a href="{% url 'objectives:dashboard' thesis_id=thesis.pk %}">{% translate "Open the objectives" %}</a></p>

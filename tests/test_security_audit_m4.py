@@ -8,7 +8,7 @@ Leads already closed elsewhere:
   ::test_malformed_padding_is_an_integrity_failure. (Clear text: lead 1 below.)
 - 2 levels: apps/vault/tests/test_sealed_text.py
   ::test_levels_a_role_cannot_read_come_back_restricted (tutor, co-supervisor, CSI);
-  apps/objectives/tests/test_views.py::test_restricted_content_for_roles_without_the_level,
+  apps/objectives/tests/test_views.py::test_an_objective_at_an_unreadable_level_does_not_exist_for_the_reader,
   ::test_internal_st_is_not_offered (forced by POST: 400);
   apps/objectives/tests/test_services.py::test_internal_st_is_not_an_objective_level.
 - 3 CSI and comments: apps/objectives/tests/test_views.py
@@ -366,8 +366,8 @@ def test_stats_for_opens_no_text(team: SimpleNamespace) -> None:
         mock.patch.object(vault, "open_texts", side_effect=AssertionError("a text was opened")),
         mock.patch.object(vault, "open_text", side_effect=AssertionError("a text was opened")),
     ):
-        result = services.stats_for(team.co_supervisor, team.thesis, objective.year)
-    assert result.stats.counted == 1  # counted, although the co-supervisor cannot read it
+        result = services.stats_for(team.tutor, team.thesis, objective.year)
+    assert result.stats.counted == 1  # counted, with no text opened (SR-01: a reader of it)
     assert AuditEvent.objects.filter(action="SEALED_TEXT_READ").count() == reads
 
 

@@ -3,9 +3,9 @@
 Leads already closed elsewhere:
 - 2 levels and attendees: apps/meetings/tests/test_services.py
   ::test_every_attendee_reads_the_level, ::test_change_level_excluding_an_attendee_is_refused,
-  ::test_a_non_attendee_supervisor_sees_the_meeting_and_texts_by_level,
+  ::test_a_meeting_exists_only_for_who_reads_its_level,
   ::test_change_level_reseals_every_text; apps/meetings/tests/test_views.py
-  ::test_restricted_content_for_a_reader_without_the_level.
+  ::test_a_meeting_at_an_unreadable_level_does_not_exist_for_the_reader (SR-01).
 - 3 prefilled agenda never widens a text: apps/meetings/tests/test_services.py
   ::test_prefill_copies_only_items_read_by_every_role_of_the_meeting.
 - 4 second factor after the rights (403 first): apps/meetings/tests/test_views.py

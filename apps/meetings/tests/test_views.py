@@ -209,15 +209,24 @@ def test_the_title_stays_in_the_body(team: SimpleNamespace) -> None:
     assert title not in _m(team, meeting, "detail")
 
 
-def test_restricted_content_for_a_reader_without_the_level(team: SimpleNamespace) -> None:
+def test_a_meeting_at_an_unreadable_level_does_not_exist_for_the_reader(
+    team: SimpleNamespace,
+) -> None:
+    """SR-01: neither listed nor reachable; its page answers as an unknown id."""
     title = marker()
     meeting = meeting_of(
         team, level=L.INTERNAL_ST, title=title, attendees=[team.student, team.tutor]
     )
-    html = _client(team, "co_supervisor").get(_m(team, meeting, "detail")).content.decode()
-    assert title not in html and RESTRICTED_TEXT in html
-    listing = _client(team, "co_supervisor").get(_url(team, "list")).content.decode()
-    assert title not in listing and RESTRICTED_TEXT in listing
+    client = _client(team, "co_supervisor")
+    page = client.get(_m(team, meeting, "detail"))
+    unknown = client.get(
+        _m(team, meeting, "detail").replace(str(meeting.pk), "00000000-0000-4000-8000-000000000000")
+    )
+    assert (page.status_code, page.content) == (unknown.status_code, unknown.content)
+    assert page.status_code == 403
+    listing = client.get(_url(team, "list")).content.decode()
+    assert title not in listing and str(meeting.pk) not in listing
+    assert RESTRICTED_TEXT not in listing
 
 
 def test_one_audited_read_per_page_of_a_confidential_meeting(team: SimpleNamespace) -> None:

@@ -30,6 +30,7 @@ from apps.accounts.roles import Role
 from apps.accounts.tests.factories import MembershipFactory
 from apps.conferences.models import Submission
 from apps.conferences.tests.helpers import submission_of
+from apps.core.confidentiality import ConfidentialityLevel
 from apps.meetings.models import Meeting
 from apps.meetings.tests.helpers import meeting_of
 from apps.travel import holidays, services
@@ -83,7 +84,7 @@ def _rousset(team: SimpleNamespace) -> list[Mission]:
         thesis=team.thesis, user=team.director, recent_mfa=True, min_lab_days_per_month=3
     )
     meeting_of(team)
-    submission_of(team)
+    submission_of(team, level=ConfidentialityLevel.PUBLIC)  # read by the company side
     shared = [  # one the company co-supervisor reads (ST), one not (LIRMM)
         mission_of(
             team, destination="ROUSSET", payer="ST",

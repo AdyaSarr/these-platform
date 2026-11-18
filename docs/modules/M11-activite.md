@@ -90,7 +90,10 @@ ne les lit pas. Pour les **réunions, soumissions et objectifs**, dont les liste
 montrent l'existence de tout objet avec des textes restreints, `reads()` = règle de
 la liste **ET** niveau de l'objet lisible par le lecteur (`can_access_level`). C'est
 l'alignement du fil sur les notifications existantes (M5a n'envoie déjà qu'aux
-membres qui lisent le niveau) ; **les listes de M4, M5a et M6 ne changent pas**. Les
+membres qui lisent le niveau) ; **les listes de M4, M5a et M6 ne changent pas**
+(remplacé le 2026-11-18, lot B, SR-01 : les listes suivent désormais la même
+règle, définie une seule fois par `readable_by`, que `reads()` et le flux iCal
+utilisent aussi). Les
 événements liés (action d'une réunion, accord d'une soumission, commentaire d'un
 objectif, ordre d'une mission, lien d'un document) suivent la règle de leur objet
 parent, en plus de la leur.

@@ -1,1 +1,1 @@
-{% load i18n %}{# A sealed text (views.Shown): the text, or "Restricted content" for a role without the level. #}{% if value.restricted %}<span class="restricted">{% translate "Restricted content" %}</span>{% else %}{{ value.text|linebreaksbr }}{% endif %}
+{# A sealed text (views.Shown): only readable meetings reach a page (SR-01). #}{{ value.text|linebreaksbr }}

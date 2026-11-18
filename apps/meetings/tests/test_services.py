@@ -162,19 +162,19 @@ def test_invitations_go_to_the_attendees_but_the_author(team: SimpleNamespace) -
 # =========================================================================== reading
 
 
-def test_a_non_attendee_supervisor_sees_the_meeting_and_texts_by_level(
-    team: SimpleNamespace,
-) -> None:
+def test_a_meeting_exists_only_for_who_reads_its_level(team: SimpleNamespace) -> None:
+    """SR-01: a supervisor without the level neither lists nor opens the meeting."""
     title = marker()
     meeting = meeting_of(
         team, level=L.INTERNAL_ST, title=title, attendees=[team.student, team.tutor]
     )
-    seen = services.meeting_detail(team.co_supervisor, meeting)
-    assert seen.texts["title"] is RESTRICTED
-    assert seen.meeting.starts_at == START
-    assert services.meeting_detail(team.tutor, meeting).texts["title"] == title
-    rows = services.meeting_list(team.director, team.thesis, past=False)
-    assert [(r.meeting.pk, r.title) for r in rows] == [(meeting.pk, RESTRICTED)]
+    with pytest.raises(PermissionDenied):
+        services.meeting_detail(team.co_supervisor, meeting)
+    seen = services.meeting_detail(team.tutor, meeting)
+    assert seen.texts["title"] == title and seen.meeting.starts_at == START
+    assert services.meeting_list(team.director, team.thesis, past=False) == []
+    rows = services.meeting_list(team.tutor, team.thesis, past=False)
+    assert [(r.meeting.pk, r.title) for r in rows] == [(meeting.pk, title)]
 
 
 @pytest.mark.parametrize("role", ["csi", "guest", "outsider"])
@@ -298,7 +298,8 @@ def test_change_level_reseals_every_text(team: SimpleNamespace) -> None:
     rows = SealedText.objects.filter(object_id__in=ids)
     assert rows.count() == 4
     assert set(rows.values_list("level", flat=True)) == {"CONFIDENTIAL"}
-    assert services.meeting_detail(team.co_supervisor, meeting).texts["title"] is RESTRICTED
+    with pytest.raises(PermissionDenied):  # SR-01: no longer readable, no longer there
+        services.meeting_detail(team.co_supervisor, meeting)
 
 
 def test_change_level_excluding_an_attendee_is_refused(team: SimpleNamespace) -> None:
@@ -629,7 +630,8 @@ def test_documents_linked_are_shown_to_those_who_may_read_them(team: SimpleNames
     link = services.link_document(meeting=meeting, user=team.student, document=st_doc)
     assert services.meeting_detail(team.tutor, meeting).documents == [st_doc]
     hidden = services.meeting_detail(team.director, meeting)
-    assert hidden.documents == [] and hidden.hidden_documents == 1
+    assert hidden.documents == []  # and no count of unreadable documents (lot B)
+    assert not hasattr(hidden, "hidden_documents")
     with pytest.raises(ValidationError) as exc:
         services.link_document(meeting=meeting, user=team.student, document=st_doc)
     assert _code(exc) == "already_linked"

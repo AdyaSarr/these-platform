@@ -88,16 +88,16 @@ def _status(exc: ValidationError) -> int:
 
 @dataclass(frozen=True)
 class Shown:
-    """A sealed text as the page shows it: the text, or « Restricted content »."""
+    """A sealed text as the page shows it. Only readable meetings reach a page
+    (SR-01): every text of a meeting is at its level, so none is restricted."""
 
     text: str
-    restricted: bool
 
 
 def shown(value: Any) -> Shown:
-    if value is vault.RESTRICTED:
-        return Shown(text="", restricted=True)
-    return Shown(text=str(value or ""), restricted=False)
+    if value is vault.RESTRICTED:  # a bug upstream: refuse rather than hint
+        raise PermissionDenied("a text of an unreadable meeting reached a page")
+    return Shown(text=str(value or ""))
 
 
 def _documents(user: User, thesis: Any) -> list[tuple[str, str]]:
@@ -106,21 +106,15 @@ def _documents(user: User, thesis: Any) -> list[tuple[str, str]]:
 
 
 def _objectives(user: User, thesis: Any) -> list[tuple[str, str]]:
-    """Objectives to link an action to, by their title when the user reads it."""
-    objectives = list(Objective.objects.filter(thesis=thesis).order_by("due_date", "pk"))
-    opened = (
-        vault.open_texts(
-            user, thesis, [(o, "title") for o in objectives], action=Action.OBJECTIVE_READ
-        )
-        if can(user, Action.OBJECTIVE_READ, thesis)
-        else {}
+    """Objectives to link an action to: those the user reads only (SR-01)."""
+    objectives = list(Objective.objects.readable_by(user, thesis).order_by("due_date", "pk"))
+    opened = vault.open_texts(
+        user, thesis, [(o, "title") for o in objectives], action=Action.OBJECTIVE_READ
     )
-    choices = []
-    for o in objectives:
-        title = opened.get((o.pk, "title"), "")
-        label = _("Restricted content") if title is vault.RESTRICTED else str(title)
-        choices.append((str(o.pk), f"{label} ({o.due_date:%d/%m/%Y})"))
-    return choices
+    return [
+        (str(o.pk), f"{shown(opened.get((o.pk, 'title'), '')).text} ({o.due_date:%d/%m/%Y})")
+        for o in objectives
+    ]
 
 
 def _meeting_url(thesis: Any, meeting: Meeting) -> str:
@@ -160,7 +154,6 @@ class _Mixin(ThesisPermissionRequiredMixin):
         m = detail.meeting
         writer = detail.can_write and not m.is_cancelled
         texts = {name: shown(value) for name, value in detail.texts.items()}
-        readable = not texts["title"].restricted
         csi_pending = m.is_csi
         started = m.starts_at <= timezone.now()
         context = {
@@ -182,13 +175,13 @@ class _Mixin(ThesisPermissionRequiredMixin):
                     "action": a.action,
                     "title": shown(a.title),
                     "overdue": a.overdue,
+                    "objective_shown": a.objective_shown,
                     "can_status": a.action.assignee_id == user.pk or detail.can_write,
                 }
                 for a in detail.actions
             ],
             "documents": [(d, detail.document_links[d.pk]) for d in detail.documents],
-            "hidden_documents": detail.hidden_documents,
-            "can_write": writer and readable,
+            "can_write": writer,
             "csi_pending": csi_pending,
             "can_acknowledge": detail.can_acknowledge
             and m.minutes_version > 0
@@ -652,8 +645,8 @@ class ObjectiveActionsView(_Mixin, View):
         self, request: HttpRequest, *args: Any, objective_id: Any, **kwargs: Any
     ) -> HttpResponse:
         user = _user(request)
-        objective = Objective.objects.filter(pk=objective_id, thesis=self.thesis).first()
-        if objective is None:
+        objective = Objective.objects.readable_by(user, self.thesis).filter(pk=objective_id).first()
+        if objective is None:  # unknown or unreadable: the same refusal (SR-01)
             raise PermissionDenied
         rows = services.actions_for_objective(user, objective)
         context = {

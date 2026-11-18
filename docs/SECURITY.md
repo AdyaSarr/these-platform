@@ -98,7 +98,8 @@ jamais stockés en clair. Une ligne `SealedText` par couple (emplacement, objet)
    `seal()` après `audit()` lève `LockOrderError`.
 5. **Lecture** par `open_texts(...)` : une requête par page ; un texte d'un
    niveau que le lecteur ne voit pas revient `RESTRICTED` (« Contenu
-   restreint ») ; la lecture d'un texte `CONFIDENTIAL` est journalisée
+   restreint » : M7 seulement, pour un texte ou un montant d'un autre niveau que
+   la mission ; en M4, M5a et M6 un objet illisible n'atteint aucune page, SR-01) ; la lecture d'un texte `CONFIDENTIAL` est journalisée
    (`SEALED_TEXT_READ`, un événement par appel, emplacements et identifiants
    seulement) ; la session ouverte avec second facteur suffit pour l'afficher
    (pas de second facteur récent, contrairement au téléchargement d'un
@@ -154,7 +155,8 @@ d'un texte bourré, et une `kek_id` d'un autre domaine que le niveau.
 - **Droits** : écrire = doctorant ; approuver et prendre connaissance = directeur,
   second facteur de moins de 10 min (vue et service) ; commenter et lire les
   commentaires = `OBJECTIVE_COMMENT` (jamais le CSI : ni la page, ni le fragment,
-  ni le courriel) ; un rôle sans accès au niveau lit « Contenu restreint ».
+  ni le courriel) ; pour un rôle sans accès au niveau, l'objectif n'existe pas
+  (lot B, SR-01 : ni liste, ni décompte, page refusée comme un identifiant inconnu).
 - **Journal** : noms de champs et nombres seulement ; une seule lecture
   `CONFIDENTIAL` journalisée par requête (`SEALED_TEXT_READ`).
 - **Résumé hebdomadaire** : un lien seulement, envoyé à un encadrant s'il y a de

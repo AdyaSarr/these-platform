@@ -27,7 +27,7 @@
 <p>{% include "conferences/_text.html" with value=texts.abstract %}</p>
 <p>{% translate "Internal co-authors" %}&nbsp;: {% for user in authors %}{{ user.get_full_name|default:user.email }}{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}</p>
 <p>{% translate "External co-authors" %}&nbsp;: {% include "conferences/_text.html" with value=texts.external_authors %}</p>
-{% if texts.notes.text or texts.notes.restricted %}<p>{% translate "Notes" %}&nbsp;: {% include "conferences/_text.html" with value=texts.notes %}</p>{% endif %}
+{% if texts.notes.text %}<p>{% translate "Notes" %}&nbsp;: {% include "conferences/_text.html" with value=texts.notes %}</p>{% endif %}
 
 {% if deadlines %}
 <section aria-labelledby="deadlines-title">
@@ -46,7 +46,6 @@
     {% endfor %}
   </ul>
   {% endif %}
-  {% if hidden_documents %}<p class="muted">{% blocktranslate count counter=hidden_documents %}{{ counter }} linked document you may not read.{% plural %}{{ counter }} linked documents you may not read.{% endblocktranslate %}</p>{% endif %}
   {% if document_form and document_form.fields.document.choices %}
     <form class="stack" method="post" action="{% url 'conferences:document' thesis_id=thesis.pk submission_id=submission.pk %}">{% csrf_token %}{% include "conferences/_form.html" with form=document_form %}
       <button type="submit" class="btn-primary">{% translate "Link the document" %}</button></form>
@@ -59,10 +58,10 @@
   {% if approvals %}
   <ul>
     {% for approval, comment, document_title in approvals %}
-      <li>{{ approval.get_purpose_display }} — {% if document_title %}{{ document_title }}{% else %}<span class="restricted">{% translate "Restricted document" %}</span>{% endif %} v{{ approval.version.version }} ·
+      <li>{{ approval.get_purpose_display }} — {% if document_title %}{{ document_title }} {% endif %}v{{ approval.version.version }} ·
         <strong>{{ approval.get_decision_display }}</strong>{% if approval.reason %} ({{ approval.get_reason_display }}){% endif %}
         · {% blocktranslate with days=approval.review_days %}period {{ days }} days{% endblocktranslate %}{% if approval.request_due %} · {% blocktranslate with date=approval.request_due|date:"SHORT_DATE_FORMAT" %}to request by {{ date }}{% endblocktranslate %}{% endif %}
-        {% if comment.text or comment.restricted %}<br>{% translate "Comment" %}&nbsp;: {% include "conferences/_text.html" with value=comment %}{% endif %}
+        {% if comment.text %}<br>{% translate "Comment" %}&nbsp;: {% include "conferences/_text.html" with value=comment %}{% endif %}
         {% if approval.decision == pending %}
           {% if can_write %}<form method="post" action="{% url 'conferences:withdraw_approval' thesis_id=thesis.pk submission_id=submission.pk approval_id=approval.pk %}">{% csrf_token %}<button type="submit">{% translate "Withdraw the request" %}</button></form>{% endif %}
           {% if can_decide %}
@@ -94,7 +93,7 @@
   <h2 id="preprints-title">{% translate "Preprints" %}</h2>
   {% if preprints %}
   <ul>{% for preprint, url in preprints %}<li>{{ preprint.get_platform_display }}, {{ preprint.posted_on|date:"SHORT_DATE_FORMAT" }}&nbsp;:
-    {% if url.restricted %}{% include "conferences/_text.html" with value=url %}{% else %}{% include "conferences/_external.html" with url=url.text label=url.text %}{% endif %}</li>{% endfor %}</ul>
+    {% include "conferences/_external.html" with url=url.text label=url.text %}</li>{% endfor %}</ul>
   {% else %}<p class="muted">{% translate "No preprint." %}</p>{% endif %}
   {% if preprint_form %}
     <form class="stack" method="post" action="{% url 'conferences:preprint' thesis_id=thesis.pk submission_id=submission.pk %}">{% csrf_token %}{% include "conferences/_form.html" with form=preprint_form %}

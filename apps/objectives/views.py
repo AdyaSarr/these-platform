@@ -75,16 +75,16 @@ def month_label(day: dt.date) -> str:
 
 @dataclass(frozen=True)
 class Shown:
-    """A sealed text as the page shows it: the text, or "Restricted content"."""
+    """A sealed text as the page shows it. Only readable objectives reach a page
+    (SR-01): every text of an objective is at its level, so none is restricted."""
 
     text: str
-    restricted: bool
 
 
 def shown(value: Any) -> Shown:
-    if value is vault.RESTRICTED:
-        return Shown(text="", restricted=True)
-    return Shown(text=str(value or ""), restricted=False)
+    if value is vault.RESTRICTED:  # a bug upstream: refuse rather than hint
+        raise PermissionDenied("a text of an unreadable objective reached a page")
+    return Shown(text=str(value or ""))
 
 
 def _shown_texts(texts: dict[str, Any]) -> dict[str, Shown]:
@@ -179,7 +179,6 @@ class _Mixin(ThesisPermissionRequiredMixin):
                     "update": p.update,
                     "note": shown(p.note),
                     "evidence": p.evidence,
-                    "hidden": p.has_hidden_evidence,
                 }
                 for p in detail.progress
             ],
@@ -504,7 +503,6 @@ class ProgressView(_Mixin, View):
                     "update": p.update,
                     "note": shown(p.note),
                     "evidence": p.evidence,
-                    "hidden": p.has_hidden_evidence,
                 }
                 for p in detail.progress
             ],

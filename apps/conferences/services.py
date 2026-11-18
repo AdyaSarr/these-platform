@@ -33,6 +33,7 @@ from typing import Any, NamedTuple
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.validators import URLValidator
 from django.db import IntegrityError, transaction
+from django.db.models import QuerySet
 from django.utils import timezone
 from django.utils.translation import gettext as _
 
@@ -43,6 +44,7 @@ from apps.accounts.permissions import (
     can,
     can_access_document,
     roles_of,
+    sees,
 )
 from apps.accounts.roles import Role
 from apps.accounts.statuses import open_statuses
@@ -514,7 +516,20 @@ def submission_for(user: User, thesis: Thesis, submission_id: Any, *, operation:
     if submission is None:
         raise _deny(user, operation, "unknown_submission", thesis=thesis)
     _require(user, Action.SUBMISSION_READ, thesis, operation)
+    _require_level(user, submission, operation)
     return submission
+
+
+def _require_level(user: Any, submission: Submission, operation: str) -> None:
+    """SR-01: a submission of a level ``user`` does not read does not exist for
+    them: the same PermissionDenied as an unknown id (the journal says why). The
+    catalogue (venues, editions, deadlines) is shared: the documented exception."""
+    if not sees(user, submission, Action.SUBMISSION_READ):
+        raise _deny(user, operation, "unreadable_level", thesis=_thesis(submission))
+
+
+def _readable_submissions(user: Any, thesis: Thesis) -> QuerySet[Submission]:
+    return Submission.objects.readable_by(user, thesis)
 
 
 @dataclass(frozen=True)
@@ -537,7 +552,6 @@ class SubmissionDetail:
     approvals: list[ApprovalView]
     preprints: list[PreprintView]
     documents: list[tuple[Document, SubmissionDocument]]
-    hidden_documents: int
     deadlines: list[Deadline]
 
 
@@ -546,6 +560,7 @@ def submission_detail(user: User, submission: Submission) -> SubmissionDetail:
     thesis = _thesis(submission)
     _require(user, Action.SUBMISSION_READ, thesis, "detail")
     submission = Submission.objects.select_related("venue", "edition").get(pk=submission.pk)
+    _require_level(user, submission, "detail")
     approvals = list(
         StApproval.objects.filter(submission=submission)
         .select_related("version__document", "requested_by", "decided_by")
@@ -581,7 +596,6 @@ def submission_detail(user: User, submission: Submission) -> SubmissionDetail:
         approvals=[ApprovalView(a, opened.get((a.pk, "comment"), "")) for a in approvals],
         preprints=[PreprintView(p, opened.get((p.pk, "url"), "")) for p in preprints],
         documents=[(link.document, link) for link in shown],
-        hidden_documents=len(links) - len(shown),
         deadlines=deadlines,
     )
 
@@ -595,7 +609,7 @@ class SubmissionRow:
 def submission_list(user: User, thesis: Thesis) -> list[SubmissionRow]:
     _require(user, Action.SUBMISSION_READ, thesis, "list")
     submissions = list(
-        Submission.objects.filter(thesis=thesis)
+        _readable_submissions(user, thesis)
         .select_related("venue", "edition")
         .order_by("-created_at", "pk")
     )
@@ -609,7 +623,8 @@ def submissions_for_objective(user: User, objective: Objective) -> list[Submissi
     thesis = _thesis(objective)
     _require(user, Action.SUBMISSION_READ, thesis, "objective_submissions")
     submissions = list(
-        Submission.objects.filter(thesis=thesis, objective=objective)
+        _readable_submissions(user, thesis)
+        .filter(objective=objective)
         .select_related("venue", "edition")
         .order_by("created_at", "pk")
     )
@@ -624,7 +639,11 @@ def pending_approvals(user: User, thesis: Thesis) -> list[StApproval]:
     if not can(user, Action.VALIDATE_PUBLICATION, thesis):
         return []
     return list(
-        StApproval.objects.filter(thesis=thesis, decision=ApprovalDecision.PENDING)
+        StApproval.objects.filter(
+            thesis=thesis,
+            decision=ApprovalDecision.PENDING,
+            submission__in=_readable_submissions(user, thesis),
+        )
         .select_related("submission")
         .order_by("request_due", "created_at")
     )
@@ -654,11 +673,11 @@ def request_due_dates(thesis: Thesis) -> list[tuple[Submission, dt.date]]:
 
 def submission_counts(user: Any, thesis: Thesis) -> list[tuple[str, int]]:
     """(status label, number) of the submissions of ``thesis``, in the order of the
-    statuses, the empty ones left out. Read only; no text opened (the list of the
-    submissions shows them all to SUBMISSION_READ, titles by level)."""
+    statuses, the empty ones left out. Read only; no text opened; the submissions
+    the user reads only (SR-01)."""
     _require(user, Action.SUBMISSION_READ, thesis, "counts")
     counts: dict[str, int] = {}
-    for status in Submission.objects.filter(thesis=thesis).values_list("status", flat=True):
+    for status in _readable_submissions(user, thesis).values_list("status", flat=True):
         counts[status] = counts.get(status, 0) + 1
     return [(str(s.label), counts[s.value]) for s in S if s.value in counts]
 
@@ -668,7 +687,10 @@ def dashboard_block(request: Any, thesis: Thesis) -> dict[str, Any]:
     due dates, approvals awaiting the tutor."""
     user = request.user
     _require(user, Action.CONFERENCE_READ, thesis, "dashboard")
-    targeted = {s.edition_id for s in _active(thesis) if s.edition_id}
+    # The catalogue is shared, but which editions are aimed at says which
+    # submissions exist: only those the user reads (SR-01).
+    readable = set(_readable_submissions(user, thesis).values_list("pk", flat=True))
+    targeted = {s.edition_id for s in _active(thesis) if s.edition_id and s.pk in readable}
     deadlines = [
         deadline_display(d) for d in upcoming_deadlines(user, thesis) if d.edition_id in targeted
     ][:5]
@@ -677,7 +699,9 @@ def dashboard_block(request: Any, thesis: Thesis) -> dict[str, Any]:
     return {
         "deadlines": deadlines,
         "request_dues": [
-            (s, due, (due - today).days) for s, due in request_due_dates(thesis) if due >= today
+            (s, due, (due - today).days)
+            for s, due in request_due_dates(thesis)
+            if due >= today and s.pk in readable
         ][:3],
         "pending": len(pending),
         "pending_approvals": pending,  # one line and link each in « À traiter »
@@ -809,7 +833,19 @@ def update_submission(
     venue = changes.get("venue", fresh.venue)
     edition = changes.get("edition", fresh.edition)
     _check_target(thesis, venue, edition)
-    objective = _check_objective(thesis, changes.get("objective", fresh.objective))
+    objective = changes.get("objective", fresh.objective)
+    hidden = fresh.objective is not None and not sees(user, fresh.objective, Action.OBJECTIVE_READ)
+    if objective is None and hidden:
+        # Point C (lot B): the page never showed this link, so an empty field does
+        # not undo it; the server keeps it, the id never reaches the page.
+        objective = fresh.objective
+    elif (
+        objective is not None
+        and objective != fresh.objective
+        and not sees(user, objective, Action.OBJECTIVE_READ)
+    ):
+        raise ValidationError(_("Unknown objective."), code="objective")
+    objective = _check_objective(thesis, objective)
     retargeted = venue.pk != fresh.venue_id or (edition.pk if edition else None) != fresh.edition_id
     if retargeted and _approval_on_record(fresh):
         raise ValidationError(
