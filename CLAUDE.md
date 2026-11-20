@@ -52,6 +52,8 @@ uv run pip-audit
 scripts/check_deploy.sh                       # check --deploy en prod (lit .env) :
                                               # lancé par l'utilisatrice seulement
 scripts/demo_reset.sh                         # base de démonstration _demo (README)
+scripts/mutants.sh [Mnn ...]                  # rejoue les mutants de scripts/mutants.toml,
+                                              # à la main (arbre propre ; jamais dans test_all.sh)
 ```
 
 **Ne jamais lancer `scripts/demo_reset.sh` depuis Claude Code ; c'est l'utilisateur
@@ -151,6 +153,11 @@ la contourner.
   (environnement sans `PYTEST_XDIST_*`). Un échec de la phase parallèle affiche la
   commande qui rejoue seul, dans le même ordre, le worker fautif
   (`var/pytest-order/`).
+- Tout mutant revendiqué dans une fiche ou un rapport est ajouté à
+  `scripts/mutants.toml` (fichier, texte exact remplacé, tests qui doivent échouer)
+  et rejoué par `scripts/mutants.sh` : un mutant appliqué seulement à la main ne se
+  revendique pas (SR-12). `tests/test_mutants_manifest.py` vérifie que chaque
+  mutant s'applique encore au code.
 - Migrations relues et commitées avec le code qui les utilise.
 - Commits : `<module>: <verbe à l'impératif> ...` (ex. `objectives: add weighted completion rate`).
 

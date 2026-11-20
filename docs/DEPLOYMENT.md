@@ -336,6 +336,9 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       à la fois, case « Serveur d'application »).
       **Une nouvelle vue de dépôt** doit être ajoutée à l'expression `@upload` ;
       oubliée, elle répond 413 au-delà de 1 Mio (visible), jamais l'inverse.
+      `tests/test_caddy_upload_routes.py` échoue dans les deux sens : une vue qui lit
+      `request.FILES` hors de `@upload`, ou une alternative qui ne désigne plus une
+      route de dépôt.
       **`MiB`, pas `MB`** : Caddy v2.11.9 lit `26MB` comme 26 000 000 octets,
       moins que 25 Mio (vérifié le 2026-11-18 par `caddy adapt` : 26 000 000 pour
       `26MB`, 27 262 976 pour `26MiB`) ; la limite `26MB` écrite ici jusqu'au
