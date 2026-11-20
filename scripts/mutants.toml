@@ -1,0 +1,111 @@
+# Mutants claimed by the module sheets and the reports (SR-12): each one is a
+# defect a security test must catch. scripts/mutants.sh applies them one at a
+# time to the working tree (never committed), runs only their tests, checks
+# that each listed test FAILS, and restores the file. Run by hand, never by
+# scripts/test_all.sh:
+#
+#   scripts/mutants.sh                  # every mutant
+#   scripts/mutants.sh M03 M07          # some of them (by id)
+#   scripts/mutants.sh --list
+#
+# Adding a mutant (CLAUDE.md: every mutant claimed in a sheet is added here):
+#   - id: next free "Mnn-short-name"; claim: where the sheet or report claims it;
+#   - file: repository path; old: an exact text found ONCE in it (a stale `old`
+#     fails tests/test_mutants_manifest.py); new: its replacement;
+#   - tests: pytest node ids ("path" or "path::test_function"); EVERY one must
+#     have at least one FAILED case under the mutant (a setup ERROR is no kill);
+#   - check it: scripts/mutants.sh Mnn  →  "tué".
+# TOML literal strings ('...' or '''...''') take the text as is, no escapes.
+
+[[mutant]]
+id = "M01-fil-niveau-documents"
+claim = "M11a, critère 2 (« Vérifié par mutants ») : filtre de niveau des documents"
+file = "apps/activity/readers.py"
+old = 'Q(confidentiality__in=by_role)'
+new = 'Q(confidentiality__in=list(ConfidentialityLevel))'
+tests = ["apps/activity/tests/test_two_worlds.py"]
+
+[[mutant]]
+id = "M02-fil-prefiltre-reunions"
+claim = "Revue 2026-11, domaine 12 (rejoué sur test_m11b_two_worlds.py) : préfiltre SQL du fil"
+file = "apps/activity/readers.py"
+old = 'meetings = Meeting.objects.readable_by(user, thesis, roles)'
+new = 'meetings = Meeting.objects.filter(thesis=thesis)'
+tests = ["apps/activity/tests/test_m11b_two_worlds.py"]
+
+[[mutant]]
+id = "M03-readable-by-sans-niveau"
+claim = "Lot B (SR-01) : règle readable_by, action ET niveau"
+file = "apps/accounts/permissions.py"
+old = 'return self.filter(thesis=thesis, level__in=[level.value for level in levels])'
+new = 'return self.filter(thesis=thesis)'
+tests = [
+    "tests/test_existence_rule.py::test_readable_by_is_the_action_and_the_level",
+    "tests/security_review/test_sr01_existence_in_lists.py",
+]
+
+[[mutant]]
+id = "M04-garde-de-statut"
+claim = "M13a, garde de statut dans can() : matrice service × statut"
+file = "apps/accounts/permissions.py"
+old = 'return frozenset(a for a in rights if a in READ_ACTIONS or a in writes)'
+new = 'return rights'
+tests = ["tests/test_status_matrix.py"]
+
+[[mutant]]
+id = "M05-m6-hors-defended"
+claim = "M13a, critère 11 : mutant « M6 sans DEFENDED »"
+file = "apps/accounts/permissions.py"
+old = '_A.CONFERENCE_WRITE, _A.SUBMISSION_WRITE, _A.VALIDATE_PUBLICATION,  # M6'
+new = '# M6 removed (mutant M05)'
+tests = [
+    "apps/lifecycle/tests/test_defended_notifications.py::test_every_kind_of_m6_is_still_sent_after_the_defence",
+]
+
+[[mutant]]
+id = "M06-m3-droit-avant-gel"
+claim = "M13a, critère 13 : mutant « contrôle du droit retiré » (dossier gelé)"
+file = "apps/admin_file/services.py"
+old = 'right(user, locked)'
+new = 'pass'
+tests = [
+    "apps/lifecycle/tests/test_gaps.py::test_m3_tells_the_validator_only_that_the_file_is_frozen",
+]
+
+[[mutant]]
+id = "M07-jetons-non-masques"
+claim = "M12, critère 7 : « the filter is checked by a mutant »"
+file = "apps/core/logging.py"
+old = 'record.msg = mask(record.msg)'
+new = '''return True
+        record.msg = mask(record.msg)'''
+tests = [
+    "apps/feeds/tests/test_logs.py::test_the_filter_masks_a_token_in_a_message_and_its_arguments",
+    "apps/feeds/tests/test_logs.py::test_no_journal_holds_the_token",
+]
+
+[[mutant]]
+id = "M08-cloche-sans-marqueur"
+claim = "Lot A (SR-05) : « cloche sans son marqueur → le test échoue »"
+file = "templates/activity/_bell.html"
+old = '{% endwith %}<!-- /bell -->'
+new = '{% endwith %}'
+tests = ["apps/activity/tests/test_two_worlds.py"]
+
+[[mutant]]
+id = "M09-missions-visible-to"
+claim = "M7 (fiche, « fuites du test des deux mondes vérifiées par mutants ») : Mission.visible_to"
+file = "apps/travel/models.py"
+old = 'return rows.filter(destination=ONLY_KIND[access])'
+new = 'return rows'
+tests = [
+    "apps/travel/tests/test_minimisation.py::test_the_co_supervisor_cannot_tell_two_worlds_apart",
+]
+
+[[mutant]]
+id = "M10-ical-reunions"
+claim = "M12, critère 5 : deux mondes du .ics, « checked by mutants »"
+file = "apps/feeds/calendar.py"
+old = 'rows = Meeting.objects.readable_by(user, thesis).filter('
+new = 'rows = Meeting.objects.filter(thesis=thesis).filter('
+tests = ["apps/feeds/tests/test_two_worlds.py"]
