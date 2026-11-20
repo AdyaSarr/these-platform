@@ -129,7 +129,12 @@ def main() -> int:
     LOG_DIR.mkdir(parents=True, exist_ok=True)
     every_test = list(dict.fromkeys(t for m in mutants for t in m["tests"]))
     print(f"mutants: ligne de base, {len(every_test)} cible(s) sur le code intact…", flush=True)
-    code, _ = _pytest(every_test, LOG_DIR / "baseline.log")
+    try:
+        code, _ = _pytest(every_test, LOG_DIR / "baseline.log")
+    except KeyboardInterrupt:
+        print("\nmutants: interrompu pendant la ligne de base ; aucun fichier modifié.",
+              file=sys.stderr)  # fmt: skip
+        return 130
     if code != 0:
         print(f"mutants: la ligne de base échoue (pytest exit={code}, var/mutants/baseline.log) ;"
               " un mutant « tué » ne voudrait rien dire.", file=sys.stderr)  # fmt: skip
