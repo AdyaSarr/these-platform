@@ -54,10 +54,10 @@ tests = ["tests/test_status_matrix.py"]
 
 [[mutant]]
 id = "M05-m6-hors-defended"
-claim = "M13a, critère 11 : mutant « M6 sans DEFENDED »"
-file = "apps/accounts/permissions.py"
-old = '_A.CONFERENCE_WRITE, _A.SUBMISSION_WRITE, _A.VALIDATE_PUBLICATION,  # M6'
-new = '# M6 removed (mutant M05)'
+claim = "M13a, critère 11 : mutant « M6 sans DEFENDED » (table des statuts ouverts)"
+file = "apps/accounts/statuses.py"
+old = '"conferences": _AND_DEFENDED,'
+new = '"conferences": (S.SETUP, S.ACTIVE),'
 tests = [
     "apps/lifecycle/tests/test_defended_notifications.py::test_every_kind_of_m6_is_still_sent_after_the_defence",
 ]
@@ -68,8 +68,11 @@ claim = "M13a, critère 13 : mutant « contrôle du droit retiré » (dossier ge
 file = "apps/admin_file/services.py"
 old = 'right(user, locked)'
 new = 'pass'
+# Whoever has no right must get the refusal of right (the validator, who has it,
+# learns of the freeze either way: its test does not see this mutant).
 tests = [
-    "apps/lifecycle/tests/test_gaps.py::test_m3_tells_the_validator_only_that_the_file_is_frozen",
+    "apps/lifecycle/tests/test_gaps.py::test_m3_refuses_whoever_has_no_right_as_on_an_open_thesis",
+    "apps/lifecycle/tests/test_gaps.py::test_m3_views_answer_the_same",
 ]
 
 [[mutant]]
@@ -79,9 +82,10 @@ file = "apps/core/logging.py"
 old = 'record.msg = mask(record.msg)'
 new = '''return True
         record.msg = mask(record.msg)'''
+# test_no_journal_holds_the_token does not see it: the feed's 404 are marked
+# _has_been_logged (apps/feeds/views.py), so no record carries the path at all.
 tests = [
     "apps/feeds/tests/test_logs.py::test_the_filter_masks_a_token_in_a_message_and_its_arguments",
-    "apps/feeds/tests/test_logs.py::test_no_journal_holds_the_token",
 ]
 
 [[mutant]]
@@ -108,4 +112,14 @@ claim = "M12, critère 5 : deux mondes du .ics, « checked by mutants »"
 file = "apps/feeds/calendar.py"
 old = 'rows = Meeting.objects.readable_by(user, thesis).filter('
 new = 'rows = Meeting.objects.filter(thesis=thesis).filter('
-tests = ["apps/feeds/tests/test_two_worlds.py"]
+# Survived test_two_worlds.py at the first run (lot D): it never invites the
+# observed role to a meeting it does not read. Killed by the test added then.
+tests = ["apps/feeds/tests/test_attendee_level.py"]
+
+[[mutant]]
+id = "M11-defended-m6-dans-can"
+claim = "M13a, garde de statut : écritures de M6 permises en DEFENDED (WRITES_BY_STATUS)"
+file = "apps/accounts/permissions.py"
+old = '_A.CONFERENCE_WRITE, _A.SUBMISSION_WRITE, _A.VALIDATE_PUBLICATION,  # M6'
+new = '# M6 removed (mutant M11)'
+tests = ["tests/test_status_matrix.py"]
