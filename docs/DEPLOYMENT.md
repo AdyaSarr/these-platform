@@ -13,9 +13,18 @@ avec la commande donnée ; « vérifié le … » ne vaut que pour la version ci
 
 Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
 
-- [ ] **CI obligatoire avant tout déploiement.** Un pipeline lance au minimum
-      `uv run pytest`, `detect-secrets` et `uv run pip-audit` sur la révision
-      déployée, et le déploiement exige qu'il soit vert.
+- [ ] **CI obligatoire avant tout déploiement.** `.github/workflows/ci.yml`, à chaque
+      push et pull request : `uv sync --frozen`, ruff, `ruff format --check`, mypy,
+      bandit, pip-audit, `makemigrations --check`, `scripts/test_all.sh` (dernière
+      ligne `test_all: exit=0 parallel=0 serial=0` et deux lignes de résumé sans
+      échec exigées ; `detect-secrets` y tourne par `tests/test_audit.py`), puis
+      `pytest -m merge_gate` sur `main` et les pull requests. Services par
+      `docker-compose.yml` (mêmes images épinglées), mots de passe tirés au hasard
+      pour chaque exécution, aucun secret GitHub, actions épinglées par commit,
+      `contents: read`, aucun cache. Les mutants : `.github/workflows/mutants.yml`,
+      lancé à la main. **Reste à faire à la main** : un premier passage vert, puis
+      la protection de `main` (pull request obligatoire, statut « CI / checks »
+      exigé, branche à jour avant fusion).
       *Pourquoi* : les hooks pre-commit se contournent par `git commit --no-verify` ;
       le test `test_detect_secrets_finds_nothing_new_in_tracked_files` ne protège que
       s'il est exécuté.
@@ -120,9 +129,8 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       `False False` : l'adresse lue est celle d'un proxy (un second proxy
       s'intercale, ou l'en-tête n'arrive pas à Django).
 
-- [ ] **gunicorn ajouté aux dépendances (SR-19).** Il ne l'est pas encore :
-      `uv add gunicorn` dans un commit à part (suite complète à `exit=0`,
-      `uv run pip-audit` sans vulnérabilité), avant le premier déploiement.
+- [x] **gunicorn ajouté aux dépendances (SR-19).** gunicorn 27.0.1 (`uv add
+      gunicorn`, 2026-11-24, `uv run pip-audit` : aucune vulnérabilité connue).
       *Vérifier* : `grep -c '^name = "gunicorn"' uv.lock` → `1` ;
       `uv run gunicorn --version` sur le serveur.
 
@@ -163,6 +171,10 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       gunicorn config.wsgi:application --print-config | grep -E '^(accesslog|bind|worker_class|workers|threads) '
       # attendu : accesslog = None, bind = ['127.0.0.1:8000'], gthread, 2, 4
       ```
+      Vérifié le 2026-11-24 sur gunicorn 27.0.1 (`--print-config` avec la commande
+      ci-dessus) : `accesslog = None`, `errorlog = -`, `bind = ['127.0.0.1:8000']`,
+      `gthread`, 2, 4, `proxy_protocol = off`, et `config = ./gunicorn.conf.py` (lu
+      s'il existe dans le dossier de travail : d'où le `test ! -e`).
       puis le `grep -c` des jetons dans `journalctl -u these-gunicorn` (case
       « Jetons des flux iCal ») : `0`.
 
