@@ -104,6 +104,13 @@ jamais stockés en clair. Une ligne `SealedText` par couple (emplacement, objet)
    seulement) ; la session ouverte avec second facteur suffit pour l'afficher
    (pas de second facteur récent, contrairement au téléchargement d'un
    document `CONFIDENTIAL`).
+   **Lectures agrégées (M13b)** : l'export du doctorant lit ses documents et ses
+   textes par `export_documents`, `export_read` et `export_texts`, sans
+   `DOCUMENT_READ` ni `SEALED_TEXT_READ` par lecture. Un seul événement,
+   `THESIS_EXPORTED`, écrit avant le premier octet, porte les comptes par niveau
+   et les identifiants (jamais un titre) de chaque document et objet
+   `CONFIDENTIAL` exporté ; un arrêt écrit `THESIS_EXPORT_INCOMPLETE` (code).
+   L'export exige un second facteur de moins de 10 min.
 6. **Rotation** : `rewrap_batch` ré-encapsule aussi les DEK des textes ; un
    compteur de références par domaine empêche de retirer une KEK encore utilisée.
 

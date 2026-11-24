@@ -93,6 +93,11 @@ CLASSIFICATION: dict[str, str] = {
     "conferences.unlink_document": WRITE, "conferences.upcoming_deadlines": READ,
     "conferences.update_submission": WRITE, "conferences.update_venue": WRITE,
     "conferences.withdraw_approval": WRITE,
+    # export (M13b): the export is a read of every status that journals itself; the
+    # tutor's dating and agreement are writes; revoking an agreement a reduction
+    "export.grant_st_consent": WRITE, "export.page": READ,
+    "export.revoke_st_consent": REDUCTION, "export.set_st_confidential_until": WRITE,
+    "export.st_page": READ, "export.start_export": READ_AUDITED,
     # feeds (M12): creating needs an open thesis already (feeds.allowed)
     "feeds.allowed": READ, "feeds.block": READ, "feeds.create": WRITE,
     "feeds.daily": SYSTEM, "feeds.find": READ, "feeds.live": READ,
@@ -158,6 +163,8 @@ CLASSIFICATION: dict[str, str] = {
     "vault.add_version": WRITE, "vault.change_level": WRITE,
     "vault.dashboard_block": READ, "vault.decrypt_secret": SYSTEM,
     "vault.document_for": READ_AUDITED, "vault.download_name": READ,
+    "vault.export_documents": READ, "vault.export_read": READ_AUDITED,
+    "vault.export_texts": READ,
     "vault.encrypt_secret": SYSTEM, "vault.grant_access": WRITE,
     "vault.latest_documents": READ, "vault.mfa_secrets_using": READ,
     "vault.open_text": READ_AUDITED, "vault.open_texts": READ_AUDITED,
@@ -779,6 +786,13 @@ RECIPES: dict[str, tuple[Recipe, str]] = {
         changes={"official_order_obtained": True}), REFUSE),
     "travel.withdraw_order": (lambda w: P(
         _m("travel").withdraw_order, order=w.order, user=w.t.student), REFUSE),
+    # ---- export (M13b): the tutor's side stays open in DEFENDED, closed in CLOSED
+    "export.grant_st_consent": (lambda w: P(
+        _m("export").grant_st_consent, thesis=w.thesis, user=w.t.tutor, recent_mfa=True),
+        ALLOW),
+    "export.set_st_confidential_until": (lambda w: P(
+        _m("export").set_st_confidential_until, thesis=w.thesis, user=w.t.tutor,
+        until=dt.date(2030, 1, 1), recent_mfa=True), ALLOW),
     # ---- vault (M2): documents stay open in DEFENDED
     "vault.add_version": (lambda w: P(
         _m("vault").add_version, document=w.document, upload=_pdf("v2"), user=w.t.student), ALLOW),

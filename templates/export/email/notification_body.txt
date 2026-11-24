@@ -1,0 +1,5 @@
+{% load i18n %}{% if kind == "ST_CONSENT_GRANTED" %}{% translate "The industrial tutor agreed that your exports include INTERNAL_ST for 30 days:" %}{% else %}{% blocktranslate with date=when|date:"j F Y" time=when|date:"H:i" %}An export of your data was made on {{ date }} at {{ time }}. If it was not you, tell your director and change your password:{% endblocktranslate %}{% endif %}
+
+{{ url }}
+
+{% translate "This message contains no detail: sign in to see it." %}

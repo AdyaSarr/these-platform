@@ -62,6 +62,7 @@ def test_the_table_is_the_sheet() -> None:
         "team": open_, "documents": defended, "admin_file": open_, "objectives": open_,
         "meetings": open_, "conferences": defended, "travel": open_,
         "travel_receipts": defended, "feeds": open_, "lifecycle": (S.ACTIVE, S.DEFENDED),
+        "export": (S.SETUP, S.ACTIVE, S.DEFENDED, S.CLOSED),  # M13b: every status
     }  # fmt: skip
     assert any_open() == (S.SETUP, S.ACTIVE, S.DEFENDED)  # never CLOSED
 

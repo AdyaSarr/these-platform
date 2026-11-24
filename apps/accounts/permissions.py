@@ -98,6 +98,11 @@ class Action(StrEnum):
     # confirm or withdraw the closure (a director or the PhD student).
     DECLARE_DEFENSE = "DECLARE_DEFENSE"
     REQUEST_CLOSURE = "REQUEST_CLOSURE"
+    # Export of the student's data (M13b): a read, in every status; the ST side of
+    # it (the end of the ST confidentiality, an agreement for 30 days): the tutor.
+    THESIS_EXPORT = "THESIS_EXPORT"
+    SET_ST_CONFIDENTIALITY = "SET_ST_CONFIDENTIALITY"
+    GRANT_ST_EXPORT = "GRANT_ST_EXPORT"
 
 
 _A = Action
@@ -120,6 +125,7 @@ ROLE_ACTIONS: Mapping[Role, frozenset[Action]] = MappingProxyType(
                 _A.DOCUMENT_GRANT,                                      # + liste explicite
                 _A.ADMIN_FILE_READ, _A.ADMIN_FILE_WRITE, _A.CIFRE_FILE_READ,  # écrire
                 _A.REQUEST_CLOSURE,                                     # M13a
+                _A.THESIS_EXPORT,                                       # M13b
             }
         ),
         Role.DIRECTOR: frozenset(
@@ -157,6 +163,7 @@ ROLE_ACTIONS: Mapping[Role, frozenset[Action]] = MappingProxyType(
                 _A.DOCUMENT_READ, _A.DOCUMENT_COMMENT,                  # lire, commenter
                 _A.CIFRE_FILE_READ,                                     # partie CIFRE
                 _A.VALIDATE_ANRT, _A.VALIDATE_PUBLICATION,              # ANRT, publications
+                _A.SET_ST_CONFIDENTIALITY, _A.GRANT_ST_EXPORT,          # M13b: côté ST
             }
         ),
         # Same row as the LIRMM co-supervisor, on the company side: travel filtered
@@ -214,6 +221,7 @@ READ_ACTIONS: frozenset[Action] = frozenset(
         _A.OBJECTIVE_READ, _A.OBJECTIVE_COMMENT_READ, _A.MEETING_READ,
         _A.CONFERENCE_READ, _A.SUBMISSION_READ, _A.TRAVEL_READ, _A.DOCUMENT_READ,
         _A.ADMIN_FILE_READ, _A.CIFRE_FILE_READ, _A.CSI_FILE_READ, _A.CSI_REPORT_READ,
+        _A.THESIS_EXPORT,  # M13b: the right of access does not depend on the status
     }
 )  # fmt: skip
 _WRITES = frozenset(Action) - READ_ACTIONS
@@ -230,6 +238,7 @@ WRITES_BY_STATUS: Mapping[str, frozenset[Action]] = MappingProxyType(
                 _A.TRAVEL_WRITE,  # M7: receipts and actual amounts only (travel.services)
                 _A.REMOVE_MEMBER,                                           # M1
                 _A.DECLARE_DEFENSE, _A.REQUEST_CLOSURE,                     # M13a
+                _A.SET_ST_CONFIDENTIALITY, _A.GRANT_ST_EXPORT,              # M13b
             }
         ),
         _S.CLOSED: frozenset(),

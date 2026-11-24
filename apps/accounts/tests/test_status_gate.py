@@ -25,6 +25,7 @@ READS = {
     A.VIEW_THESIS, A.VIEW_TEAM, A.OBJECTIVE_READ, A.OBJECTIVE_COMMENT_READ, A.MEETING_READ,
     A.CONFERENCE_READ, A.SUBMISSION_READ, A.TRAVEL_READ, A.DOCUMENT_READ,
     A.ADMIN_FILE_READ, A.CIFRE_FILE_READ, A.CSI_FILE_READ, A.CSI_REPORT_READ,
+    A.THESIS_EXPORT,  # M13b: the right of access, in every status
 }  # fmt: skip
 DEFENDED_WRITES = {
     A.DOCUMENT_WRITE, A.DOCUMENT_COMMENT, A.DOCUMENT_GRANT,  # M2
@@ -32,6 +33,7 @@ DEFENDED_WRITES = {
     A.TRAVEL_WRITE,  # M7: receipts and actual amounts only (narrowed by travel)
     A.REMOVE_MEMBER,  # M1: end of a membership
     A.DECLARE_DEFENSE, A.REQUEST_CLOSURE,  # the lifecycle itself
+    A.SET_ST_CONFIDENTIALITY, A.GRANT_ST_EXPORT,  # M13b: the tutor, until CLOSED
 }  # fmt: skip
 
 

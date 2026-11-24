@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-18 18:59+0100\n"
+"POT-Creation-Date: 2026-11-24 16:46+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -82,7 +82,7 @@ msgstr "Nouveau rôle"
 msgid "Days"
 msgstr "Jours"
 
-#: apps/accounts/models.py:39 apps/accounts/models.py:297
+#: apps/accounts/models.py:39 apps/accounts/models.py:300
 msgid "email address"
 msgstr "adresse électronique"
 
@@ -107,7 +107,7 @@ msgstr "statut équipe"
 msgid "date joined"
 msgstr "date d’inscription"
 
-#: apps/accounts/models.py:53 apps/accounts/models.py:161
+#: apps/accounts/models.py:53 apps/accounts/models.py:164
 msgid "user"
 msgstr "utilisateur"
 
@@ -135,8 +135,8 @@ msgstr "nom"
 msgid "kind"
 msgstr "type"
 
-#: apps/accounts/models.py:93 apps/accounts/models.py:167
-#: apps/accounts/models.py:300
+#: apps/accounts/models.py:93 apps/accounts/models.py:170
+#: apps/accounts/models.py:303
 msgid "organization"
 msgstr "organisation"
 
@@ -198,99 +198,106 @@ msgstr "close le"
 msgid "director's access until"
 msgstr "accès du directeur jusqu'au"
 
-#: apps/accounts/models.py:126 apps/accounts/models.py:164
-#: apps/accounts/models.py:295
+#: apps/accounts/models.py:124
+msgid "ST confidentiality until"
+msgstr "Confidentialité ST jusqu'au"
+
+#: apps/accounts/models.py:129 apps/accounts/models.py:167
+#: apps/accounts/models.py:298
 msgid "thesis"
 msgstr "thèse"
 
-#: apps/accounts/models.py:127
+#: apps/accounts/models.py:130
 msgid "theses"
 msgstr "thèses"
 
-#: apps/accounts/models.py:169 apps/accounts/models.py:298
+#: apps/accounts/models.py:172 apps/accounts/models.py:301
 msgid "role"
 msgstr "rôle"
 
-#: apps/accounts/models.py:170
+#: apps/accounts/models.py:173
 msgid "active from"
 msgstr "actif depuis"
 
-#: apps/accounts/models.py:171
+#: apps/accounts/models.py:174
 msgid "active until"
 msgstr "actif jusqu'au"
 
-#: apps/accounts/models.py:176
+#: apps/accounts/models.py:179
 msgid "membership"
 msgstr "appartenance"
 
-#: apps/accounts/models.py:177
+#: apps/accounts/models.py:180
 msgid "memberships"
 msgstr "appartenances"
 
-#: apps/accounts/models.py:280
+#: apps/accounts/models.py:283
 msgid "Queued"
 msgstr "En file d'attente"
 
-#: apps/accounts/models.py:281 apps/activity/choices.py:112
+#: apps/accounts/models.py:284 apps/activity/choices.py:112
 #: apps/admin_file/models.py:301 apps/conferences/models.py:527
-#: apps/lifecycle/models.py:105 apps/meetings/models.py:350
-#: apps/objectives/models.py:363 apps/travel/choices.py:140
+#: apps/export/models.py:88 apps/lifecycle/models.py:105
+#: apps/meetings/models.py:350 apps/objectives/models.py:363
+#: apps/travel/choices.py:140
 msgid "Sent"
 msgstr "Envoyé"
 
-#: apps/accounts/models.py:282 apps/activity/choices.py:113
+#: apps/accounts/models.py:285 apps/activity/choices.py:113
 #: apps/admin_file/models.py:302 apps/conferences/models.py:528
-#: apps/lifecycle/models.py:106 apps/meetings/models.py:351
-#: apps/objectives/models.py:364 apps/travel/choices.py:141
+#: apps/export/models.py:89 apps/lifecycle/models.py:106
+#: apps/meetings/models.py:351 apps/objectives/models.py:364
+#: apps/travel/choices.py:141
 msgid "Failed"
 msgstr "Échec"
 
-#: apps/accounts/models.py:285
+#: apps/accounts/models.py:288
 msgid "Being sent"
 msgstr "En cours d'envoi"
 
-#: apps/accounts/models.py:286
+#: apps/accounts/models.py:289
 msgid "Not sent"
 msgstr "Non parti"
 
-#: apps/accounts/models.py:287
+#: apps/accounts/models.py:290
 msgid "Sending failed"
 msgstr "Échec de l'envoi"
 
-#: apps/accounts/models.py:288
+#: apps/accounts/models.py:291
 msgid "Sent, awaiting acceptance"
 msgstr "Envoyée, en attente d'acceptation"
 
-#: apps/accounts/models.py:289 apps/admin_file/models.py:65
+#: apps/accounts/models.py:292 apps/admin_file/models.py:65
+#: templates/export/st.html:36
 msgid "Expired"
 msgstr "Expirée"
 
-#: apps/accounts/models.py:290 apps/admin_file/models.py:416
+#: apps/accounts/models.py:293 apps/admin_file/models.py:416
 #: apps/conferences/models.py:206
 msgid "Accepted"
 msgstr "Acceptée"
 
-#: apps/accounts/models.py:291
+#: apps/accounts/models.py:294 templates/export/st.html:36
 msgid "Revoked"
 msgstr "Révoquée"
 
-#: apps/accounts/models.py:303
+#: apps/accounts/models.py:306
 msgid "expires at"
 msgstr "expire le"
 
-#: apps/accounts/models.py:308
+#: apps/accounts/models.py:311
 msgid "used at"
 msgstr "utilisée le"
 
-#: apps/accounts/models.py:309
+#: apps/accounts/models.py:312
 msgid "revoked at"
 msgstr "révoquée le"
 
-#: apps/accounts/models.py:319
+#: apps/accounts/models.py:322
 msgid "invitation"
 msgstr "invitation"
 
-#: apps/accounts/models.py:320
+#: apps/accounts/models.py:323
 msgid "invitations"
 msgstr "invitations"
 
@@ -649,14 +656,16 @@ msgstr "Résumé hebdomadaire"
 
 #: apps/activity/choices.py:111 apps/admin_file/models.py:300
 #: apps/admin_file/models.py:415 apps/conferences/models.py:349
-#: apps/conferences/models.py:526 apps/lifecycle/models.py:104
-#: apps/meetings/models.py:349 apps/objectives/models.py:362
+#: apps/conferences/models.py:526 apps/export/models.py:87
+#: apps/lifecycle/models.py:104 apps/meetings/models.py:349
+#: apps/objectives/models.py:362
 msgid "Pending"
 msgstr "En attente"
 
 #: apps/activity/choices.py:114 apps/admin_file/models.py:303
-#: apps/conferences/models.py:529 apps/lifecycle/models.py:107
-#: apps/meetings/models.py:352 apps/objectives/models.py:365
+#: apps/conferences/models.py:529 apps/export/models.py:90
+#: apps/lifecycle/models.py:107 apps/meetings/models.py:352
+#: apps/objectives/models.py:365
 msgid "Not sent: no longer concerned or due"
 msgstr "Non envoyé : destinataire plus concerné ou envoi plus dû"
 
@@ -1929,6 +1938,38 @@ msgid "This time happens twice in this time zone (change to winter time)."
 msgstr ""
 "Cette heure a lieu deux fois dans ce fuseau (retour à l'heure d'hiver)."
 
+#: apps/export/models.py:27
+msgid "Started"
+msgstr "Commencé"
+
+#: apps/export/models.py:28 templates/export/page.html:38
+msgid "Complete"
+msgstr "Complet"
+
+#: apps/export/models.py:29 templates/export/page.html:38
+msgid "Interrupted"
+msgstr "Interrompu"
+
+#: apps/export/models.py:83
+msgid "Export of your data"
+msgstr "Export de vos données"
+
+#: apps/export/models.py:84
+msgid "ST agreement to the export"
+msgstr "Accord ST pour l'export"
+
+#: apps/export/services.py:55
+msgid "One export an hour."
+msgstr "Un export par heure."
+
+#: apps/export/services.py:61
+msgid "The export would be too large. Try again with the latest versions only."
+msgstr "L'export serait trop volumineux. Réessayez avec les dernières versions seulement."
+
+#: apps/export/views.py:88
+msgid "Give a date."
+msgstr "Indiquez une date."
+
 #: apps/feeds/calendar.py:52 apps/feeds/calendar.py:80
 #: apps/feeds/calendar.py:149 apps/meetings/ics.py:53 apps/travel/ics.py:62
 msgid "Details on the platform:"
@@ -2058,6 +2099,7 @@ msgstr ""
 "restreint »."
 
 #: apps/meetings/forms.py:53 apps/objectives/forms.py:117
+#: templates/export/page.html:32
 msgid "Date"
 msgstr "Date"
 
@@ -4046,7 +4088,7 @@ msgstr "Vous avez déjà un compte. Connectez-vous pour accepter l'invitation."
 msgid "Since"
 msgstr "Depuis"
 
-#: templates/accounts/team.html:19
+#: templates/accounts/team.html:19 templates/export/st.html:30
 msgid "Until"
 msgstr "Jusqu'au"
 
@@ -4113,7 +4155,8 @@ msgstr "Renvoyer"
 msgid "The invitation sent to %(email)s will no longer work."
 msgstr "L'invitation envoyée à %(email)s ne fonctionnera plus."
 
-#: templates/accounts/team.html:89 templates/vault/document_detail.html:46
+#: templates/accounts/team.html:89 templates/export/st.html:37
+#: templates/vault/document_detail.html:46
 msgid "Revoke"
 msgstr "Révoquer"
 
@@ -4193,6 +4236,7 @@ msgstr "Du nouveau vous concerne sur la plateforme :"
 #: templates/admin_file/email/notification_body.txt:5
 #: templates/admin_file/email/reminder_body.txt:5
 #: templates/conferences/email/notification_body.txt:5
+#: templates/export/email/notification_body.txt:5
 #: templates/lifecycle/email/notification_body.txt:5
 #: templates/meetings/email/notification_body.txt:5
 #: templates/travel/email/notification_body.txt:5
@@ -4774,6 +4818,244 @@ msgid ""
 msgstr ""
 "Vous n'avez accès à aucune thèse. L'accès se fait uniquement sur invitation."
 
+#: templates/export/email/notification_body.txt:1
+msgid ""
+"The industrial tutor agreed that your exports include INTERNAL_ST for 30 "
+"days:"
+msgstr "Le tuteur industriel a accepté que vos exports contiennent INTERNAL_ST pendant 30 jours :"
+
+#: templates/export/email/notification_body.txt:1
+#, python-format
+msgid ""
+"An export of your data was made on %(date)s at %(time)s. If it was not you, "
+"tell your director and change your password:"
+msgstr "Un export de vos données a été fait le %(date)s à %(time)s. Si ce n'est pas vous, prévenez votre directeur et changez votre mot de passe :"
+
+#: templates/export/email/notification_subject.txt:1
+msgid "CIFRE thesis: an ST agreement to your export"
+msgstr "Thèse CIFRE : un accord ST pour votre export"
+
+#: templates/export/email/notification_subject.txt:1
+msgid "CIFRE thesis: an export of your data"
+msgstr "Thèse CIFRE : un export de vos données"
+
+#: templates/export/page.html:2 templates/export/page.html:4
+msgid "Export of my data"
+msgstr "Export de mes données"
+
+#: templates/export/page.html:4
+msgid "Everything you read on the platform, in one ZIP file"
+msgstr "Tout ce que vous lisez sur la plateforme, dans un fichier ZIP"
+
+#: templates/export/page.html:5
+#, python-format
+msgid "Next export possible at %(time)s."
+msgstr "Prochain export possible à %(time)s."
+
+#: templates/export/page.html:8 templates/vault/document_detail.html:17
+msgid "Download"
+msgstr "Télécharger"
+
+#: templates/export/page.html:9
+msgid ""
+"The file holds your documents in clear, CONFIDENTIAL ones included. Keep it "
+"on an encrypted disk (FileVault on a Mac, BitLocker, LUKS) and never send it "
+"by e-mail."
+msgstr "Le fichier contient vos documents en clair, CONFIDENTIAL compris. Rangez-le sur un disque chiffré (FileVault sur Mac, BitLocker, LUKS) et ne l'envoyez jamais par courriel."
+
+#: templates/export/page.html:11
+msgid "What the export holds, and what it does not"
+msgstr "Ce que contient l'export, et ce qu'il ne contient pas"
+
+#: templates/export/page.html:12
+msgid ""
+"It holds the documents (latest version, or every version), the objectives, "
+"meetings, administrative file, conferences and missions, with their texts "
+"decrypted, the comments of your supervisors (their name and role only), your "
+"own lines of the audit log and a manifest with the SHA-256 digest of each "
+"file."
+msgstr "Il contient les documents (dernière version, ou toutes les versions), les objectifs, réunions, dossier administratif, conférences et missions, avec leurs textes déchiffrés, les commentaires de vos encadrants (leur nom et leur rôle seulement), vos propres lignes du journal d'audit et un manifeste avec l'empreinte SHA-256 de chaque fichier."
+
+#: templates/export/page.html:13
+msgid ""
+"It never holds second factor secrets, links tokens, passwords, the addresses "
+"of the other members, the lines of the audit log of the others, nor "
+"INTERNAL_ST without an agreement of ST."
+msgstr "Il ne contient jamais les secrets du second facteur, les jetons des liens, les mots de passe, les adresses des autres membres, les lignes du journal d'audit des autres, ni INTERNAL_ST sans accord de ST."
+
+#: templates/export/page.html:15
+#, python-format
+msgid "ST agreement in force until %(date)s: INTERNAL_ST is included."
+msgstr "Accord ST en vigueur jusqu'au %(date)s : INTERNAL_ST est inclus."
+
+#: templates/export/page.html:15
+msgid "The ST confidentiality is over: INTERNAL_ST is included."
+msgstr "La confidentialité ST est terminée : INTERNAL_ST est inclus."
+
+#: templates/export/page.html:15
+msgid ""
+"INTERNAL_ST is left out: the ST confidentiality is not over and no ST "
+"agreement is in force."
+msgstr "INTERNAL_ST est exclu : la confidentialité ST n'est pas terminée et aucun accord ST n'est en vigueur."
+
+#: templates/export/page.html:17 templates/lifecycle/page.html:81
+msgid "Export my data"
+msgstr "Exporter mes données"
+
+#: templates/export/page.html:19
+msgid ""
+"Asks for your second factor. One export an hour; you receive an e-mail for "
+"each export."
+msgstr "Demande votre second facteur. Un export par heure ; vous recevez un courriel pour chaque export."
+
+#: templates/export/page.html:21
+msgid "Every version of each document"
+msgstr "Toutes les versions de chaque document"
+
+#: templates/export/page.html:22
+msgid "Yes, download"
+msgstr "Oui, télécharger"
+
+#: templates/export/page.html:29
+msgid "Your exports"
+msgstr "Vos exports"
+
+#: templates/export/page.html:32 templates/vault/document_detail.html:7
+msgid "Versions"
+msgstr "Versions"
+
+#: templates/export/page.html:32
+msgid "Result"
+msgstr "Résultat"
+
+#: templates/export/page.html:37
+msgid "every version"
+msgstr "toutes les versions"
+
+#: templates/export/page.html:37
+msgid "latest versions"
+msgstr "dernières versions"
+
+#: templates/export/page.html:37
+msgid "with INTERNAL_ST"
+msgstr "avec INTERNAL_ST"
+
+#: templates/export/page.html:43
+msgid ""
+"An export you did not make? Tell your director and change your password."
+msgstr "Un export que vous n'avez pas fait ? Prévenez votre directeur et changez votre mot de passe."
+
+#: templates/export/page.html:45
+msgid "No export yet."
+msgstr "Aucun export pour l'instant."
+
+#: templates/export/readme.txt:1
+msgid "Export of your data from the thesis platform"
+msgstr "Export de vos données de la plateforme de thèse"
+
+#: templates/export/readme.txt:2
+#, python-format
+msgid "Made on %(date)s."
+msgstr "Fait le %(date)s."
+
+#: templates/export/readme.txt:4
+msgid ""
+"manifest.json: every file of this archive with its size and SHA-256 digest "
+"(format these-export/1)."
+msgstr "manifest.json : chaque fichier de cette archive avec sa taille et son empreinte SHA-256 (format these-export/1)."
+
+#: templates/export/readme.txt:5
+msgid ""
+"documents.json and documents/: your documents, decrypted, by number; the "
+"names of the files are built by the platform."
+msgstr "documents.json et documents/ : vos documents, déchiffrés, par numéro ; les noms des fichiers sont construits par la plateforme."
+
+#: templates/export/readme.txt:6
+msgid ""
+"these.json, equipe.json, objectifs.json, reunions.json, dossier-"
+"administratif.json, conferences.json, deplacements.json: your data, texts "
+"decrypted."
+msgstr "these.json, equipe.json, objectifs.json, reunions.json, dossier-administratif.json, conferences.json, deplacements.json : vos données, textes déchiffrés."
+
+#: templates/export/readme.txt:7
+msgid "journal/mes-evenements.json: your own lines of the audit log."
+msgstr "journal/mes-evenements.json : vos propres lignes du journal d'audit."
+
+#: templates/export/readme.txt:9
+msgid ""
+"Left out: second factor secrets, links tokens, passwords, the addresses of "
+"the other members, the lines of the audit log of the others, and INTERNAL_ST "
+"without an agreement of ST (their number is in manifest.json)."
+msgstr "Exclus : les secrets du second facteur, les jetons des liens, les mots de passe, les adresses des autres membres, les lignes du journal d'audit des autres, et INTERNAL_ST sans accord de ST (leur nombre est dans manifest.json)."
+
+#: templates/export/readme.txt:10
+msgid ""
+"This archive holds your documents in clear: keep it on an encrypted disk."
+msgstr "Cette archive contient vos documents en clair : rangez-la sur un disque chiffré."
+
+#: templates/export/st.html:2 templates/export/st.html:4
+#: templates/lifecycle/page.html:82
+msgid "ST confidentiality of the export"
+msgstr "Confidentialité ST de l'export"
+
+#: templates/export/st.html:4
+msgid "What of INTERNAL_ST the PhD student may export"
+msgstr "Ce que le doctorant peut exporter de INTERNAL_ST"
+
+#: templates/export/st.html:8
+msgid "End of the ST confidentiality"
+msgstr "Fin de la confidentialité ST"
+
+#: templates/export/st.html:9
+#, python-format
+msgid "Until %(date)s: INTERNAL_ST is included in the exports after this date."
+msgstr "Jusqu'au %(date)s : INTERNAL_ST est inclus dans les exports après cette date."
+
+#: templates/export/st.html:9
+msgid ""
+"No end known: INTERNAL_ST stays out of the exports, unless you agree for 30 "
+"days."
+msgstr "Aucune fin connue : INTERNAL_ST reste hors des exports, sauf accord de votre part pour 30 jours."
+
+#: templates/export/st.html:11
+msgid "Last day of the ST confidentiality (empty: none known)"
+msgstr "Dernier jour de la confidentialité ST (vide : aucun connu)"
+
+#: templates/export/st.html:13
+msgid "Save the date"
+msgstr "Enregistrer la date"
+
+#: templates/export/st.html:18
+msgid "Agreement to the export"
+msgstr "Accord pour l'export"
+
+#: templates/export/st.html:20
+msgid "Agree for 30 days"
+msgstr "Accorder pour 30 jours"
+
+#: templates/export/st.html:22
+msgid ""
+"For 30 days, the exports of the PhD student include INTERNAL_ST (documents, "
+"meetings, missions, texts). You can revoke it at any time. Asks for your "
+"second factor."
+msgstr "Pendant 30 jours, les exports du doctorant contiennent INTERNAL_ST (documents, réunions, missions, textes). Vous pouvez le révoquer à tout moment. Demande votre second facteur."
+
+#: templates/export/st.html:24
+msgid "Yes, agree"
+msgstr "Oui, accorder"
+
+#: templates/export/st.html:30
+msgid "Granted on"
+msgstr "Accordé le"
+
+#: templates/export/st.html:30
+msgid "State"
+msgstr "État"
+
+#: templates/export/st.html:36
+msgid "In force"
+msgstr "En vigueur"
+
 #: templates/feeds/_block.html:3 templates/feeds/created.html:2
 #: templates/feeds/created.html:4
 msgid "Calendar subscription"
@@ -5089,11 +5371,15 @@ msgstr ""
 msgid "Yes, request it"
 msgstr "Oui, la demander"
 
-#: templates/lifecycle/page.html:78
+#: templates/lifecycle/page.html:80
+msgid "Export of the data"
+msgstr "Export des données"
+
+#: templates/lifecycle/page.html:85
 msgid "The thesis is closed: there is no step left."
 msgstr "La thèse est close : il n'y a plus d'étape."
 
-#: templates/lifecycle/page.html:78
+#: templates/lifecycle/page.html:85
 msgid ""
 "The defence can be declared once the thesis is active, that is once the "
 "enrolment file is validated."
@@ -5101,17 +5387,17 @@ msgstr ""
 "La soutenance pourra être déclarée une fois la thèse active, c'est-à-dire le "
 "dossier d'inscription validé."
 
-#: templates/lifecycle/page.html:78
+#: templates/lifecycle/page.html:85
 msgid ""
 "Only the director and the PhD student move the end of the thesis forward."
 msgstr "Seuls le directeur et le doctorant font avancer la fin de thèse."
 
-#: templates/lifecycle/page.html:78
+#: templates/lifecycle/page.html:85
 #, python-format
 msgid "The closure can be requested from %(date)s."
 msgstr "La clôture pourra être demandée à partir du %(date)s."
 
-#: templates/lifecycle/page.html:78
+#: templates/lifecycle/page.html:85
 msgid "The other party has to act now."
 msgstr "C'est maintenant à l'autre partie d'agir."
 
@@ -5622,6 +5908,11 @@ msgstr[1] "%(counter)s prévus"
 msgid "; rule: at least %(n)s"
 msgstr " ; règle : au moins %(n)s"
 
+#: templates/travel/_text.html:1 templates/travel/mission.html:33
+#: templates/travel/mission.html:59 templates/travel/mission.html:60
+msgid "Restricted content"
+msgstr "Contenu restreint"
+
 #: templates/travel/blocks/dashboard.html:3 templates/travel/split.html:9
 msgid "Days at Rousset"
 msgstr "Jours à Rousset"
@@ -5799,11 +6090,6 @@ msgstr "Demandé le"
 #: templates/travel/mission.html:30
 msgid "Estimate"
 msgstr "Estimation"
-
-#: templates/travel/mission.html:33 templates/travel/mission.html:59
-#: templates/travel/mission.html:60
-msgid "Restricted content"
-msgstr "Contenu restreint"
 
 #: templates/travel/mission.html:38
 msgid "Paid by another body: no mission approval in the platform."
@@ -6097,10 +6383,6 @@ msgstr "Ouvrir les documents"
 msgid "All documents"
 msgstr "Tous les documents"
 
-#: templates/vault/document_detail.html:7
-msgid "Versions"
-msgstr "Versions"
-
 #: templates/vault/document_detail.html:9
 msgid "Size"
 msgstr "Taille"
@@ -6108,10 +6390,6 @@ msgstr "Taille"
 #: templates/vault/document_detail.html:9
 msgid "Stored"
 msgstr "Enregistré le"
-
-#: templates/vault/document_detail.html:17
-msgid "Download"
-msgstr "Télécharger"
 
 #: templates/vault/document_detail.html:24
 msgid "New version"

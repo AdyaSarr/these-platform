@@ -78,6 +78,20 @@ def sha256(data: bytes) -> bytes:
     return hashlib.sha256(data).digest()
 
 
+class Sha256:
+    """Incremental SHA-256 (M13b: the digest of each entry of an export, computed
+    while the entry is streamed). ``hexdigest()`` as in hashlib."""
+
+    def __init__(self) -> None:
+        self._h = hashlib.sha256()
+
+    def update(self, data: bytes) -> None:
+        self._h.update(data)
+
+    def hexdigest(self) -> str:
+        return self._h.hexdigest()
+
+
 def digests_equal(a: bytes, b: bytes) -> bool:
     """Constant-time equality of two digests."""
     return hmac.compare_digest(a, b)

@@ -38,8 +38,14 @@ MODULE_STATUSES: Mapping[str, tuple[str, ...]] = MappingProxyType(
         "travel_receipts": _AND_DEFENDED,
         "feeds": _OPEN,
         "lifecycle": (S.ACTIVE, S.DEFENDED),
+        # M13b: the student's export and its alert e-mail, as long as the student is
+        # an active member (the right of access does not depend on the status).
+        "export": (S.SETUP, S.ACTIVE, S.DEFENDED, S.CLOSED),
     }
 )
+# Modules whose statuses say nothing of the digests (M11b): any_open() skips them,
+# so that no digest is ever built for a closed thesis.
+NOT_DIGESTED: frozenset[str] = frozenset({"export"})
 
 
 def open_statuses(module: str) -> tuple[str, ...]:
@@ -48,7 +54,9 @@ def open_statuses(module: str) -> tuple[str, ...]:
 
 def any_open() -> tuple[str, ...]:
     """The statuses in which at least one module is open (the digests run there)."""
-    return tuple(s for s in S if any(s in v for v in MODULE_STATUSES.values()))
+    return tuple(
+        s for s in S if any(s in v for k, v in MODULE_STATUSES.items() if k not in NOT_DIGESTED)
+    )
 
 
 def is_open_for(thesis: Any, module: str) -> bool:

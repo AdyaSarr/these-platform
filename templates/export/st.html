@@ -1,0 +1,44 @@
+{% extends "base.html" %}{% load i18n ui %}
+{% block title %}{% translate "ST confidentiality of the export" %}{% endblock %}
+{% block content %}
+{% page_header %}{% translate "ST confidentiality of the export" %}{% subtitle %}{% translate "What of INTERNAL_ST the PhD student may export" %}{% endpage_header %}
+{% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
+
+<section aria-labelledby="date-title">
+<h2 id="date-title">{% translate "End of the ST confidentiality" %}</h2>
+<p>{% if st_until %}{% blocktranslate with date=st_until|date:"j F Y" %}Until {{ date }}: INTERNAL_ST is included in the exports after this date.{% endblocktranslate %}{% else %}{% translate "No end known: INTERNAL_ST stays out of the exports, unless you agree for 30 days." %}{% endif %}</p>
+<form class="stack" method="post" action="{% url 'export:st_date' thesis_id=thesis.pk %}">{% csrf_token %}
+  <label for="until">{% translate "Last day of the ST confidentiality (empty: none known)" %}</label>
+  <input type="date" id="until" name="until" value="{{ st_until|date:'Y-m-d' }}">
+  <button type="submit" class="btn btn-primary">{% translate "Save the date" %}</button>
+</form>
+</section>
+
+<section aria-labelledby="consent-title">
+<h2 id="consent-title">{% translate "Agreement to the export" %}</h2>
+<details class="confirm">
+  <summary class="btn btn-secondary">{% translate "Agree for 30 days" %}</summary>
+  <div class="confirm-panel">
+    <p>{% translate "For 30 days, the exports of the PhD student include INTERNAL_ST (documents, meetings, missions, texts). You can revoke it at any time. Asks for your second factor." %}</p>
+    <form method="post" action="{% url 'export:st_grant' thesis_id=thesis.pk %}">{% csrf_token %}
+      <button type="submit" class="btn btn-primary">{% translate "Yes, agree" %}</button>
+    </form>
+  </div>
+</details>
+{% if consents %}
+<table class="table">
+  <thead><tr><th>{% translate "Granted on" %}</th><th>{% translate "Until" %}</th><th>{% translate "State" %}</th><th></th></tr></thead>
+  <tbody>
+  {% for consent, valid in consents %}
+    <tr>
+      <td>{{ consent.created_at|date:"SHORT_DATETIME_FORMAT" }}</td>
+      <td>{{ consent.valid_until|date:"SHORT_DATETIME_FORMAT" }}</td>
+      <td>{% if valid %}{% translate "In force" %}{% elif consent.revoked_at %}{% translate "Revoked" %}{% else %}{% translate "Expired" %}{% endif %}</td>
+      <td>{% if valid %}<form method="post" action="{% url 'export:st_revoke' thesis_id=thesis.pk consent_id=consent.pk %}">{% csrf_token %}<button type="submit" class="btn btn-ghost btn-sm">{% translate "Revoke" %}</button></form>{% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+</section>
+{% endblock %}

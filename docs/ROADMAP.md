@@ -20,7 +20,8 @@ critères d'acceptation de la fiche tous validés.
 | [ ] | Suppression de la table `WeeklySummaryLog` (migration séparée, après la conservation de 13 mois) | `modules/M11-activite.md` | M11b | 2028 |
 | [x] | M12 — Flux iCal personnel à jeton | `modules/M12-ical.md` | M5a, M7, M11 | en cours |
 | [ ] | M13a — Fin de thèse : cycle de vie (`DEFENDED`, `CLOSED`), gardes de statut, accès | `modules/M13-fin-de-these.md` | M1–M12 | en cours |
-| [ ] | M13b — Export complet par le doctorant | `modules/M13-fin-de-these.md` (à compléter) | M13a | à planifier |
+| [x] | M13b — Export complet par le doctorant | `modules/M13-fin-de-these.md` (M13b) | M13a | nov. 2026 |
+| [ ] | M13b-2 — Chiffrement de l'export par phrase de passe (age, bibliothèque à flux) | `modules/M13-fin-de-these.md` (M13b, « Fichier en clair ») | M13b | à planifier |
 | [ ] | Fournisseur de clés OpenBao (transit), clés destructibles | à écrire | M2 | avant M13c |
 | [ ] | M13c — Conservation après `CLOSED` et destruction (effacement des clés, puis des lignes ; journal d'audit conservé et vérifiable) | `modules/M13-fin-de-these.md` (à compléter) | M13b, fournisseur OpenBao, réponses Q8–Q10 (`specs/questions-fin-de-these.md`) | à planifier |
 | [ ] | M8 — Rapports CSI et ANRT | `modules/M08-rapports.md` | M4, M5, M9 | avant mars 2028 |

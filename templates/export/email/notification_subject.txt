@@ -1,0 +1,1 @@
+{% load i18n %}{% if kind == "ST_CONSENT_GRANTED" %}{% translate "CIFRE thesis: an ST agreement to your export" %}{% else %}{% translate "CIFRE thesis: an export of your data" %}{% endif %}
