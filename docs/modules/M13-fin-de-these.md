@@ -266,3 +266,170 @@ journal en ajout seul, codes seulement.
 - M2 : courriels des documents ouverts en `DEFENDED`.
 - M12 : `feeds.allowed` lit le statut en base (un objet périmé laissait créer un
   lien sur une thèse non ouverte ; trouvé par la matrice).
+
+# M13b — Export des données par le doctorant
+
+Plan validé le 2026-11-24. App `apps/export`. Rapport de conception : celui de la
+conversation du même jour (le « §4.1 » cité n'est pas dans le dépôt ; cette fiche
+le remplace).
+
+## Objectif
+
+Le doctorant télécharge **ce qu'il lit déjà sur la plateforme**, en un ZIP :
+documents déchiffrés, données métier en JSON, textes scellés déchiffrés, ses propres
+lignes du journal d'audit et un manifeste lisible par machine. L'export n'ouvre
+aucun droit : chaque partie passe par les règles existantes (`readable_by`,
+`can_access_document`, `visible_to`, niveaux). Il prépare la fin de thèse et
+l'exercice du droit d'accès ; il ne remplace aucun dépôt officiel.
+
+## Qui et quand
+
+- Action `THESIS_EXPORT`, **doctorant seul**, classée **lecture** (`READ_ACTIONS`) :
+  le droit d'accès ne dépend pas du statut. Table des statuts : `"export"` = `SETUP`,
+  `ACTIVE`, `DEFENDED`, `CLOSED` (jusqu'à la destruction de M13c, qui met fin à
+  l'adhésion). `any_open()` ignore `"export"` : les résumés de M11b ne tournent
+  jamais sur une thèse close.
+- `POST` avec CSRF, ré-authentification par second facteur < 10 min
+  (`RecentAuthRequiredMixin`), `ThesisPermissionRequiredMixin(THESIS_EXPORT)`.
+- **Au plus un export par heure** et par (doctorant, thèse), compté en base
+  (`ExportRecord`) sous le verrou de la ligne `Thesis` ; **un export interrompu
+  compte**. La limite n'est examinée qu'après le droit : pour les six autres rôles,
+  la réponse est exactement le refus de droit.
+
+## Contenu
+
+```
+manifest.json                format these-export/1 ; chaque entrée : path, sha256,
+                             size, kind, object_id, level ; bloc excluded (comptes)
+LISEZMOI.txt                 ce que contient l'export et ce qu'il ne contient pas
+these.json                   titre, dates, statut
+equipe.json                  les autres : nom, rôle, organisme ; le doctorant :
+                             nom, rôle, organisme et dates de ses adhésions
+objectifs.json               objectifs, révisions, avancements, commentaires
+reunions.json                réunions, décisions, actions, participants, documents liés
+dossier-administratif.json   pièces, validations, réouvertures, échéances proposées
+conferences.json             lieux, éditions, échéances, soumissions, accords ST,
+                             prépublications
+deplacements.json            missions, ordres, frais, justificatifs, jours de
+                             présence, budgets, règles
+documents.json               index des documents : titre, niveau, versions, fichier
+documents/0001-<slug>-v3.pdf noms construits par nous (ci-dessous)
+journal/mes-evenements.json  les lignes dont le doctorant est l'acteur
+```
+
+- **Documents** : dernière version de chaque document lisible ; option « toutes les
+  versions ».
+- **Textes scellés** déchiffrés, dans le JSON de leur objet.
+- **Commentaires des encadrants** inclus (seulement ce que le doctorant lit déjà),
+  auteur réduit à son nom et à son rôle (RGPD art. 15 ; art. 15.4 pour les droits
+  d'autrui ; à confirmer avec le délégué à la protection des données, Q8).
+- **Personnes** : partout, une personne est `{"nom", "role"}` ; jamais d'adresse.
+- **Journal** : lignes de `actor` = le doctorant (de la thèse, ou sans thèse :
+  connexions) : `seq`, `timestamp`, `action`, `object_type`, `object_id`, `hash`, et
+  `details` filtré par une **liste blanche** de clés (une clé inconnue est retirée).
+  Les lignes qui le concernent sans qu'il en soit l'acteur (lectures par d'autres)
+  ne sont pas exportées : **question ajoutée à Q8**.
+
+## Exclusions
+
+Secrets MFA et codes de récupération ; empreintes de jetons (iCal, invitations) ;
+condensats de mots de passe, sessions ; lignes d'audit des autres ; `ip_hash`,
+`email_hmac` ; adresses et dates d'adhésion des autres membres ; DEK, `wrapped_dek`,
+`kek_id`. Garde exhaustive : chaque modèle des apps du projet est soit exporté par un
+sérialiseur nommé, soit dans la liste fermée et commentée `NOT_EXPORTED`.
+
+## `INTERNAL_ST`
+
+- `Thesis.st_confidential_until` (date, nulle par défaut), saisie par le **tuteur
+  seul** (`SET_ST_CONFIDENTIALITY`, ré-authentification, `ST_CONFIDENTIALITY_SET`
+  avec l'ancienne et la nouvelle date). Nulle ou future : `INTERNAL_ST` exclu.
+  Passée : inclus.
+- **Accord ST** (`StExportConsent`) : accordé par le **tuteur seul**
+  (`GRANT_ST_EXPORT`, ré-authentification) pour **30 jours**, pour **tout le niveau**,
+  révocable (sans ré-authentification : révoquer ferme un accès) ;
+  `ST_EXPORT_CONSENT_GRANTED`, `ST_EXPORT_CONSENT_REVOKED`. Le doctorant en est
+  averti par courriel (un lien).
+- Exclusion **par objet entier** (métadonnées en clair comprises) et par
+  descendance (décisions d'une réunion `INTERNAL_ST`, frais d'une mission
+  `INTERNAL_ST`...). Le manifeste en donne le compte.
+- Après `CLOSED`, plus d'accord possible (le tuteur n'est plus membre, écriture
+  refusée par la garde de statut) : **provisoire, Q-ST**.
+
+## Fabrication
+
+1. **Instantané** : une transaction `REPEATABLE READ READ ONLY` (toutes les requêtes
+   voient la base au même instant) lit les lignes, les versions retenues (DEK
+   encapsulée, niveau, taille) et déchiffre les textes scellés (32 Mio au plus). Aucun
+   verrou du coffre (`keys.unwrap` ne fait que lire), aucun `audit()`.
+2. **Ouverture** : transaction courte : verrou de `Thesis`, limite horaire,
+   `ExportRecord`, ligne de courriel, `audit(THESIS_EXPORTED)` en dernier.
+3. **Flux** (`StreamingHttpResponse`, sans transaction) : une version à la fois
+   (25 Mio au plus en mémoire), entrée du ZIP, SHA-256 au fil de l'eau ;
+   `manifest.json` en dernier, puis le répertoire central.
+
+Le coffre n'écrit rien : la règle « un service du coffre par transaction » et
+l'ordre des verrous tiennent par construction. Lectures par
+`vault.services.export_documents`, `export_read` et `export_texts` (pas d'audit
+par lecture). Un blob ou une KEK disparus pendant le flux (`change_level`,
+rotation) arrêtent l'export : `THESIS_EXPORT_INCOMPLETE` (code), ZIP tronqué sans
+répertoire central, « interrompu » dans l'historique.
+
+- **Aucun fichier en clair sur disque** : ni `tempfile`, ni Celery ; `zipfile` écrit
+  dans un tampon vidé à chaque morceau (sortie non adressable : descripteurs de
+  données).
+- **Noms d'entrées** : `documents/{n:04d}-{slug}-v{k}.{ext}`, slug ASCII
+  `[a-z0-9-]`, 60 caractères au plus, extension de **notre** type MIME ; chaque nom
+  vérifie `^[a-z0-9][a-z0-9/-]*\.[a-z0-9]+$` (ni `..`, ni `/` en tête, ni `\`).
+- **Plafond** : `EXPORT_MAX_BYTES` = 2 Gio (somme des tailles de l'instantané),
+  refus avant l'ouverture, avec la suggestion « dernières versions seulement ».
+
+## Traçabilité
+
+- `THESIS_EXPORTED` **avant le premier octet** : options, comptes par niveau
+  (documents, versions, textes), comptes d'exclusions, identifiant de l'accord ST et
+  compte des éléments `INTERNAL_ST` inclus, identifiants (jamais de titre) des
+  documents et objets `CONFIDENTIAL`. Il remplace les `DOCUMENT_READ` et
+  `SEALED_TEXT_READ` de ces lectures (agrégation, `docs/SECURITY.md`).
+- `THESIS_EXPORT_INCOMPLETE` sur un arrêt seulement (code fixe).
+- **Courriel d'alerte immédiat** au doctorant, hors préférences, par le mécanisme des
+  courriels du cycle de vie (M13a) : sa propre ligne (`ExportNotification`),
+  `deliver_once`, jamais différé ni désactivable : « Un export de vos données a été
+  fait le … » et un lien.
+- **Historique** sur la page de l'export : date, options, complet ou interrompu.
+
+## Fichier en clair
+
+Avertissement sur la page (disque chiffré, FileVault, pas de courriel). Chiffrement
+par phrase de passe (age) : reporté à M13b-2 (bibliothèque à flux à trouver,
+aucune implémentation maison du format, règle 1).
+
+## Critères d'acceptation
+
+1. Refus pour les six autres rôles et un non-membre, en `GET` et en `POST` :
+   identique octet pour octet au refus de droit, y compris quand la limite horaire
+   du doctorant est active.
+2. Permis en `SETUP`, `ACTIVE`, `DEFENDED`, `CLOSED` ; classement dans la matrice
+   service × statut.
+3. Sans second facteur récent : redirection, ni `ExportRecord` ni événement.
+4. Limite d'un par heure (permis à 60 min 1 s) ; un export interrompu compte ; deux
+   `POST` simultanés donnent un seul export.
+5. Contenu exact, fichier par fichier ; dernière version par défaut, toutes en option ;
+   textes déchiffrés.
+6. Manifeste : chaque entrée, SHA-256 recalculés égaux, aucun titre.
+7. Exclusions par parcours du ZIP : témoins `TEMOIN-FUITE-…` dans les secrets MFA, les
+   jetons, le mot de passe, l'adresse d'un autre membre, une ligne d'audit d'autrui,
+   `INTERNAL_ST` sans accord ; contrôle positif avec accord.
+8. `INTERNAL_ST` : date et accord par le tuteur seul, ré-authentification, 30 jours,
+   révocable, journalisé ; date passée = inclus ; aucun accord en `CLOSED`.
+9. Noms d'entrées sûrs avec des titres hostiles ; aucun doublon.
+10. Aucun fichier ouvert en écriture ni temporaire pendant l'export (crochet d'audit
+    de Python).
+11. Arrêt pendant le flux : `THESIS_EXPORT_INCOMPLETE`, « interrompu » ; plafond
+    `EXPORT_MAX_BYTES` refusé avant l'ouverture.
+12. `THESIS_EXPORTED` avant le premier octet, sans titre ; aucun `DOCUMENT_READ` ni
+    `SEALED_TEXT_READ` pendant l'export.
+13. Courriel : un, lien seulement, immédiat même avec des préférences en résumé
+    hebdomadaire, envoyé en `CLOSED`.
+14. Historique sur la page.
+15. Garde exhaustive des modèles (exportés ou `NOT_EXPORTED`).
+16. Mutants ajoutés à `scripts/mutants.toml`, tous tués.
