@@ -19,7 +19,7 @@ critères d'acceptation de la fiche tous validés.
 | [x] | M11b — Courriels existants sous les préférences, résumé M4 fondu dans le résumé hebdomadaire | `modules/M11-activite.md` | M11a | en cours |
 | [ ] | Suppression de la table `WeeklySummaryLog` (migration séparée, après la conservation de 13 mois) | `modules/M11-activite.md` | M11b | 2028 |
 | [x] | M12 — Flux iCal personnel à jeton | `modules/M12-ical.md` | M5a, M7, M11 | en cours |
-| [ ] | M13a — Fin de thèse : cycle de vie (`DEFENDED`, `CLOSED`), gardes de statut, accès | `modules/M13-fin-de-these.md` | M1–M12 | en cours |
+| [x] | M13a — Fin de thèse : cycle de vie (`DEFENDED`, `CLOSED`), gardes de statut, accès | `modules/M13-fin-de-these.md` | M1–M12 | nov. 2026 |
 | [x] | M13b — Export complet par le doctorant | `modules/M13-fin-de-these.md` (M13b) | M13a | nov. 2026 |
 | [ ] | M13b-2 — Chiffrement de l'export par phrase de passe (age, bibliothèque à flux) | `modules/M13-fin-de-these.md` (M13b, « Fichier en clair ») | M13b | à planifier |
 | [ ] | Fournisseur de clés OpenBao (transit), clés destructibles | à écrire | M2 | avant M13c |

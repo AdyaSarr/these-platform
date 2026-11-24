@@ -1,0 +1,64 @@
+# The mutants of scripts/mutants.toml (SR-12), by hand only: too long for every
+# push. Actions tab, « Mutants », « Run workflow ». Same setup as ci.yml (no GitHub
+# secret, random passwords for the run, actions pinned by commit, no cache).
+name: Mutants
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mutants:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    env:
+      POSTGRES_DB: theses
+      POSTGRES_USER: theses
+      UV_FROZEN: "1"
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+        with:
+          enable-cache: false
+
+      - name: Draw fictitious passwords for this run
+        run: |
+          for name in POSTGRES_PASSWORD TEST_POSTGRES_PASSWORD REDIS_PASSWORD; do
+            value="$(openssl rand -hex 24)"
+            echo "::add-mask::$value"
+            echo "$name=$value" >> "$GITHUB_ENV"
+          done
+
+      - name: Point the settings at the services
+        run: |
+          {
+            echo "DATABASE_URL=postgres://theses:${POSTGRES_PASSWORD}@127.0.0.1:5432/theses"
+            echo "TEST_DATABASE_URL=postgres://theses:${TEST_POSTGRES_PASSWORD}@127.0.0.1:5433/theses"
+            echo "REDIS_URL=redis://:${REDIS_PASSWORD}@127.0.0.1:6379/0"
+          } >> "$GITHUB_ENV"
+
+      - name: Start PostgreSQL and Redis (docker-compose.yml)
+        run: docker compose up -d --wait db db-test redis
+
+      - name: Install the dependencies
+        run: uv sync --frozen
+
+      - name: Mutants (scripts/mutants.sh)
+        run: |
+          mkdir -p var
+          status=0
+          scripts/mutants.sh > var/mutants.log 2>&1 || status=$?
+          sed -n '/Résumé/,$p' var/mutants.log
+          echo "mutants exit=$status"
+          test "$status" -eq 0
+
+      - name: Stop the services
+        if: always()
+        run: docker compose down -v

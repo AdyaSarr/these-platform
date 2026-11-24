@@ -1,0 +1,115 @@
+# Continuous integration (docs/DEPLOYMENT.md, « CI obligatoire »). Same checks as a
+# commit (CLAUDE.md): lint, types, security, dependencies, migrations, the full
+# suite with its last line checked, merge_gate on main and on pull requests.
+#
+# No GitHub secret is used: the services' passwords are drawn at random for the
+# run, masked in the log, and the test settings draw DJANGO_SECRET_KEY and
+# MASTER_KEY themselves (config/settings/test.py). Fictitious data only (rule 10).
+# Third-party actions are pinned by commit; no cache.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      # docker-compose.yml (the same pinned images as on a development machine).
+      POSTGRES_DB: theses
+      POSTGRES_USER: theses
+      PYTEST_WORKERS: "4"
+      UV_FROZEN: "1"
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@1db35dd8eee11c5894872e0b383ae6c406cf738d # v10.4.0
+        with:
+          enable-cache: false
+
+      - name: Draw fictitious passwords for this run
+        run: |
+          for name in POSTGRES_PASSWORD TEST_POSTGRES_PASSWORD REDIS_PASSWORD; do
+            value="$(openssl rand -hex 24)"
+            echo "::add-mask::$value"
+            echo "$name=$value" >> "$GITHUB_ENV"
+          done
+
+      - name: Point the settings at the services
+        run: |
+          {
+            echo "DATABASE_URL=postgres://theses:${POSTGRES_PASSWORD}@127.0.0.1:5432/theses"
+            echo "TEST_DATABASE_URL=postgres://theses:${TEST_POSTGRES_PASSWORD}@127.0.0.1:5433/theses"
+            echo "REDIS_URL=redis://:${REDIS_PASSWORD}@127.0.0.1:6379/0"
+          } >> "$GITHUB_ENV"
+
+      - name: Start PostgreSQL and Redis (docker-compose.yml)
+        run: docker compose up -d --wait db db-test redis
+
+      - name: Install zsh (tests/test_check_deploy_script.py runs it)
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q --no-install-recommends zsh
+
+      - name: Install the dependencies
+        run: uv sync --frozen
+
+      - name: Ruff
+        run: uv run ruff check .
+
+      - name: Ruff format
+        run: uv run ruff format --check .
+
+      - name: Mypy
+        run: uv run mypy apps
+
+      - name: Bandit
+        run: uv run bandit -r apps -ll
+
+      - name: pip-audit
+        run: uv run pip-audit
+
+      - name: No missing migration
+        run: uv run python manage.py makemigrations --check --dry-run --settings=config.settings.test
+
+      - name: Full suite (scripts/test_all.sh)
+        run: |
+          mkdir -p var
+          status=0
+          scripts/test_all.sh > var/last-pytest.log 2>&1 || status=$?
+          tail -n 60 var/last-pytest.log
+          echo "pytest exit=$status"
+          # CLAUDE.md: never trust the exit code of a pipe; read the summary lines.
+          summaries="$(grep -E '^(=+ )?[0-9]+ (passed|failed).* in [0-9.]+s' var/last-pytest.log || true)"
+          echo "$summaries"
+          test "$status" -eq 0
+          test "$(printf '%s\n' "$summaries" | grep -c .)" -ge 2
+          # (not `! grep`: bash -e does not stop on a negated command)
+          if printf '%s\n' "$summaries" | grep -Eq 'failed|error'; then exit 1; fi
+          tail -n 1 var/last-pytest.log | grep -Eq '^test_all: exit=0 parallel=0 serial=0 seed=[0-9]+$'
+
+      - name: merge_gate (main and pull requests; they pass only at the end of a module)
+        if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
+        run: |
+          status=0
+          uv run pytest -m merge_gate > var/merge-gate.log 2>&1 || status=$?
+          tail -n 20 var/merge-gate.log
+          echo "exit=$status"
+          test "$status" -eq 0
+
+      - name: Stop the services
+        if: always()
+        run: docker compose down -v
