@@ -433,3 +433,35 @@ aucune implémentation maison du format, règle 1).
 14. Historique sur la page.
 15. Garde exhaustive des modèles (exportés ou `NOT_EXPORTED`).
 16. Mutants ajoutés à `scripts/mutants.toml`, tous tués.
+
+## Assertions existantes modifiées (M13b)
+
+Validées le 2026-11-24 avant d'y toucher ; toutes sont des ajouts à des listes
+fermées, aucune attente existante n'est retirée :
+
+- `apps/accounts/tests/test_permissions.py` : `EXPECTED` reçoit `THESIS_EXPORT`
+  (doctorant), `SET_ST_CONFIDENTIALITY` et `GRANT_ST_EXPORT` (tuteur) ;
+- `apps/accounts/tests/test_status_gate.py` : `READS` reçoit `THESIS_EXPORT`,
+  `DEFENDED_WRITES` les deux actions du tuteur ;
+- `tests/test_open_thesis_copies.py` : la table reçoit `"export"` ;
+  `any_open() == (SETUP, ACTIVE, DEFENDED)` est inchangée (`NOT_DIGESTED`) ;
+- `apps/core/tests/test_delivery.py` : `NOTIFYING_MODULES` reçoit `export` ;
+- `tests/test_status_matrix.py` : classement de `export.*` et `vault.export_*`,
+  recettes des deux écritures du tuteur (permises en `DEFENDED`) ;
+- `apps/admin_file/tests/test_histories.py` (validé pendant le code) : la liste des
+  fichiers qui nomment les historiques de M3 reçoit `export/snapshot.py` (lecture)
+  et `export/coverage.py` (garde exhaustive) ; la vérification « aucune écriture
+  hors services » s'applique à eux.
+
+## Modules terminés touchés (M13b)
+
+- M1 : `Thesis.st_confidential_until` (migration `accounts.0007`), trois actions et
+  leurs droits (`permissions.py`), entrée `"export"` et `NOT_DIGESTED` dans
+  `statuses.py`.
+- M2 : `vault.services.export_documents`, `export_read`, `export_texts` (lectures
+  sans audit par lecture), `crypto.Sha256`, cinq actions du journal ;
+  `docs/SECURITY.md` (« Lectures agrégées »).
+- M13a (en cours) : lien vers l'export et vers la confidentialité ST sur la page
+  « Fin de thèse ».
+- M3 à M7 : aucun changement ; `apps/export/snapshot.py` lit leurs modèles par
+  leurs règles de lecture.

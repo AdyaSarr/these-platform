@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "apps.activity",
     "apps.feeds",
     "apps.lifecycle",
+    "apps.export",
     "apps.ui",  # visual layer: navigation, theme, icons (presentation only)
     # Authentication: sign-in, password reset, mandatory second factor (M1).
     "allauth",
@@ -305,3 +306,7 @@ LOGGING = {
 # defence and the closure is « à confirmer (Q4) » (docs/specs/questions-fin-de-these.md).
 THESIS_CLOSE_MIN_MONTHS = 3
 THESIS_DIRECTOR_ACCESS_MONTHS = 3
+
+# M13b: the largest export (sum of the document versions it holds), refused before
+# it starts; the student may then export the latest versions only.
+EXPORT_MAX_BYTES = 2 * 1024**3

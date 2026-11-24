@@ -91,6 +91,12 @@ directeur ou le doctorant demande la clôture, l'autre partie la confirme
 de lecture à part (`OBJECTIVE_COMMENT_READ`), tenue par les mêmes rôles que
 « commenter ».
 
+Export (M13b) : le doctorant seul exporte ses données (`THESIS_EXPORT`, action de
+**lecture** : permise dans tous les statuts) ; le tuteur industriel seul fixe la fin
+de la confidentialité ST (`SET_ST_CONFIDENTIALITY`) et accorde l'accord de 30 jours
+qui fait entrer `INTERNAL_ST` dans l'export (`GRANT_ST_EXPORT`), deux écritures
+permises jusqu'à `DEFENDED`. App `apps/export`.
+
 **Statut de la thèse** (M13a, fiche `modules/M13-fin-de-these.md`) : `can()` lit le
 statut dans la même requête que les rôles. Une lecture ne dépend jamais du statut ;
 une écriture est permise en `SETUP` et `ACTIVE`, en `DEFENDED` seulement pour les

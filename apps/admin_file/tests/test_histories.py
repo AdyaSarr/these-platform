@@ -61,7 +61,9 @@ def test_histories_are_written_by_the_services_only() -> None:
         if any(name in p.read_text() for name in HISTORIES)
     }
     assert users <= {"admin_file/models.py", "admin_file/services.py", "admin_file/views.py",
-                     "admin_file/notifications.py", "demo/scenario.py"}  # fmt: skip
+                     "admin_file/notifications.py", "demo/scenario.py",
+                     # M13b: the export reads them, and its coverage guard names them
+                     "export/snapshot.py", "export/coverage.py"}  # fmt: skip
     for path in users - {"admin_file/models.py", "admin_file/services.py"}:
         for node in ast.walk(ast.parse((APPS / path).read_text())):
             if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):

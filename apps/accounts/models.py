@@ -119,6 +119,9 @@ class Thesis(TimeStampedModel):
     defended_on = models.DateField(_("defence date"), null=True, blank=True)
     closed_at = models.DateTimeField(_("closed at"), null=True, blank=True)
     access_until = models.DateField(_("director's access until"), null=True, blank=True)
+    # M13b (apps/export): end of the ST confidentiality, set by the industrial tutor
+    # only. Empty or in the future: INTERNAL_ST stays out of the student's export.
+    st_confidential_until = models.DateField(_("ST confidentiality until"), null=True, blank=True)
 
     objects: ClassVar[ThesisQuerySet] = ThesisQuerySet.as_manager()  # type: ignore[assignment]
 

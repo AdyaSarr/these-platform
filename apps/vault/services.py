@@ -982,3 +982,108 @@ def _rewrap_mfa(current: str, limit: int) -> int:
             if count >= limit:
                 break
     return count
+
+
+# --------------------------------------------------------------------------- export (M13b)
+# Reads for the student's export (apps/export). They journal nothing: the export is
+# journaled ONCE, by THESIS_EXPORTED, with the counts per level and the ids of the
+# CONFIDENTIAL objects (docs/SECURITY.md, « Lectures agrégées »). The access rules
+# are the ones of every read (can_access_document, can_access_level); ``levels``
+# narrows them further (INTERNAL_ST without an ST agreement).
+
+
+@dataclass(frozen=True)
+class PlannedVersion:
+    """A version to put in an export, read inside the export's snapshot: its wrapped
+    DEK and level come from the same state of the database as the rest."""
+
+    document_id: uuid.UUID
+    version_id: uuid.UUID
+    version: int
+    level: ConfidentialityLevel
+    mime_type: str
+    size: int
+    extension: str
+    _version: DocumentVersion = field(repr=False, compare=False)
+    _document: Document = field(repr=False, compare=False)
+
+
+def export_documents(
+    user: Any, thesis: Thesis, *, all_versions: bool, levels: frozenset[ConfidentialityLevel]
+) -> list[tuple[Document, list[PlannedVersion], list[DocumentVersion]]]:
+    """The documents of ``thesis`` that ``user`` reads, at ``levels``, by creation:
+    (document, versions to export, every version). Nothing is decrypted."""
+    out = []
+    documents = Document.objects.filter(thesis=thesis).order_by("created_at", "pk")
+    for document in documents:
+        level = _level(document)
+        if level not in levels or not can_access_document(user, document):
+            continue
+        every = list(DocumentVersion.objects.filter(document=document).order_by("version"))
+        chosen = every if all_versions else every[-1:]  # ordered by version
+        planned = [
+            PlannedVersion(
+                document_id=document.pk,
+                version_id=v.pk,
+                version=v.version,
+                level=level,
+                mime_type=v.mime_type,
+                size=v.size,
+                extension=_MIME_EXTENSION[v.mime_type],
+                _version=v,
+                _document=document,
+            )
+            for v in chosen
+        ]
+        out.append((document, planned, every))
+    return out
+
+
+@sensitive_variables()
+def export_read(planned: PlannedVersion) -> bytes:
+    """Decrypt one planned version (outside any transaction: the stream of the
+    export). A failure is journaled (as for a download) and raised."""
+    try:
+        return _decrypt(planned._version, planned._document, planned.level)
+    except (VaultIntegrityError, UnknownKekError, StorageError) as exc:
+        _audit_failure(exc, user=None, document=planned._document, version=planned.version)
+        raise
+
+
+@sensitive_variables()
+def export_texts(
+    user: Any,
+    thesis: Thesis,
+    items: Iterable[tuple[Any, str]],
+    *,
+    levels: frozenset[ConfidentialityLevel],
+) -> dict[TextKey, str]:
+    """The texts ``(obj, field)`` of ``thesis`` that ``user`` reads, at ``levels``,
+    decrypted, in one query; absent when there is none or it is not read. Called
+    inside the export's snapshot (read only): a failure is raised, and journaled
+    by the export once the snapshot is over."""
+    wanted: dict[tuple[int, uuid.UUID], TextKey] = {}
+    for obj, name in items:
+        if getattr(obj, "thesis_id", None) != thesis.pk:  # a bug of the caller, not a request
+            raise ValueError("export_texts: an object of another thesis")
+        code, object_id = _slot_of(obj, name)
+        wanted[(code, object_id)] = (object_id, name)
+    if not wanted:
+        return {}
+    rows = SealedText.objects.filter(
+        thesis=thesis,
+        slot__in={code for code, _ in wanted},
+        object_id__in={object_id for _, object_id in wanted},
+    ).order_by("pk")
+    readable: dict[ConfidentialityLevel, bool] = {}
+    result: dict[TextKey, str] = {}
+    for row in rows:
+        key = wanted.get((row.slot, row.object_id))
+        if key is None:
+            continue
+        level = ConfidentialityLevel(row.level)
+        if level not in readable:
+            readable[level] = level in levels and can_access_level(user, thesis, level)
+        if readable[level]:
+            result[key] = _decode(_open_text_row(row, level))
+    return result

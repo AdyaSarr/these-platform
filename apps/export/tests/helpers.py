@@ -18,6 +18,7 @@ from typing import Any
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 
+from apps.accounts.roles import Role
 from apps.activity.tests.helpers import (
     NOW,
     PASSWORD,
@@ -118,15 +119,18 @@ def world(team: SimpleNamespace) -> SimpleNamespace:
         destination="ROUSSET", payer="ST", purpose="TEMOIN-FUITE-MOTIF-ST", fill_presence=False,
     )  # fmt: skip
     # Secrets the export must never hold.
-    mfa_witness = {"secret": "TEMOIN-FUITE-SECRET-MFA"}  # pragma: allowlist secret (a witness)
-    Authenticator.objects.create(user=s, type="totp", data=mfa_witness)
+    # The users already have a TOTP authenticator (the factory): the witness goes in
+    # the seed of recovery codes, the other secret of the second factor.
+    mfa_witness = {"seed": "TEMOIN-FUITE-SECRET-MFA"}  # pragma: allowlist secret (a witness)
+    Authenticator.objects.update_or_create(user=s, type="recovery_codes",
+                                           defaults={"data": mfa_witness})  # fmt: skip
     from apps.feeds import services as feeds
 
     w.feed, w.feed_token = feeds.create(user=s, thesis=team.thesis, recent_mfa=True)
     membership = Membership.objects.active().filter(thesis=team.thesis, user=s).first()
     assert membership is not None
     w.invitation = accounts.create_invitation(
-        thesis=team.thesis, email="invitee.fictive@example.org", role="CO_SUPERVISOR",
+        thesis=team.thesis, email="invitee.fictive@example.org", role=Role.CO_SUPERVISOR,
         organization=membership.organization, by=s,
     )  # fmt: skip
     audit(AuditAction.THESIS_ACCESS_DENIED, actor=team.director, thesis=team.thesis,
@@ -187,8 +191,16 @@ def csrf_post(client: Any, team: SimpleNamespace, path: str, data: dict[str, Any
     """A POST like a browser's: CSRF token from a page every member reads."""
     import re
 
-    page = client.get(reverse("lifecycle:page", kwargs={"thesis_id": team.thesis.pk}))
-    match = re.search(r'name="csrfmiddlewaretoken" value="([^"]+)"', page.content.decode())
+    # A page every member reads; a guest reads none of the thesis: a page of the
+    # account (any signed-in person).
+    pages = (reverse("lifecycle:page", kwargs={"thesis_id": team.thesis.pk}),
+             reverse("account_change_password"))  # fmt: skip
+    match = None
+    for page in pages:
+        body = client.get(page).content.decode()
+        match = re.search(r'name="csrfmiddlewaretoken" value="([^"]+)"', body)
+        if match:
+            break
     assert match, "no CSRF token in the page"
     return client.post(path, {**data, "csrfmiddlewaretoken": match.group(1)},
                        HTTP_ORIGIN=SITE_ORIGIN)  # fmt: skip

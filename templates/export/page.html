@@ -1,0 +1,48 @@
+{% extends "base.html" %}{% load i18n ui %}
+{% block title %}{% translate "Export of my data" %}{% endblock %}
+{% block content %}
+{% page_header %}{% translate "Export of my data" %}{% subtitle %}{% translate "Everything you read on the platform, in one ZIP file" %}{% endpage_header %}
+{% if error %}<p class="message message-error" role="alert">{{ error }}{% if next_at %} {% blocktranslate with time=next_at|date:"H:i" %}Next export possible at {{ time }}.{% endblocktranslate %}{% endif %}</p>{% endif %}
+
+<section aria-labelledby="export-title">
+<h2 id="export-title">{% translate "Download" %}</h2>
+<p class="message message-warning" role="note">{% translate "The file holds your documents in clear, CONFIDENTIAL ones included. Keep it on an encrypted disk (FileVault on a Mac, BitLocker, LUKS) and never send it by e-mail." %}</p>
+<details class="muted">
+  <summary>{% translate "What the export holds, and what it does not" %}</summary>
+  <p>{% translate "It holds the documents (latest version, or every version), the objectives, meetings, administrative file, conferences and missions, with their texts decrypted, the comments of your supervisors (their name and role only), your own lines of the audit log and a manifest with the SHA-256 digest of each file." %}</p>
+  <p>{% translate "It never holds second factor secrets, links tokens, passwords, the addresses of the other members, the lines of the audit log of the others, nor INTERNAL_ST without an agreement of ST." %}</p>
+</details>
+{% if st_open %}<p>{% if consent %}{% blocktranslate with date=consent.valid_until|date:"j F Y" %}ST agreement in force until {{ date }}: INTERNAL_ST is included.{% endblocktranslate %}{% else %}{% translate "The ST confidentiality is over: INTERNAL_ST is included." %}{% endif %}</p>{% else %}<p class="muted">{% translate "INTERNAL_ST is left out: the ST confidentiality is not over and no ST agreement is in force." %}</p>{% endif %}
+<details class="confirm">
+  <summary class="btn btn-secondary">{% icon "download" %}{% translate "Export my data" %}</summary>
+  <div class="confirm-panel">
+    <p>{% translate "Asks for your second factor. One export an hour; you receive an e-mail for each export." %}</p>
+    <form class="stack" method="post" action="{% url 'export:download' thesis_id=thesis.pk %}">{% csrf_token %}
+      <label><input type="checkbox" name="all_versions"> {% translate "Every version of each document" %}</label>
+      <button type="submit" class="btn btn-primary">{% translate "Yes, download" %}</button>
+    </form>
+  </div>
+</details>
+</section>
+
+<section aria-labelledby="history-title">
+<h2 id="history-title">{% translate "Your exports" %}</h2>
+{% if history %}
+<table class="table">
+  <thead><tr><th>{% translate "Date" %}</th><th>{% translate "Versions" %}</th><th>{% translate "Result" %}</th></tr></thead>
+  <tbody>
+  {% for record in history %}
+    <tr>
+      <td>{{ record.started_at|date:"SHORT_DATETIME_FORMAT" }}</td>
+      <td>{% if record.all_versions %}{% translate "every version" %}{% else %}{% translate "latest versions" %}{% endif %}{% if record.consent_id %} · {% translate "with INTERNAL_ST" %}{% endif %}</td>
+      <td>{% if record.outcome == "COMPLETE" %}{% translate "Complete" %}{% else %}{% translate "Interrupted" %}{% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+<p class="muted">{% translate "An export you did not make? Tell your director and change your password." %}</p>
+{% else %}
+<p class="muted">{% translate "No export yet." %}</p>
+{% endif %}
+</section>
+{% endblock %}

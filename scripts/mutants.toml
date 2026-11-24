@@ -123,3 +123,104 @@ file = "apps/accounts/permissions.py"
 old = '_A.CONFERENCE_WRITE, _A.SUBMISSION_WRITE, _A.VALIDATE_PUBLICATION,  # M6'
 new = '# M6 removed (mutant M11)'
 tests = ["tests/test_status_matrix.py"]
+
+# ---- M13b: the student's export (docs/modules/M13-fin-de-these.md, criterion 16)
+
+[[mutant]]
+id = "M12-export-st-sans-accord"
+claim = "M13b, critère 7 : INTERNAL_ST exclu sans accord ST"
+file = "apps/export/snapshot.py"
+old = 'levels = levels - {L.INTERNAL_ST}'
+new = 'levels = levels'
+tests = [
+    "apps/export/tests/test_exclusions.py::test_internal_st_is_left_out_without_an_agreement",
+]
+
+[[mutant]]
+id = "M13-export-journal-d-autrui"
+claim = "M13b, critère 7 : seules les lignes d'audit dont le doctorant est l'acteur"
+file = "apps/export/snapshot.py"
+old = 'Q(thesis=c.thesis) | Q(thesis__isnull=True), actor_id=c.user.pk'
+new = 'Q(thesis=c.thesis) | Q(thesis__isnull=True)'
+tests = [
+    "apps/export/tests/test_exclusions.py::test_no_secret_token_password_address_or_pseudonym",
+    "apps/export/tests/test_content.py::test_the_journal_holds_the_student_s_own_lines",
+]
+
+[[mutant]]
+id = "M14-export-details-sans-filtre"
+claim = "M13b, critère 7 : liste blanche des clés du journal (pseudonymes retirés)"
+file = "apps/export/snapshot.py"
+old = 'if k in SAFE_DETAIL_KEYS'
+new = 'if k'
+tests = [
+    "apps/export/tests/test_exclusions.py::test_no_secret_token_password_address_or_pseudonym",
+    "apps/export/tests/test_content.py::test_the_journal_holds_the_student_s_own_lines",
+]
+
+[[mutant]]
+id = "M15-export-par-le-directeur"
+claim = "M13b, critère 1 : le doctorant seul exporte"
+file = "apps/accounts/permissions.py"
+old = '_A.DECLARE_DEFENSE, _A.REQUEST_CLOSURE,                 # M13a'
+new = '_A.DECLARE_DEFENSE, _A.REQUEST_CLOSURE, _A.THESIS_EXPORT,  # M13a'
+tests = [
+    "apps/export/tests/test_access.py::test_only_the_student_may_export",
+    "apps/export/tests/test_access.py::test_the_refusal_is_that_of_a_missing_right",
+]
+
+[[mutant]]
+id = "M16-export-sans-limite"
+claim = "M13b, critère 4 : un export par heure, l'interrompu compte"
+file = "apps/export/services.py"
+old = 'raise ExportRateLimitedError(last.started_at + LIMIT)'
+new = 'pass'
+tests = [
+    "apps/export/tests/test_access.py::test_once_an_hour",
+    "apps/export/tests/test_access.py::test_an_interrupted_export_counts",
+]
+
+[[mutant]]
+id = "M17-export-sans-second-facteur"
+claim = "M13b, critère 3 : second facteur récent exigé par la vue"
+file = "apps/export/views.py"
+old = 'class DownloadView(ThesisPermissionRequiredMixin, RecentAuthRequiredMixin, View):'
+new = 'class DownloadView(ThesisPermissionRequiredMixin, View):'
+tests = ["apps/export/tests/test_access.py::test_a_recent_second_factor_is_required"]
+
+[[mutant]]
+id = "M18-export-nom-brut"
+claim = "M13b, critère 9 : noms d'entrées construits par nous, jamais le titre"
+file = "apps/export/snapshot.py"
+old = 'stem = slugify(title).replace("_", "-")[:60].strip("-") or "document"'
+new = 'stem = title or "document"'
+tests = ["apps/export/tests/test_content.py::test_entry_names_are_built_by_us"]
+
+[[mutant]]
+id = "M19-export-ferme-en-closed"
+claim = "M13b, critère 2 : export permis en CLOSED (et son courriel)"
+file = "apps/accounts/statuses.py"
+old = '"export": (S.SETUP, S.ACTIVE, S.DEFENDED, S.CLOSED),'
+new = '"export": (S.SETUP, S.ACTIVE, S.DEFENDED),'
+tests = [
+    "apps/export/tests/test_access.py::test_every_status_allows_the_student",
+    "apps/export/tests/test_notifications.py::test_also_when_the_thesis_is_closed",
+]
+
+[[mutant]]
+id = "M20-export-sans-courriel"
+claim = "M13b, critère 13 : courriel d'alerte à chaque export"
+file = "apps/export/services.py"
+old = '_queue(locked, ExportNotification.Kind.EXPORTED, [user], export=record)'
+new = 'pass'
+tests = ["apps/export/tests/test_notifications.py::test_the_student_is_told_at_once_by_a_link"]
+
+[[mutant]]
+id = "M21-export-empreinte-fausse"
+claim = "M13b, critère 6 : SHA-256 du manifeste calculé sur les octets écrits"
+file = "apps/export/archive.py"
+old = 'digest.update(piece)'
+new = 'digest.update(piece[::-1])'
+tests = [
+    "apps/export/tests/test_content.py::test_the_manifest_lists_every_entry_with_its_digest",
+]

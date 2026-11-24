@@ -58,12 +58,13 @@ def test_the_refusal_is_that_of_a_missing_right(team: SimpleNamespace, attr: str
     foreign_page = client.get(h.url(other, "page"))
     foreign_post = h.csrf_post(client, team, h.url(other, "download"), {})
     assert foreign_page.status_code == foreign_post.status_code == 403
-    for _ in range(2):  # before and after the student's export (limit reached)
+    for turn in range(2):  # before and after the student's export (limit reached)
         page = client.get(h.url(team, "page"))
         post = h.csrf_post(client, team, h.url(team, "download"), {})
         assert (page.status_code, page.content) == (403, foreign_page.content)
         assert (post.status_code, post.content) == (403, foreign_post.content)
-        b"".join(_start(team).chunks())
+        if turn == 0:
+            b"".join(_start(team).chunks())
     assert ExportRecord.objects.filter(user=user).count() == 0
 
 
@@ -75,7 +76,7 @@ def test_every_status_allows_the_student(team: SimpleNamespace, status: str) -> 
 
 
 def test_a_recent_second_factor_is_required(team: SimpleNamespace) -> None:
-    from apps.accounts.reauth import ReauthenticationRequiredError
+    from apps.vault.errors import ReauthenticationRequiredError
 
     with pytest.raises(ReauthenticationRequiredError):
         export.start_export(thesis=team.thesis, user=team.student, recent_mfa=False)

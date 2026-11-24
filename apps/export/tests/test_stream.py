@@ -54,18 +54,19 @@ def _listing(root: Path) -> set[str]:
 
 
 def test_nothing_is_written_to_disk(team: SimpleNamespace) -> None:
-    import tempfile
-
+    """Python's audit hook sees every file this process opens for writing and
+    every tempfile call; the vault's storage is listed before and after. (The
+    system's temporary folder is shared with other processes: not compared.)"""
     h.world(team)
-    roots = [Path(tempfile.gettempdir()), Path(settings.VAULT_STORAGE_DIR)]
-    before = [_listing(r) for r in roots]
+    vault_dir = Path(settings.VAULT_STORAGE_DIR)
+    before = _listing(vault_dir)
     WATCH.append([])
     try:
         h.run(team, all_versions=True)
     finally:
         seen = WATCH.pop()
     assert seen == []
-    assert [_listing(r) for r in roots] == before
+    assert _listing(vault_dir) == before
 
 
 def test_the_event_is_written_before_the_first_byte(team: SimpleNamespace) -> None:
@@ -73,9 +74,10 @@ def test_the_event_is_written_before_the_first_byte(team: SimpleNamespace) -> No
     started = export.start_export(thesis=team.thesis, user=team.student, recent_mfa=True)
     (event,) = audited("THESIS_EXPORTED")  # nothing read from the stream yet
     assert event["all_versions"] is False and event["st_consent"] is None
-    assert event["documents"] == {"PUBLIC": 1, "CONFIDENTIAL": 1}
+    # Keys of the journal are lowercase identifiers (vault.audit): levels in lowercase.
+    assert event["documents"] == {"public": 1, "confidential": 1}
     assert event["confidential_ids"] == [str(w.conf.pk)]
-    assert event["excluded"]["INTERNAL_ST"] >= 3
+    assert event["excluded"]["internal_st"] >= 3
     text = str(event)
     for title in ("Rapport annuel", "Contrat fictif", "Objectif fictif", team.thesis.title):
         assert title not in text
@@ -149,7 +151,7 @@ def test_a_complete_export_is_recorded(team: SimpleNamespace) -> None:
 def test_the_size_is_capped_before_anything_starts(team: SimpleNamespace,
                                                    settings: Any) -> None:  # fmt: skip
     h.world(team)
-    settings.EXPORT_MAX_BYTES = 100
+    settings.EXPORT_MAX_BYTES = 10  # the world's two documents weigh more
     with pytest.raises(export.ExportTooLargeError):
         export.start_export(thesis=team.thesis, user=team.student, recent_mfa=True)
     assert ExportRecord.objects.count() == 0 and audited("THESIS_EXPORTED") == []

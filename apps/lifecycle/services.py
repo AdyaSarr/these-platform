@@ -369,6 +369,9 @@ def page(user: Any, thesis: Thesis) -> dict[str, Any]:
         "cancel_reasons": CancelReason.choices,
         "abandon_reasons": [(r.value, r.label) for r in ClosureReason if r in ABANDON_REASONS],
         "today": timezone.localdate(),
+        # M13b: the way to the export (the student) and to its ST side (the tutor).
+        "can_export": can(user, Action.THESIS_EXPORT, fresh),
+        "can_st_export": can(user, Action.SET_ST_CONFIDENTIALITY, fresh),
     }
 
 

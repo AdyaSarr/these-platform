@@ -104,6 +104,11 @@ EXPECTED: dict[Action, set[Role]] = {
     # PhD student requests (and the other confirms) the closure.
     A.DECLARE_DEFENSE: {R.DIRECTOR},
     A.REQUEST_CLOSURE: {R.PHD_STUDENT, R.DIRECTOR},
+    # Export (M13b): the student exports; the tutor dates the end of the ST
+    # confidentiality and grants the 30-day agreement.
+    A.THESIS_EXPORT: {R.PHD_STUDENT},
+    A.SET_ST_CONFIDENTIALITY: {R.INDUSTRIAL_TUTOR},
+    A.GRANT_ST_EXPORT: {R.INDUSTRIAL_TUTOR},
 }
 
 EXPECTED_LEVELS: dict[Level, set[Role]] = {

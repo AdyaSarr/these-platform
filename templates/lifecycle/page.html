@@ -75,5 +75,12 @@
 </div>
 </section>
 {% endif %}
+{% if can_export or can_st_export %}
+<section aria-labelledby="export-title">
+<h2 id="export-title">{% translate "Export of the data" %}</h2>
+{% if can_export %}<p><a href="{% url 'export:page' thesis_id=thesis.pk %}">{% translate "Export my data" %}</a></p>{% endif %}
+{% if can_st_export %}<p><a href="{% url 'export:st' thesis_id=thesis.pk %}">{% translate "ST confidentiality of the export" %}</a></p>{% endif %}
+</section>
+{% endif %}
 {% if why %}<p class="muted">{% if why == "closed" %}{% translate "The thesis is closed: there is no step left." %}{% elif why == "setup" %}{% translate "The defence can be declared once the thesis is active, that is once the enrolment file is validated." %}{% elif why == "roles" %}{% translate "Only the director and the PhD student move the end of the thesis forward." %}{% elif why == "too_early" %}{% blocktranslate with date=closable_from|date:"j F Y" %}The closure can be requested from {{ date }}.{% endblocktranslate %}{% else %}{% translate "The other party has to act now." %}{% endif %}</p>{% endif %}
 {% endblock %}

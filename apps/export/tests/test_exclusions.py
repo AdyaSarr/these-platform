@@ -12,11 +12,11 @@ import pytest
 from django.core.exceptions import PermissionDenied
 
 from apps.accounts.models import Thesis
-from apps.accounts.reauth import ReauthenticationRequiredError
 from apps.export import services as export
 from apps.export.models import StExportConsent
 from apps.export.tests import helpers as h
 from apps.lifecycle.tests.helpers import audited
+from apps.vault.errors import ReauthenticationRequiredError
 
 pytestmark = pytest.mark.django_db(transaction=True)
 

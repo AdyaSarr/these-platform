@@ -565,6 +565,17 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       relancer ne fait rien deux fois. *Vérifier* : la sortie ne contient que des
       nombres.
 
+- [ ] **Export du doctorant (M13b) : longues réponses en flux.**
+      L'export est une réponse en flux (`StreamingHttpResponse`, `Content-Disposition:
+      attachment`), jusqu'à `EXPORT_MAX_BYTES` (2 Gio) ; un fil `gthread` reste
+      occupé pendant tout le téléchargement. *À vérifier sur la version déployée* :
+      que Caddy ne met pas la réponse en mémoire tampon et qu'aucun délai d'écriture
+      de Caddy ni de gunicorn (`--timeout`, concerne le battement du processus avec
+      `gthread`) ne coupe un téléchargement long.
+      *Vérifier* : un export d'environ 500 Mio téléchargé par
+      `curl --limit-rate 2M` va au bout et `unzip -t` répond « No errors detected » ;
+      l'historique de la page de l'export dit « Complet ».
+
 ## Rappels de configuration
 
 - `EMAIL_TIMEOUT = 10` (base et prod) : un serveur SMTP qui ne répond pas fait

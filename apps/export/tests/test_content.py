@@ -194,6 +194,6 @@ def test_entry_names_are_built_by_us(team: SimpleNamespace) -> None:
     documents = [n for n in names if n.startswith("documents/")]
     assert len(documents) == len(HOSTILE)
     for name in names:
-        assert SAFE_NAME.fullmatch(name), name
+        assert name in DATA_FILES or SAFE_NAME.fullmatch(name), name
         assert ".." not in name and not name.startswith("/") and "\\" not in name
         assert len(name) <= 100
