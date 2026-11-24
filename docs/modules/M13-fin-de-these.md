@@ -465,3 +465,11 @@ fermées, aucune attente existante n'est retirée :
   « Fin de thèse ».
 - M3 à M7 : aucun changement ; `apps/export/snapshot.py` lit leurs modèles par
   leurs règles de lecture.
+
+## Revue de fin (M13b, 2026-11-24)
+
+Validée. Deux vérifications ajoutées : M22 (garde interne retirée et titre brut
+renvoyé) est tué par l'assertion du test des noms hostiles, qui relit le ZIP, et
+non par une exception (M18 l'était par la garde) ; `documents.json` est vérifié
+explicitement (titre et identifiant d'un document `INTERNAL_ST` absents sans
+accord, présents avec un accord).

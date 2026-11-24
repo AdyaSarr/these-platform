@@ -42,6 +42,9 @@ def test_internal_st_is_left_out_without_an_agreement(team: SimpleNamespace) -> 
     text = h.everything(archive)
     assert [x for x in w.st_witnesses if x in text] == []
     assert h.read(archive, "manifest.json")["excluded"]["INTERNAL_ST"] >= 3
+    # The index of the documents in particular: neither the title nor the id.
+    index = archive.read("documents.json").decode()
+    assert "TEMOIN-FUITE-DOC-ST" not in index and str(w.st_doc.pk) not in index
 
 
 def test_an_st_agreement_lets_internal_st_in(team: SimpleNamespace) -> None:
@@ -50,6 +53,9 @@ def test_an_st_agreement_lets_internal_st_in(team: SimpleNamespace) -> None:
     archive = h.run(team)
     text = h.everything(archive)
     assert [x for x in w.st_witnesses if x not in text] == []  # not vacuous
+    by_id = {d["id"]: d for d in h.read(archive, "documents.json")}
+    assert by_id[str(w.st_doc.pk)]["titre"] == "TEMOIN-FUITE-DOC-ST"
+    assert by_id[str(w.st_doc.pk)]["niveau"] == "INTERNAL_ST"
     assert h.read(archive, "manifest.json")["options"]["st_consent_id"] == str(consent.pk)
     (event,) = audited("THESIS_EXPORTED")
     assert event["st_consent"] == str(consent.pk) and event["st_included"] >= 3

@@ -224,3 +224,16 @@ new = 'digest.update(piece[::-1])'
 tests = [
     "apps/export/tests/test_content.py::test_the_manifest_lists_every_entry_with_its_digest",
 ]
+
+[[mutant]]
+id = "M22-export-nom-brut-sans-garde"
+claim = "Revue de fin de M13b : sans la garde interne (M18 la touche), le test des noms hostiles relit le ZIP et refuse le titre brut"
+file = "apps/export/snapshot.py"
+old = '''stem = slugify(title).replace("_", "-")[:60].strip("-") or "document"
+    stem = re.sub(r"-{2,}", "-", stem)
+    name = f"documents/{n:04d}-{stem}-v{version}.{extension.lower()}"
+    if not ENTRY_NAME.fullmatch(name) or ".." in name:
+        raise ValueError("unsafe entry name")  # a bug: the parts above cannot make one'''
+new = '''stem = title or "document"
+    name = f"documents/{n:04d}-{stem}-v{version}.{extension.lower()}"'''
+tests = ["apps/export/tests/test_content.py::test_entry_names_are_built_by_us"]
