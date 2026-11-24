@@ -13,7 +13,7 @@ avec la commande donnée ; « vérifié le … » ne vaut que pour la version ci
 
 Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
 
-- [ ] **CI obligatoire avant tout déploiement.** `.github/workflows/ci.yml`, à chaque
+- [x] **CI obligatoire avant tout déploiement.** `.github/workflows/ci.yml`, à chaque
       push et pull request : `uv sync --frozen`, ruff, `ruff format --check`, mypy,
       bandit, pip-audit, `makemigrations --check`, `scripts/test_all.sh` (dernière
       ligne `test_all: exit=0 parallel=0 serial=0` et deux lignes de résumé sans
@@ -22,9 +22,11 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       `docker-compose.yml` (mêmes images épinglées), mots de passe tirés au hasard
       pour chaque exécution, aucun secret GitHub, actions épinglées par commit,
       `contents: read`, aucun cache. Les mutants : `.github/workflows/mutants.yml`,
-      lancé à la main. **Reste à faire à la main** : un premier passage vert, puis
-      la protection de `main` (pull request obligatoire, statut « CI / checks »
-      exigé, branche à jour avant fusion).
+      lancé à la main. Premier passage vert sur la pull request #1 (2026-11-24) ;
+      `main` protégée par un ruleset GitHub (pull request obligatoire sans
+      approbation requise, statut « CI / checks » exigé, branche à jour avant
+      fusion, force push et suppression bloqués, aucun contournement). La routine
+      de fusion est dans `CLAUDE.md` (« Fin de module »).
       *Pourquoi* : les hooks pre-commit se contournent par `git commit --no-verify` ;
       le test `test_detect_secrets_finds_nothing_new_in_tracked_files` ne protège que
       s'il est exécuté.

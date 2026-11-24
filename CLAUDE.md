@@ -172,6 +172,14 @@ Un module = une conversation = un ou plusieurs commits.
 - **Avant toute fusion** : `uv run pytest -m merge_gate > var/merge-gate.log 2>&1; echo "exit=$?"`
   doit donner `exit=0`, en plus de la suite complète. Les tests marqués
   `merge_gate` (exclus par défaut) ne passent qu'en fin de module.
+- **Fin de module (fusion par GitHub seulement)** : `main` est protégée (pull
+  request obligatoire, statut « CI / checks » exigé, branche à jour, push direct
+  et force push refusés). Routine : (1) push de la branche ; (2) pull request
+  vers `main` ; (3) CI verte (« CI / checks ») ; (4) fusion sur GitHub **par
+  l'utilisatrice** ; (5) en local, `git checkout main && git pull --ff-only`.
+  Jamais de `git merge` local dans `main` suivi d'un `git push` de `main` (le
+  push est refusé). Si `main` a avancé, mettre la branche à jour par un nouveau
+  commit de fusion de `main` dans la branche, sans réécrire l'historique poussé.
 - **Pour décider d'un commit, ne jamais se fier au code de sortie d'une commande
   pipée.** Lancer : `scripts/test_all.sh > var/last-pytest.log 2>&1; echo "pytest exit=$?"`
   — puis lire `tail` du fichier. Un commit n'est fait que si `exit=0`, que les
