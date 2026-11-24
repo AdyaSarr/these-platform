@@ -60,7 +60,9 @@ jobs:
         run: docker compose up -d --wait db db-test redis
 
       - name: Install zsh (tests/test_check_deploy_script.py runs it)
-        run: sudo apt-get install -y --no-install-recommends zsh
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q --no-install-recommends zsh
 
       - name: Install the dependencies
         run: uv sync --frozen
