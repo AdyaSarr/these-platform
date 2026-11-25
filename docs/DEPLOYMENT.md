@@ -536,6 +536,16 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       (mission annulée, accord décidé, justificatif déposé entre-temps : rien
       n'est envoyé). *Vérifier* : la sortie ne contient que des nombres.
 
+- [ ] **Rappel de réinscription (M9a) : un timer quotidien.**
+      *Timer systemd*, chaque jour à 07 h 00 Europe/Paris (`Persistent=true`) :
+      ```
+      manage.py portfolio_reminders
+      ```
+      Fenêtres J-30 et J-7 avant la date de réinscription saisie par le doctorant,
+      en dates de Paris, au doctorant seul. La relancer n'envoie rien deux fois
+      (`PortfolioNotification`, contrainte d'unicité) ; à l'envoi, date et
+      destinataire revérifiés. *Vérifier* : la sortie ne contient que des nombres.
+
 - [ ] **Résumé hebdomadaire des objectifs (M4) : timer à désactiver (M11b).**
       Le résumé du lundi est fondu dans les résumés d'activité (`activity_digests`) ;
       la commande `objectives_weekly_summary` n'existe plus. Désactiver et supprimer
