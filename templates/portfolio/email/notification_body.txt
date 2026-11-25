@@ -1,0 +1,5 @@
+{% load i18n %}{% translate "Your re-registration is coming up: check that your trainings are up to date on the platform:" %}
+
+{{ url }}
+
+{% translate "This message contains no detail: sign in to see it." %}

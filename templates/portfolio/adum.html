@@ -1,0 +1,47 @@
+{% extends "base.html" %}{% load i18n ui %}
+{% block title %}{% translate "ADUM summary" %}{% endblock %}
+{% block content %}
+{% module_tabs "portfolio" %}
+{% page_header %}{% translate "ADUM summary" %}{% subtitle %}{% translate "To copy into your ADUM portfolio" %}{% endpage_header %}
+{% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
+{% if summary %}
+<form class="filter-row" method="get">
+  <p><label for="adum-year">{% translate "Academic year" %}</label>
+    <select id="adum-year" name="year">{% for year in summary.years %}<option value="{{ year.number }}"{% if year.number == summary.year.number %} selected{% endif %}>{{ year.academic_start|date:"Y" }}–{{ year.academic_end|date:"Y" }}</option>{% endfor %}</select>
+    <label><input type="checkbox" name="internal" value="1"{% if summary.include_internal %} checked{% endif %}> {% translate "Include the internal trainings" %}</label>
+    <button type="submit">{% translate "Filter" %}</button></p>
+</form>
+<p class="muted">{% translate "Columns and order to be confirmed by the doctoral school. Entering a training in ADUM discloses it outside the platform." %}</p>
+{% if summary.left_out %}<p class="muted">{% blocktranslate count n=summary.left_out %}{{ n }} internal training of this year is left out.{% plural %}{{ n }} internal trainings of this year are left out.{% endblocktranslate %}</p>{% endif %}
+{% if summary.rows %}
+<table class="table">
+  <thead><tr><th scope="col">{% translate "Title" %}</th><th scope="col">{% translate "Provider" %}</th><th scope="col">{% translate "Category" %}</th><th scope="col">{% translate "Hours" %}</th><th scope="col">{% translate "Start" %}</th><th scope="col">{% translate "End" %}</th></tr></thead>
+  <tbody>
+  {% for row in summary.rows %}
+    <tr>
+      <td>{{ row.title }}{% if row.internal %} <span class="mark">{% translate "internal level: to check before entering it" %}</span>{% endif %}</td>
+      <td>{{ row.provider }}</td>
+      <td>{{ row.training.get_category_display }}</td>
+      <td>{{ row.training.hours|floatformat:"-1" }}</td>
+      <td>{{ row.training.start_date|date:"d/m/Y" }}</td>
+      <td>{{ row.training.end_date|date:"d/m/Y" }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+  <tfoot><tr><th scope="row" colspan="3">{% translate "Total" %}</th><td>{{ summary.hours|floatformat:"-1" }}</td><td colspan="2"></td></tr></tfoot>
+</table>
+<details class="confirm">
+  <summary class="btn btn-secondary">{% icon "download" %}{% translate "Download as CSV" %}</summary>
+  <div class="confirm-panel">
+    <p>{% translate "Asks for your second factor. The file holds the titles in clear: keep it on an encrypted disk." %}</p>
+    <form method="post" action="{% url 'portfolio:adum_csv' thesis_id=thesis.pk %}">{% csrf_token %}
+      <input type="hidden" name="year" value="{{ summary.year.number }}">{% if summary.include_internal %}<input type="hidden" name="internal" value="1">{% endif %}
+      <button type="submit" class="btn btn-primary">{% translate "Yes, download" %}</button>
+    </form>
+  </div>
+</details>
+{% else %}
+{% translate "No finished training in this year." as message %}{% include "ui/empty.html" with message=message %}
+{% endif %}
+{% endif %}
+{% endblock %}

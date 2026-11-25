@@ -45,6 +45,8 @@ NAV: tuple[NavItem, ...] = (
             Action.CONFERENCE_READ, ("conferences", "")),
     NavItem("travel", _("Travel"), "plane", "travel:calendar", Action.TRAVEL_READ,
             ("travel", "")),
+    NavItem("portfolio", _("Trainings"), "graduation-cap", "portfolio:trainings",
+            Action.TRAINING_READ, ("portfolio", "")),
     NavItem("documents", _("Documents"), "file-lock", "vault:documents", Action.DOCUMENT_READ,
             ("vault", "")),
     NavItem("team", _("Team"), "users", "accounts:team", Action.VIEW_TEAM, ("accounts", "team")),

@@ -67,9 +67,9 @@ def test_the_csi_member_sees_the_public_trainings_totals_and_integrity_only(
     for body in (page, detail):
         assert "TEMOIN-FUITE-PUBLIQUE" in body
         for absent in ("TEMOIN-FUITE-INTERNE", "TEMOIN-FUITE-NOTE", "TEMOIN-FUITE-ATTESTATION",
-                       str(doc.pk), "ADUM"):  # fmt: skip
+                       str(doc.pk), "À saisir dans ADUM", "Saisie dans ADUM"):  # fmt: skip
             assert absent not in body, absent
-    assert "intégrité scientifique&nbsp;: faite" in page or "intégrité scientifique : faite" in page
+    assert "intégrité scientifique\u00a0: faite" in page
     assert "3&nbsp;h" in page and "40" not in page.split("Heures suivies")[1].split("</table>")[0]
 
 

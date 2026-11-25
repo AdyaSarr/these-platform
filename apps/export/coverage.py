@@ -50,6 +50,8 @@ EXPORTED: Mapping[str, str] = MappingProxyType(
         "travel.Expense": "deplacements.json",
         "travel.ExpenseReceipt": "deplacements.json",
         "travel.TravelBudget": "deplacements.json",
+        "portfolio.Training": "portfolio.json",
+        "portfolio.PortfolioPolicy": "portfolio.json (the re-registration date)",
     }
 )
 
@@ -73,6 +75,7 @@ NOT_EXPORTED: Mapping[str, str] = MappingProxyType(
         "activity.ActivityNotification": "e-mail delivery bookkeeping",
         "lifecycle.LifecycleNotification": "e-mail delivery bookkeeping",
         "export.ExportNotification": "e-mail delivery bookkeeping",
+        "portfolio.PortfolioNotification": "e-mail delivery bookkeeping",
         # Derived from the exported objects, or the actions of others.
         "activity.Event": "the feed: derived from the exported objects, others' actions",
         "activity.EventRead": "read marks of the feed",

@@ -55,6 +55,7 @@ from apps.meetings.models import Meeting, MinutesAcknowledgement
 from apps.objectives import services as objectives
 from apps.objectives.models import Category, Objective, Status
 from apps.objectives.years import add_years
+from apps.portfolio import services as portfolio
 from apps.travel import holidays as travel_holidays
 from apps.travel import services as travel
 from apps.travel.models import Expense, Mission, PresenceDay
@@ -540,6 +541,46 @@ class _Run:
             user=self.users[Role.PHD_STUDENT],
         )
 
+    def _training(self, title: str, category: str, hours: str, first: dt.date, last: dt.date,
+                  **fields: Any) -> Any:  # fmt: skip
+        return portfolio.create_training(
+            thesis=self.t, user=self.users[Role.PHD_STUDENT], title=title, category=category,
+            hours=hours, start_date=first, end_date=last, **fields,
+        )  # fmt: skip
+
+    def first_trainings(self) -> None:
+        """M9a: the integrity training (PUBLIC, entered in ADUM) and an internal ST one."""
+
+        def day(d: int) -> dt.date:
+            return _day(self.anchor, 0, d)
+
+        integrity = self._training(
+            "Éthique et intégrité scientifique (fictive)", "INTEGRITY", "6", day(21), day(22),
+            provider="École doctorale fictive",
+        )  # fmt: skip
+        portfolio.set_adum_status(training=integrity, user=self.users[Role.PHD_STUDENT],
+                                  status="ENTERED")  # fmt: skip
+        self._training(
+            "Sécurité des produits, formation interne (fictive)", "SCIENTIFIC", "3,5",
+            day(23), day(23), provider="Entreprise fictive", level=Level.INTERNAL_ST,
+        )  # fmt: skip
+
+    def later_trainings(self) -> None:
+        """M9a: a transversal training with its certificate, one to come, the date of
+        the next re-registration."""
+        certificate = self.store("Attestation de formation (fictive)", Level.PUBLIC)
+        self._training(
+            "Rédaction scientifique en anglais (fictive)", "TRANSVERSAL", "12,5",
+            _day(self.anchor, 3, 5), _day(self.anchor, 3, 6), provider="Organisme fictif",
+            certificate=certificate, notes="Atelier utile pour le premier article (fictif).",
+        )  # fmt: skip
+        self._training(
+            "École d'été fictive de cryptographie", "SCIENTIFIC", "20",
+            _day(self.anchor, 7, 6), _day(self.anchor, 7, 10), provider="École fictive",
+        )  # fmt: skip
+        portfolio.set_reregistration_date(thesis=self.t, user=self.users[Role.PHD_STUDENT],
+                                          day=_day(self.anchor, 9, 15))  # fmt: skip
+
     def store_note(self) -> None:
         self.note = self.store("Note de travail (fictive)", Level.CONFIDENTIAL)
 
@@ -966,6 +1007,7 @@ class _Run:
             at(0, 24, 11),
             lambda: self.approve(tutor, "cifre_agreement"),
         )
+        s("first-trainings", at(0, 25, 10), self.first_trainings)
         s("presence-0", at(0, 27, 17), lambda: self.presence(0))
         s("progress-0", end(0), lambda: self.progress(MONTHLY_PROGRESS[0]))
         s("mission-lab", at(1, 2, 10), self.lab_mission)
@@ -1117,6 +1159,7 @@ class _Run:
         )
         s("side-objective", at(3, 10, 10), lambda: self.create_objectives(SIDE_TOOL))
         s("side-objective-approved", at(3, 11, 9), lambda: self.approve_objective("tool"))
+        s("later-trainings", at(3, 12, 10), self.later_trainings)
         s(
             "seminar-minutes",
             at(3, 14, 17),

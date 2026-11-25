@@ -116,8 +116,11 @@ def test_the_bounds_are_a_year_around_the_thesis(team: SimpleNamespace) -> None:
 
 
 def test_title_required_and_texts_bounded(team: SimpleNamespace) -> None:
-    for bad in ({"title": "  "}, {"title": "x" * 201}, {"provider": "y" * 201},
-                {"notes": "z" * 2001}, {"title": "Avec\x07contrôle"}):  # fmt: skip
+    cases: list[dict[str, Any]] = [
+        {"title": "  "}, {"title": "x" * 201}, {"provider": "y" * 201},
+        {"notes": "z" * 2001}, {"title": "Avec\x07contrôle"},
+    ]  # fmt: skip
+    for bad in cases:
         with pytest.raises(ValidationError):
             h.training(team, **bad)
 
@@ -227,9 +230,8 @@ def test_no_text_in_clear_in_the_database(team: SimpleNamespace) -> None:
         cursor.execute("SELECT tablename FROM pg_tables WHERE schemaname = 'public'")
         tables = [row[0] for row in cursor.fetchall()]
         for table in tables:
-            cursor.execute(  # nosec B608 (names from pg_tables)
-                f'SELECT CAST(t AS text) FROM "{table}" t'  # noqa: S608
-            )
+            query = f'SELECT CAST(t AS text) FROM "{table}" t'  # noqa: S608  # nosec B608
+            cursor.execute(query)  # the names come from pg_tables
             dump = "\n".join(row[0] for row in cursor.fetchall())
             for witness in witnesses:
                 assert witness not in dump, (table, witness)

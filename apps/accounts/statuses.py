@@ -41,6 +41,9 @@ MODULE_STATUSES: Mapping[str, tuple[str, ...]] = MappingProxyType(
         # M13b: the student's export and its alert e-mail, as long as the student is
         # an active member (the right of access does not depend on the status).
         "export": (S.SETUP, S.ACTIVE, S.DEFENDED, S.CLOSED),
+        # M9a: the trainings and the re-registration reminder; no re-registration
+        # after the defence.
+        "portfolio": _OPEN,
     }
 )
 # Modules whose statuses say nothing of the digests (M11b): any_open() skips them,

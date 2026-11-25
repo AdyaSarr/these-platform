@@ -9,7 +9,7 @@
 <p class="message message-warning" role="note">{% translate "The file holds your documents in clear, CONFIDENTIAL ones included. Keep it on an encrypted disk (FileVault on a Mac, BitLocker, LUKS) and never send it by e-mail." %}</p>
 <details class="muted">
   <summary>{% translate "What the export holds, and what it does not" %}</summary>
-  <p>{% translate "It holds the documents (latest version, or every version), the objectives, meetings, administrative file, conferences and missions, with their texts decrypted, the comments of your supervisors (their name and role only), your own lines of the audit log and a manifest with the SHA-256 digest of each file." %}</p>
+  <p>{% translate "It holds the documents (latest version, or every version), the objectives, meetings, administrative file, conferences, missions and trainings, with their texts decrypted, the comments of your supervisors (their name and role only), your own lines of the audit log and a manifest with the SHA-256 digest of each file." %}</p>
   <p>{% translate "It never holds second factor secrets, links tokens, passwords, the addresses of the other members, the lines of the audit log of the others, nor INTERNAL_ST without an agreement of ST." %}</p>
 </details>
 {% if st_open %}<p>{% if consent %}{% blocktranslate with date=consent.valid_until|date:"j F Y" %}ST agreement in force until {{ date }}: INTERNAL_ST is included.{% endblocktranslate %}{% else %}{% translate "The ST confidentiality is over: INTERNAL_ST is included." %}{% endif %}</p>{% else %}<p class="muted">{% translate "INTERNAL_ST is left out: the ST confidentiality is not over and no ST agreement is in force." %}</p>{% endif %}

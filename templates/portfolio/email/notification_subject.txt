@@ -1,0 +1,1 @@
+{% load i18n %}{% translate "CIFRE thesis: your re-registration is coming up" %}

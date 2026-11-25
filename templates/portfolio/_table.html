@@ -1,0 +1,14 @@
+{% load i18n ui %}<table class="table">
+  <thead><tr><th scope="col">{% translate "Training" %}</th><th scope="col">{% translate "Category" %}</th><th scope="col">{% translate "Hours" %}</th><th scope="col">{% translate "Dates" %}</th><th scope="col">{% translate "Confidentiality" %}</th></tr></thead>
+  <tbody>
+  {% for row in rows %}
+    <tr>
+      <td><a href="{% url 'portfolio:detail' thesis_id=thesis.pk training_id=row.training.pk %}">{{ row.title }}</a>{% if row.provider %}<br><span class="muted">{{ row.provider }}</span>{% endif %}</td>
+      <td>{{ row.training.get_category_display }}</td>
+      <td>{{ row.training.hours|floatformat:"-1" }}&nbsp;h</td>
+      <td>{{ row.training.start_date|date:"SHORT_DATE_FORMAT" }}{% if row.training.end_date != row.training.start_date %} – {{ row.training.end_date|date:"SHORT_DATE_FORMAT" }}{% endif %}</td>
+      <td>{% level_badge row.training.level %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
