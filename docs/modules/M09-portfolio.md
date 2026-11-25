@@ -145,25 +145,25 @@ réinscription. Suit `c.levels` (`INTERNAL_ST` seulement avec l'accord ST).
 `PortfolioNotification` non (courriels).
 
 ### Critères d'acceptation (M9a)
-- [ ] Les totaux d'heures par catégorie sont exacts (demi-heures comprises), ne
+- [x] Les totaux d'heures par catégorie sont exacts (demi-heures comprises), ne
       comptent ni une formation à venir ni une formation illisible, et portent la
       mention pour un lecteur qui ne lit pas tous les niveaux (tests).
-- [ ] Deux mondes sur toutes les routes GET de `portfolio`, avec contrôle positif ;
+- [x] Deux mondes sur toutes les routes GET de `portfolio`, avec contrôle positif ;
       une formation cachée répond comme un identifiant inconnu (test).
-- [ ] Le CSI voit les formations `PUBLIC`, leurs totaux et l'intégrité, jamais une
+- [x] Le CSI voit les formations `PUBLIC`, leurs totaux et l'intégrité, jamais une
       attestation, une note ni l'état ADUM ; le co-encadrant entreprise et l'invité
       ne voient rien (403) (tests).
-- [ ] Aucun intitulé, organisme ni note en clair en base (témoin `TEMOIN-FUITE-…`).
-- [ ] Le CSV exige un second facteur récent, est journalisé, neutralise les
+- [x] Aucun intitulé, organisme ni note en clair en base (témoin `TEMOIN-FUITE-…`).
+- [x] Le CSV exige un second facteur récent, est journalisé, neutralise les
       formules et ne contient pas les formations internes par défaut (tests).
-- [ ] Rappel J-30 et J-7 au doctorant seul, une fois ; `SKIPPED` si la date a
+- [x] Rappel J-30 et J-7 au doctorant seul, une fois ; `SKIPPED` si la date a
       changé, si la thèse est soutenue ou si le destinataire n'est plus doctorant
       (tests).
-- [ ] Écritures refusées en `DEFENDED` et `CLOSED`, lectures permises (matrice des
+- [x] Écritures refusées en `DEFENDED` et `CLOSED`, lectures permises (matrice des
       statuts).
-- [ ] `portfolio.json` dans l'export M13b, selon les niveaux exportés (test).
-- [ ] Mutants de `scripts/mutants.toml` (M9a) tués.
-- [ ] `demo_seed` : formations fictives de plusieurs catégories et niveaux, une à
+- [x] `portfolio.json` dans l'export M13b, selon les niveaux exportés (test).
+- [x] Mutants de `scripts/mutants.toml` (M9a) tués.
+- [x] `demo_seed` : formations fictives de plusieurs catégories et niveaux, une à
       venir, une date de réinscription.
 
 ## M9b — Publications, enseignement, diffusion, compétences (à détailler)
