@@ -136,6 +136,15 @@ CLASSIFICATION: dict[str, str] = {
     "objectives.progress_for": READ, "objectives.revisions_for": READ,
     "objectives.stats_for": READ, "objectives.sync_years": SYSTEM,
     "objectives.update_objective": WRITE,
+    # portfolio (M9a): the trainings follow M4 (frozen after the defence)
+    "portfolio.adum_csv": READ_AUDITED, "portfolio.adum_summary": READ_AUDITED,
+    "portfolio.attachable_documents": READ, "portfolio.change_training_level": WRITE,
+    "portfolio.create_training": WRITE, "portfolio.date_bounds": READ,
+    "portfolio.neutralized": READ, "portfolio.parse_hours": READ,
+    "portfolio.policy_of": READ, "portfolio.set_adum_status": WRITE,
+    "portfolio.set_reregistration_date": WRITE, "portfolio.totals_of": READ,
+    "portfolio.training_detail": READ_AUDITED, "portfolio.training_for": READ_AUDITED,
+    "portfolio.training_list": READ_AUDITED, "portfolio.update_training": WRITE,
     # travel (M7)
     "travel.actual_amount_set": READ, "travel.add_expense": WRITE,
     "travel.attach_official_order": WRITE, "travel.attach_receipt": WRITE,
@@ -481,8 +490,20 @@ def _done_mission(w: World) -> Any:
     return services.mark_done(mission=mission, user=w.t.student)
 
 
+def _training(w: World) -> Any:
+    from apps.portfolio.tests.helpers import training
+
+    return training(w.t)
+
+
+def _training_values() -> dict[str, Any]:
+    return {"title": "Formation renommée fictive", "provider": "", "notes": "",
+            "category": "OTHER", "hours": "2", "start_date": dt.date(2027, 1, 11),
+            "end_date": dt.date(2027, 1, 11), "certificate": None}  # fmt: skip
+
+
 BUILDERS: dict[str, Callable[[World], Any]] = {
-    "invitation": _invitation, "new_user": _new_user,
+    "invitation": _invitation, "new_user": _new_user, "training": _training,
     "document": _document, "confidential": functools.partial(_document, level="CONFIDENTIAL"),
     "grant": _grant,
     "item": _item, "submitted_item": functools.partial(_item, status="SUBMITTED"),
@@ -702,6 +723,23 @@ RECIPES: dict[str, tuple[Recipe, str]] = {
         changes={"duration_minutes": 90}), REFUSE),
     "meetings.withdraw_decision": (lambda w: P(
         _m("meetings").withdraw_decision, decision=w.decision, user=w.t.student), REFUSE),
+    # ---- portfolio (M9a): frozen
+    "portfolio.change_training_level": (lambda w: P(
+        _m("portfolio").change_training_level, training=w.training, user=w.t.student,
+        level=_lvl("INTERNAL_LIRMM"), recent_mfa=True), REFUSE),
+    "portfolio.create_training": (lambda w: P(
+        _m("portfolio").create_training, thesis=w.thesis, user=w.t.student,
+        title="Formation fictive", category="ED", hours="3", start_date=dt.date(2027, 1, 11),
+        end_date=dt.date(2027, 1, 11)), REFUSE),
+    "portfolio.set_adum_status": (lambda w: P(
+        _m("portfolio").set_adum_status, training=w.training, user=w.t.student,
+        status="ENTERED"), REFUSE),
+    "portfolio.set_reregistration_date": (lambda w: P(
+        _m("portfolio").set_reregistration_date, thesis=w.thesis, user=w.t.student,
+        day=dt.date(2027, 9, 15)), REFUSE),
+    "portfolio.update_training": (lambda w: P(
+        _m("portfolio").update_training, training=w.training, user=w.t.student,
+        values=_training_values()), REFUSE),
     # ---- objectives (M4): frozen
     "objectives.acknowledge_changes": (lambda w: P(
         _m("objectives").acknowledge_changes, objective=w.changed_objective, user=w.t.director,

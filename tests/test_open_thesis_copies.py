@@ -52,6 +52,8 @@ def test_every_module_reads_the_table() -> None:
         "apps/travel/services.py", "apps/travel/reminders.py", "apps/travel/notifications.py",
         "apps/activity/notifications.py", "apps/activity/digests.py", "apps/feeds/services.py",
         "apps/accounts/services.py", "apps/lifecycle/notifications.py",
+        "apps/portfolio/services.py", "apps/portfolio/reminders.py",
+        "apps/portfolio/notifications.py",
     ):  # fmt: skip
         assert expected in users, expected
 
@@ -63,6 +65,7 @@ def test_the_table_is_the_sheet() -> None:
         "meetings": open_, "conferences": defended, "travel": open_,
         "travel_receipts": defended, "feeds": open_, "lifecycle": (S.ACTIVE, S.DEFENDED),
         "export": (S.SETUP, S.ACTIVE, S.DEFENDED, S.CLOSED),  # M13b: every status
+        "portfolio": open_,  # M9a: no re-registration after the defence
     }  # fmt: skip
     assert any_open() == (S.SETUP, S.ACTIVE, S.DEFENDED)  # never CLOSED
 

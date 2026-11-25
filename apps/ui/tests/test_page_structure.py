@@ -333,7 +333,7 @@ def _module_pages(module: str, thesis_id: object) -> dict[str, str]:
 
 
 @pytest.mark.parametrize("role", [r for r in Role if r is not Role.GUEST])
-@pytest.mark.parametrize("module", ["meetings", "conferences", "travel"])
+@pytest.mark.parametrize("module", ["meetings", "conferences", "travel", "portfolio"])
 def test_tabs_follow_the_rights(role: Role, module: str) -> None:
     """Like the sidebar: every tab shown opens (200), every tab left out is a page
     refused to this role (403 or 404)."""

@@ -71,11 +71,16 @@ def test_readable_by_is_the_action_and_the_level(team: SimpleNamespace, role: Ro
     meetings = {level: h.meeting(team, level) for level in L}
     submissions = {level: h.submission(team, level) for level in L}
     objectives = {level: h.objective(team, level) for level in OBJECTIVE_LEVELS}
+    from apps.portfolio.models import Training
+    from apps.portfolio.tests.helpers import training
+
+    trainings = {level: training(team, level) for level in L}  # M9a
     user = _user(team, role)
     for model, objects, action in (
         (Meeting, meetings, Action.MEETING_READ),
         (Submission, submissions, Action.SUBMISSION_READ),
         (Objective, objectives, Action.OBJECTIVE_READ),
+        (Training, trainings, Action.TRAINING_READ),
     ):
         seen = set(model.objects.readable_by(user, team.thesis).values_list("pk", flat=True))
         expected = {

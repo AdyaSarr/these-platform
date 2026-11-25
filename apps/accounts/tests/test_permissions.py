@@ -109,6 +109,11 @@ EXPECTED: dict[Action, set[Role]] = {
     A.THESIS_EXPORT: {R.PHD_STUDENT},
     A.SET_ST_CONFIDENTIALITY: {R.INDUSTRIAL_TUTOR},
     A.GRANT_ST_EXPORT: {R.INDUSTRIAL_TUTOR},
+    # Trainings (M9a): the CSI checks the training (PUBLIC only, by its levels); not
+    # the company co-supervisor; the student writes and makes the ADUM summary.
+    A.TRAINING_READ: (_SUPERVISION - {R.INDUSTRIAL_CO_SUPERVISOR}) | {R.CSI_MEMBER},
+    A.TRAINING_WRITE: {R.PHD_STUDENT},
+    A.PORTFOLIO_EXPORT: {R.PHD_STUDENT},
 }
 
 EXPECTED_LEVELS: dict[Level, set[Role]] = {
