@@ -280,27 +280,27 @@ et `diffusion` (selon `c.levels`, `INTERNAL_ST` seulement avec l'accord ST),
 `competences` et `projet_professionnel`. `coverage.py` : les cinq modèles exportés.
 
 ### Critères d'acceptation (M9b)
-- [ ] Nouveaux types de lieu à édition facultative, forme de la communication, même
+- [x] Nouveaux types de lieu à édition facultative, forme de la communication, même
       circuit d'accord ST pour chaque type et chaque forme (tests).
-- [ ] Une communication sans édition n'a ni date limite de demande, ni rappel
+- [x] Une communication sans édition n'a ni date limite de demande, ni rappel
       d'échéance, ni événement iCal ; avec une édition, comme une conférence (tests).
-- [ ] Relance `APPROVAL_WAITING` à demande + délai puis chaque semaine, une fois par
+- [x] Relance `APPROVAL_WAITING` à demande + délai puis chaque semaine, une fois par
       semaine, `SKIPPED` si décidée ou retirée, un lien seulement (tests).
-- [ ] Changer le niveau d'une soumission rescelle ses détails ; tout modèle scellé au
+- [x] Changer le niveau d'une soumission rescelle ses détails ; tout modèle scellé au
       niveau d'une soumission est enregistré ; M6 n'importe pas le portfolio (tests).
-- [ ] Détails : lus comme la soumission, écrits par le doctorant, permis en `DEFENDED`,
+- [x] Détails : lus comme la soumission, écrits par le doctorant, permis en `DEFENDED`,
       refusés en `CLOSED`, validation stricte (tests).
-- [ ] Enseignement et diffusion : lecture par niveau pour l'encadrement, co-encadrant
+- [x] Enseignement et diffusion : lecture par niveau pour l'encadrement, co-encadrant
       entreprise compris ; refus au CSI et à l'invité ; notes au doctorant (tests).
-- [ ] Compétences et projet professionnel : le doctorant seul, nulle part ailleurs
+- [x] Compétences et projet professionnel : le doctorant seul, nulle part ailleurs
       (tests).
-- [ ] Aucun texte en clair en base (témoins `TEMOIN-FUITE-…`) ; aucun événement du fil.
-- [ ] Récapitulatif ADUM étendu (`PUBLIC` et `PUBLISHED` par défaut, cases, marques,
+- [x] Aucun texte en clair en base (témoins `TEMOIN-FUITE-…`) ; aucun événement du fil.
+- [x] Récapitulatif ADUM étendu (`PUBLIC` et `PUBLISHED` par défaut, cases, marques,
       CSV par section neutralisé, second facteur, journal en nombres) ; BibTeX avec
       champs hostiles (tests).
-- [ ] Deux mondes sur toutes les routes GET de `portfolio` et de `conferences`, avec
+- [x] Deux mondes sur toutes les routes GET de `portfolio` et de `conferences`, avec
       contrôle positif ; un objet caché répond comme un identifiant inconnu (tests).
-- [ ] `portfolio.json` selon les niveaux exportés (tests) ; matrice des statuts.
-- [ ] Mutants de `scripts/mutants.toml` (M9b) tués.
-- [ ] `demo_seed` : séminaire, poster, détails, enseignement, diffusion, compétences,
+- [x] `portfolio.json` selon les niveaux exportés (tests) ; matrice des statuts.
+- [x] Mutants de `scripts/mutants.toml` (M9b) tués.
+- [x] `demo_seed` : séminaire, poster, détails, enseignement, diffusion, compétences,
       projet professionnel fictifs.

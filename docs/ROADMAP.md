@@ -26,7 +26,7 @@ critères d'acceptation de la fiche tous validés.
 | [ ] | M13c — Conservation après `CLOSED` et destruction (effacement des clés, puis des lignes ; journal d'audit conservé et vérifiable) | `modules/M13-fin-de-these.md` (à compléter) | M13b, fournisseur OpenBao, réponses Q8–Q10 (`specs/questions-fin-de-these.md`) | à planifier |
 | [ ] | M8 — Rapports CSI et ANRT | `modules/M08-rapports.md` | M4, M5, M9a, M9b | avant mars 2028 |
 | [x] | M9a — Formations, récapitulatif ADUM, rappel de réinscription | `modules/M09-portfolio.md` (M9a) | M2 | nov. 2026 |
-| [ ] | M9b — Détails de publication et types de lieu M6, enseignement, diffusion, compétences | `modules/M09-portfolio.md` (M9b) | M9a, M6 | à planifier |
+| [x] | M9b — Détails de publication et types de lieu M6, enseignement, diffusion, compétences | `modules/M09-portfolio.md` (M9b) | M9a, M6 | nov. 2026 |
 | [ ] | M10 — Bout en bout et signatures post-quantiques | `modules/M10-e2e-pq.md` | M2 | 2028 |
 
 Le déploiement (Caddy, TLS hybride, sauvegardes) se fait seulement après validation
