@@ -414,10 +414,9 @@ file = "apps/portfolio/services.py"
 old = '''    _require(user, Action.PORTFOLIO_EXPORT, thesis, "bibtex")
     _require_mfa(recent_mfa)'''
 new = '''    _require(user, Action.PORTFOLIO_EXPORT, thesis, "bibtex")'''
-tests = [
-    "apps/portfolio/tests/test_adum_m9b.py::test_bibtex_needs_a_second_factor",
-    "apps/portfolio/tests/test_adum_m9b.py::test_the_bibtex_view",
-]
+# The view asks for the second factor too (RecentAuthRequiredMixin): the service's
+# own check is the one this mutant removes.
+tests = ["apps/portfolio/tests/test_adum_m9b.py::test_bibtex_needs_a_second_factor"]
 
 [[mutant]]
 id = "M40-details-fermes-apres-soutenance"
