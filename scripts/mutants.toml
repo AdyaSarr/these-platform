@@ -339,3 +339,121 @@ old = '''Training.objects.readable_by(c.user, c.thesis)
         .filter(level__in=c.level_values)'''
 new = 'Training.objects.readable_by(c.user, c.thesis)'
 tests = ["apps/portfolio/tests/test_export.py::test_the_trainings_are_exported_at_the_exported_levels"]
+
+# --------------------------------------------------------------------------- M9b
+
+[[mutant]]
+id = "M33-publications-liste-sans-niveau"
+claim = "M9b, fiche M09 : les détails se lisent comme la soumission (readable_by), deux mondes"
+file = "apps/portfolio/services.py"
+old = '''    submissions = list(
+        Submission.objects.readable_by(user, thesis)
+        .select_related("venue", "edition")
+        .order_by("-created_at", "pk")
+    )'''
+new = '''    submissions = list(
+        Submission.objects.filter(thesis=thesis)
+        .select_related("venue", "edition")
+        .order_by("-created_at", "pk")
+    )'''
+tests = [
+    "apps/portfolio/tests/test_publications.py::test_an_unreadable_submission_answers_as_an_unknown_one",
+]
+
+[[mutant]]
+id = "M34-registre-scelle-vide"
+claim = "M9b, fiche M09 : changer le niveau d'une soumission rescelle ses détails (registre sealed.py)"
+file = "apps/conferences/sealed.py"
+old = 'return tuple(_REGISTERED)'
+new = 'return ()'
+tests = [
+    "apps/conferences/tests/test_sealed_registry.py::test_every_model_sealed_at_the_submission_level_is_registered",
+    "apps/conferences/tests/test_sealed_registry.py::test_a_change_of_level_reseals_the_publication_details",
+]
+
+[[mutant]]
+id = "M35-bibtex-sans-echappement"
+claim = "M9b, fiche M09 : export BibTeX, échappement strict (champs hostiles)"
+file = "apps/portfolio/services.py"
+old = 'out.append(_BIBTEX_ESCAPES.get(char, char))'
+new = 'out.append(char)'
+tests = ["apps/portfolio/tests/test_adum_m9b.py::test_bibtex_escapes_hostile_fields"]
+
+[[mutant]]
+id = "M36-enseignement-liste-sans-niveau"
+claim = "M9b, fiche M09 : enseignement et diffusion lus selon le niveau"
+file = "apps/portfolio/services.py"
+old = 'spec.model.objects.readable_by(user, thesis).order_by(*spec.model._meta.ordering, "pk")'
+new = 'spec.model.objects.filter(thesis=thesis).order_by(*spec.model._meta.ordering, "pk")'
+tests = ["apps/portfolio/tests/test_teaching.py::test_by_level"]
+
+[[mutant]]
+id = "M37-projet-professionnel-au-directeur"
+claim = "M9b, fiche M09 : compétences et projet professionnel au doctorant seul"
+file = "apps/accounts/permissions.py"
+old = '''                _A.DECLARE_DEFENSE, _A.REQUEST_CLOSURE,                 # M13a
+                _A.TRAINING_READ,                                       # M9a
+                _A.TEACHING_READ, _A.OUTREACH_READ,                     # M9b: by level'''
+new = '''                _A.DECLARE_DEFENSE, _A.REQUEST_CLOSURE,                 # M13a
+                _A.TRAINING_READ,                                       # M9a
+                _A.TEACHING_READ, _A.OUTREACH_READ, _A.CAREER_NOTE_READ,'''
+tests = ["apps/portfolio/tests/test_personal.py::test_nobody_else_reads_or_writes"]
+
+[[mutant]]
+id = "M38-adum-internes-autres-sections"
+claim = "M9b, fiche M09 : récapitulatif étendu, éléments internes écartés par défaut"
+file = "apps/portfolio/services.py"
+old = 'return include_internal or not internal'
+new = 'return True'
+tests = ["apps/portfolio/tests/test_adum_m9b.py::test_internal_left_out_by_default_and_marked"]
+
+[[mutant]]
+id = "M39-bibtex-sans-second-facteur"
+claim = "M9b, fiche M09 : l'export BibTeX exige un second facteur récent"
+file = "apps/portfolio/services.py"
+old = '''    _require(user, Action.PORTFOLIO_EXPORT, thesis, "bibtex")
+    _require_mfa(recent_mfa)'''
+new = '''    _require(user, Action.PORTFOLIO_EXPORT, thesis, "bibtex")'''
+tests = [
+    "apps/portfolio/tests/test_adum_m9b.py::test_bibtex_needs_a_second_factor",
+    "apps/portfolio/tests/test_adum_m9b.py::test_the_bibtex_view",
+]
+
+[[mutant]]
+id = "M40-details-fermes-apres-soutenance"
+claim = "M9b, fiche M09 : détails de publication écrits aussi en DEFENDED (statuses.py)"
+file = "apps/accounts/statuses.py"
+old = '"portfolio_publications": _AND_DEFENDED,'
+new = '"portfolio_publications": _OPEN,'
+tests = ["apps/portfolio/tests/test_publications.py::test_allowed_after_the_defence_frozen_once_closed"]
+
+[[mutant]]
+id = "M41-export-enseignement-niveaux"
+claim = "M9b, fiche M09 : portfolio.json suit les niveaux exportés (enseignement)"
+file = "apps/export/snapshot.py"
+old = '''Teaching.objects.readable_by(c.user, c.thesis)
+            .filter(level__in=c.level_values)'''
+new = 'Teaching.objects.readable_by(c.user, c.thesis)'
+tests = ["apps/portfolio/tests/test_export.py::test_m9b_in_the_export_at_the_exported_levels"]
+
+[[mutant]]
+id = "M42-relance-attente-sans-reverification"
+claim = "M9b, Q5 : la relance d'un accord attendu est revérifiée à l'envoi (toujours PENDING)"
+file = "apps/conferences/notifications.py"
+old = '''        today = timezone.localdate()
+        for approval in StApproval.objects.filter(
+            submission_id=link, thesis_id=row.thesis_id, decision=ApprovalDecision.PENDING
+        )'''
+new = '''        today = timezone.localdate()
+        for approval in StApproval.objects.filter(
+            submission_id=link, thesis_id=row.thesis_id
+        )'''
+tests = ["apps/conferences/tests/test_waiting_reminders.py::test_still_due_and_concerned_are_checked_again"]
+
+[[mutant]]
+id = "M43-notes-enseignement-aux-encadrants"
+claim = "M9b, fiche M09 : les notes de l'enseignement et de la diffusion au doctorant seul"
+file = "apps/portfolio/services.py"
+old = 'names = [n for n in spec.texts if private or n != "notes"]'
+new = 'names = list(spec.texts)'
+tests = ["apps/portfolio/tests/test_teaching.py::test_the_notes_are_the_students"]

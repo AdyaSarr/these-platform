@@ -121,12 +121,14 @@ def test_a_preprint_request_has_no_reference_deadline(team: SimpleNamespace) -> 
     assert reminders.run(_at(2, 9)).waiting == 1
 
 
-def test_a_link_only_in_the_category_of_deadlines(team: SimpleNamespace) -> None:
-    from apps.activity.routing import CATEGORY_OF, Category
+def test_a_link_only_in_the_category_of_deadlines(team: SimpleNamespace, time_machine: Any) -> None:
+    from apps.activity.choices import Category
+    from apps.activity.routing import CATEGORY_OF
 
     assert CATEGORY_OF["conferences"]["APPROVAL_WAITING"] == Category.DEADLINE
     approval = _journal_request(team)
     mail.outbox.clear()
+    time_machine.move_to(_at(2, 9), tick=True)
     reminders.run(_at(2, 9))
     (message,) = [m for m in mail.outbox if team.tutor.email in m.to]
     assert str(approval.submission_id) in message.body
@@ -134,8 +136,11 @@ def test_a_link_only_in_the_category_of_deadlines(team: SimpleNamespace) -> None
     assert _waiting()[0].status == "SENT"
 
 
-def test_still_due_and_concerned_are_checked_again(team: SimpleNamespace) -> None:
+def test_still_due_and_concerned_are_checked_again(
+    team: SimpleNamespace, time_machine: Any
+) -> None:
     approval = _journal_request(team)
+    time_machine.move_to(_at(2, 9), tick=True)  # the run and the send, at the same date
     reminders.run(_at(2, 9))
     (row,) = _waiting()
     assert notifications.concerned(row) and notifications.still_due(row)
@@ -148,10 +153,14 @@ def test_still_due_and_concerned_are_checked_again(team: SimpleNamespace) -> Non
     assert notifications.skip_reason(row) is not None
 
 
-def test_a_new_request_on_another_version_is_another_event(team: SimpleNamespace) -> None:
+def test_a_new_request_on_another_version_is_another_event(
+    team: SimpleNamespace, time_machine: Any
+) -> None:
     approval = _journal_request(team)
+    time_machine.move_to(_at(2, 9), tick=True)
     reminders.run(_at(2, 9))
     (row,) = _waiting()
+    assert notifications.still_due(row)
     services.withdraw_approval(approval=approval, user=team.student)
     submission = approval.submission
     again = services.request_approval(submission=submission, user=team.student,

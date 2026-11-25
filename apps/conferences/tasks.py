@@ -21,7 +21,12 @@ def _url(row: ConferenceNotification) -> str:
     if row.kind == NotificationKind.DEADLINE and row.link_id:
         return reverse("conferences:edition", kwargs={**thesis, "edition_id": row.link_id})
     if (
-        row.kind in (NotificationKind.REQUEST_DUE, NotificationKind.APPROVAL_PENDING)
+        row.kind
+        in (
+            NotificationKind.REQUEST_DUE,
+            NotificationKind.APPROVAL_PENDING,
+            NotificationKind.APPROVAL_WAITING,
+        )
         and row.link_id
     ):
         return reverse("conferences:submission", kwargs={**thesis, "submission_id": row.link_id})

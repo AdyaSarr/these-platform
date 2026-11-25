@@ -44,6 +44,9 @@ MODULE_STATUSES: Mapping[str, tuple[str, ...]] = MappingProxyType(
         # M9a: the trainings and the re-registration reminder; no re-registration
         # after the defence.
         "portfolio": _OPEN,
+        # M9b: the publication details of the submissions, like the ST approvals of
+        # M6: a paper accepted before the defence is published after it.
+        "portfolio_publications": _AND_DEFENDED,
     }
 )
 # Modules whose statuses say nothing of the digests (M11b): any_open() skips them,

@@ -4,6 +4,7 @@ CONFIDENTIAL; readable after the defence, written in SETUP and ACTIVE only."""
 
 from __future__ import annotations
 
+import re
 from types import SimpleNamespace
 from typing import Any
 
@@ -99,10 +100,10 @@ def test_no_trace_on_the_supervisors_portfolio_pages(team: SimpleNamespace, attr
     h.skill(team, title="TEMOIN-FUITE-COMPETENCE")
     services.set_career_note(thesis=team.thesis, user=team.student, text="TEMOIN-FUITE-PROJET")
     after = [_get(team, attr, p).content for p in pages]
-    import re
+    csrf = re.compile(r'(name="csrfmiddlewaretoken" value=|"X-CSRFToken": )"[^"]+"')
 
     def plain(body: bytes) -> str:
-        return re.sub(r'value="[^"]+"', "", body.decode())
+        return csrf.sub(r'\1"-"', body.decode())
 
     assert [plain(b) for b in before] == [plain(a) for a in after]
 

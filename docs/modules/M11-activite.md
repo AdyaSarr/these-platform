@@ -247,7 +247,7 @@ Refusé par `activity.preferences.set_preference` **et** par une contrainte en b
 | M3 | `REOPENED` | Informations |
 | M5a | `INVITED`, `CHANGED`, `CANCELLED`, `REMINDER`, `ACTION_OVERDUE` | Échéances |
 | M5a | `MINUTES` (compte rendu à approuver) | À faire |
-| M6 | `DEADLINE`, `REQUEST_DUE`, `APPROVAL_PENDING` (relance) | Échéances |
+| M6 | `DEADLINE`, `REQUEST_DUE`, `APPROVAL_PENDING` (relance), `APPROVAL_WAITING` (relance sans échéance, M9b) | Échéances |
 | M6 | `APPROVAL_REQUESTED` | À faire |
 | M6 | `APPROVAL_DECIDED`, `POLICY_CHANGED` | Informations |
 | M7 | `ORDER_TO_REQUEST`, `RECEIPTS_MISSING`, `ORDER_PENDING` (relance) | Échéances |

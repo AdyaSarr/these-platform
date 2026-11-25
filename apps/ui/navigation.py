@@ -28,6 +28,16 @@ class NavItem:
     action: Action
     # The pages where this entry is the current one: (namespace, url_name prefix).
     current: tuple[str, str]
+    # M9b: the same entry for whoever lacks ``action`` but holds one of these: the
+    # first held gives the page (the portfolio of the company co-supervisor opens on
+    # teaching, as the trainings are not theirs).
+    alternatives: tuple[tuple[Action, str], ...] = ()
+
+    def target(self, actions: frozenset[Action]) -> str | None:
+        for action, url_name in ((self.action, self.url_name), *self.alternatives):
+            if action in actions:
+                return url_name
+        return None
 
 
 NAV: tuple[NavItem, ...] = (
@@ -45,8 +55,9 @@ NAV: tuple[NavItem, ...] = (
             Action.CONFERENCE_READ, ("conferences", "")),
     NavItem("travel", _("Travel"), "plane", "travel:calendar", Action.TRAVEL_READ,
             ("travel", "")),
-    NavItem("portfolio", _("Trainings"), "graduation-cap", "portfolio:trainings",
-            Action.TRAINING_READ, ("portfolio", "")),
+    NavItem("portfolio", _("Portfolio"), "graduation-cap", "portfolio:trainings",
+            Action.TRAINING_READ, ("portfolio", ""),
+            ((Action.TEACHING_READ, "portfolio:teachings"),)),
     NavItem("documents", _("Documents"), "file-lock", "vault:documents", Action.DOCUMENT_READ,
             ("vault", "")),
     NavItem("team", _("Team"), "users", "accounts:team", Action.VIEW_TEAM, ("accounts", "team")),
@@ -83,17 +94,21 @@ def nav_for(request: HttpRequest) -> list[dict[str, Any]]:
     if thesis is None:
         return []
     actions = allowed(request)
-    return [
-        {
-            "key": item.key,
-            "label": item.label,
-            "icon": item.icon,
-            "url": reverse(item.url_name, kwargs={"thesis_id": thesis.pk}),
-            "current": _is_current(request, item),
-        }
-        for item in NAV
-        if item.action in actions
-    ]
+    out = []
+    for item in NAV:
+        url_name = item.target(actions)
+        if url_name is None:
+            continue
+        out.append(
+            {
+                "key": item.key,
+                "label": item.label,
+                "icon": item.icon,
+                "url": reverse(url_name, kwargs={"thesis_id": thesis.pk}),
+                "current": _is_current(request, item),
+            }
+        )
+    return out
 
 
 def thesis_for_header(request: HttpRequest) -> Any:

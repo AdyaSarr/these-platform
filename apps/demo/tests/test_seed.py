@@ -226,7 +226,9 @@ def test_conferences_and_submissions(demo: scenario.SeedResult) -> None:
     from apps.conferences.models import Deadline, StApproval, Submission, Venue
 
     thesis = _thesis()
-    statuses = sorted(Submission.objects.filter(thesis=thesis).values_list("status", flat=True))
+    # M9b added a talk and a poster (in preparation): the papers keep their story.
+    papers = Submission.objects.filter(thesis=thesis, presentation_kind="PAPER")
+    statuses = sorted(papers.values_list("status", flat=True))
     assert statuses == ["ACCEPTED", "REJECTED", "ST_REQUESTED"]
     pending = StApproval.objects.filter(thesis=thesis, decision="PENDING")
     assert pending.count() == 1 and pending.get().request_due is not None
@@ -238,7 +240,7 @@ def test_conferences_and_submissions(demo: scenario.SeedResult) -> None:
     real = {"TCHES", "CHES", "CASCADE", "PQCRYPTO", "RWC", "EUROCRYPT", "CRYPTO", "ASIACRYPT",
             "PKC", "ACNS", "DATE", "C2", "COSADE", "CARDIS"}  # fmt: skip
     venues = Venue.objects.filter(thesis=thesis)
-    assert venues.count() == 4
+    assert venues.count() == 5  # M9b: the seminar of the team (fictitious)
     assert not {v.acronym.upper() for v in venues} & real
     assert all(v.url.endswith(".example.org/") for v in venues)
 

@@ -23,5 +23,6 @@ class Command(BaseCommand):
         self.stdout.write(
             f"{result.deadlines} deadline reminder(s), {result.request_dues} request "
             f"reminder(s), {result.pending} pending approval reminder(s) queued, "
+            f"{result.waiting} awaited approval reminder(s) queued, "
             f"{result.requeued} failed e-mail(s) queued again"
         )

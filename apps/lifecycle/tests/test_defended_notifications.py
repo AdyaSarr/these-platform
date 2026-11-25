@@ -186,7 +186,7 @@ def test_every_kind_of_m6_is_still_sent_after_the_defence(time_machine: Any) -> 
     _information_at_once(team)
     rows = _one_of_each(team)
     _defend(team, h.D(2027, 1, 8))
-    assert len(rows) == 6  # every kind
+    assert len(rows) == 7  # every kind (M9b: APPROVAL_WAITING)
     for row in rows:
         assert _send(row) == "SENT", row.kind
         assert [m.to for m in mail.outbox] == [[row.recipient.email]]

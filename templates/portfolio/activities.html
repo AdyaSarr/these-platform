@@ -1,0 +1,31 @@
+{% extends "base.html" %}{% load i18n ui %}
+{% block title %}{{ pages.title }}{% endblock %}
+{% block content %}
+{% module_tabs "portfolio" %}
+{% page_header %}{{ pages.title }}{% subtitle %}{% translate "The platform prepares, ADUM records." %}{% actions %}{% if listing.can_write %}{% include "ui/action.html" with url=new_url label=pages.new_label icon="plus" primary=True %}{% endif %}{% endpage_header %}
+
+<section aria-labelledby="totals-title">
+<h2 id="totals-title">{% translate "Totals" %}</h2>
+{% if listing.partial %}<p class="muted">{{ pages.mention }}</p>{% endif %}
+<table class="table">
+  <thead><tr><th scope="col">{% translate "Type" %}</th><th scope="col">{% translate "Number" %}</th>{% if pages.with_hours %}<th scope="col">{% translate "Hours" %}</th>{% endif %}</tr></thead>
+  <tbody>
+  {% for total in listing.totals %}<tr><td>{{ total.label }}</td><td>{{ total.count }}</td>{% if pages.with_hours %}<td>{{ total.hours|floatformat:"-1" }}&nbsp;h</td>{% endif %}</tr>{% endfor %}
+  </tbody>
+  {% if pages.with_hours %}<tfoot><tr><th scope="row">{% translate "Total" %}</th><td></td><td>{{ listing.total_hours|floatformat:"-1" }}&nbsp;h</td></tr></tfoot>{% endif %}
+</table>
+<p class="muted">{% translate "Types to be confirmed by the doctoral school." %}</p>
+</section>
+
+<section aria-labelledby="done-title">
+<h2 id="done-title">{% translate "Done" %}</h2>
+{% if listing.done %}{% include "portfolio/_activities.html" with rows=done %}{% else %}{% include "ui/empty.html" with message=pages.empty %}{% endif %}
+</section>
+{% if listing.upcoming %}
+<section aria-labelledby="upcoming-title">
+<h2 id="upcoming-title">{% translate "To come" %}</h2>
+<p class="muted">{% translate "Not counted until they are over." %}</p>
+{% include "portfolio/_activities.html" with rows=upcoming %}
+</section>
+{% endif %}
+{% endblock %}

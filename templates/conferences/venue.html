@@ -3,7 +3,7 @@
 {% block content %}
 {% module_tabs "conferences" %}
 {% page_header %}{{ venue.acronym }} — {{ venue.name }}{% subtitle %}{{ venue.get_kind_display }}{% if venue.url %} · {% include "conferences/_external.html" with url=venue.url label=venue.url %}{% endif %}{% endpage_header %}
-{% if not venue.is_journal %}
+{% if venue.has_editions %}
 <section aria-labelledby="editions-title">
   <h2 id="editions-title">{% translate "Editions" %}</h2>
   {% if editions %}<ul>{% for edition in editions %}<li><a href="{% url 'conferences:edition' thesis_id=thesis.pk edition_id=edition.pk %}">{{ edition.year }}</a>{% if edition.location %} — {{ edition.location }}{% endif %}</li>{% endfor %}</ul>

@@ -1,0 +1,16 @@
+{% load i18n %}<table class="table">
+  <thead><tr><th scope="col">{% translate "Authors" %}</th><th scope="col">{% translate "Title" %}</th><th scope="col">{% translate "Venue" %}</th><th scope="col">{% translate "Date" %}</th><th scope="col">{% translate "Volume, pages" %}</th><th scope="col">{% translate "DOI, HAL" %}</th><th scope="col">{% translate "Category" %}</th></tr></thead>
+  <tbody>
+  {% for row in rows %}
+    <tr>
+      <td>{{ row.authors|join:", " }}</td>
+      <td>{{ row.title }}{% if row.internal %} <span class="mark">{% translate "internal level: to check before entering it" %}</span>{% endif %}{% if row.accepted %} <span class="mark">{% translate "to appear" %}</span>{% endif %}</td>
+      <td>{{ row.submission.venue.acronym }} — {{ row.submission.venue.name }}</td>
+      <td>{% if row.date %}{{ row.date|date:"d/m/Y" }}{% endif %}</td>
+      <td>{{ row.texts.volume }}{% if row.texts.pages %}, p. {{ row.texts.pages }}{% endif %}</td>
+      <td>{{ row.texts.doi }}{% if row.texts.hal_id %} {{ row.texts.hal_id }}{% endif %}</td>
+      <td>{{ row.category_label }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>

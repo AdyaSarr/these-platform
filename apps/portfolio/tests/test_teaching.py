@@ -58,8 +58,9 @@ def test_create_read_back_and_totals(team: SimpleNamespace) -> None:
      ("course", "", "course"), ("course", "a\x00b", "course")],
 )  # fmt: skip
 def test_strict_validation(team: SimpleNamespace, field: str, value: str, code: str) -> None:
+    kwargs: dict[str, Any] = {field: value}
     with pytest.raises(ValidationError) as exc:
-        h.teaching(team, **{field: value})
+        h.teaching(team, **kwargs)
     assert exc.value.code == code
     assert not Teaching.objects.exists()
 

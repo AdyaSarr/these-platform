@@ -96,7 +96,7 @@ def test_internal_left_out_by_default_and_marked(team: SimpleNamespace) -> None:
     full = services.adum_summary(team.student, team.thesis, year=1, include_internal=True)
     assert len(full.publications + full.communications) == 2 and full.left_out_other == 0
     marked = h.client_for(team.student).get(h.url(team, "adum") + "?internal=1").content.decode()
-    assert marked.count("niveau interne : à vérifier avant saisie") == 3
+    assert marked.count("à vérifier avant saisie") == 3
 
 
 def test_teaching_and_outreach_of_the_year(team: SimpleNamespace) -> None:
@@ -201,7 +201,7 @@ def test_bibtex_escapes_hostile_fields(team: SimpleNamespace) -> None:
     for entry in entries:
         values = _fields(entry)
         assert values and all(_balanced(v) for v in values), entry
-        assert entry.endswith("\n}")
+        assert entry.strip().endswith("\n}")
     assert "\\input" not in text and "\\write18" not in text
     assert "\u202e" not in text and "\u200b" not in text
     assert sum(1 for line in text.splitlines() if line.startswith("@")) == len(HOSTILE)

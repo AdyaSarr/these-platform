@@ -109,6 +109,15 @@ class Action(StrEnum):
     TRAINING_READ = "TRAINING_READ"
     TRAINING_WRITE = "TRAINING_WRITE"
     PORTFOLIO_EXPORT = "PORTFOLIO_EXPORT"
+    # Teaching and outreach (M9b): read by the whole supervision by level, the company
+    # co-supervisor included, never by the CSI member; written by the student.
+    TEACHING_READ = "TEACHING_READ"
+    TEACHING_WRITE = "TEACHING_WRITE"
+    OUTREACH_READ = "OUTREACH_READ"
+    OUTREACH_WRITE = "OUTREACH_WRITE"
+    # Skills and professional project (M9b): the student alone.
+    CAREER_NOTE_READ = "CAREER_NOTE_READ"
+    CAREER_NOTE_WRITE = "CAREER_NOTE_WRITE"
 
 
 _A = Action
@@ -133,6 +142,9 @@ ROLE_ACTIONS: Mapping[Role, frozenset[Action]] = MappingProxyType(
                 _A.REQUEST_CLOSURE,                                     # M13a
                 _A.THESIS_EXPORT,                                       # M13b
                 _A.TRAINING_READ, _A.TRAINING_WRITE, _A.PORTFOLIO_EXPORT,  # M9a
+                _A.TEACHING_READ, _A.TEACHING_WRITE,                    # M9b
+                _A.OUTREACH_READ, _A.OUTREACH_WRITE,                    # M9b
+                _A.CAREER_NOTE_READ, _A.CAREER_NOTE_WRITE,              # M9b: seul
             }
         ),
         Role.DIRECTOR: frozenset(
@@ -148,6 +160,7 @@ ROLE_ACTIONS: Mapping[Role, frozenset[Action]] = MappingProxyType(
                 _A.VALIDATE_OBJECTIVES, _A.VALIDATE_CSI, _A.VALIDATE_ANRT,  # objectifs, CSI, ANRT
                 _A.DECLARE_DEFENSE, _A.REQUEST_CLOSURE,                 # M13a
                 _A.TRAINING_READ,                                       # M9a
+                _A.TEACHING_READ, _A.OUTREACH_READ,                     # M9b: by level
             }
         ),
         Role.CO_SUPERVISOR: frozenset(
@@ -159,6 +172,7 @@ ROLE_ACTIONS: Mapping[Role, frozenset[Action]] = MappingProxyType(
                 _A.TRAVEL_READ,                                         # M7: LIRMM only
                 _A.DOCUMENT_READ, _A.DOCUMENT_COMMENT,                  # lire, commenter
                 _A.TRAINING_READ,                                       # M9a
+                _A.TEACHING_READ, _A.OUTREACH_READ,                     # M9b: by level
             }                                                       # admin : —
         ),
         Role.INDUSTRIAL_TUTOR: frozenset(
@@ -174,6 +188,7 @@ ROLE_ACTIONS: Mapping[Role, frozenset[Action]] = MappingProxyType(
                 _A.VALIDATE_ANRT, _A.VALIDATE_PUBLICATION,              # ANRT, publications
                 _A.SET_ST_CONFIDENTIALITY, _A.GRANT_ST_EXPORT,          # M13b: côté ST
                 _A.TRAINING_READ,                                       # M9a: by level
+                _A.TEACHING_READ, _A.OUTREACH_READ,                     # M9b: by level
             }
         ),
         # Same row as the LIRMM co-supervisor, on the company side: travel filtered
@@ -186,6 +201,7 @@ ROLE_ACTIONS: Mapping[Role, frozenset[Action]] = MappingProxyType(
                 _A.CONFERENCE_READ, _A.CONFERENCE_WRITE, _A.SUBMISSION_READ,  # M6
                 _A.TRAVEL_READ,                                         # M7: Rousset only
                 _A.DOCUMENT_READ, _A.DOCUMENT_COMMENT,                  # lire, commenter
+                _A.TEACHING_READ, _A.OUTREACH_READ,                     # M9b: by level
             }                                                       # admin : —
         ),
         Role.CSI_MEMBER: frozenset(
@@ -234,6 +250,7 @@ READ_ACTIONS: frozenset[Action] = frozenset(
         _A.ADMIN_FILE_READ, _A.CIFRE_FILE_READ, _A.CSI_FILE_READ, _A.CSI_REPORT_READ,
         _A.THESIS_EXPORT,  # M13b: the right of access does not depend on the status
         _A.TRAINING_READ, _A.PORTFOLIO_EXPORT,  # M9a: the ADUM summary is a read
+        _A.TEACHING_READ, _A.OUTREACH_READ, _A.CAREER_NOTE_READ,  # M9b
     }
 )  # fmt: skip
 _WRITES = frozenset(Action) - READ_ACTIONS
@@ -349,6 +366,10 @@ class ReadableQuerySet(models.QuerySet[_M]):
     dashboard, agenda, links, the activity feed and the iCal feed use it."""
 
     read_action: ClassVar[Action]
+    # The lookup of the level: the model's own, or (M9b) its submission's, never a copy.
+    level_field: ClassVar[str] = "level"
+    # M9b: objects sealed at one fixed level (the student's notes), no level field.
+    fixed_level: ClassVar[ConfidentialityLevel | None] = None
 
     def readable_by(
         self, user: AnyUser, thesis: Thesis, roles: frozenset[Role] | None = None
@@ -365,6 +386,11 @@ class ReadableQuerySet(models.QuerySet[_M]):
             levels = frozenset(
                 level for level in ConfidentialityLevel if roles & LEVEL_ROLES[level]
             )
+        if self.fixed_level is not None:
+            return self.filter(thesis=thesis) if self.fixed_level in levels else self.none()
+        if self.level_field != "level":  # M9b: the level of the object it belongs to
+            values = [lv.value for lv in levels]
+            return self.filter(thesis=thesis, **{f"{self.level_field}__in": values})
         return self.filter(thesis=thesis, level__in=[level.value for level in levels])
 
 

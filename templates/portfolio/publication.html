@@ -1,0 +1,20 @@
+{% extends "base.html" %}{% load i18n ui %}
+{% block title %}{% translate "Publication details" %}{% endblock %}
+{% block content %}
+{% module_tabs "portfolio" %}
+{% page_header parent_url=back_url parent_label=_("Publications") %}{{ row.title }}{% subtitle %}{{ row.submission.venue.acronym }} — {{ row.submission.venue.name }} · {{ row.submission.get_presentation_kind_display }} · <strong>{{ row.submission.get_status_display }}</strong>{% actions %}{% if can_write %}{% include "ui/action.html" with url=edit_url label=_("Edit") icon="pencil" %}{% endif %}{% endpage_header %}
+<dl class="stats">
+  <div><dt>{% translate "ADUM category" %}</dt><dd>{{ row.category_label }}{% if not row.details %} <span class="mark">{% translate "suggested" %}</span>{% endif %}</dd></div>
+  <div><dt>{% translate "Date" %}</dt><dd>{% if row.date %}{{ row.date|date:"d/m/Y" }}{% else %}—{% endif %}</dd></div>
+  <div><dt>{% translate "Confidentiality" %}</dt><dd>{% level_badge row.submission.level %}</dd></div>
+</dl>
+<ul>
+  <li>{% translate "Authors:" %} {{ row.authors|join:", " }}</li>
+  {% if row.texts.doi %}<li>{% translate "DOI:" %} {{ row.texts.doi }}</li>{% endif %}
+  {% if row.texts.hal_id %}<li>{% translate "HAL:" %} {{ row.texts.hal_id }}</li>{% endif %}
+  {% if row.texts.volume %}<li>{% translate "Volume:" %} {{ row.texts.volume }}</li>{% endif %}
+  {% if row.texts.pages %}<li>{% translate "Pages:" %} {{ row.texts.pages }}</li>{% endif %}
+  {% if row.texts.bibtex_key %}<li>{% translate "BibTeX key:" %} {{ row.texts.bibtex_key }}</li>{% endif %}
+</ul>
+<p class="muted">{% translate "Encrypted at the level of the submission; its ST approval stays in the Conferences module." %} <a href="{{ submission_url }}">{% translate "The submission" %}</a></p>
+{% endblock %}

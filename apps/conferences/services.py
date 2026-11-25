@@ -59,6 +59,7 @@ from apps.vault.audit import AuditAction, audit
 from apps.vault.errors import ReauthenticationRequiredError
 from apps.vault.models import Document, DocumentVersion
 
+from . import sealed
 from .models import (
     MAX_REVIEW_DAYS,
     ST_LEVELS,
@@ -70,6 +71,7 @@ from .models import (
     NotificationKind,
     Preprint,
     PreprintPlatform,
+    PresentationKind,
     PublicationPolicy,
     RefusalReason,
     StApproval,
@@ -179,12 +181,22 @@ def _check_authors(
 def _check_target(thesis: Thesis, venue: Venue, edition: Edition | None) -> None:
     if venue.thesis_id != thesis.pk or (edition is not None and edition.thesis_id != thesis.pk):
         raise ValidationError(_("This venue belongs to another thesis."), code="venue")
-    if venue.is_journal:
+    if not venue.has_editions:
         if edition is not None:
             raise ValidationError(_("A journal has no edition."), code="edition")
         return
-    if edition is None or edition.venue_id != venue.pk:
+    if edition is None:
+        if venue.needs_edition:
+            raise ValidationError(_("Choose an edition of this conference."), code="edition")
+        return  # M9b: a seminar, a PhD students' day, another venue: optional
+    if edition.venue_id != venue.pk:
         raise ValidationError(_("Choose an edition of this conference."), code="edition")
+
+
+def _clean_presentation(value: Any) -> str:
+    if value not in PresentationKind.values:
+        raise ValidationError(_("Unknown form."), code="presentation_kind")
+    return str(value)
 
 
 def _check_objective(thesis: Thesis, objective: Objective | None) -> Objective | None:
@@ -349,7 +361,7 @@ def create_edition(
     thesis = _thesis(venue)
     _require(user, Action.CONFERENCE_WRITE, thesis, "edition")
     _check_open(thesis)
-    if venue.is_journal:
+    if not venue.has_editions:
         raise ValidationError(_("A journal has no edition."), code="journal")
     values = _clean_edition(
         {"year": year, "location": location, "event_start": event_start, "event_end": event_end}
@@ -741,10 +753,12 @@ def create_submission(
     authors: Iterable[User] = (),
     st_work: bool = True,
     resubmission_of: Submission | None = None,
+    presentation_kind: str = PresentationKind.PAPER,
 ) -> Submission:
     _require(user, Action.SUBMISSION_WRITE, thesis, "create")
     _check_open(thesis)
     _check_target(thesis, venue, edition)
+    presentation_kind = _clean_presentation(presentation_kind)
     level = _clean_level(level)
     _check_st_level(st_work, level)
     _check_objective(thesis, objective)
@@ -765,6 +779,7 @@ def create_submission(
             level=level.value,
             st_work=st_work,
             resubmission_of=resubmission_of,
+            presentation_kind=presentation_kind,
             created_by=user,
         )
         submission.save(force_insert=True)
@@ -775,6 +790,7 @@ def create_submission(
             "level": submission.level,
             "st_work": st_work,
             "venue_kind": venue.kind,
+            "presentation_kind": presentation_kind,
             "authors": len(people),
         }
         activity.record(
@@ -819,8 +835,9 @@ def _approval_on_record(submission: Submission) -> bool:
 def update_submission(
     *, submission: Submission, user: User, changes: Mapping[str, Any]
 ) -> list[str]:
-    """Texts, target (venue, edition) and objective of a live submission."""
-    allowed = {*SUBMISSION_TEXTS, "venue", "edition", "objective"}
+    """Texts, target (venue, edition), objective and form of a live submission. The
+    form (M9b) is not the target: it may change once ST's approval was asked."""
+    allowed = {*SUBMISSION_TEXTS, "venue", "edition", "objective", "presentation_kind"}
     unknown = sorted(set(changes) - allowed)
     if unknown:
         raise ValueError(f"{unknown} cannot be changed here")
@@ -855,6 +872,7 @@ def update_submission(
             ),
             code="target_locked",
         )
+    form = _clean_presentation(changes.get("presentation_kind", fresh.presentation_kind))
     texts = {n: _clean_text(changes[n], n) for n in SUBMISSION_TEXTS if n in changes}
     current = _current_texts(user, thesis, fresh)
     changed = [n for n, v in texts.items() if v != current[n]]
@@ -864,6 +882,8 @@ def update_submission(
         changed.append("edition")
     if (objective.pk if objective else None) != fresh.objective_id:
         changed.append("objective")
+    if form != fresh.presentation_kind:
+        changed.append("presentation_kind")
     if not changed:
         return []
     with _sealing(user, thesis, _level(fresh), Action.SUBMISSION_WRITE) as sealer:
@@ -872,6 +892,7 @@ def update_submission(
             raise ValidationError(_("The submission changed meanwhile: try again."), code="stale")
         _seal_texts(sealer, locked, {n: texts[n] for n in changed if n in texts})
         locked.venue, locked.edition, locked.objective = venue, edition, objective
+        locked.presentation_kind = form
         locked.save()
         audit(AuditAction.SUBMISSION_UPDATED, actor=user, obj=locked, fields=changed)
     return changed
@@ -907,7 +928,8 @@ def set_authors(*, submission: Submission, user: User, authors: Iterable[User]) 
 def change_level(
     *, submission: Submission, user: User, level: ConfidentialityLevel, recent_mfa: bool
 ) -> Submission:
-    """Move every text of the submission (approval comments, preprint URLs too)."""
+    """Move every text of the submission, and every text registered as sealed at its
+    level (approval comments, preprint URLs, publication details: sealed.py)."""
     thesis = _thesis(submission)
     _require(user, Action.SUBMISSION_WRITE, thesis, "level")
     _require_mfa(recent_mfa)
@@ -926,10 +948,10 @@ def change_level(
             raise ValidationError(_("The submission changed meanwhile: try again."), code="stale")
         for name in SUBMISSION_TEXTS:
             sealer.reseal(locked, name)
-        for approval in StApproval.objects.filter(submission=locked):
-            sealer.reseal(approval, "comment")
-        for preprint in Preprint.objects.filter(submission=locked):
-            sealer.reseal(preprint, "url")
+        for dependent in sealed.registered():
+            for row in dependent.model.objects.filter(**{dependent.link: locked}).order_by("pk"):
+                for name in dependent.fields:
+                    sealer.reseal(row, name)
         locked.level = level.value
         locked.save()
         audit(
@@ -1426,6 +1448,7 @@ def resubmit_elsewhere(
         authors=list(authors),
         st_work=source.st_work,
         resubmission_of=source,
+        presentation_kind=source.presentation_kind,
         **{name: str(value) for name, value in texts.items()},
     )
     for link in SubmissionDocument.objects.filter(submission=source).select_related("document"):

@@ -82,7 +82,7 @@ def _crawl(
 ) -> dict[str, int]:
     from apps.ui.navigation import NAV
 
-    expected_nav = [item.key for item in NAV if item.action in ROLE_ACTIONS[role]]
+    expected_nav = [item.key for item in NAV if item.target(frozenset(ROLE_ACTIONS[role]))]
     seen: dict[str, int] = {}
     queue = deque([start])
     while queue and len(seen) < MAX_PAGES:

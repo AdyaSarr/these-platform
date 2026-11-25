@@ -185,6 +185,22 @@ def _decide(team: SimpleNamespace, approval: StApproval) -> StApproval:
     )
 
 
+def _waiting_row(team: SimpleNamespace) -> ConferenceNotification:
+    """M9b: an approval of a journal paper (no reference deadline), asked a review
+    period ago: the tutor's weekly reminder of week 0."""
+    from apps.conferences.tests.helpers import submission_of
+
+    journal = venue_of(team, kind="JOURNAL", acronym="RFSM", name="Revue fictive",
+                       url="https://rfsm.example.org/")  # fmt: skip
+    approval = _approval(team, submission_of(team, venue=journal, edition=None))
+    approval.created_at = timezone.now() - dt.timedelta(days=approval.review_days)
+    approval.save(update_fields=["created_at"])
+    week = reminders.waiting_week(approval, timezone.localdate())
+    assert week == 0
+    target = reminders.waiting_event(approval, week)
+    return _row(team, K.APPROVAL_WAITING, team.tutor, target, link=approval.submission_id)
+
+
 def _one_of_each(team: SimpleNamespace) -> list[ConferenceNotification]:
     """One row of each kind, each still due to a concerned recipient."""
     deadline, preparing = _paper(team)
@@ -199,6 +215,7 @@ def _one_of_each(team: SimpleNamespace) -> list[ConferenceNotification]:
         _row(team, K.APPROVAL_REQUESTED, team.tutor, approval.pk),
         _row(team, K.APPROVAL_DECIDED, team.student, decided.pk),
         _row(team, K.POLICY_CHANGED, team.student, uuid.uuid4()),
+        _waiting_row(team),  # M9b
     ]
 
 
@@ -213,6 +230,7 @@ def test_every_kind_has_a_case_here() -> None:
         "APPROVAL_REQUESTED",
         "APPROVAL_DECIDED",
         "POLICY_CHANGED",
+        "APPROVAL_WAITING",  # M9b
     }
 
 

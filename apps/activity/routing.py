@@ -52,6 +52,7 @@ CATEGORY_OF: dict[str, dict[str, str]] = {
         "APPROVAL_PENDING": C.DEADLINE,
         "APPROVAL_REQUESTED": C.ACTION,
         "APPROVAL_DECIDED": C.INFO,
+        "APPROVAL_WAITING": C.DEADLINE,  # M9b: awaited without a reference deadline
         "POLICY_CHANGED": C.INFO,
     },
     "travel": {

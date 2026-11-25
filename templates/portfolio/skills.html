@@ -1,0 +1,26 @@
+{% extends "base.html" %}{% load i18n ui %}
+{% block title %}{% translate "Skills and professional project" %}{% endblock %}
+{% block content %}
+{% module_tabs "portfolio" %}
+{% url 'portfolio:new_skill' thesis_id=thesis.pk as new_url %}
+{% page_header %}{% translate "Skills and professional project" %}{% subtitle %}{% translate "Read by you only: neither the supervision nor the company read them." %}{% actions %}{% if can_write %}{% include "ui/action.html" with url=new_url label=_("Add a skill") icon="plus" primary=True %}{% endif %}{% endpage_header %}
+<section aria-labelledby="skills-title">
+<h2 id="skills-title">{% translate "Skills" %}</h2>
+{% if rows %}
+<table class="table">
+  <thead><tr><th scope="col">{% translate "Skill" %}</th><th scope="col">{% translate "Category" %}</th><th scope="col">{% translate "What shows it" %}</th></tr></thead>
+  <tbody>
+  {% for row, url in rows %}<tr><td>{% if can_write %}<a href="{{ url }}">{{ row.texts.title }}</a>{% else %}{{ row.texts.title }}{% endif %}</td><td>{{ row.skill.get_category_display }}</td><td>{{ row.texts.evidence|linebreaksbr }}</td></tr>{% endfor %}
+  </tbody>
+</table>
+{% else %}
+{% translate "No skill noted yet." as message %}{% include "ui/empty.html" with message=message %}
+{% endif %}
+<p class="muted">{% translate "A framework of skills may be imposed: to be confirmed by the doctoral school." %}</p>
+</section>
+<section aria-labelledby="career-title">
+<h2 id="career-title">{% translate "Professional project" %}</h2>
+{% if career %}<p>{{ career|linebreaksbr }}</p>{% else %}<p class="muted">{% translate "Nothing written yet." %}</p>{% endif %}
+{% if can_write %}<p><a href="{% url 'portfolio:career' thesis_id=thesis.pk %}">{% translate "Edit the professional project" %}</a></p>{% endif %}
+</section>
+{% endblock %}

@@ -52,6 +52,11 @@ EXPORTED: Mapping[str, str] = MappingProxyType(
         "travel.TravelBudget": "deplacements.json",
         "portfolio.Training": "portfolio.json",
         "portfolio.PortfolioPolicy": "portfolio.json (the re-registration date)",
+        "portfolio.PublicationDetails": "portfolio.json (of the exported submissions)",
+        "portfolio.Teaching": "portfolio.json",
+        "portfolio.Outreach": "portfolio.json",
+        "portfolio.SkillNote": "portfolio.json (the student's notes)",
+        "portfolio.CareerNote": "portfolio.json (the student's notes)",
     }
 )
 

@@ -157,6 +157,22 @@ TEXT_SLOTS: Mapping[str, int] = MappingProxyType(
         "portfolio.Training.title": 0x0601,
         "portfolio.Training.provider": 0x0602,
         "portfolio.Training.notes": 0x0603,
+        # M9b: at the submission's level (no level of their own)
+        "portfolio.PublicationDetails.doi": 0x0604,
+        "portfolio.PublicationDetails.hal_id": 0x0605,
+        "portfolio.PublicationDetails.volume": 0x0606,
+        "portfolio.PublicationDetails.pages": 0x0607,
+        "portfolio.PublicationDetails.bibtex_key": 0x0608,
+        "portfolio.Teaching.course": 0x0609,
+        "portfolio.Teaching.institution": 0x060A,
+        "portfolio.Teaching.notes": 0x060B,
+        "portfolio.Outreach.title": 0x060C,
+        "portfolio.Outreach.audience": 0x060D,
+        "portfolio.Outreach.notes": 0x060E,
+        # M9b: the student's notes, at the fixed level CONFIDENTIAL
+        "portfolio.SkillNote.title": 0x060F,
+        "portfolio.SkillNote.evidence": 0x0610,
+        "portfolio.CareerNote.text": 0x0611,
     }
 )
 RETIRED_SLOT_CODES: frozenset[int] = frozenset()

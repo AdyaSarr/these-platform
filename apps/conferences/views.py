@@ -274,7 +274,7 @@ class VenueView(_Mixin, View):
                 else None
             ),
             "edition_form": edition_form
-            or (EditionForm() if writer and not venue.is_journal else None),
+            or (EditionForm() if writer and venue.has_editions else None),
             "can_write": writer,
         }
         return render(self.request, "conferences/venue.html", context, status=status)
@@ -425,6 +425,8 @@ def _submission_data(form: SubmissionForm) -> dict[str, Any]:
         "abstract": data["abstract"],
         "external_authors": data["external_authors"],
         "notes": data["notes"],
+        # M9b: an empty form (a page of before M9b) is a paper.
+        "presentation_kind": data.get("presentation_kind") or "PAPER",
     }
 
 
@@ -488,11 +490,12 @@ class EditSubmissionView(_Mixin, View):
         target = (
             f"edition:{submission.edition_id}"
             if submission.edition_id
-            else f"journal:{submission.venue_id}"
+            else f"venue:{submission.venue_id}"
         )
         initial = {
             **texts,
             "target": target,
+            "presentation_kind": submission.presentation_kind,
             # Point C: a linked objective the user does not read never reaches the
             # page (neither as a choice nor as an initial value); the server keeps it.
             "objective": str(submission.objective_id or "")

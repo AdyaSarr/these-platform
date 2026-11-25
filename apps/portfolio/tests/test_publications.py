@@ -90,7 +90,8 @@ def test_the_student_writes_and_reads_back(team: SimpleNamespace) -> None:
         "pages": "101-117",
         "bibtex_key": "fictif:2027",
     }
-    assert row.category == "JOURNAL_ARTICLE" and row.details.presented_on == h.D(2027, 1, 14)
+    assert row.details is not None and row.details.presented_on == h.D(2027, 1, 14)
+    assert row.category == "JOURNAL_ARTICLE"
     event = AuditEvent.objects.filter(action="PUBLICATION_DETAILS_SET").get()
     assert event.details_json["fields"] == sorted(
         ["adum_category", "presented_on", "doi", "hal_id", "volume", "pages", "bibtex_key"]

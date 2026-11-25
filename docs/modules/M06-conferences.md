@@ -178,3 +178,14 @@ Ajoutés à la revue de fin de M6 :
       changer de cible, c'est « soumettre ailleurs », avec un nouvel accord.
 - [x] Une demande d'accord exige un document qu'un tuteur actif peut lire ;
       l'historique des accords ne montre pas le titre d'un document illisible.
+
+## Ajouts de M9b (2026-11-25, module terminé modifié et signalé)
+
+Détail dans `modules/M09-portfolio.md` (M9b) et `docs/decisions.md` :
+- types de lieu `SEMINAR`, `PHD_DAY`, `OTHER`, à édition facultative ; forme de la
+  communication `Submission.presentation_kind` (`PAPER`, `POSTER`, `TALK`,
+  `INVITED_TALK`) ; le poster n'est pas un lieu ; même circuit d'accord ST ;
+- relance `APPROVAL_WAITING` au tuteur d'un accord attendu sans échéance de référence ;
+- registre `apps/conferences/sealed.py` des textes scellés au niveau d'une soumission
+  hors de sa table, rescellés par `change_level` ;
+- la page d'une soumission montre sa forme et un lien vers ses détails de publication.

@@ -1,0 +1,10 @@
+{% load i18n ui %}<details class="confirm">
+  <summary class="btn btn-secondary">{% icon "download" %}{{ label }}</summary>
+  <div class="confirm-panel">
+    <p>{% translate "Asks for your second factor. The file holds the titles in clear: keep it on an encrypted disk." %}</p>
+    <form method="post" action="{{ action }}">{% csrf_token %}
+      <input type="hidden" name="year" value="{{ summary.year.number }}">{% if section %}<input type="hidden" name="section" value="{{ section }}">{% endif %}{% if summary.include_internal %}<input type="hidden" name="internal" value="1">{% endif %}{% if summary.include_accepted %}<input type="hidden" name="accepted" value="1">{% endif %}
+      <button type="submit" class="btn btn-primary">{% translate "Yes, download" %}</button>
+    </form>
+  </div>
+</details>

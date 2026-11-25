@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-25 08:02+0100\n"
+"POT-Creation-Date: 2026-11-25 12:48+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -127,7 +127,7 @@ msgstr "Université"
 msgid "External"
 msgstr "Externe"
 
-#: apps/accounts/models.py:89 apps/conferences/models.py:72
+#: apps/accounts/models.py:89 apps/conferences/models.py:92
 msgid "name"
 msgstr "nom"
 
@@ -180,7 +180,7 @@ msgid "planned end date"
 msgstr "date de fin prévue"
 
 #: apps/accounts/models.py:115 apps/admin_file/models.py:138
-#: apps/conferences/models.py:251 apps/meetings/models.py:110
+#: apps/conferences/models.py:279 apps/meetings/models.py:110
 #: apps/meetings/models.py:291 apps/objectives/models.py:138
 #: apps/objectives/models.py:244 apps/travel/models.py:255
 msgid "status"
@@ -236,18 +236,18 @@ msgid "Queued"
 msgstr "En file d'attente"
 
 #: apps/accounts/models.py:284 apps/activity/choices.py:112
-#: apps/admin_file/models.py:301 apps/conferences/models.py:527
+#: apps/admin_file/models.py:301 apps/conferences/models.py:561
 #: apps/export/models.py:88 apps/lifecycle/models.py:105
 #: apps/meetings/models.py:350 apps/objectives/models.py:363
-#: apps/portfolio/models.py:159 apps/travel/choices.py:140
+#: apps/portfolio/models.py:422 apps/travel/choices.py:140
 msgid "Sent"
 msgstr "Envoyé"
 
 #: apps/accounts/models.py:285 apps/activity/choices.py:113
-#: apps/admin_file/models.py:302 apps/conferences/models.py:528
+#: apps/admin_file/models.py:302 apps/conferences/models.py:562
 #: apps/export/models.py:89 apps/lifecycle/models.py:106
 #: apps/meetings/models.py:351 apps/objectives/models.py:364
-#: apps/portfolio/models.py:160 apps/travel/choices.py:141
+#: apps/portfolio/models.py:423 apps/travel/choices.py:141
 msgid "Failed"
 msgstr "Échec"
 
@@ -273,7 +273,7 @@ msgid "Expired"
 msgstr "Expirée"
 
 #: apps/accounts/models.py:293 apps/admin_file/models.py:416
-#: apps/conferences/models.py:206
+#: apps/conferences/models.py:234
 msgid "Accepted"
 msgstr "Acceptée"
 
@@ -431,42 +431,42 @@ msgstr "Invitation révoquée."
 msgid "Active"
 msgstr "Active"
 
-#: apps/accounts/views.py:42 apps/activity/views.py:34 apps/ui/navigation.py:52
+#: apps/accounts/views.py:42 apps/activity/views.py:34 apps/ui/navigation.py:63
 #: templates/accounts/team.html:3 templates/accounts/team.html:5
 msgid "Team"
 msgstr "Équipe"
 
-#: apps/accounts/views.py:49 apps/activity/views.py:30 apps/ui/navigation.py:40
+#: apps/accounts/views.py:49 apps/activity/views.py:30 apps/ui/navigation.py:50
 #: templates/objectives/dashboard.html:2 templates/objectives/dashboard.html:4
 #: templates/objectives/detail.html:5
 msgid "Objectives"
 msgstr "Objectifs"
 
-#: apps/accounts/views.py:57 apps/activity/views.py:31 apps/ui/navigation.py:42
+#: apps/accounts/views.py:57 apps/activity/views.py:31 apps/ui/navigation.py:52
 #: apps/ui/tabs.py:68 apps/ui/tabs.py:70 templates/meetings/list.html:2
 #: templates/meetings/list.html:5
 msgid "Meetings"
 msgstr "Réunions"
 
-#: apps/accounts/views.py:64 apps/activity/views.py:32 apps/ui/navigation.py:44
+#: apps/accounts/views.py:64 apps/activity/views.py:32 apps/ui/navigation.py:54
 #: apps/ui/tabs.py:75 templates/conferences/deadlines.html:2
 #: templates/conferences/deadlines.html:5
 msgid "Conferences"
 msgstr "Conférences"
 
-#: apps/accounts/views.py:71 apps/activity/views.py:33 apps/ui/navigation.py:46
+#: apps/accounts/views.py:71 apps/activity/views.py:33 apps/ui/navigation.py:56
 #: apps/ui/tabs.py:90 templates/travel/_links.html:3
 msgid "Travel"
 msgstr "Déplacements"
 
-#: apps/accounts/views.py:78 apps/activity/views.py:28 apps/ui/navigation.py:50
-#: templates/conferences/submission.html:40
+#: apps/accounts/views.py:78 apps/activity/views.py:28 apps/ui/navigation.py:61
+#: templates/conferences/submission.html:41
 #: templates/vault/document_list.html:2 templates/vault/document_list.html:4
 msgid "Documents"
 msgstr "Documents"
 
 #: apps/accounts/views.py:87 apps/activity/views.py:29
-#: apps/admin_file/services.py:296 apps/ui/navigation.py:38
+#: apps/admin_file/services.py:296 apps/ui/navigation.py:48
 #: templates/accounts/dashboard.html:32 templates/admin_file/file.html:2
 #: templates/admin_file/file.html:4 templates/admin_file/item_page.html:6
 #: templates/admin_file/new_item.html:5
@@ -552,12 +552,12 @@ msgstr "Nouvelle soumission"
 msgid "Submission status changed"
 msgstr "Statut d'une soumission modifié"
 
-#: apps/activity/choices.py:29 apps/conferences/models.py:203
-#: apps/conferences/models.py:512
+#: apps/activity/choices.py:29 apps/conferences/models.py:231
+#: apps/conferences/models.py:544
 msgid "ST approval requested"
 msgstr "Accord ST demandé"
 
-#: apps/activity/choices.py:30 apps/conferences/models.py:513
+#: apps/activity/choices.py:30 apps/conferences/models.py:545
 msgid "ST approval decided"
 msgstr "Accord ST décidé"
 
@@ -655,29 +655,29 @@ msgid "Weekly digest"
 msgstr "Résumé hebdomadaire"
 
 #: apps/activity/choices.py:111 apps/admin_file/models.py:300
-#: apps/admin_file/models.py:415 apps/conferences/models.py:349
-#: apps/conferences/models.py:526 apps/export/models.py:87
+#: apps/admin_file/models.py:415 apps/conferences/models.py:381
+#: apps/conferences/models.py:560 apps/export/models.py:87
 #: apps/lifecycle/models.py:104 apps/meetings/models.py:349
 #: apps/objectives/models.py:362
 msgid "Pending"
 msgstr "En attente"
 
 #: apps/activity/choices.py:114 apps/admin_file/models.py:303
-#: apps/conferences/models.py:529 apps/export/models.py:90
+#: apps/conferences/models.py:563 apps/export/models.py:90
 #: apps/lifecycle/models.py:107 apps/meetings/models.py:352
 #: apps/objectives/models.py:365
 msgid "Not sent: no longer concerned or due"
 msgstr "Non envoyé : destinataire plus concerné ou envoi plus dû"
 
 #: apps/activity/choices.py:115 apps/admin_file/models.py:304
-#: apps/conferences/models.py:530 apps/meetings/models.py:353
-#: apps/portfolio/models.py:162 apps/travel/choices.py:143
+#: apps/conferences/models.py:564 apps/meetings/models.py:353
+#: apps/portfolio/models.py:425 apps/travel/choices.py:143
 msgid "Waiting for a digest"
 msgstr "En attente d'un résumé"
 
 #: apps/activity/choices.py:116 apps/admin_file/models.py:305
-#: apps/conferences/models.py:531 apps/meetings/models.py:354
-#: apps/portfolio/models.py:163 apps/travel/choices.py:144
+#: apps/conferences/models.py:565 apps/meetings/models.py:354
+#: apps/portfolio/models.py:426 apps/travel/choices.py:144
 msgid "Sent in a digest"
 msgstr "Envoyé dans un résumé"
 
@@ -821,19 +821,23 @@ msgstr "Nouveau fichier"
 msgid "Or an existing document"
 msgstr "Ou un document existant"
 
-#: apps/admin_file/forms.py:41 apps/conferences/forms.py:148
-#: apps/conferences/forms.py:179 apps/meetings/forms.py:100
+#: apps/admin_file/forms.py:41 apps/conferences/forms.py:164
+#: apps/conferences/forms.py:195 apps/meetings/forms.py:100
 #: apps/meetings/forms.py:133 apps/objectives/forms.py:60
-#: apps/objectives/forms.py:97 apps/portfolio/forms.py:55
-#: apps/portfolio/forms.py:87 apps/travel/forms.py:111 apps/travel/forms.py:165
-#: apps/vault/forms.py:34 apps/vault/forms.py:47
+#: apps/objectives/forms.py:97 apps/portfolio/forms.py:61
+#: apps/portfolio/forms.py:92 apps/portfolio/forms.py:158
+#: apps/portfolio/forms.py:186 apps/travel/forms.py:111
+#: apps/travel/forms.py:165 apps/vault/forms.py:34 apps/vault/forms.py:47
 #: templates/conferences/submission.html:8
-#: templates/conferences/submission.html:115
+#: templates/conferences/submission.html:116
 #: templates/conferences/submissions.html:8 templates/meetings/detail.html:9
 #: templates/meetings/detail.html:175 templates/meetings/list.html:23
 #: templates/objectives/detail.html:13 templates/objectives/detail.html:75
-#: templates/portfolio/_table.html:2 templates/portfolio/detail.html:13
-#: templates/portfolio/detail.html:32 templates/travel/mission.html:11
+#: templates/portfolio/_activities.html:2 templates/portfolio/_table.html:2
+#: templates/portfolio/activity.html:12 templates/portfolio/activity.html:18
+#: templates/portfolio/detail.html:13 templates/portfolio/detail.html:32
+#: templates/portfolio/publication.html:9
+#: templates/portfolio/publications.html:8 templates/travel/mission.html:11
 #: templates/vault/document_list.html:10
 msgid "Confidentiality"
 msgstr "Confidentialité"
@@ -849,8 +853,8 @@ msgid "Reason"
 msgstr "Motif"
 
 #: apps/admin_file/forms.py:71 apps/admin_file/forms.py:101
-#: apps/conferences/forms.py:243 apps/objectives/forms.py:141
-#: apps/travel/forms.py:190 templates/conferences/submission.html:64
+#: apps/conferences/forms.py:259 apps/objectives/forms.py:141
+#: apps/travel/forms.py:190 templates/conferences/submission.html:65
 #: templates/objectives/_comments.html:20 templates/travel/mission.html:30
 msgid "Comment"
 msgstr "Commentaire"
@@ -907,7 +911,7 @@ msgstr "Académique"
 msgid "To do"
 msgstr "À faire"
 
-#: apps/admin_file/models.py:54 apps/conferences/models.py:205
+#: apps/admin_file/models.py:54 apps/conferences/models.py:233
 msgid "Submitted"
 msgstr "Déposée"
 
@@ -915,7 +919,7 @@ msgstr "Déposée"
 msgid "Validated"
 msgstr "Validée"
 
-#: apps/admin_file/models.py:56 apps/conferences/models.py:207
+#: apps/admin_file/models.py:56 apps/conferences/models.py:235
 msgid "Rejected"
 msgstr "Refusée"
 
@@ -936,7 +940,7 @@ msgid "Amendment"
 msgstr "Avenant"
 
 #: apps/admin_file/models.py:67 apps/admin_file/models.py:80
-#: apps/conferences/models.py:360 apps/conferences/models.py:458
+#: apps/conferences/models.py:392 apps/conferences/models.py:490
 #: apps/meetings/models.py:65 apps/objectives/models.py:94
 msgid "Other"
 msgstr "Autre"
@@ -1030,12 +1034,12 @@ msgstr "réouverture"
 msgid "reopenings"
 msgstr "réouvertures"
 
-#: apps/admin_file/models.py:417 apps/conferences/models.py:351
+#: apps/admin_file/models.py:417 apps/conferences/models.py:383
 msgid "Refused"
 msgstr "Refusée"
 
-#: apps/admin_file/models.py:418 apps/conferences/models.py:208
-#: apps/conferences/models.py:352
+#: apps/admin_file/models.py:418 apps/conferences/models.py:236
+#: apps/conferences/models.py:384
 msgid "Withdrawn"
 msgstr "Retirée"
 
@@ -1148,7 +1152,7 @@ msgstr "L'échéance ne peut pas dépasser la fin prévue de la thèse."
 msgid "A mandatory item of the catalogue keeps a due date."
 msgstr "Une pièce obligatoire du catalogue garde une échéance."
 
-#: apps/admin_file/services.py:1019 apps/conferences/services.py:1119
+#: apps/admin_file/services.py:1019 apps/conferences/services.py:1141
 msgid "No industrial tutor in the team: invite them first."
 msgstr ""
 "Aucun·e tuteur·rice industriel·le dans l'équipe : invitez-le·la d'abord."
@@ -1201,8 +1205,11 @@ msgstr ""
 msgid "The item has changed, reload the page."
 msgstr "La pièce a changé, rechargez la page."
 
-#: apps/admin_file/views.py:240 apps/conferences/views.py:611
+#: apps/admin_file/views.py:240 apps/conferences/views.py:614
 #: apps/meetings/views.py:447 apps/objectives/views.py:345
+#: apps/portfolio/views.py:475 apps/portfolio/views.py:600
+#: apps/portfolio/views.py:654 apps/portfolio/views.py:681
+#: apps/portfolio/views.py:706
 msgid "Saved."
 msgstr "Enregistré."
 
@@ -1250,7 +1257,7 @@ msgstr "Pièce rouverte."
 msgid "Item added."
 msgstr "Pièce ajoutée."
 
-#: apps/conferences/forms.py:33
+#: apps/conferences/forms.py:35
 msgid ""
 "Public information, stored in clear text: never a title or a detail of your "
 "work."
@@ -1258,112 +1265,127 @@ msgstr ""
 "Information publique, stockée en clair : jamais un titre ni un détail de vos "
 "travaux."
 
-#: apps/conferences/forms.py:35
+#: apps/conferences/forms.py:37
 msgid "Sealed at the submission's level."
 msgstr "Scellé au niveau de la soumission."
 
-#: apps/conferences/forms.py:88
+#: apps/conferences/forms.py:97
 msgid "Unknown target."
 msgstr "Cible inconnue."
 
-#: apps/conferences/forms.py:92 apps/conferences/forms.py:106
+#: apps/conferences/forms.py:101 apps/conferences/forms.py:115
 #: apps/meetings/forms.py:69 apps/meetings/forms.py:214
+#: apps/portfolio/forms.py:147 apps/portfolio/forms.py:179
 #: templates/conferences/deadlines.html:15 templates/meetings/list.html:13
-#: templates/meetings/list.html:23 templates/vault/document_detail.html:9
+#: templates/meetings/list.html:23 templates/portfolio/_activities.html:2
+#: templates/portfolio/activities.html:11 templates/portfolio/activity.html:8
+#: templates/portfolio/adum.html:64 templates/portfolio/adum.html:79
+#: templates/vault/document_detail.html:9
 msgid "Type"
 msgstr "Type"
 
-#: apps/conferences/forms.py:93
+#: apps/conferences/forms.py:102
 msgid "Acronym"
 msgstr "Sigle"
 
-#: apps/conferences/forms.py:94
+#: apps/conferences/forms.py:103
 msgid "Name"
 msgstr "Nom"
 
-#: apps/conferences/forms.py:95
+#: apps/conferences/forms.py:104
 msgid "Website (https)"
 msgstr "Site web (https)"
 
-#: apps/conferences/forms.py:99 apps/travel/forms.py:235
+#: apps/conferences/forms.py:108 apps/travel/forms.py:235
 msgid "Year"
 msgstr "Année"
 
-#: apps/conferences/forms.py:100 apps/meetings/forms.py:88
+#: apps/conferences/forms.py:109 apps/meetings/forms.py:88
 #: apps/travel/forms.py:103 templates/meetings/list.html:23
 msgid "Place"
 msgstr "Lieu"
 
-#: apps/conferences/forms.py:101
+#: apps/conferences/forms.py:110
 msgid "First day"
 msgstr "Premier jour"
 
-#: apps/conferences/forms.py:102
+#: apps/conferences/forms.py:111
 msgid "Last day"
 msgstr "Dernier jour"
 
-#: apps/conferences/forms.py:107
+#: apps/conferences/forms.py:116
 msgid "Date (in the deadline's time zone)"
 msgstr "Date (dans le fuseau de l'échéance)"
 
-#: apps/conferences/forms.py:109
+#: apps/conferences/forms.py:118
 msgid "Time (in the deadline's time zone)"
 msgstr "Heure (dans le fuseau de l'échéance)"
 
-#: apps/conferences/forms.py:115
+#: apps/conferences/forms.py:124
 msgid "Time zone"
 msgstr "Fuseau horaire"
 
-#: apps/conferences/forms.py:118
+#: apps/conferences/forms.py:127
 msgid "AoE: Anywhere on Earth (UTC-12), as most calls for papers say."
 msgstr ""
 "AoE : Anywhere on Earth (UTC-12), comme la plupart des appels à soumission."
 
-#: apps/conferences/forms.py:125
-msgid "Conference edition or journal"
-msgstr "Édition de conférence ou revue"
+#: apps/conferences/forms.py:134
+msgid "Edition or venue without edition"
+msgstr "Édition ou lieu sans édition"
 
-#: apps/conferences/forms.py:126 apps/meetings/forms.py:77
-#: apps/objectives/forms.py:41 apps/portfolio/forms.py:32
-#: apps/portfolio/models.py:50 apps/vault/forms.py:33
-#: templates/conferences/submissions.html:8 templates/meetings/list.html:23
-#: templates/objectives/dashboard.html:66 templates/portfolio/adum.html:18
+#: apps/conferences/forms.py:136
+msgid "Form"
+msgstr "Forme"
+
+#: apps/conferences/forms.py:140
+msgid "A poster at a conference: the conference, form « Poster »."
+msgstr "Un poster à une conférence : la conférence, forme « Poster »."
+
+#: apps/conferences/forms.py:142 apps/meetings/forms.py:77
+#: apps/objectives/forms.py:41 apps/portfolio/forms.py:38
+#: apps/portfolio/forms.py:174 apps/portfolio/models.py:55
+#: apps/vault/forms.py:33 templates/conferences/submissions.html:8
+#: templates/meetings/list.html:23 templates/objectives/dashboard.html:66
+#: templates/portfolio/_adum_papers.html:2 templates/portfolio/adum.html:25
+#: templates/portfolio/adum.html:79 templates/portfolio/publications.html:8
 #: templates/vault/document_list.html:10
 msgid "Title"
 msgstr "Titre"
 
-#: apps/conferences/forms.py:128 apps/conferences/models.py:132
-#: templates/conferences/submission.html:26
+#: apps/conferences/forms.py:144 apps/conferences/models.py:160
+#: templates/conferences/submission.html:27
 msgid "Abstract"
 msgstr "Résumé"
 
-#: apps/conferences/forms.py:131 templates/conferences/submission.html:29
+#: apps/conferences/forms.py:147 templates/conferences/submission.html:30
 msgid "External co-authors"
 msgstr "Co-auteurs externes"
 
-#: apps/conferences/forms.py:135
+#: apps/conferences/forms.py:151
 msgid "Names only, one per line."
 msgstr "Noms seulement, un par ligne."
 
-#: apps/conferences/forms.py:138 apps/portfolio/forms.py:48
-#: apps/portfolio/models.py:52 templates/conferences/submission.html:30
-#: templates/portfolio/detail.html:22
+#: apps/conferences/forms.py:154 apps/portfolio/forms.py:54
+#: apps/portfolio/forms.py:154 apps/portfolio/forms.py:182
+#: apps/portfolio/models.py:57 templates/conferences/submission.html:31
+#: templates/portfolio/activity.html:16 templates/portfolio/detail.html:22
 msgid "Notes"
 msgstr "Notes"
 
-#: apps/conferences/forms.py:140 apps/meetings/forms.py:174
+#: apps/conferences/forms.py:156 apps/meetings/forms.py:174
 msgid "Linked objective"
 msgstr "Objectif lié"
 
-#: apps/conferences/forms.py:142 templates/conferences/submission.html:28
+#: apps/conferences/forms.py:158 templates/conferences/submission.html:29
 msgid "Internal co-authors"
 msgstr "Co-auteurs internes"
 
-#: apps/conferences/forms.py:145
+#: apps/conferences/forms.py:161
 msgid "Each co-author must be able to read the chosen level."
 msgstr "Chaque co-auteur doit pouvoir lire le niveau choisi."
 
-#: apps/conferences/forms.py:150
+#: apps/conferences/forms.py:166
 msgid ""
 "ST work (the default) must be readable by the industrial tutor: Public, "
 "Internal ST or Confidential."
@@ -1371,58 +1393,58 @@ msgstr ""
 "Des travaux ST (par défaut) doivent être lisibles par le tuteur industriel : "
 "Public, Interne ST ou Confidentiel."
 
-#: apps/conferences/forms.py:187 apps/meetings/forms.py:205
+#: apps/conferences/forms.py:203 apps/meetings/forms.py:205
 msgid "Document of the vault"
 msgstr "Document du coffre"
 
-#: apps/conferences/forms.py:195 templates/vault/document_detail.html:9
+#: apps/conferences/forms.py:211 templates/vault/document_detail.html:9
 #: templates/vault/document_list.html:10
 msgid "Version"
 msgstr "Version"
 
-#: apps/conferences/forms.py:213
+#: apps/conferences/forms.py:229
 msgid "For"
 msgstr "Pour"
 
-#: apps/conferences/forms.py:218
+#: apps/conferences/forms.py:234
 msgid "New status"
 msgstr "Nouveau statut"
 
-#: apps/conferences/forms.py:228
+#: apps/conferences/forms.py:244
 msgid "Platform"
 msgstr "Plateforme"
 
-#: apps/conferences/forms.py:229
+#: apps/conferences/forms.py:245
 msgid "Posted on"
 msgstr "Déposée le"
 
-#: apps/conferences/forms.py:231
+#: apps/conferences/forms.py:247
 msgid "Public address (https)"
 msgstr "Adresse publique (https)"
 
-#: apps/conferences/forms.py:237 apps/meetings/forms.py:166
+#: apps/conferences/forms.py:253 apps/meetings/forms.py:166
 #: apps/travel/forms.py:178 templates/meetings/register.html:12
 #: templates/travel/mission.html:30
 msgid "Decision"
 msgstr "Décision"
 
-#: apps/conferences/forms.py:237
+#: apps/conferences/forms.py:253
 msgid "Grant"
 msgstr "Accorder"
 
-#: apps/conferences/forms.py:237
+#: apps/conferences/forms.py:253
 msgid "Refuse"
 msgstr "Refuser"
 
-#: apps/conferences/forms.py:240 apps/travel/forms.py:185
+#: apps/conferences/forms.py:256 apps/travel/forms.py:185
 msgid "Reason of a refusal"
 msgstr "Motif d'un refus"
 
-#: apps/conferences/forms.py:252
+#: apps/conferences/forms.py:268
 msgid "New conference edition or journal"
 msgstr "Nouvelle édition de conférence ou revue"
 
-#: apps/conferences/forms.py:265 apps/conferences/models.py:183
+#: apps/conferences/forms.py:281 apps/conferences/models.py:211
 msgid "ST review period (days)"
 msgstr "Délai de relecture ST (jours)"
 
@@ -1439,302 +1461,341 @@ msgstr "Atelier"
 msgid "Journal"
 msgstr "Revue"
 
-#: apps/conferences/models.py:70 apps/conferences/models.py:153
-#: apps/meetings/models.py:96 apps/vault/models.py:272
+#: apps/conferences/models.py:63 apps/portfolio/models.py:146
+msgid "Seminar"
+msgstr "Séminaire"
+
+#: apps/conferences/models.py:64
+msgid "PhD students' day"
+msgstr "Journée des doctorants"
+
+#: apps/conferences/models.py:65
+msgid "Other venue"
+msgstr "Autre lieu"
+
+#: apps/conferences/models.py:77 apps/conferences/models.py:161
+msgid "Paper"
+msgstr "Article"
+
+#: apps/conferences/models.py:78 apps/portfolio/models.py:144
+msgid "Poster"
+msgstr "Poster"
+
+#: apps/conferences/models.py:79
+msgid "Talk"
+msgstr "Exposé"
+
+#: apps/conferences/models.py:80 apps/portfolio/models.py:145
+msgid "Invited talk"
+msgstr "Exposé invité"
+
+#: apps/conferences/models.py:90 apps/conferences/models.py:181
+#: apps/meetings/models.py:96 apps/portfolio/models.py:228
+#: apps/portfolio/models.py:287 apps/vault/models.py:272
 msgid "type"
 msgstr "type"
 
-#: apps/conferences/models.py:71
+#: apps/conferences/models.py:91
 msgid "acronym"
 msgstr "sigle"
 
-#: apps/conferences/models.py:73
+#: apps/conferences/models.py:93
 msgid "website"
 msgstr "site web"
 
-#: apps/conferences/models.py:76
+#: apps/conferences/models.py:96
 msgid "venue"
 msgstr "conférence ou revue"
 
-#: apps/conferences/models.py:106 apps/objectives/models.py:55
+#: apps/conferences/models.py:134 apps/objectives/models.py:55
 #: apps/objectives/models.py:132 apps/travel/models.py:533
 msgid "year"
 msgstr "année"
 
-#: apps/conferences/models.py:107 apps/meetings/models.py:102
+#: apps/conferences/models.py:135 apps/meetings/models.py:102
 msgid "place"
 msgstr "lieu"
 
-#: apps/conferences/models.py:108
+#: apps/conferences/models.py:136
 msgid "first day"
 msgstr "premier jour"
 
-#: apps/conferences/models.py:109
+#: apps/conferences/models.py:137
 msgid "last day"
 msgstr "dernier jour"
 
-#: apps/conferences/models.py:112
+#: apps/conferences/models.py:140
 msgid "edition"
 msgstr "édition"
 
-#: apps/conferences/models.py:133
-msgid "Paper"
-msgstr "Article"
-
-#: apps/conferences/models.py:134
+#: apps/conferences/models.py:162
 msgid "Rebuttal"
 msgstr "Réponse aux relecteurs"
 
-#: apps/conferences/models.py:135
+#: apps/conferences/models.py:163
 msgid "Notification"
 msgstr "Notification"
 
-#: apps/conferences/models.py:136 apps/conferences/models.py:344
+#: apps/conferences/models.py:164 apps/conferences/models.py:376
 msgid "Final version"
 msgstr "Version finale"
 
-#: apps/conferences/models.py:137
+#: apps/conferences/models.py:165
 msgid "Registration"
 msgstr "Inscription"
 
-#: apps/conferences/models.py:154
+#: apps/conferences/models.py:182
 msgid "due (UTC)"
 msgstr "échéance (UTC)"
 
-#: apps/conferences/models.py:155
+#: apps/conferences/models.py:183
 msgid "time zone"
 msgstr "fuseau horaire"
 
-#: apps/conferences/models.py:159
+#: apps/conferences/models.py:187
 msgid "deadline"
 msgstr "échéance"
 
-#: apps/conferences/models.py:186
+#: apps/conferences/models.py:214
 msgid "publication policy"
 msgstr "règle de publication"
 
-#: apps/conferences/models.py:202
+#: apps/conferences/models.py:230
 msgid "In preparation"
 msgstr "En préparation"
 
-#: apps/conferences/models.py:204
+#: apps/conferences/models.py:232
 msgid "ST approval granted"
 msgstr "Accord ST obtenu"
 
-#: apps/conferences/models.py:209
+#: apps/conferences/models.py:237
 msgid "Published"
 msgstr "Publié"
 
-#: apps/conferences/models.py:245 apps/meetings/models.py:104
+#: apps/conferences/models.py:273 apps/meetings/models.py:104
 #: apps/objectives/models.py:142 apps/objectives/models.py:243
-#: apps/portfolio/models.py:76 apps/travel/models.py:252
+#: apps/portfolio/models.py:81 apps/portfolio/models.py:233
+#: apps/portfolio/models.py:290 apps/travel/models.py:252
 #: apps/vault/models.py:221
 msgid "confidentiality"
 msgstr "confidentialité"
 
-#: apps/conferences/models.py:253
+#: apps/conferences/models.py:281
 msgid "concerns ST work"
 msgstr "concerne des travaux ST"
 
-#: apps/conferences/models.py:269
+#: apps/conferences/models.py:283
+msgid "form"
+msgstr "forme"
+
+#: apps/conferences/models.py:300
 msgid "submission"
 msgstr "soumission"
 
-#: apps/conferences/models.py:309
+#: apps/conferences/models.py:341
 msgid "internal co-author"
 msgstr "co-auteur interne"
 
-#: apps/conferences/models.py:328
+#: apps/conferences/models.py:360
 msgid "submission document"
 msgstr "document de la soumission"
 
-#: apps/conferences/models.py:343 templates/conferences/submission.html:2
+#: apps/conferences/models.py:375 templates/conferences/submission.html:2
 msgid "Submission"
 msgstr "Soumission"
 
-#: apps/conferences/models.py:345
+#: apps/conferences/models.py:377
 msgid "Preprint"
 msgstr "Prépublication"
 
-#: apps/conferences/models.py:350
+#: apps/conferences/models.py:382
 msgid "Granted"
 msgstr "Accordé"
 
-#: apps/conferences/models.py:356
+#: apps/conferences/models.py:388
 msgid "A patent must be filed first"
 msgstr "Un brevet doit d'abord être déposé"
 
-#: apps/conferences/models.py:357
+#: apps/conferences/models.py:389
 msgid "Confidential information"
 msgstr "Information confidentielle"
 
-#: apps/conferences/models.py:358
+#: apps/conferences/models.py:390
 msgid "ST results not cleared"
 msgstr "Résultats ST non libérés"
 
-#: apps/conferences/models.py:359
+#: apps/conferences/models.py:391
 msgid "Changes requested"
 msgstr "Modifications demandées"
 
-#: apps/conferences/models.py:402 templates/conferences/submission.html:56
+#: apps/conferences/models.py:434 templates/conferences/submission.html:57
 msgid "ST publication approval"
 msgstr "Accord de publication ST"
 
-#: apps/conferences/models.py:455
+#: apps/conferences/models.py:487
 msgid "IACR ePrint"
 msgstr "IACR ePrint"
 
-#: apps/conferences/models.py:456
+#: apps/conferences/models.py:488
 msgid "arXiv"
 msgstr "arXiv"
 
-#: apps/conferences/models.py:457
+#: apps/conferences/models.py:489
 msgid "HAL"
 msgstr "HAL"
 
-#: apps/conferences/models.py:487
+#: apps/conferences/models.py:519
 msgid "preprint"
 msgstr "prépublication"
 
-#: apps/conferences/models.py:509
+#: apps/conferences/models.py:541
 msgid "Deadline reminder"
 msgstr "Rappel d'échéance"
 
-#: apps/conferences/models.py:510
+#: apps/conferences/models.py:542
 msgid "ST approval request due"
 msgstr "Date limite de demande d'accord ST"
 
-#: apps/conferences/models.py:511
+#: apps/conferences/models.py:543
 msgid "ST approval awaiting a decision"
 msgstr "Accord ST en attente de décision"
 
-#: apps/conferences/models.py:514
+#: apps/conferences/models.py:546
 msgid "ST review period changed"
 msgstr "Délai de relecture ST modifié"
 
-#: apps/conferences/models.py:518 apps/travel/choices.py:129
+#: apps/conferences/models.py:548
+msgid "ST approval still awaited"
+msgstr "Accord ST toujours attendu"
+
+#: apps/conferences/models.py:552 apps/travel/choices.py:129
 msgid "Event"
 msgstr "Événement"
 
-#: apps/conferences/models.py:570
+#: apps/conferences/models.py:604
 msgid "conference notification"
 msgstr "notification de conférence"
 
-#: apps/conferences/services.py:118 apps/meetings/services.py:110
-#: apps/objectives/services.py:159 apps/portfolio/services.py:79
-#: apps/travel/services.py:726
+#: apps/conferences/services.py:120 apps/meetings/services.py:110
+#: apps/objectives/services.py:159 apps/portfolio/services.py:121
+#: apps/portfolio/services.py:647 apps/travel/services.py:726
 msgid "This text is invalid."
 msgstr "Ce texte n'est pas valide."
 
-#: apps/conferences/services.py:121 apps/meetings/services.py:113
-#: apps/objectives/services.py:162 apps/portfolio/services.py:82
+#: apps/conferences/services.py:123 apps/meetings/services.py:113
+#: apps/objectives/services.py:162 apps/portfolio/services.py:124
 #: apps/travel/services.py:729
 msgid "The text contains a control character."
 msgstr "Le texte contient un caractère de contrôle."
 
-#: apps/conferences/services.py:124 apps/meetings/services.py:116
-#: apps/objectives/services.py:165 apps/portfolio/services.py:85
+#: apps/conferences/services.py:126 apps/meetings/services.py:116
+#: apps/objectives/services.py:165 apps/portfolio/services.py:127
 #, python-format
 msgid "Between %(min)d and %(max)d characters."
 msgstr "Entre %(min)d et %(max)d caractères."
 
-#: apps/conferences/services.py:133 apps/travel/services.py:735
+#: apps/conferences/services.py:135 apps/travel/services.py:735
 msgid "One line only."
 msgstr "Une seule ligne."
 
-#: apps/conferences/services.py:143
+#: apps/conferences/services.py:145
 msgid "The address must start with https://."
 msgstr "L'adresse doit commencer par https://."
 
-#: apps/conferences/services.py:149 apps/meetings/services.py:140
-#: apps/portfolio/services.py:147 apps/travel/services.py:741
+#: apps/conferences/services.py:151 apps/meetings/services.py:140
+#: apps/portfolio/services.py:189 apps/travel/services.py:741
 msgid "Unknown confidentiality level."
 msgstr "Niveau de confidentialité inconnu."
 
-#: apps/conferences/services.py:156
+#: apps/conferences/services.py:158
 msgid "A submission on ST work must be readable by the industrial tutor."
 msgstr ""
 "Une soumission sur des travaux ST doit être lisible par le tuteur industriel."
 
-#: apps/conferences/services.py:169
+#: apps/conferences/services.py:171
 msgid "A co-author must be an active member of the supervision team."
 msgstr "Un co-auteur doit être un membre actif de l'équipe d'encadrement."
 
-#: apps/conferences/services.py:174
+#: apps/conferences/services.py:176
 msgid "A co-author could not read this confidentiality level."
 msgstr "Un co-auteur ne pourrait pas lire ce niveau de confidentialité."
 
-#: apps/conferences/services.py:181
+#: apps/conferences/services.py:183
 msgid "This venue belongs to another thesis."
 msgstr "Cette conférence appartient à une autre thèse."
 
-#: apps/conferences/services.py:184 apps/conferences/services.py:353
+#: apps/conferences/services.py:186 apps/conferences/services.py:365
 msgid "A journal has no edition."
 msgstr "Une revue n'a pas d'édition."
 
-#: apps/conferences/services.py:187
+#: apps/conferences/services.py:190 apps/conferences/services.py:193
 msgid "Choose an edition of this conference."
 msgstr "Choisissez une édition de cette conférence."
 
-#: apps/conferences/services.py:192 apps/meetings/services.py:209
+#: apps/conferences/services.py:198
+msgid "Unknown form."
+msgstr "Forme inconnue."
+
+#: apps/conferences/services.py:204 apps/meetings/services.py:209
 msgid "This objective belongs to another thesis."
 msgstr "Cet objectif appartient à une autre thèse."
 
-#: apps/conferences/services.py:235
+#: apps/conferences/services.py:247
 msgid "The thesis is finished: its submissions are frozen."
 msgstr "La thèse est terminée : ses soumissions sont figées."
 
-#: apps/conferences/services.py:260
+#: apps/conferences/services.py:272
 msgid "This change of status is not possible now."
 msgstr "Ce changement de statut n'est pas possible maintenant."
 
-#: apps/conferences/services.py:277 apps/conferences/services.py:374
+#: apps/conferences/services.py:289 apps/conferences/services.py:386
+#: apps/portfolio/services.py:890 apps/portfolio/services.py:902
 msgid "Unknown type."
 msgstr "Type inconnu."
 
-#: apps/conferences/services.py:284 apps/conferences/services.py:317
+#: apps/conferences/services.py:296 apps/conferences/services.py:329
 msgid "This venue already exists."
 msgstr "Cette conférence ou revue existe déjà."
 
-#: apps/conferences/services.py:325
+#: apps/conferences/services.py:337
 msgid "A year between 2000 and 2100."
 msgstr "Une année entre 2000 et 2100."
 
-#: apps/conferences/services.py:329 apps/core/timezones.py:52
+#: apps/conferences/services.py:341 apps/core/timezones.py:52
 #: apps/meetings/services.py:215 apps/meetings/timing.py:61
-#: apps/objectives/services.py:182 apps/portfolio/services.py:126
-#: apps/portfolio/services.py:539
+#: apps/objectives/services.py:182 apps/portfolio/services.py:168
+#: apps/portfolio/services.py:586
 msgid "A date is required."
 msgstr "Une date est obligatoire."
 
-#: apps/conferences/services.py:331
+#: apps/conferences/services.py:343
 msgid "The event ends before it starts."
 msgstr "L'événement finit avant de commencer."
 
-#: apps/conferences/services.py:358
+#: apps/conferences/services.py:370
 msgid "This edition already exists."
 msgstr "Cette édition existe déjà."
 
-#: apps/conferences/services.py:404 apps/conferences/services.py:428
+#: apps/conferences/services.py:416 apps/conferences/services.py:440
 msgid "This deadline was cancelled."
 msgstr "Cette échéance a été annulée."
 
-#: apps/conferences/services.py:478 apps/travel/services.py:617
+#: apps/conferences/services.py:490 apps/travel/services.py:617
 #: apps/travel/services.py:638 apps/travel/services.py:645
 #, python-format
 msgid "Between 0 and %(max)d days."
 msgstr "Entre 0 et %(max)d jours."
 
-#: apps/conferences/services.py:832 apps/conferences/services.py:1374
+#: apps/conferences/services.py:849 apps/conferences/services.py:1396
 msgid "This submission is closed."
 msgstr "Cette soumission est close."
 
-#: apps/conferences/services.py:847 apps/conferences/views.py:150
+#: apps/conferences/services.py:864 apps/conferences/views.py:150
 #: apps/meetings/forms.py:196
 msgid "Unknown objective."
 msgstr "Objectif inconnu."
 
-#: apps/conferences/services.py:853
+#: apps/conferences/services.py:870
 msgid ""
 "ST's approval was requested for this target: submit elsewhere instead (a new "
 "submission, a new approval)."
@@ -1742,77 +1803,78 @@ msgstr ""
 "L'accord de ST a été demandé pour cette cible : soumettez plutôt ailleurs "
 "(une nouvelle soumission, un nouvel accord)."
 
-#: apps/conferences/services.py:872 apps/conferences/services.py:926
-#: apps/conferences/services.py:1205 apps/conferences/services.py:1384
+#: apps/conferences/services.py:892 apps/conferences/services.py:948
+#: apps/conferences/services.py:1227 apps/conferences/services.py:1406
+#: apps/portfolio/services.py:820
 msgid "The submission changed meanwhile: try again."
 msgstr "La soumission a été modifiée entre-temps : recommencez."
 
-#: apps/conferences/services.py:969
+#: apps/conferences/services.py:991
 msgid "An ST approval is pending: decide it first."
 msgstr "Un accord ST est en attente : décidez-le d'abord."
 
-#: apps/conferences/services.py:991 apps/meetings/services.py:1281
+#: apps/conferences/services.py:1013 apps/meetings/services.py:1281
 msgid "This document is already linked."
 msgstr "Ce document est déjà lié."
 
-#: apps/conferences/services.py:1020 apps/meetings/services.py:1307
+#: apps/conferences/services.py:1042 apps/meetings/services.py:1307
 msgid "This document is no longer linked."
 msgstr "Ce document n'est plus lié."
 
-#: apps/conferences/services.py:1039
+#: apps/conferences/services.py:1061
 msgid "Choose a version of a document linked to this submission."
 msgstr "Choisissez une version d'un document lié à cette soumission."
 
-#: apps/conferences/services.py:1057
+#: apps/conferences/services.py:1079
 msgid "ST's approval of this exact version is required first."
 msgstr "L'accord de ST sur cette version exacte est d'abord nécessaire."
 
-#: apps/conferences/services.py:1108
+#: apps/conferences/services.py:1130
 msgid "Unknown purpose."
 msgstr "Objet inconnu."
 
-#: apps/conferences/services.py:1112
+#: apps/conferences/services.py:1134
 msgid "This submission does not concern ST work: no approval is needed."
 msgstr ""
 "Cette soumission ne concerne pas des travaux ST : aucun accord n'est "
 "nécessaire."
 
-#: apps/conferences/services.py:1124
+#: apps/conferences/services.py:1146
 msgid "The industrial tutor cannot read this document: change its level first."
 msgstr ""
 "Le tuteur industriel ne peut pas lire ce document : changez d'abord son "
 "niveau."
 
-#: apps/conferences/services.py:1134
+#: apps/conferences/services.py:1156
 msgid "A request is already pending."
 msgstr "Une demande est déjà en attente."
 
-#: apps/conferences/services.py:1191 apps/travel/services.py:1372
+#: apps/conferences/services.py:1213 apps/travel/services.py:1372
 #: apps/travel/views.py:797
 msgid "Grant or refuse."
 msgstr "Accordez ou refusez."
 
-#: apps/conferences/services.py:1193
+#: apps/conferences/services.py:1215
 msgid "A refusal needs its reason."
 msgstr "Un refus a besoin de son motif."
 
-#: apps/conferences/services.py:1195
+#: apps/conferences/services.py:1217
 msgid "A grant has no refusal reason."
 msgstr "Un accord n'a pas de motif de refus."
 
-#: apps/conferences/services.py:1203 apps/conferences/services.py:1252
+#: apps/conferences/services.py:1225 apps/conferences/services.py:1274
 msgid "This request was already decided."
 msgstr "Cette demande a déjà été décidée."
 
-#: apps/conferences/services.py:1299
+#: apps/conferences/services.py:1321
 msgid "The document has a newer version than the one ST approved."
 msgstr "Le document a une version plus récente que celle que ST a accordée."
 
-#: apps/conferences/services.py:1364
+#: apps/conferences/services.py:1386
 msgid "Unknown platform."
 msgstr "Plateforme inconnue."
 
-#: apps/conferences/services.py:1371
+#: apps/conferences/services.py:1393
 msgid "The date of a preprint is today or earlier."
 msgstr "La date d'une prépublication est aujourd'hui ou avant."
 
@@ -1836,58 +1898,58 @@ msgstr "Échéance ajoutée."
 msgid "ST review period saved."
 msgstr "Délai de relecture ST enregistré."
 
-#: apps/conferences/views.py:464
+#: apps/conferences/views.py:466
 msgid "Submission created."
 msgstr "Soumission créée."
 
-#: apps/conferences/views.py:530
+#: apps/conferences/views.py:533
 msgid "Submission saved."
 msgstr "Soumission enregistrée."
 
-#: apps/conferences/views.py:654 apps/meetings/views.py:618
+#: apps/conferences/views.py:657 apps/meetings/views.py:618
 msgid "Document linked."
 msgstr "Document lié."
 
-#: apps/conferences/views.py:665 apps/meetings/views.py:629
+#: apps/conferences/views.py:668 apps/meetings/views.py:629
 msgid "Document unlinked."
 msgstr "Document délié."
 
-#: apps/conferences/views.py:678
+#: apps/conferences/views.py:681
 msgid "ST approval requested."
 msgstr "Accord ST demandé."
 
-#: apps/conferences/views.py:690
+#: apps/conferences/views.py:693
 msgid "Request withdrawn."
 msgstr "Demande retirée."
 
-#: apps/conferences/views.py:701 apps/meetings/views.py:562
+#: apps/conferences/views.py:704 apps/meetings/views.py:562
 #: apps/travel/views.py:812
 msgid "Decision recorded."
 msgstr "Décision enregistrée."
 
-#: apps/conferences/views.py:719
+#: apps/conferences/views.py:722
 msgid "Status changed."
 msgstr "Statut modifié."
 
-#: apps/conferences/views.py:731
+#: apps/conferences/views.py:734
 msgid "Preprint recorded."
 msgstr "Prépublication enregistrée."
 
-#: apps/conferences/views.py:741 apps/meetings/views.py:487
-#: apps/objectives/views.py:414 apps/portfolio/views.py:200
-#: apps/travel/views.py:642
+#: apps/conferences/views.py:744 apps/meetings/views.py:487
+#: apps/objectives/views.py:414 apps/portfolio/views.py:214
+#: apps/portfolio/views.py:496 apps/travel/views.py:642
 msgid "Confidentiality changed."
 msgstr "Confidentialité modifiée."
 
-#: apps/conferences/views.py:759
+#: apps/conferences/views.py:762
 msgid "This submission no longer needs ST's approval."
 msgstr "Cette soumission n'a plus besoin de l'accord de ST."
 
-#: apps/conferences/views.py:773
+#: apps/conferences/views.py:776
 msgid "This submission needs ST's approval again."
 msgstr "Cette soumission a de nouveau besoin de l'accord de ST."
 
-#: apps/conferences/views.py:781
+#: apps/conferences/views.py:784
 msgid "New submission created: ST's approval must be requested again."
 msgstr "Nouvelle soumission créée : l'accord de ST doit être redemandé."
 
@@ -2113,7 +2175,9 @@ msgstr ""
 "restreint »."
 
 #: apps/meetings/forms.py:53 apps/objectives/forms.py:117
-#: templates/export/page.html:32
+#: apps/portfolio/forms.py:180 templates/export/page.html:32
+#: templates/portfolio/_adum_papers.html:2 templates/portfolio/activity.html:11
+#: templates/portfolio/adum.html:79 templates/portfolio/publication.html:8
 msgid "Date"
 msgstr "Date"
 
@@ -2178,9 +2242,10 @@ msgid "Unknown person."
 msgstr "Personne inconnue."
 
 #: apps/meetings/forms.py:201 apps/objectives/forms.py:120
-#: templates/conferences/submission.html:85
+#: templates/conferences/submission.html:86
 #: templates/conferences/submissions.html:8 templates/meetings/detail.html:133
-#: templates/objectives/dashboard.html:66 templates/travel/mission.html:9
+#: templates/objectives/dashboard.html:66
+#: templates/portfolio/publications.html:8 templates/travel/mission.html:9
 #: templates/travel/missions.html:11
 msgid "Status"
 msgstr "Statut"
@@ -2303,7 +2368,7 @@ msgstr "décision"
 msgid "Open"
 msgstr "Ouverte"
 
-#: apps/meetings/models.py:270
+#: apps/meetings/models.py:270 templates/portfolio/activities.html:21
 msgid "Done"
 msgstr "Faite"
 
@@ -2559,11 +2624,14 @@ msgstr "Description"
 msgid "Success criterion"
 msgstr "Critère de réussite"
 
-#: apps/objectives/forms.py:54 apps/portfolio/forms.py:37
-#: apps/travel/forms.py:212 templates/objectives/dashboard.html:54
-#: templates/objectives/dashboard.html:66 templates/portfolio/_table.html:2
-#: templates/portfolio/adum.html:18 templates/portfolio/detail.html:10
-#: templates/portfolio/trainings.html:11 templates/travel/mission.html:56
+#: apps/objectives/forms.py:54 apps/portfolio/forms.py:43
+#: apps/portfolio/forms.py:204 apps/travel/forms.py:212
+#: templates/objectives/dashboard.html:54
+#: templates/objectives/dashboard.html:66
+#: templates/portfolio/_adum_papers.html:2 templates/portfolio/_table.html:2
+#: templates/portfolio/adum.html:25 templates/portfolio/detail.html:10
+#: templates/portfolio/skills.html:11 templates/portfolio/trainings.html:11
+#: templates/travel/mission.html:56
 msgid "Category"
 msgstr "Catégorie"
 
@@ -2654,7 +2722,8 @@ msgid "Not achieved"
 msgstr "Non atteint"
 
 #: apps/objectives/models.py:134 apps/objectives/models.py:240
-#: apps/portfolio/models.py:71 apps/travel/models.py:481
+#: apps/portfolio/models.py:76 apps/portfolio/models.py:346
+#: apps/travel/models.py:481
 msgid "category"
 msgstr "catégorie"
 
@@ -2690,7 +2759,7 @@ msgstr "révision d'objectif"
 msgid "objective revisions"
 msgstr "révisions d'objectif"
 
-#: apps/objectives/models.py:300
+#: apps/objectives/models.py:300 apps/portfolio/models.py:288
 msgid "date"
 msgstr "date"
 
@@ -2723,7 +2792,8 @@ msgstr "points hebdomadaires"
 msgid "A reason of at least %(min)d characters is required."
 msgstr "Un motif d'au moins %(min)d caractères est obligatoire."
 
-#: apps/objectives/services.py:192 apps/portfolio/services.py:141
+#: apps/objectives/services.py:192 apps/portfolio/services.py:183
+#: apps/portfolio/services.py:659 apps/portfolio/services.py:1249
 #: apps/travel/services.py:1598
 msgid "Unknown category."
 msgstr "Catégorie inconnue."
@@ -2806,8 +2876,8 @@ msgstr "Objectif approuvé."
 msgid "Changes acknowledged."
 msgstr "Prise de connaissance enregistrée."
 
-#: apps/objectives/views.py:444 apps/portfolio/services.py:593
-#: apps/portfolio/services.py:606
+#: apps/objectives/views.py:444 apps/portfolio/services.py:1384
+#: apps/portfolio/services.py:1434
 msgid "Unknown year."
 msgstr "Année inconnue."
 
@@ -2820,229 +2890,577 @@ msgstr "%(count)d objectif(s) approuvé(s)."
 msgid "Progress recorded."
 msgstr "Avancement enregistré."
 
-#: apps/portfolio/forms.py:18
+#: apps/portfolio/forms.py:24
 msgid ""
 "Public: also read by the CSI members, who check your training. A training "
 "internal to ST: Internal ST."
-msgstr "Public : lu aussi par les membres du CSI, qui vérifient votre formation. Une formation interne à ST : Interne ST."
+msgstr ""
+"Public : lu aussi par les membres du CSI, qui vérifient votre formation. Une "
+"formation interne à ST : Interne ST."
 
-#: apps/portfolio/forms.py:21
+#: apps/portfolio/forms.py:27 apps/portfolio/forms.py:115
+#: apps/portfolio/forms.py:205
 msgid "Categories to be confirmed by the doctoral school."
 msgstr "Catégories à confirmer par l'école doctorale."
 
-#: apps/portfolio/forms.py:34 apps/portfolio/models.py:51
-#: templates/portfolio/adum.html:18
+#: apps/portfolio/forms.py:40 apps/portfolio/models.py:56
+#: templates/portfolio/adum.html:25
 msgid "Provider"
 msgstr "Organisme"
 
-#: apps/portfolio/forms.py:40 templates/portfolio/_table.html:2
-#: templates/portfolio/adum.html:18 templates/portfolio/detail.html:11
-#: templates/portfolio/trainings.html:11
+#: apps/portfolio/forms.py:46 apps/portfolio/forms.py:149
+#: templates/portfolio/_activities.html:2 templates/portfolio/_table.html:2
+#: templates/portfolio/activities.html:11 templates/portfolio/activity.html:9
+#: templates/portfolio/adum.html:25 templates/portfolio/adum.html:64
+#: templates/portfolio/detail.html:11 templates/portfolio/trainings.html:11
 msgid "Hours"
 msgstr "Heures"
 
-#: apps/portfolio/forms.py:42
+#: apps/portfolio/forms.py:48 apps/portfolio/forms.py:149
 msgid "In half hours, for example 3 or 12,5."
 msgstr "En demi-heures, par exemple 3 ou 12,5."
 
-#: apps/portfolio/forms.py:44 templates/portfolio/adum.html:18
+#: apps/portfolio/forms.py:50 apps/portfolio/forms.py:151
+#: templates/portfolio/adum.html:25 templates/portfolio/adum.html:64
 msgid "Start"
 msgstr "Début"
 
-#: apps/portfolio/forms.py:45 templates/portfolio/adum.html:18
+#: apps/portfolio/forms.py:51 apps/portfolio/forms.py:152
+#: templates/portfolio/adum.html:25 templates/portfolio/adum.html:64
 msgid "End"
 msgstr "Fin"
 
-#: apps/portfolio/forms.py:46
+#: apps/portfolio/forms.py:52
 msgid "Certificate"
 msgstr "Attestation"
 
-#: apps/portfolio/forms.py:52
+#: apps/portfolio/forms.py:58 apps/portfolio/forms.py:155
+#: apps/portfolio/forms.py:183 apps/portfolio/views.py:638
+#: apps/portfolio/views.py:689
 msgid "Read by you only."
 msgstr "Lu par vous seul·e."
 
-#: apps/portfolio/forms.py:66 apps/travel/choices.py:63
+#: apps/portfolio/forms.py:73 apps/travel/choices.py:63
 msgid "None"
 msgstr "Aucun"
 
-#: apps/portfolio/forms.py:92
+#: apps/portfolio/forms.py:97
 msgid "Next re-registration"
 msgstr "Prochaine réinscription"
 
-#: apps/portfolio/forms.py:96
+#: apps/portfolio/forms.py:101
 msgid ""
 "The date given by the university; you receive a reminder 30 and 7 days "
 "before."
-msgstr "La date donnée par l'université ; vous recevez un rappel 30 et 7 jours avant."
+msgstr ""
+"La date donnée par l'université ; vous recevez un rappel 30 et 7 jours avant."
 
-#: apps/portfolio/models.py:33
+#: apps/portfolio/forms.py:108 templates/portfolio/activities.html:17
+msgid "Types to be confirmed by the doctoral school."
+msgstr "Types à confirmer par l'école doctorale."
+
+#: apps/portfolio/forms.py:113 apps/portfolio/models.py:177
+#: templates/portfolio/publication.html:7
+#: templates/portfolio/publications.html:8
+msgid "ADUM category"
+msgstr "Catégorie ADUM"
+
+#: apps/portfolio/forms.py:118
+msgid "Presented on"
+msgstr "Présenté le"
+
+#: apps/portfolio/forms.py:121
+msgid "For a talk or a poster: the day of the communication."
+msgstr "Pour un exposé ou un poster : le jour de la communication."
+
+#: apps/portfolio/forms.py:123
+msgid "DOI"
+msgstr "DOI"
+
+#: apps/portfolio/forms.py:124
+msgid "For example 10.1234/abcd.2027."
+msgstr "Par exemple 10.1234/abcd.2027."
+
+#: apps/portfolio/forms.py:125
+msgid "HAL identifier"
+msgstr "Identifiant HAL"
+
+#: apps/portfolio/forms.py:126
+msgid "For example hal-01234567v2."
+msgstr "Par exemple hal-01234567v2."
+
+#: apps/portfolio/forms.py:127
+msgid "Volume"
+msgstr "Volume"
+
+#: apps/portfolio/forms.py:128 templates/activity/feed.html:12
+msgid "Pages"
+msgstr "Pages"
+
+#: apps/portfolio/forms.py:129
+msgid "For example 101-117."
+msgstr "Par exemple 101-117."
+
+#: apps/portfolio/forms.py:131
+msgid "BibTeX key"
+msgstr "Clé BibTeX"
+
+#: apps/portfolio/forms.py:134
+msgid "Letters, digits, « : », « _ » and « - » only."
+msgstr "Lettres, chiffres, « : », « _ » et « - » seulement."
+
+#: apps/portfolio/forms.py:142 templates/portfolio/adum.html:64
+msgid "Course"
+msgstr "Enseignement"
+
+#: apps/portfolio/forms.py:144 templates/portfolio/adum.html:64
+msgid "Institution"
+msgstr "Établissement"
+
+#: apps/portfolio/forms.py:161 apps/portfolio/forms.py:189
+msgid "Read by the supervision at this level; never by the CSI members."
+msgstr "Lu par l'encadrement à ce niveau ; jamais par les membres du CSI."
+
+#: apps/portfolio/forms.py:176 templates/portfolio/adum.html:79
+msgid "Audience and place"
+msgstr "Public et lieu"
+
+#: apps/portfolio/forms.py:202 apps/portfolio/views.py:637
+#: templates/portfolio/skills.html:11
+msgid "Skill"
+msgstr "Compétence"
+
+#: apps/portfolio/forms.py:208 templates/portfolio/skills.html:11
+msgid "What shows it"
+msgstr "Ce qui la montre"
+
+#: apps/portfolio/forms.py:218 apps/portfolio/views.py:688
+#: templates/portfolio/skills.html:22
+msgid "Professional project"
+msgstr "Projet professionnel"
+
+#: apps/portfolio/forms.py:222
+msgid "Read by you only: neither the supervision nor the company read it."
+msgstr "Lu par vous seul : ni l'encadrement ni l'entreprise ne le lisent."
+
+#: apps/portfolio/models.py:38
 msgid "Doctoral school training"
 msgstr "Formation de l'école doctorale"
 
-#: apps/portfolio/models.py:34
+#: apps/portfolio/models.py:39
 msgid "Scientific training"
 msgstr "Formation scientifique"
 
-#: apps/portfolio/models.py:35
+#: apps/portfolio/models.py:40
 msgid "Transversal training"
 msgstr "Formation transversale"
 
-#: apps/portfolio/models.py:36
+#: apps/portfolio/models.py:41
 msgid "Research ethics and integrity"
 msgstr "Éthique et intégrité scientifique"
 
-#: apps/portfolio/models.py:37
+#: apps/portfolio/models.py:42
 msgid "Other training"
 msgstr "Autre formation"
 
-#: apps/portfolio/models.py:43
+#: apps/portfolio/models.py:48
 msgid "To enter in ADUM"
 msgstr "À saisir dans ADUM"
 
-#: apps/portfolio/models.py:44
+#: apps/portfolio/models.py:49
 msgid "Entered in ADUM"
 msgstr "Saisie dans ADUM"
 
-#: apps/portfolio/models.py:72
+#: apps/portfolio/models.py:77 apps/portfolio/models.py:229
 msgid "hours"
 msgstr "heures"
 
-#: apps/portfolio/models.py:73
+#: apps/portfolio/models.py:78 apps/portfolio/models.py:230
 msgid "start date"
 msgstr "date de début"
 
-#: apps/portfolio/models.py:74
+#: apps/portfolio/models.py:79 apps/portfolio/models.py:231
 msgid "end date"
 msgstr "date de fin"
 
-#: apps/portfolio/models.py:88
+#: apps/portfolio/models.py:93
 msgid "certificate"
 msgstr "attestation"
 
-#: apps/portfolio/models.py:91 templates/portfolio/detail.html:25
+#: apps/portfolio/models.py:96 templates/portfolio/detail.html:25
 msgid "ADUM"
 msgstr "ADUM"
 
-#: apps/portfolio/models.py:101
+#: apps/portfolio/models.py:106
 msgid "training"
 msgstr "formation"
 
-#: apps/portfolio/models.py:102
+#: apps/portfolio/models.py:107
 msgid "trainings"
 msgstr "formations"
 
-#: apps/portfolio/models.py:138
+#: apps/portfolio/models.py:141
+msgid "Journal article"
+msgstr "Article de revue"
+
+#: apps/portfolio/models.py:142
+msgid "Conference paper with proceedings"
+msgstr "Communication avec actes"
+
+#: apps/portfolio/models.py:143
+msgid "Oral communication"
+msgstr "Communication orale"
+
+#: apps/portfolio/models.py:147
+msgid "Other production"
+msgstr "Autre production"
+
+#: apps/portfolio/models.py:179
+msgid "presented on"
+msgstr "présenté le"
+
+#: apps/portfolio/models.py:184 apps/portfolio/models.py:185
+msgid "publication details"
+msgstr "détails de publication"
+
+#: apps/portfolio/models.py:205
+msgid "Lecture (CM)"
+msgstr "Cours magistral (CM)"
+
+#: apps/portfolio/models.py:206
+msgid "Tutorial (TD)"
+msgstr "Travaux dirigés (TD)"
+
+#: apps/portfolio/models.py:207
+msgid "Practical work (TP)"
+msgstr "Travaux pratiques (TP)"
+
+#: apps/portfolio/models.py:208
+msgid "Student supervision"
+msgstr "Encadrement d'étudiants"
+
+#: apps/portfolio/models.py:209
+msgid "Other teaching"
+msgstr "Autre enseignement"
+
+#: apps/portfolio/models.py:243 apps/portfolio/models.py:244
+msgid "teaching"
+msgstr "enseignement"
+
+#: apps/portfolio/models.py:263
+msgid "Science festival"
+msgstr "Fête de la science"
+
+#: apps/portfolio/models.py:264
+msgid "School visit"
+msgstr "Intervention en établissement scolaire"
+
+#: apps/portfolio/models.py:265
+msgid "Talk for the general public"
+msgstr "Exposé grand public"
+
+#: apps/portfolio/models.py:266
+msgid "Press, radio, video"
+msgstr "Presse, radio, vidéo"
+
+#: apps/portfolio/models.py:267
+msgid "Popular article"
+msgstr "Article de vulgarisation"
+
+#: apps/portfolio/models.py:268
+msgid "Other outreach"
+msgstr "Autre action de diffusion"
+
+#: apps/portfolio/models.py:300
+msgid "outreach action"
+msgstr "action de diffusion"
+
+#: apps/portfolio/models.py:301
+msgid "outreach actions"
+msgstr "actions de diffusion"
+
+#: apps/portfolio/models.py:322
+msgid "Scientific"
+msgstr "Scientifique"
+
+#: apps/portfolio/models.py:323
+msgid "Technical"
+msgstr "Technique"
+
+#: apps/portfolio/models.py:324
+msgid "Transversal"
+msgstr "Transversale"
+
+#: apps/portfolio/models.py:325
+msgid "Language"
+msgstr "Langue"
+
+#: apps/portfolio/models.py:326
+msgid "Other skill"
+msgstr "Autre compétence"
+
+#: apps/portfolio/models.py:351
+msgid "skill"
+msgstr "compétence"
+
+#: apps/portfolio/models.py:352
+msgid "skills"
+msgstr "compétences"
+
+#: apps/portfolio/models.py:379
+msgid "professional project"
+msgstr "projet professionnel"
+
+#: apps/portfolio/models.py:380
+msgid "professional projects"
+msgstr "projets professionnels"
+
+#: apps/portfolio/models.py:401
 msgid "next re-registration"
 msgstr "prochaine réinscription"
 
-#: apps/portfolio/models.py:141 apps/portfolio/models.py:142
+#: apps/portfolio/models.py:404 apps/portfolio/models.py:405
 msgid "portfolio settings"
 msgstr "réglages du portfolio"
 
-#: apps/portfolio/models.py:149
+#: apps/portfolio/models.py:412
 msgid "Re-registration reminder"
 msgstr "Rappel de réinscription"
 
-#: apps/portfolio/models.py:153
+#: apps/portfolio/models.py:416
 msgid "30 days before"
 msgstr "30 jours avant"
 
-#: apps/portfolio/models.py:154
+#: apps/portfolio/models.py:417
 msgid "7 days before"
 msgstr "7 jours avant"
 
-#: apps/portfolio/models.py:158 apps/travel/choices.py:139
+#: apps/portfolio/models.py:421 apps/travel/choices.py:139
 msgctxt "notification"
 msgid "Pending"
 msgstr "En attente"
 
-#: apps/portfolio/models.py:161 apps/travel/choices.py:142
+#: apps/portfolio/models.py:424 apps/travel/choices.py:142
 msgid "Not sent: no longer concerned"
 msgstr "Non envoyé : destinataire plus concerné"
 
-#: apps/portfolio/models.py:200
+#: apps/portfolio/models.py:463
 msgid "portfolio notification"
 msgstr "notification du portfolio"
 
-#: apps/portfolio/services.py:106
+#: apps/portfolio/services.py:148
 msgid "Hours: a multiple of half an hour, from 0.5 to 300."
 msgstr "Heures : un multiple d'une demi-heure, de 0,5 à 300."
 
-#: apps/portfolio/services.py:128
+#: apps/portfolio/services.py:170
 msgid "The end comes before the start."
 msgstr "La fin précède le début."
 
-#: apps/portfolio/services.py:132
+#: apps/portfolio/services.py:174
 #, python-format
 msgid "Dates between %(low)s and %(high)s."
 msgstr "Dates entre le %(low)s et le %(high)s."
 
-#: apps/portfolio/services.py:155 apps/portfolio/services.py:157
+#: apps/portfolio/services.py:197 apps/portfolio/services.py:199
 msgid "Unknown document."
 msgstr "Document inconnu."
 
-#: apps/portfolio/services.py:203
+#: apps/portfolio/services.py:252
 msgid "The thesis is finished: its trainings are frozen."
 msgstr "La thèse est terminée : ses formations sont figées."
 
-#: apps/portfolio/services.py:453 apps/portfolio/services.py:500
+#: apps/portfolio/services.py:500 apps/portfolio/services.py:547
 msgid "The training changed meanwhile: try again."
 msgstr "La formation a changé entre-temps : réessayez."
 
-#: apps/portfolio/services.py:519
+#: apps/portfolio/services.py:566
 msgid "Unknown ADUM state."
 msgstr "État ADUM inconnu."
 
-#: apps/portfolio/services.py:542
+#: apps/portfolio/services.py:589 apps/portfolio/services.py:664
 msgid "This date is outside the thesis."
 msgstr "Cette date est hors de la thèse."
 
-#: apps/portfolio/services.py:656
+#: apps/portfolio/services.py:650 apps/portfolio/services.py:652
+msgid "This value is invalid."
+msgstr "Cette valeur n'est pas valide."
+
+#: apps/portfolio/services.py:823
+msgid "The details changed meanwhile: try again."
+msgstr "Les détails ont changé entre-temps : réessayez."
+
+#: apps/portfolio/services.py:1504
 msgctxt "ADUM column"
 msgid "Title"
 msgstr "Intitulé"
 
-#: apps/portfolio/services.py:657
+#: apps/portfolio/services.py:1505
 msgctxt "ADUM column"
 msgid "Provider"
 msgstr "Organisme"
 
-#: apps/portfolio/services.py:658
+#: apps/portfolio/services.py:1506
 msgctxt "ADUM column"
 msgid "Category"
 msgstr "Catégorie"
 
-#: apps/portfolio/services.py:659
+#: apps/portfolio/services.py:1507
 msgctxt "ADUM column"
 msgid "Hours"
 msgstr "Heures"
 
-#: apps/portfolio/services.py:660
+#: apps/portfolio/services.py:1508
 msgctxt "ADUM column"
 msgid "Start"
 msgstr "Début"
 
-#: apps/portfolio/services.py:661
+#: apps/portfolio/services.py:1509
 msgctxt "ADUM column"
 msgid "End"
 msgstr "Fin"
 
-#: apps/portfolio/services.py:662
+#: apps/portfolio/services.py:1510
 msgctxt "ADUM column"
 msgid "Level"
 msgstr "Niveau"
 
-#: apps/portfolio/views.py:106
+#: apps/portfolio/services.py:1511
+msgctxt "ADUM column"
+msgid "Authors"
+msgstr "Auteurs"
+
+#: apps/portfolio/services.py:1512
+msgctxt "ADUM column"
+msgid "Venue"
+msgstr "Lieu"
+
+#: apps/portfolio/services.py:1513
+msgctxt "ADUM column"
+msgid "Date"
+msgstr "Date"
+
+#: apps/portfolio/services.py:1514
+msgctxt "ADUM column"
+msgid "Volume"
+msgstr "Volume"
+
+#: apps/portfolio/services.py:1515
+msgctxt "ADUM column"
+msgid "Pages"
+msgstr "Pages"
+
+#: apps/portfolio/services.py:1516
+msgctxt "ADUM column"
+msgid "DOI"
+msgstr "DOI"
+
+#: apps/portfolio/services.py:1517
+msgctxt "ADUM column"
+msgid "HAL"
+msgstr "HAL"
+
+#: apps/portfolio/services.py:1518
+msgctxt "ADUM column"
+msgid "Status"
+msgstr "Statut"
+
+#: apps/portfolio/services.py:1519
+msgctxt "ADUM column"
+msgid "Course"
+msgstr "Enseignement"
+
+#: apps/portfolio/services.py:1520
+msgctxt "ADUM column"
+msgid "Institution"
+msgstr "Établissement"
+
+#: apps/portfolio/services.py:1521
+msgctxt "ADUM column"
+msgid "Type"
+msgstr "Type"
+
+#: apps/portfolio/services.py:1522
+msgctxt "ADUM column"
+msgid "Audience"
+msgstr "Public et lieu"
+
+#: apps/portfolio/services.py:1549
+msgctxt "ADUM status"
+msgid "to appear"
+msgstr "à paraître"
+
+#: apps/portfolio/services.py:1584
+msgid "Unknown section."
+msgstr "Section inconnue."
+
+#: apps/portfolio/views.py:116
 msgid "Training added."
 msgstr "Formation ajoutée."
 
-#: apps/portfolio/views.py:172
+#: apps/portfolio/views.py:186
 msgid "Training saved."
 msgstr "Formation enregistrée."
 
-#: apps/portfolio/views.py:295 apps/travel/views.py:285
+#: apps/portfolio/views.py:324 apps/travel/views.py:285
 msgid "Settings saved."
 msgstr "Réglages enregistrés."
+
+#: apps/portfolio/views.py:342 apps/ui/tabs.py:118
+#: templates/portfolio/adum.html:61
+msgid "Teaching"
+msgstr "Enseignement"
+
+#: apps/portfolio/views.py:343
+msgid "Add a teaching"
+msgstr "Ajouter un enseignement"
+
+#: apps/portfolio/views.py:344
+msgid "Computed on the teaching you can read."
+msgstr "Calculé sur les enseignements que vous pouvez lire."
+
+#: apps/portfolio/views.py:345
+msgid "No teaching yet."
+msgstr "Aucun enseignement pour l'instant."
+
+#: apps/portfolio/views.py:345
+msgid "Teaching added."
+msgstr "Enseignement ajouté."
+
+#: apps/portfolio/views.py:358 apps/ui/tabs.py:121
+#: templates/portfolio/adum.html:76
+msgid "Outreach"
+msgstr "Diffusion"
+
+#: apps/portfolio/views.py:358
+msgid "Outreach action"
+msgstr "Action de diffusion"
+
+#: apps/portfolio/views.py:359
+msgid "Add an outreach action"
+msgstr "Ajouter une action de diffusion"
+
+#: apps/portfolio/views.py:360
+msgid "Computed on the outreach actions you can read."
+msgstr "Calculé sur les actions de diffusion que vous pouvez lire."
+
+#: apps/portfolio/views.py:361
+msgid "No outreach action yet."
+msgstr "Aucune action de diffusion pour l'instant."
+
+#: apps/portfolio/views.py:361
+msgid "Outreach action added."
+msgstr "Action de diffusion ajoutée."
+
+#: apps/portfolio/views.py:459 templates/conferences/submission.html:10
+#: templates/meetings/detail.html:14 templates/objectives/detail.html:5
+#: templates/portfolio/activity.html:5 templates/portfolio/detail.html:6
+#: templates/portfolio/publication.html:5 templates/travel/mission.html:5
+msgid "Edit"
+msgstr "Modifier"
+
+#: apps/portfolio/views.py:578 templates/portfolio/publication.html:2
+msgid "Publication details"
+msgstr "Détails de publication"
 
 #: apps/travel/choices.py:14
 msgid "Remote work"
@@ -3833,7 +4251,7 @@ msgstr[1] "dans %(count)d jours"
 msgid "you do not attend"
 msgstr "vous n'y participez pas"
 
-#: apps/ui/agenda.py:158 templates/conferences/submission.html:79
+#: apps/ui/agenda.py:158 templates/conferences/submission.html:80
 msgid "Request ST's approval"
 msgstr "Demander l'accord de ST"
 
@@ -3841,22 +4259,20 @@ msgstr "Demander l'accord de ST"
 msgid "Objective due"
 msgstr "Échéance d'objectif"
 
-#: apps/ui/navigation.py:34
+#: apps/ui/navigation.py:44
 msgid "Home"
 msgstr "Accueil"
 
-#: apps/ui/navigation.py:36 templates/activity/feed.html:2
+#: apps/ui/navigation.py:46 templates/activity/feed.html:2
 #: templates/activity/feed.html:4
 msgid "Activity"
 msgstr "Activité"
 
-#: apps/ui/navigation.py:48 apps/ui/tabs.py:109 apps/ui/tabs.py:111
-#: templates/portfolio/detail.html:6 templates/portfolio/trainings.html:2
-#: templates/portfolio/trainings.html:5 templates/portfolio/trainings.html:11
-msgid "Trainings"
-msgstr "Formations"
+#: apps/ui/navigation.py:58 apps/ui/tabs.py:111
+msgid "Portfolio"
+msgstr "Portfolio"
 
-#: apps/ui/navigation.py:53 templates/accounts/csi_file.html:3
+#: apps/ui/navigation.py:64 templates/accounts/csi_file.html:3
 #: templates/accounts/csi_file.html:5
 msgid "CSI file"
 msgstr "Dossier CSI"
@@ -3867,7 +4283,7 @@ msgid "Decision register"
 msgstr "Registre des décisions"
 
 #: apps/ui/tabs.py:78 templates/conferences/edition.html:8
-#: templates/conferences/submission.html:34
+#: templates/conferences/submission.html:35
 msgid "Deadlines"
 msgstr "Échéances"
 
@@ -3895,7 +4311,7 @@ msgstr "Temps ST / LIRMM"
 msgid "Budget"
 msgstr "Budget"
 
-#: apps/ui/tabs.py:96 apps/ui/tabs.py:114
+#: apps/ui/tabs.py:96 apps/ui/tabs.py:128
 msgctxt "module tab"
 msgid "Settings"
 msgstr "Réglages"
@@ -3905,7 +4321,22 @@ msgctxt "module tab"
 msgid "To decide"
 msgstr "À décider"
 
-#: apps/ui/tabs.py:112 templates/portfolio/adum.html:2
+#: apps/ui/tabs.py:113 templates/portfolio/adum.html:22
+#: templates/portfolio/detail.html:6 templates/portfolio/trainings.html:2
+#: templates/portfolio/trainings.html:5 templates/portfolio/trainings.html:11
+msgid "Trainings"
+msgstr "Formations"
+
+#: apps/ui/tabs.py:115 templates/portfolio/adum.html:47
+#: templates/portfolio/publication.html:5
+msgid "Publications"
+msgstr "Publications"
+
+#: apps/ui/tabs.py:124 templates/portfolio/skills.html:8
+msgid "Skills"
+msgstr "Compétences"
+
+#: apps/ui/tabs.py:126 templates/portfolio/adum.html:2
 #: templates/portfolio/adum.html:5
 msgid "ADUM summary"
 msgstr "Récapitulatif ADUM"
@@ -4512,10 +4943,6 @@ msgid "Nothing to show here."
 msgstr "Rien à afficher ici."
 
 #: templates/activity/feed.html:12
-msgid "Pages"
-msgstr "Pages"
-
-#: templates/activity/feed.html:12
 msgid "Newer"
 msgstr "Plus récents"
 
@@ -4551,9 +4978,9 @@ msgstr ""
 #: templates/conferences/submission_form.html:8
 #: templates/conferences/venue.html:21 templates/conferences/venue_form.html:8
 #: templates/meetings/form.html:14 templates/objectives/form.html:18
-#: templates/portfolio/form.html:10 templates/portfolio/settings.html:9
-#: templates/travel/mission.html:63 templates/travel/mission_form.html:10
-#: templates/travel/month.html:28
+#: templates/portfolio/edit.html:9 templates/portfolio/form.html:10
+#: templates/portfolio/settings.html:9 templates/travel/mission.html:63
+#: templates/travel/mission_form.html:10 templates/travel/month.html:28
 msgid "Save"
 msgstr "Enregistrer"
 
@@ -4786,6 +5213,8 @@ msgstr "Échéance"
 
 #: templates/conferences/deadlines.html:15
 #: templates/conferences/submissions.html:8 templates/conferences/venue.html:2
+#: templates/portfolio/_adum_papers.html:2
+#: templates/portfolio/publications.html:8
 msgid "Venue"
 msgstr "Conférence ou revue"
 
@@ -4888,44 +5317,42 @@ msgstr "Travaux ST : accord de ST nécessaire"
 msgid "Not ST work"
 msgstr "Pas des travaux ST"
 
-#: templates/conferences/submission.html:10 templates/meetings/detail.html:14
-#: templates/objectives/detail.html:5 templates/portfolio/detail.html:6
-#: templates/travel/mission.html:5
-msgid "Edit"
-msgstr "Modifier"
-
 #: templates/conferences/submission.html:13
+msgid "Publication details (ADUM, BibTeX)"
+msgstr "Détails de publication (ADUM, BibTeX)"
+
+#: templates/conferences/submission.html:14
 msgid "Resubmission of an earlier submission"
 msgstr "Nouvelle soumission d'un article précédent"
 
-#: templates/conferences/submission.html:18
+#: templates/conferences/submission.html:19
 msgid "Not ST work: no approval needed"
 msgstr "Pas des travaux ST : aucun accord nécessaire"
 
-#: templates/conferences/submission.html:19
-#: templates/conferences/submission.html:70
-#: templates/conferences/submission.html:118 templates/feeds/_block.html:16
+#: templates/conferences/submission.html:20
+#: templates/conferences/submission.html:71
+#: templates/conferences/submission.html:119 templates/feeds/_block.html:16
 #: templates/objectives/dashboard.html:86 templates/objectives/detail.html:39
-#: templates/objectives/detail.html:80 templates/portfolio/detail.html:35
-#: templates/travel/mission.html:51 templates/travel/mission.html:91
-#: templates/travel/settings.html:18 templates/travel/settings.html:29
-#: templates/travel/settings.html:39
+#: templates/objectives/detail.html:80 templates/portfolio/activity.html:21
+#: templates/portfolio/detail.html:35 templates/travel/mission.html:51
+#: templates/travel/mission.html:91 templates/travel/settings.html:18
+#: templates/travel/settings.html:29 templates/travel/settings.html:39
 msgid "Asks for your second factor."
 msgstr "Demande votre second facteur."
 
-#: templates/conferences/submission.html:22
+#: templates/conferences/submission.html:23
 msgid "Concerns ST work"
 msgstr "Concerne des travaux ST"
 
-#: templates/conferences/submission.html:45 templates/meetings/detail.html:159
+#: templates/conferences/submission.html:46 templates/meetings/detail.html:159
 msgid "Unlink"
 msgstr "Délier"
 
-#: templates/conferences/submission.html:51 templates/meetings/detail.html:168
+#: templates/conferences/submission.html:52 templates/meetings/detail.html:168
 msgid "Link the document"
 msgstr "Lier le document"
 
-#: templates/conferences/submission.html:57
+#: templates/conferences/submission.html:58
 msgid ""
 "Submitting, publishing the final version and posting a preprint each need "
 "ST's approval of the exact version, for ST work."
@@ -4933,63 +5360,63 @@ msgstr ""
 "Soumettre, publier la version finale et déposer une prépublication exigent "
 "chacun, pour des travaux ST, l'accord de ST sur la version exacte."
 
-#: templates/conferences/submission.html:63
+#: templates/conferences/submission.html:64
 #, python-format
 msgid "period %(days)s days"
 msgstr "délai %(days)s jours"
 
-#: templates/conferences/submission.html:63
+#: templates/conferences/submission.html:64
 #, python-format
 msgid "to request by %(date)s"
 msgstr "à demander avant le %(date)s"
 
-#: templates/conferences/submission.html:66 templates/lifecycle/page.html:25
+#: templates/conferences/submission.html:67 templates/lifecycle/page.html:25
 #: templates/travel/mission.html:46
 msgid "Withdraw the request"
 msgstr "Retirer la demande"
 
-#: templates/conferences/submission.html:69 templates/meetings/detail.html:118
+#: templates/conferences/submission.html:70 templates/meetings/detail.html:118
 #: templates/travel/mission.html:50
 msgid "Record the decision"
 msgstr "Enregistrer la décision"
 
-#: templates/conferences/submission.html:76
+#: templates/conferences/submission.html:77
 msgid "No request yet."
 msgstr "Aucune demande pour l'instant."
 
-#: templates/conferences/submission.html:87
+#: templates/conferences/submission.html:88
 msgid "Change the status"
 msgstr "Changer le statut"
 
-#: templates/conferences/submission.html:88
+#: templates/conferences/submission.html:89
 msgid "Submitted and published: choose the version sent."
 msgstr "Soumis et publié : choisissez la version envoyée."
 
-#: templates/conferences/submission.html:93
+#: templates/conferences/submission.html:94
 msgid "Preprints"
 msgstr "Prépublications"
 
-#: templates/conferences/submission.html:97
+#: templates/conferences/submission.html:98
 msgid "No preprint."
 msgstr "Aucune prépublication."
 
-#: templates/conferences/submission.html:100
+#: templates/conferences/submission.html:101
 msgid "Record the preprint"
 msgstr "Enregistrer la prépublication"
 
-#: templates/conferences/submission.html:106
+#: templates/conferences/submission.html:107
 msgid "Submit elsewhere"
 msgstr "Soumettre ailleurs"
 
-#: templates/conferences/submission.html:108
+#: templates/conferences/submission.html:109
 msgid "Create the new submission"
 msgstr "Créer la nouvelle soumission"
 
-#: templates/conferences/submission.html:109
+#: templates/conferences/submission.html:110
 msgid "A new ST approval is required: the earlier one is never reused."
 msgstr "Un nouvel accord ST est nécessaire : l'ancien n'est jamais repris."
 
-#: templates/conferences/submission.html:117 templates/meetings/detail.html:178
+#: templates/conferences/submission.html:118 templates/meetings/detail.html:178
 #: templates/objectives/detail.html:79 templates/travel/mission.html:90
 msgid "Change the confidentiality"
 msgstr "Changer la confidentialité"
@@ -5002,7 +5429,7 @@ msgstr "Modifier la soumission"
 #: templates/conferences/submission_form.html:6
 #: templates/conferences/venue_form.html:6 templates/meetings/duplicate.html:6
 #: templates/meetings/form.html:6 templates/objectives/form.html:5
-#: templates/portfolio/form.html:6
+#: templates/portfolio/edit.html:5 templates/portfolio/form.html:6
 msgid "Back"
 msgstr "Retour"
 
@@ -5123,7 +5550,12 @@ msgid ""
 "their texts decrypted, the comments of your supervisors (their name and role "
 "only), your own lines of the audit log and a manifest with the SHA-256 "
 "digest of each file."
-msgstr "Il contient les documents (dernière version, ou toutes les versions), les objectifs, réunions, dossier administratif, conférences, missions et formations, textes déchiffrés, les commentaires de vos encadrants (leur nom et leur rôle seulement), vos propres lignes du journal d'audit et un manifeste avec l'empreinte SHA-256 de chaque fichier."
+msgstr ""
+"Il contient les documents (dernière version, ou toutes les versions), les "
+"objectifs, réunions, dossier administratif, conférences, missions et "
+"formations, textes déchiffrés, les commentaires de vos encadrants (leur nom "
+"et leur rôle seulement), vos propres lignes du journal d'audit et un "
+"manifeste avec l'empreinte SHA-256 de chaque fichier."
 
 #: templates/export/page.html:13
 msgid ""
@@ -5168,7 +5600,7 @@ msgstr ""
 msgid "Every version of each document"
 msgstr "Toutes les versions de chaque document"
 
-#: templates/export/page.html:22 templates/portfolio/adum.html:39
+#: templates/export/page.html:22 templates/portfolio/_adum_download.html:7
 msgid "Yes, download"
 msgstr "Oui, télécharger"
 
@@ -5237,7 +5669,10 @@ msgid ""
 "these.json, equipe.json, objectifs.json, reunions.json, dossier-"
 "administratif.json, conferences.json, deplacements.json, portfolio.json: "
 "your data, texts decrypted."
-msgstr "these.json, equipe.json, objectifs.json, reunions.json, dossier-administratif.json, conferences.json, deplacements.json, portfolio.json : vos données, textes déchiffrés."
+msgstr ""
+"these.json, equipe.json, objectifs.json, reunions.json, dossier-"
+"administratif.json, conferences.json, deplacements.json, portfolio.json : "
+"vos données, textes déchiffrés."
 
 #: templates/export/readme.txt:7
 msgid "journal/mes-evenements.json: your own lines of the audit log."
@@ -5908,7 +6343,7 @@ msgid "Past"
 msgstr "Passées"
 
 #: templates/meetings/list.html:18 templates/meetings/register.html:8
-#: templates/portfolio/adum.html:12
+#: templates/portfolio/adum.html:14
 msgid "Filter"
 msgstr "Filtrer"
 
@@ -6142,62 +6577,164 @@ msgstr ""
 msgid "Create the objective"
 msgstr "Créer l'objectif"
 
-#: templates/portfolio/_table.html:2 templates/portfolio/detail.html:12
+#: templates/portfolio/_activities.html:2 templates/portfolio/_table.html:2
+#: templates/portfolio/activity.html:10 templates/portfolio/detail.html:12
 #: templates/travel/mission.html:8 templates/travel/missions.html:11
 #: templates/travel/orders.html:9
 msgid "Dates"
 msgstr "Dates"
 
+#: templates/portfolio/_adum_download.html:4
+msgid ""
+"Asks for your second factor. The file holds the titles in clear: keep it on "
+"an encrypted disk."
+msgstr ""
+"Demande votre second facteur. Le fichier contient les intitulés en clair : "
+"rangez-le sur un disque chiffré."
+
+#: templates/portfolio/_adum_papers.html:2
+msgid "Authors"
+msgstr "Auteurs"
+
+#: templates/portfolio/_adum_papers.html:2
+msgid "Volume, pages"
+msgstr "Volume, pages"
+
+#: templates/portfolio/_adum_papers.html:2
+msgid "DOI, HAL"
+msgstr "DOI, HAL"
+
+#: templates/portfolio/_adum_papers.html:7 templates/portfolio/adum.html:29
+#: templates/portfolio/adum.html:67 templates/portfolio/adum.html:82
+msgid "internal level: to check before entering it"
+msgstr "niveau interne : à vérifier avant saisie"
+
+#: templates/portfolio/_adum_papers.html:7
+msgid "to appear"
+msgstr "à paraître"
+
+#: templates/portfolio/activities.html:5 templates/portfolio/trainings.html:5
+msgid "The platform prepares, ADUM records."
+msgstr "La plateforme prépare, ADUM enregistre."
+
+#: templates/portfolio/activities.html:8
+msgid "Totals"
+msgstr "Totaux"
+
+#: templates/portfolio/activities.html:11
+msgid "Number"
+msgstr "Nombre"
+
+#: templates/portfolio/activities.html:15 templates/portfolio/adum.html:38
+#: templates/portfolio/trainings.html:15
+msgid "Total"
+msgstr "Total"
+
+#: templates/portfolio/activities.html:26 templates/portfolio/trainings.html:28
+msgid "To come"
+msgstr "À venir"
+
+#: templates/portfolio/activities.html:27 templates/portfolio/trainings.html:29
+msgid "Not counted until they are over."
+msgstr "Comptées seulement une fois terminées."
+
+#: templates/portfolio/activity.html:10 templates/portfolio/activity.html:11
+#: templates/portfolio/detail.html:12
+msgid "to come"
+msgstr "à venir"
+
+#: templates/portfolio/activity.html:20 templates/portfolio/detail.html:34
+#: templates/vault/document_detail.html:36
+msgid "Change the level"
+msgstr "Changer le niveau"
+
 #: templates/portfolio/adum.html:5
 msgid "To copy into your ADUM portfolio"
 msgstr "À reporter dans votre portfolio ADUM"
 
-#: templates/portfolio/adum.html:9
+#: templates/portfolio/adum.html:10
 msgid "Academic year"
 msgstr "Année universitaire"
 
-#: templates/portfolio/adum.html:11
-msgid "Include the internal trainings"
-msgstr "Inclure les formations internes"
+#: templates/portfolio/adum.html:12
+msgid "Include the internal items"
+msgstr "Inclure les éléments internes"
 
-#: templates/portfolio/adum.html:14
+#: templates/portfolio/adum.html:13
+msgid "Include the accepted submissions"
+msgstr "Inclure les soumissions acceptées"
+
+#: templates/portfolio/adum.html:16
 msgid ""
-"Columns and order to be confirmed by the doctoral school. Entering a "
-"training in ADUM discloses it outside the platform."
-msgstr "Colonnes et ordre à confirmer par l'école doctorale. Saisir une formation dans ADUM, c'est la divulguer hors de la plateforme."
+"Columns and order to be confirmed by the doctoral school. Entering an item "
+"in ADUM discloses it outside the platform."
+msgstr ""
+"Colonnes et ordre à confirmer par l'école doctorale. Saisir un élément dans "
+"ADUM, c'est le divulguer hors de la plateforme."
 
-#: templates/portfolio/adum.html:15
+#: templates/portfolio/adum.html:17
 #, python-format
 msgid "%(n)s internal training of this year is left out."
 msgid_plural "%(n)s internal trainings of this year are left out."
 msgstr[0] "%(n)s formation interne de cette année est laissée de côté."
 msgstr[1] "%(n)s formations internes de cette année sont laissées de côté."
 
-#: templates/portfolio/adum.html:22
-msgid "internal level: to check before entering it"
-msgstr "niveau interne : à vérifier avant saisie"
+#: templates/portfolio/adum.html:18
+#, python-format
+msgid "%(n)s other internal item of this year is left out."
+msgid_plural "%(n)s other internal items of this year are left out."
+msgstr[0] "%(n)s autre élément interne de cette année est écarté."
+msgstr[1] "%(n)s autres éléments internes de cette année sont écartés."
 
-#: templates/portfolio/adum.html:31 templates/portfolio/trainings.html:15
-msgid "Total"
-msgstr "Total"
+#: templates/portfolio/adum.html:19
+#, python-format
+msgid "%(n)s accepted submission, not published yet, is left out."
+msgid_plural "%(n)s accepted submissions, not published yet, are left out."
+msgstr[0] "%(n)s soumission acceptée, pas encore publiée, est écartée."
+msgstr[1] "%(n)s soumissions acceptées, pas encore publiées, sont écartées."
 
-#: templates/portfolio/adum.html:34
+#: templates/portfolio/adum.html:40 templates/portfolio/adum.html:49
+#: templates/portfolio/adum.html:56 templates/portfolio/adum.html:71
+#: templates/portfolio/adum.html:86
 msgid "Download as CSV"
 msgstr "Télécharger en CSV"
 
-#: templates/portfolio/adum.html:36
-msgid ""
-"Asks for your second factor. The file holds the titles in clear: keep it on "
-"an encrypted disk."
-msgstr "Demande votre second facteur. Le fichier contient les intitulés en clair : rangez-le sur un disque chiffré."
-
-#: templates/portfolio/adum.html:44
+#: templates/portfolio/adum.html:42
 msgid "No finished training in this year."
 msgstr "Aucune formation terminée dans cette année."
 
-#: templates/portfolio/detail.html:12
-msgid "to come"
-msgstr "à venir"
+#: templates/portfolio/adum.html:50
+msgid "No publication in this year."
+msgstr "Aucune publication cette année."
+
+#: templates/portfolio/adum.html:54
+msgid "Communications"
+msgstr "Communications"
+
+#: templates/portfolio/adum.html:57
+msgid "No communication in this year."
+msgstr "Aucune communication cette année."
+
+#: templates/portfolio/adum.html:72
+msgid "No teaching finished in this year."
+msgstr "Aucun enseignement terminé cette année."
+
+#: templates/portfolio/adum.html:87
+msgid "No outreach action in this year."
+msgstr "Aucune action de diffusion cette année."
+
+#: templates/portfolio/adum.html:91
+msgid "BibTeX"
+msgstr "BibTeX"
+
+#: templates/portfolio/adum.html:92
+msgid "Every published submission (all years), with the options above."
+msgstr ""
+"Toutes les soumissions publiées (toutes années), avec les options ci-dessus."
+
+#: templates/portfolio/adum.html:93
+msgid "Download as BibTeX"
+msgstr "Télécharger en BibTeX"
 
 #: templates/portfolio/detail.html:16
 msgid "Provider:"
@@ -6219,15 +6756,20 @@ msgstr "Marquer comme non saisie dans ADUM"
 msgid "Mark as entered in ADUM"
 msgstr "Marquer comme saisie dans ADUM"
 
-#: templates/portfolio/detail.html:34 templates/vault/document_detail.html:36
-msgid "Change the level"
-msgstr "Changer le niveau"
+#: templates/portfolio/edit.html:7
+msgid ""
+"The texts are encrypted; what counts (type, hours, dates, level) is in clear."
+msgstr ""
+"Les textes sont chiffrés ; ce qui sert à compter (type, heures, dates, "
+"niveau) est en clair."
 
 #: templates/portfolio/email/notification_body.txt:1
 msgid ""
 "Your re-registration is coming up: check that your trainings are up to date "
 "on the platform:"
-msgstr "Votre réinscription approche : vérifiez que vos formations sont à jour sur la plateforme :"
+msgstr ""
+"Votre réinscription approche : vérifiez que vos formations sont à jour sur "
+"la plateforme :"
 
 #: templates/portfolio/email/notification_subject.txt:1
 msgid "CIFRE thesis: your re-registration is coming up"
@@ -6245,11 +6787,69 @@ msgstr "Nouvelle formation"
 msgid ""
 "The title, the provider and the notes are encrypted. A certificate is a "
 "document of the Documents module: add it there first."
-msgstr "L'intitulé, l'organisme et les notes sont chiffrés. Une attestation est un document du module Documents : ajoutez-la d'abord là."
+msgstr ""
+"L'intitulé, l'organisme et les notes sont chiffrés. Une attestation est un "
+"document du module Documents : ajoutez-la d'abord là."
 
 #: templates/portfolio/form.html:10
 msgid "Add the training"
 msgstr "Ajouter la formation"
+
+#: templates/portfolio/publication.html:7
+#: templates/portfolio/publications.html:15
+msgid "suggested"
+msgstr "proposée"
+
+#: templates/portfolio/publication.html:12
+msgid "Authors:"
+msgstr "Auteurs :"
+
+#: templates/portfolio/publication.html:13
+msgid "DOI:"
+msgstr "DOI :"
+
+#: templates/portfolio/publication.html:14
+msgid "HAL:"
+msgstr "HAL :"
+
+#: templates/portfolio/publication.html:15
+msgid "Volume:"
+msgstr "Volume :"
+
+#: templates/portfolio/publication.html:16
+msgid "Pages:"
+msgstr "Pages :"
+
+#: templates/portfolio/publication.html:17
+msgid "BibTeX key:"
+msgstr "Clé BibTeX :"
+
+#: templates/portfolio/publication.html:19
+msgid ""
+"Encrypted at the level of the submission; its ST approval stays in the "
+"Conferences module."
+msgstr ""
+"Chiffrés au niveau de la soumission ; son accord ST reste dans le module "
+"Conférences."
+
+#: templates/portfolio/publication.html:19
+msgid "The submission"
+msgstr "La soumission"
+
+#: templates/portfolio/publications.html:2
+#: templates/portfolio/publications.html:5
+msgid "Publications and communications"
+msgstr "Publications et communications"
+
+#: templates/portfolio/publications.html:5
+msgid "The submissions of the Conferences module, with what ADUM asks."
+msgstr "Les soumissions du module Conférences, avec ce que demande ADUM."
+
+#: templates/portfolio/publications.html:22
+msgid "No submission yet: they are made in the Conferences module."
+msgstr ""
+"Aucune soumission pour l'instant : elles se créent dans le module "
+"Conférences."
 
 #: templates/portfolio/settings.html:2 templates/portfolio/settings.html:5
 msgid "Portfolio settings"
@@ -6259,11 +6859,40 @@ msgstr "Réglages du portfolio"
 msgid ""
 "The re-registration calendar of the university is to be confirmed with the "
 "doctoral school."
-msgstr "Le calendrier de réinscription de l'université est à confirmer avec l'école doctorale."
+msgstr ""
+"Le calendrier de réinscription de l'université est à confirmer avec l'école "
+"doctorale."
 
-#: templates/portfolio/trainings.html:5
-msgid "The platform prepares, ADUM records."
-msgstr "La plateforme prépare, ADUM enregistre."
+#: templates/portfolio/skills.html:2 templates/portfolio/skills.html:6
+msgid "Skills and professional project"
+msgstr "Compétences et projet professionnel"
+
+#: templates/portfolio/skills.html:6
+msgid "Read by you only: neither the supervision nor the company read them."
+msgstr "Lus par vous seul : ni l'encadrement ni l'entreprise ne les lisent."
+
+#: templates/portfolio/skills.html:6
+msgid "Add a skill"
+msgstr "Ajouter une compétence"
+
+#: templates/portfolio/skills.html:17
+msgid "No skill noted yet."
+msgstr "Aucune compétence notée pour l'instant."
+
+#: templates/portfolio/skills.html:19
+msgid ""
+"A framework of skills may be imposed: to be confirmed by the doctoral school."
+msgstr ""
+"Un référentiel de compétences peut être imposé : à confirmer par l'école "
+"doctorale."
+
+#: templates/portfolio/skills.html:23
+msgid "Nothing written yet."
+msgstr "Rien d'écrit pour l'instant."
+
+#: templates/portfolio/skills.html:24
+msgid "Edit the professional project"
+msgstr "Modifier le projet professionnel"
 
 #: templates/portfolio/trainings.html:5
 msgid "Add a training"
@@ -6281,7 +6910,8 @@ msgstr "Calculé sur les formations que vous pouvez lire."
 msgid ""
 "Categories and number of hours required: to be confirmed by the doctoral "
 "school."
-msgstr "Catégories et nombre d'heures exigés : à confirmer par l'école doctorale."
+msgstr ""
+"Catégories et nombre d'heures exigés : à confirmer par l'école doctorale."
 
 #: templates/portfolio/trainings.html:18
 msgid "Research ethics and integrity training: done."
@@ -6291,7 +6921,9 @@ msgstr "Formation à l'éthique et à l'intégrité scientifique : faite."
 msgid ""
 "Research ethics and integrity training: not done yet. It is required to "
 "defend."
-msgstr "Formation à l'éthique et à l'intégrité scientifique : pas encore faite. Elle est obligatoire pour soutenir."
+msgstr ""
+"Formation à l'éthique et à l'intégrité scientifique : pas encore faite. Elle "
+"est obligatoire pour soutenir."
 
 #: templates/portfolio/trainings.html:22
 msgid "Trainings followed"
@@ -6300,14 +6932,6 @@ msgstr "Formations suivies"
 #: templates/portfolio/trainings.html:23
 msgid "No training followed yet."
 msgstr "Aucune formation suivie pour l'instant."
-
-#: templates/portfolio/trainings.html:28
-msgid "To come"
-msgstr "À venir"
-
-#: templates/portfolio/trainings.html:29
-msgid "Not counted until they are over."
-msgstr "Comptées seulement une fois terminées."
 
 #: templates/travel/_links.html:5
 msgid "No mission linked."

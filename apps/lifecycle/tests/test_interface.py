@@ -104,7 +104,15 @@ def test_a_defended_thesis_shows_the_open_modules_only(attr: str, time_machine: 
     _world(team)
     h.defended(team)
     forms = _crawl(getattr(team, attr), team.thesis)
-    open_parts = (*PERSONAL, "documents/", "conferences/", "travel/", "team/", "lifecycle/")
+    open_parts = (
+        *PERSONAL,
+        "documents/",
+        "conferences/",
+        "travel/",
+        "team/",
+        "lifecycle/",
+        "portfolio/publications/",
+    )  # M9b: the details, as the ST approvals
     assert _offending(forms, open_parts, team.thesis) == {}
     travel = [a for actions in forms.values() for a in actions if "/travel/" in a]
     assert all(re.search(r"/(expenses|receipts?)/", a) for a in travel), travel

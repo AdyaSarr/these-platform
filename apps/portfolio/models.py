@@ -1,10 +1,15 @@
-"""Portfolio (M9a): the trainings of a thesis, the date of the next re-registration,
-and the reminders sent before it.
+"""Portfolio (M9a, M9b): the trainings of a thesis, the date of the next
+re-registration and its reminders (M9a); the publication details of the M6
+submissions, teaching, outreach, the student's skills and professional project
+(M9b).
 
-No free text in these tables: the title, provider and notes of a training are
-sealed by the vault (vault.SealedText, slots portfolio.Training.*), at the level of
-the training. What counts, sorts and filters is in clear: category, hours, dates,
-level, ADUM state (docs/modules/M09-portfolio.md).
+No free text in these tables: every text is sealed by the vault (vault.SealedText,
+slots portfolio.*): a training's, a teaching's, an outreach action's at their own
+level; the publication details' at their SUBMISSION's level (no level of their own,
+never copied); the skills' and the professional project's at the fixed level
+PERSONAL_LEVEL, read by the student alone (the actions decide it). What counts,
+sorts and filters is in clear: category, type, hours, dates, level, ADUM state
+(docs/modules/M09-portfolio.md).
 """
 
 from __future__ import annotations
@@ -125,6 +130,269 @@ class Training(TimeStampedModel):
 
     def __str__(self) -> str:
         return f"training {self.pk}"
+
+
+# =========================================================================== M9b
+
+
+class AdumCategory(models.TextChoices):
+    """Provisional list of productions: to be confirmed by the doctoral school (ED7)."""
+
+    JOURNAL_ARTICLE = "JOURNAL_ARTICLE", _("Journal article")
+    CONFERENCE_PAPER = "CONFERENCE_PAPER", _("Conference paper with proceedings")
+    ORAL_COMMUNICATION = "ORAL_COMMUNICATION", _("Oral communication")
+    POSTER = "POSTER", _("Poster")
+    INVITED_TALK = "INVITED_TALK", _("Invited talk")
+    SEMINAR = "SEMINAR", _("Seminar")
+    OTHER = "OTHER", _("Other production")
+
+
+# The ADUM summary's « publications »; every other category is a « communication ».
+PUBLICATION_CATEGORIES = frozenset({AdumCategory.JOURNAL_ARTICLE, AdumCategory.CONFERENCE_PAPER})
+DETAILS_TEXTS = ("doi", "hal_id", "volume", "pages", "bibtex_key")
+
+
+class PublicationDetailsQuerySet(ReadableQuerySet["PublicationDetails"]):
+    """Readable as their submission is: SUBMISSION_READ and the submission's level."""
+
+    read_action = Action.SUBMISSION_READ
+    level_field = "submission__level"
+
+
+class PublicationDetails(TimeStampedModel):
+    """What ADUM and a bibliography ask of a submission of M6 (one row at most). Its
+    texts are sealed at the submission's level; it has no level of its own."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    thesis = models.ForeignKey(
+        "accounts.Thesis", on_delete=models.PROTECT, related_name="+", editable=False
+    )
+    submission = models.OneToOneField(
+        "conferences.Submission",
+        on_delete=models.PROTECT,
+        related_name="publication_details",
+        editable=False,
+    )
+    adum_category = models.CharField(
+        _("ADUM category"), max_length=20, choices=AdumCategory.choices
+    )
+    presented_on = models.DateField(_("presented on"), null=True, blank=True)
+
+    objects = PublicationDetailsQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = _("publication details")
+        verbose_name_plural = _("publication details")
+        constraints: ClassVar[list[models.BaseConstraint]] = [
+            models.CheckConstraint(
+                condition=Q(adum_category__in=AdumCategory.values),
+                name="portfolio_details_category",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"publication details {self.pk}"
+
+    @property
+    def level(self) -> str:
+        """The submission's: read by sees() and the export, never stored here."""
+        return str(self.submission.level)
+
+
+class TeachingKind(models.TextChoices):
+    """Provisional list: to be confirmed by the doctoral school (ED6)."""
+
+    CM = "CM", _("Lecture (CM)")
+    TD = "TD", _("Tutorial (TD)")
+    TP = "TP", _("Practical work (TP)")
+    SUPERVISION = "SUPERVISION", _("Student supervision")
+    OTHER = "OTHER", _("Other teaching")
+
+
+TEACHING_TEXTS = ("course", "institution", "notes")
+
+
+class TeachingQuerySet(ReadableQuerySet["Teaching"]):
+    read_action = Action.TEACHING_READ
+
+
+class Teaching(TimeStampedModel):
+    """A course given by the student. Its texts are sealed at its level."""
+
+    Kind = TeachingKind
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    thesis = models.ForeignKey(
+        "accounts.Thesis", on_delete=models.PROTECT, related_name="+", editable=False
+    )
+    kind = models.CharField(_("type"), max_length=20, choices=TeachingKind.choices)
+    hours = models.DecimalField(_("hours"), max_digits=4, decimal_places=1)
+    start_date = models.DateField(_("start date"))
+    end_date = models.DateField(_("end date"))
+    level = models.CharField(
+        _("confidentiality"),
+        max_length=20,
+        choices=ConfidentialityLevel.choices,
+        default=ConfidentialityLevel.PUBLIC,
+        editable=False,
+    )
+
+    objects = TeachingQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = _("teaching")
+        verbose_name_plural = _("teaching")
+        ordering: ClassVar[list[str]] = ["-end_date", "-start_date", "created_at"]
+        constraints: ClassVar[list[models.BaseConstraint]] = [
+            models.CheckConstraint(
+                condition=Q(kind__in=TeachingKind.values)
+                & Q(level__in=ConfidentialityLevel.values)
+                & Q(hours__gte=HOURS_MIN, hours__lte=HOURS_MAX)
+                & Q(start_date__lte=F("end_date")),
+                name="portfolio_teaching_values",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"teaching {self.pk}"
+
+
+class OutreachKind(models.TextChoices):
+    """Provisional list: to be confirmed by the doctoral school (ED6)."""
+
+    SCIENCE_FESTIVAL = "SCIENCE_FESTIVAL", _("Science festival")
+    SCHOOL = "SCHOOL", _("School visit")
+    PUBLIC_TALK = "PUBLIC_TALK", _("Talk for the general public")
+    PRESS = "PRESS", _("Press, radio, video")
+    ARTICLE = "ARTICLE", _("Popular article")
+    OTHER = "OTHER", _("Other outreach")
+
+
+OUTREACH_TEXTS = ("title", "audience", "notes")
+
+
+class OutreachQuerySet(ReadableQuerySet["Outreach"]):
+    read_action = Action.OUTREACH_READ
+
+
+class Outreach(TimeStampedModel):
+    """An outreach action of the student. Its texts are sealed at its level."""
+
+    Kind = OutreachKind
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    thesis = models.ForeignKey(
+        "accounts.Thesis", on_delete=models.PROTECT, related_name="+", editable=False
+    )
+    kind = models.CharField(_("type"), max_length=20, choices=OutreachKind.choices)
+    date = models.DateField(_("date"))
+    level = models.CharField(
+        _("confidentiality"),
+        max_length=20,
+        choices=ConfidentialityLevel.choices,
+        default=ConfidentialityLevel.PUBLIC,
+        editable=False,
+    )
+
+    objects = OutreachQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = _("outreach action")
+        verbose_name_plural = _("outreach actions")
+        ordering: ClassVar[list[str]] = ["-date", "created_at"]
+        constraints: ClassVar[list[models.BaseConstraint]] = [
+            models.CheckConstraint(
+                condition=Q(kind__in=OutreachKind.values)
+                & Q(level__in=ConfidentialityLevel.values),
+                name="portfolio_outreach_values",
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"outreach {self.pk}"
+
+
+# The student's notes (Q1): sealed at this fixed level, read by the student alone.
+PERSONAL_LEVEL = ConfidentialityLevel.CONFIDENTIAL
+
+
+class SkillCategory(models.TextChoices):
+    """Provisional list: a framework may be imposed (ED8)."""
+
+    SCIENTIFIC = "SCIENTIFIC", _("Scientific")
+    TECHNICAL = "TECHNICAL", _("Technical")
+    TRANSVERSAL = "TRANSVERSAL", _("Transversal")
+    LANGUAGE = "LANGUAGE", _("Language")
+    OTHER = "OTHER", _("Other skill")
+
+
+SKILL_TEXTS = ("title", "evidence")
+
+
+class SkillNoteQuerySet(ReadableQuerySet["SkillNote"]):
+    read_action = Action.CAREER_NOTE_READ
+    fixed_level = PERSONAL_LEVEL
+
+
+class CareerNoteQuerySet(ReadableQuerySet["CareerNote"]):
+    read_action = Action.CAREER_NOTE_READ
+    fixed_level = PERSONAL_LEVEL
+
+
+class SkillNote(TimeStampedModel):
+    """A skill the student notes, with what shows it. The student alone."""
+
+    Category = SkillCategory
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    thesis = models.ForeignKey(
+        "accounts.Thesis", on_delete=models.PROTECT, related_name="+", editable=False
+    )
+    category = models.CharField(_("category"), max_length=20, choices=SkillCategory.choices)
+
+    objects = SkillNoteQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = _("skill")
+        verbose_name_plural = _("skills")
+        ordering: ClassVar[list[str]] = ["category", "created_at"]
+        constraints: ClassVar[list[models.BaseConstraint]] = [
+            models.CheckConstraint(
+                condition=Q(category__in=SkillCategory.values), name="portfolio_skill_category"
+            ),
+        ]
+
+    def __str__(self) -> str:
+        return f"skill {self.pk}"
+
+    @property
+    def level(self) -> str:
+        return str(PERSONAL_LEVEL.value)
+
+
+class CareerNote(TimeStampedModel):
+    """The professional project of the student, one per thesis. The student alone."""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    thesis = models.OneToOneField(
+        "accounts.Thesis", on_delete=models.PROTECT, related_name="+", editable=False
+    )
+
+    objects = CareerNoteQuerySet.as_manager()
+
+    class Meta:
+        verbose_name = _("professional project")
+        verbose_name_plural = _("professional projects")
+
+    def __str__(self) -> str:
+        return f"professional project {self.pk}"
+
+    @property
+    def level(self) -> str:
+        return str(PERSONAL_LEVEL.value)
+
+
+# =========================================================================== M9a settings
 
 
 class PortfolioPolicy(TimeStampedModel):

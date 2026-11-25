@@ -193,7 +193,7 @@ def test_a_phd_day_with_an_edition_is_reminded_like_a_conference(team: SimpleNam
     deadline_of(team, edition, kind="PAPER", day=D(2027, 3, 1))
     submission = submission_of(team, edition=edition, presentation_kind="POSTER")
     due = services.request_due_dates(team.thesis)
-    assert [(s.pk, d) for s, d in due] == [(submission.pk, D(2027, 1, 30))]
+    assert [(s.pk, d) for s, d in due] == [(submission.pk, D(2027, 1, 31))]
     reminders.run(NOW.replace(month=2, day=22, hour=12))  # J-7 in AoE
     kinds = set(ConferenceNotification.objects.values_list("kind", "window"))
     assert ("DEADLINE", "J7") in kinds

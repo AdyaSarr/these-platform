@@ -1,0 +1,24 @@
+{% extends "base.html" %}{% load i18n ui %}
+{% block title %}{% translate "Publications and communications" %}{% endblock %}
+{% block content %}
+{% module_tabs "portfolio" %}
+{% page_header %}{% translate "Publications and communications" %}{% subtitle %}{% translate "The submissions of the Conferences module, with what ADUM asks." %}{% endpage_header %}
+{% if rows %}
+<table class="table">
+  <thead><tr><th scope="col">{% translate "Title" %}</th><th scope="col">{% translate "Venue" %}</th><th scope="col">{% translate "Status" %}</th><th scope="col">{% translate "ADUM category" %}</th><th scope="col">{% translate "Confidentiality" %}</th></tr></thead>
+  <tbody>
+  {% for row, url in rows %}
+    <tr>
+      <td><a href="{{ url }}">{{ row.title }}</a></td>
+      <td>{{ row.submission.venue.acronym }}{% if row.submission.edition %} {{ row.submission.edition.year }}{% endif %} · {{ row.submission.get_presentation_kind_display }}</td>
+      <td>{{ row.submission.get_status_display }}</td>
+      <td>{{ row.category_label }}{% if not row.details %} <span class="mark">{% translate "suggested" %}</span>{% endif %}</td>
+      <td>{% level_badge row.submission.level %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% else %}
+{% translate "No submission yet: they are made in the Conferences module." as message %}{% include "ui/empty.html" with message=message %}
+{% endif %}
+{% endblock %}
