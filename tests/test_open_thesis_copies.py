@@ -66,6 +66,8 @@ def test_the_table_is_the_sheet() -> None:
         "travel_receipts": defended, "feeds": open_, "lifecycle": (S.ACTIVE, S.DEFENDED),
         "export": (S.SETUP, S.ACTIVE, S.DEFENDED, S.CLOSED),  # M13b: every status
         "portfolio": open_,  # M9a: no re-registration after the defence
+        # M9b: the publication details, like the ST approvals of M6
+        "portfolio_publications": defended,
     }  # fmt: skip
     assert any_open() == (S.SETUP, S.ACTIVE, S.DEFENDED)  # never CLOSED
 

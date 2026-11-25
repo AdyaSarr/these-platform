@@ -145,6 +145,20 @@ CLASSIFICATION: dict[str, str] = {
     "portfolio.set_reregistration_date": WRITE, "portfolio.totals_of": READ,
     "portfolio.training_detail": READ_AUDITED, "portfolio.training_for": READ_AUDITED,
     "portfolio.training_list": READ_AUDITED, "portfolio.update_training": WRITE,
+    # portfolio (M9b): the publication details stay open after the defence (as the
+    # ST approvals of M6); teaching, outreach, skills and career note are frozen
+    "portfolio.career_note": READ_AUDITED, "portfolio.change_outreach_level": WRITE,
+    "portfolio.change_teaching_level": WRITE, "portfolio.create_outreach": WRITE,
+    "portfolio.create_skill": WRITE, "portfolio.create_teaching": WRITE,
+    "portfolio.outreach_detail": READ_AUDITED, "portfolio.outreach_for": READ_AUDITED,
+    "portfolio.outreach_list": READ_AUDITED, "portfolio.publication_detail": READ_AUDITED,
+    "portfolio.publication_for": READ_AUDITED, "portfolio.publication_list": READ_AUDITED,
+    "portfolio.publications_bibtex": READ_AUDITED, "portfolio.set_career_note": WRITE,
+    "portfolio.set_publication_details": WRITE, "portfolio.skill_for": READ_AUDITED,
+    "portfolio.skill_list": READ_AUDITED, "portfolio.suggested_category": READ,
+    "portfolio.teaching_detail": READ_AUDITED, "portfolio.teaching_for": READ_AUDITED,
+    "portfolio.teaching_list": READ_AUDITED, "portfolio.update_outreach": WRITE,
+    "portfolio.update_skill": WRITE, "portfolio.update_teaching": WRITE,
     # travel (M7)
     "travel.actual_amount_set": READ, "travel.add_expense": WRITE,
     "travel.attach_official_order": WRITE, "travel.attach_receipt": WRITE,
@@ -496,6 +510,35 @@ def _training(w: World) -> Any:
     return training(w.t)
 
 
+def _teaching(w: World) -> Any:
+    from apps.portfolio.tests.helpers import teaching
+
+    return teaching(w.t)
+
+
+def _outreach(w: World) -> Any:
+    from apps.portfolio.tests.helpers import outreach
+
+    return outreach(w.t)
+
+
+def _skill(w: World) -> Any:
+    from apps.portfolio.tests.helpers import skill
+
+    return skill(w.t)
+
+
+def _publication(w: World) -> Any:
+    from apps.portfolio.tests.helpers import publication
+
+    return publication(w.t)
+
+
+def _details_values() -> dict[str, Any]:
+    return {"adum_category": "JOURNAL_ARTICLE", "presented_on": None, "doi": "10.12345/fictif",
+            "hal_id": "", "volume": "", "pages": "", "bibtex_key": ""}  # fmt: skip
+
+
 def _training_values() -> dict[str, Any]:
     return {"title": "Formation renommée fictive", "provider": "", "notes": "",
             "category": "OTHER", "hours": "2", "start_date": dt.date(2027, 1, 11),
@@ -504,6 +547,8 @@ def _training_values() -> dict[str, Any]:
 
 BUILDERS: dict[str, Callable[[World], Any]] = {
     "invitation": _invitation, "new_user": _new_user, "training": _training,
+    "teaching": _teaching, "outreach": _outreach, "skill": _skill,
+    "publication": _publication,
     "document": _document, "confidential": functools.partial(_document, level="CONFIDENTIAL"),
     "grant": _grant,
     "item": _item, "submitted_item": functools.partial(_item, status="SUBMITTED"),
@@ -740,6 +785,42 @@ RECIPES: dict[str, tuple[Recipe, str]] = {
     "portfolio.update_training": (lambda w: P(
         _m("portfolio").update_training, training=w.training, user=w.t.student,
         values=_training_values()), REFUSE),
+    # ---- portfolio (M9b): the publication details open in DEFENDED, the rest frozen
+    "portfolio.set_publication_details": (lambda w: P(
+        _m("portfolio").set_publication_details, submission=w.publication, user=w.t.student,
+        values=_details_values()), ALLOW),
+    "portfolio.create_teaching": (lambda w: P(
+        _m("portfolio").create_teaching, thesis=w.thesis, user=w.t.student,
+        course="Cours fictif", kind="TD", hours="2", start_date=dt.date(2027, 1, 11),
+        end_date=dt.date(2027, 1, 11)), REFUSE),
+    "portfolio.update_teaching": (lambda w: P(
+        _m("portfolio").update_teaching, teaching=w.teaching, user=w.t.student,
+        values={"course": "Cours renommé fictif", "institution": "", "notes": "",
+                "kind": "TP", "hours": "2", "start_date": dt.date(2027, 1, 11),
+                "end_date": dt.date(2027, 1, 11)}), REFUSE),
+    "portfolio.change_teaching_level": (lambda w: P(
+        _m("portfolio").change_teaching_level, teaching=w.teaching, user=w.t.student,
+        level=_lvl("INTERNAL_LIRMM"), recent_mfa=True), REFUSE),
+    "portfolio.create_outreach": (lambda w: P(
+        _m("portfolio").create_outreach, thesis=w.thesis, user=w.t.student,
+        title="Action fictive", kind="SCHOOL", date=dt.date(2027, 1, 11)), REFUSE),
+    "portfolio.update_outreach": (lambda w: P(
+        _m("portfolio").update_outreach, outreach=w.outreach, user=w.t.student,
+        values={"title": "Action renommée fictive", "audience": "", "notes": "",
+                "kind": "PRESS", "date": dt.date(2027, 1, 11)}), REFUSE),
+    "portfolio.change_outreach_level": (lambda w: P(
+        _m("portfolio").change_outreach_level, outreach=w.outreach, user=w.t.student,
+        level=_lvl("INTERNAL_LIRMM"), recent_mfa=True), REFUSE),
+    "portfolio.create_skill": (lambda w: P(
+        _m("portfolio").create_skill, thesis=w.thesis, user=w.t.student,
+        title="Compétence fictive", category="OTHER"), REFUSE),
+    "portfolio.update_skill": (lambda w: P(
+        _m("portfolio").update_skill, skill=w.skill, user=w.t.student,
+        values={"title": "Compétence renommée fictive", "evidence": "",
+                "category": "LANGUAGE"}), REFUSE),
+    "portfolio.set_career_note": (lambda w: P(
+        _m("portfolio").set_career_note, thesis=w.thesis, user=w.t.student,
+        text="Projet fictif"), REFUSE),
     # ---- objectives (M4): frozen
     "objectives.acknowledge_changes": (lambda w: P(
         _m("objectives").acknowledge_changes, objective=w.changed_objective, user=w.t.director,

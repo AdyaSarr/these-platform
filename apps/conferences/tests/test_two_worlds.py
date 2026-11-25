@@ -2,8 +2,9 @@
 policy, the venue and edition pages of the shared catalogue (the documented
 exception: shared by the team), the list of submissions, the new-submission page,
 each shared submission's page and edit page, the « submissions » fragment of each
-shared objective. A hidden submission answers like an unknown id. Method:
-tests/two_worlds.py."""
+shared objective; M9b: a seminar without edition in the catalogue, hidden
+posters aimed at it, the link of a submission to its publication details. A
+hidden submission answers like an unknown id. Method: tests/two_worlds.py."""
 
 from __future__ import annotations
 
@@ -26,6 +27,7 @@ def _surfaces(team: SimpleNamespace, shared: w.Shared) -> list[str]:
     names = ("deadlines", "policy", "new_venue", "submissions", "new_submission")
     out = [w.url(team, f"conferences:{n}") for n in names]
     out.append(w.url(team, "conferences:venue", venue_id=shared.venue.pk))
+    out.append(w.url(team, "conferences:venue", venue_id=shared.seminar.pk))
     out.append(w.url(team, "conferences:edition", edition_id=shared.edition.pk))
     for s in shared.submissions.values():
         out += [w.url(team, f"conferences:{n}", submission_id=s.pk) for n in SUBMISSION_PAGES]
@@ -43,6 +45,11 @@ def _expected(team: SimpleNamespace, shared: w.Shared, role: Role) -> list[tuple
          w.url(team, "conferences:submission", submission_id=public.pk)),
         (w.url(team, "conferences:objective_submissions",
                objective_id=shared.objectives[L.PUBLIC].pk), "Article partagé fictif PUBLIC"),
+        # M9b: the form of the communication, the link to its publication details, and
+        # the seminar of the shared catalogue (hidden posters are aimed at it).
+        (w.url(team, "conferences:submission", submission_id=public.pk),
+         w.url(team, "portfolio:publication", submission_id=public.pk)),
+        (w.url(team, "conferences:venue", venue_id=shared.seminar.pk), "Séminaire fictif"),
     ]  # fmt: skip
 
 

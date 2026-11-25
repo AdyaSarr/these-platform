@@ -9,6 +9,9 @@ logged in at that instant.
 
 Hidden objects, for a role: documents, meetings, submissions and objectives at a
 level it does not read (every level when it lacks the module's read action),
+trainings, teaching and outreach at such a level, publication details of the
+hidden submissions, submissions to a seminar without edition (M9b), the
+student's skills and professional project (the student alone, M9b),
 missions it does not see, items of a section it does not read; documents it does
 not read linked to the shared meeting and the shared submission; a past meeting
 whose action is linked to the shared objective; submissions linked to the shared
@@ -147,6 +150,10 @@ class Shared:
     venue: Any = None
     edition: Any = None
     trainings: dict[L, Any] = field(default_factory=dict)  # M9a, one per level
+    teachings: dict[L, Any] = field(default_factory=dict)  # M9b, one per level
+    outreach: dict[L, Any] = field(default_factory=dict)  # M9b, one per level
+    seminar: Any = None  # M9b: a venue without edition (the shared catalogue)
+    skill: Any = None  # M9b: the student's (nobody else reads it)
 
 
 @dataclass
@@ -159,6 +166,36 @@ class Hidden:
     missions: list[Any] = field(default_factory=list)
     items: list[Any] = field(default_factory=list)
     trainings: list[Any] = field(default_factory=list)
+    teachings: list[Any] = field(default_factory=list)
+    outreach: list[Any] = field(default_factory=list)
+    skills: list[Any] = field(default_factory=list)
+
+
+def _m9b_details(team: SimpleNamespace, submission: Any, doi: str) -> Any:
+    from apps.portfolio import services as portfolio
+
+    return portfolio.set_publication_details(
+        submission=submission, user=team.student,
+        values={"adum_category": "CONFERENCE_PAPER", "presented_on": None, "doi": doi,
+                "hal_id": "", "volume": "", "pages": "", "bibtex_key": ""},
+    )  # fmt: skip
+
+
+def _teaching(team: SimpleNamespace, level: L, course: str, *, start: dt.date) -> Any:
+    from apps.portfolio import services as portfolio
+
+    return portfolio.create_teaching(
+        thesis=team.thesis, user=team.student, course=course, kind="TD", hours="4",
+        start_date=start, end_date=start, level=level,
+    )  # fmt: skip
+
+
+def _outreach(team: SimpleNamespace, level: L, title: str, *, day: dt.date) -> Any:
+    from apps.portfolio import services as portfolio
+
+    return portfolio.create_outreach(
+        thesis=team.thesis, user=team.student, title=title, kind="SCHOOL", date=day, level=level,
+    )  # fmt: skip
 
 
 def _training(team: SimpleNamespace, level: L, title: str, *, start: dt.date,
@@ -253,6 +290,24 @@ def build_shared(team: SimpleNamespace) -> Shared:
             team, level, "Formation partagée fictive", start=_D(2027, 1, day),
             category="INTEGRITY" if level is L.PUBLIC else "SCIENTIFIC",
         )  # fmt: skip
+    # M9b: details of every shared submission, teaching and outreach per level, a
+    # seminar of the catalogue, one skill of the student.
+    for level in L:
+        _m9b_details(team, shared.submissions[level], f"10.12345/partage.{level.value.lower()}")
+    for day, level in enumerate(L, start=4):
+        shared.teachings[level] = _teaching(team, level, "Cours partagé fictif",
+                                            start=_D(2027, 1, day))  # fmt: skip
+        shared.outreach[level] = _outreach(team, level, "Action partagée fictive",
+                                           day=_D(2027, 1, day))  # fmt: skip
+    shared.seminar = conferences.create_venue(
+        thesis=team.thesis, user=team.student, kind="SEMINAR", acronym="SEMF",
+        name="Séminaire fictif",
+    )  # fmt: skip
+    from apps.portfolio import services as portfolio
+
+    shared.skill = portfolio.create_skill(
+        thesis=team.thesis, user=team.student, title="Compétence partagée fictive", category="OTHER"
+    )
     return shared
 
 
@@ -317,6 +372,33 @@ def build_hidden(team: SimpleNamespace, shared: Shared, role: Role, world: str) 
             )
             out.trainings.append(_training(team, level, f"Formation cachée à venir {world}{n}",
                                            start=_D(2027, 3, 2 + shift)))  # fmt: skip
+    # M9b: details of the hidden submissions; submissions to the seminar (no edition,
+    # a poster); teaching and outreach of a hidden level; the student's notes.
+    from apps.portfolio import services as portfolio
+
+    for submission in list(out.submissions):
+        _m9b_details(team, submission, f"10.12345/cache.{world}")
+    for n in range(copies):
+        for level in hidden_levels(role, Action.SUBMISSION_READ):
+            out.submissions.append(submission_of(
+                team, venue=shared.seminar, edition=None, level=level,
+                title=f"Poster caché fictif {world}{n}", st_work=level in ST_LEVELS,
+                presentation_kind="POSTER",
+            ))  # fmt: skip
+        for level in hidden_levels(role, Action.TEACHING_READ):
+            out.teachings.append(_teaching(team, level, f"Cours caché {world}{n}",
+                                           start=_D(2027, 1, 12 + shift)))  # fmt: skip
+        for level in hidden_levels(role, Action.OUTREACH_READ):
+            out.outreach.append(_outreach(team, level, f"Action cachée {world}{n}",
+                                          day=_D(2027, 1, 12 + shift)))  # fmt: skip
+        if Action.CAREER_NOTE_READ not in ROLE_ACTIONS[role]:
+            out.skills.append(portfolio.create_skill(
+                thesis=team.thesis, user=team.student, title=f"Compétence cachée {world}{n}",
+                category="TECHNICAL",
+            ))  # fmt: skip
+    if Action.CAREER_NOTE_READ not in ROLE_ACTIONS[role]:
+        portfolio.set_career_note(thesis=team.thesis, user=team.student,
+                                  text=f"Projet professionnel caché {world}")  # fmt: skip
     return out
 
 
