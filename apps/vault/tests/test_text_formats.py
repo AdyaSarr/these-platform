@@ -51,6 +51,9 @@ EVER_ASSIGNED_SLOTS = {
     0x0406: "travel.Expense.estimated_amount",
     0x0407: "travel.Expense.actual_amount",
     0x0408: "travel.TravelBudget.amount",
+    0x0601: "portfolio.Training.title",
+    0x0602: "portfolio.Training.provider",
+    0x0603: "portfolio.Training.notes",
 }
 EXPECTED_SLOT_RANGES = {
     0x01: "objectives",

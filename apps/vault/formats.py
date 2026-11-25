@@ -154,6 +154,9 @@ TEXT_SLOTS: Mapping[str, int] = MappingProxyType(
         "travel.Expense.estimated_amount": 0x0406,
         "travel.Expense.actual_amount": 0x0407,
         "travel.TravelBudget.amount": 0x0408,
+        "portfolio.Training.title": 0x0601,
+        "portfolio.Training.provider": 0x0602,
+        "portfolio.Training.notes": 0x0603,
     }
 )
 RETIRED_SLOT_CODES: frozenset[int] = frozenset()

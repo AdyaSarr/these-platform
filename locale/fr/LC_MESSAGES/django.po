@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-24 16:46+0100\n"
+"POT-Creation-Date: 2026-11-25 08:02+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -239,7 +239,7 @@ msgstr "En file d'attente"
 #: apps/admin_file/models.py:301 apps/conferences/models.py:527
 #: apps/export/models.py:88 apps/lifecycle/models.py:105
 #: apps/meetings/models.py:350 apps/objectives/models.py:363
-#: apps/travel/choices.py:140
+#: apps/portfolio/models.py:159 apps/travel/choices.py:140
 msgid "Sent"
 msgstr "Envoyé"
 
@@ -247,7 +247,7 @@ msgstr "Envoyé"
 #: apps/admin_file/models.py:302 apps/conferences/models.py:528
 #: apps/export/models.py:89 apps/lifecycle/models.py:106
 #: apps/meetings/models.py:351 apps/objectives/models.py:364
-#: apps/travel/choices.py:141
+#: apps/portfolio/models.py:160 apps/travel/choices.py:141
 msgid "Failed"
 msgstr "Échec"
 
@@ -431,7 +431,7 @@ msgstr "Invitation révoquée."
 msgid "Active"
 msgstr "Active"
 
-#: apps/accounts/views.py:42 apps/activity/views.py:34 apps/ui/navigation.py:50
+#: apps/accounts/views.py:42 apps/activity/views.py:34 apps/ui/navigation.py:52
 #: templates/accounts/team.html:3 templates/accounts/team.html:5
 msgid "Team"
 msgstr "Équipe"
@@ -443,23 +443,23 @@ msgid "Objectives"
 msgstr "Objectifs"
 
 #: apps/accounts/views.py:57 apps/activity/views.py:31 apps/ui/navigation.py:42
-#: apps/ui/tabs.py:57 apps/ui/tabs.py:59 templates/meetings/list.html:2
+#: apps/ui/tabs.py:68 apps/ui/tabs.py:70 templates/meetings/list.html:2
 #: templates/meetings/list.html:5
 msgid "Meetings"
 msgstr "Réunions"
 
 #: apps/accounts/views.py:64 apps/activity/views.py:32 apps/ui/navigation.py:44
-#: apps/ui/tabs.py:64 templates/conferences/deadlines.html:2
+#: apps/ui/tabs.py:75 templates/conferences/deadlines.html:2
 #: templates/conferences/deadlines.html:5
 msgid "Conferences"
 msgstr "Conférences"
 
 #: apps/accounts/views.py:71 apps/activity/views.py:33 apps/ui/navigation.py:46
-#: apps/ui/tabs.py:79 templates/travel/_links.html:3
+#: apps/ui/tabs.py:90 templates/travel/_links.html:3
 msgid "Travel"
 msgstr "Déplacements"
 
-#: apps/accounts/views.py:78 apps/activity/views.py:28 apps/ui/navigation.py:48
+#: apps/accounts/views.py:78 apps/activity/views.py:28 apps/ui/navigation.py:50
 #: templates/conferences/submission.html:40
 #: templates/vault/document_list.html:2 templates/vault/document_list.html:4
 msgid "Documents"
@@ -671,13 +671,13 @@ msgstr "Non envoyé : destinataire plus concerné ou envoi plus dû"
 
 #: apps/activity/choices.py:115 apps/admin_file/models.py:304
 #: apps/conferences/models.py:530 apps/meetings/models.py:353
-#: apps/travel/choices.py:143
+#: apps/portfolio/models.py:162 apps/travel/choices.py:143
 msgid "Waiting for a digest"
 msgstr "En attente d'un résumé"
 
 #: apps/activity/choices.py:116 apps/admin_file/models.py:305
 #: apps/conferences/models.py:531 apps/meetings/models.py:354
-#: apps/travel/choices.py:144
+#: apps/portfolio/models.py:163 apps/travel/choices.py:144
 msgid "Sent in a digest"
 msgstr "Envoyé dans un résumé"
 
@@ -824,14 +824,17 @@ msgstr "Ou un document existant"
 #: apps/admin_file/forms.py:41 apps/conferences/forms.py:148
 #: apps/conferences/forms.py:179 apps/meetings/forms.py:100
 #: apps/meetings/forms.py:133 apps/objectives/forms.py:60
-#: apps/objectives/forms.py:97 apps/travel/forms.py:111
-#: apps/travel/forms.py:165 apps/vault/forms.py:34 apps/vault/forms.py:47
+#: apps/objectives/forms.py:97 apps/portfolio/forms.py:55
+#: apps/portfolio/forms.py:87 apps/travel/forms.py:111 apps/travel/forms.py:165
+#: apps/vault/forms.py:34 apps/vault/forms.py:47
 #: templates/conferences/submission.html:8
 #: templates/conferences/submission.html:115
 #: templates/conferences/submissions.html:8 templates/meetings/detail.html:9
 #: templates/meetings/detail.html:175 templates/meetings/list.html:23
 #: templates/objectives/detail.html:13 templates/objectives/detail.html:75
-#: templates/travel/mission.html:11 templates/vault/document_list.html:10
+#: templates/portfolio/_table.html:2 templates/portfolio/detail.html:13
+#: templates/portfolio/detail.html:32 templates/travel/mission.html:11
+#: templates/vault/document_list.html:10
 msgid "Confidentiality"
 msgstr "Confidentialité"
 
@@ -1321,9 +1324,11 @@ msgid "Conference edition or journal"
 msgstr "Édition de conférence ou revue"
 
 #: apps/conferences/forms.py:126 apps/meetings/forms.py:77
-#: apps/objectives/forms.py:41 apps/vault/forms.py:33
+#: apps/objectives/forms.py:41 apps/portfolio/forms.py:32
+#: apps/portfolio/models.py:50 apps/vault/forms.py:33
 #: templates/conferences/submissions.html:8 templates/meetings/list.html:23
-#: templates/objectives/dashboard.html:66 templates/vault/document_list.html:10
+#: templates/objectives/dashboard.html:66 templates/portfolio/adum.html:18
+#: templates/vault/document_list.html:10
 msgid "Title"
 msgstr "Titre"
 
@@ -1340,7 +1345,9 @@ msgstr "Co-auteurs externes"
 msgid "Names only, one per line."
 msgstr "Noms seulement, un par ligne."
 
-#: apps/conferences/forms.py:138 templates/conferences/submission.html:30
+#: apps/conferences/forms.py:138 apps/portfolio/forms.py:48
+#: apps/portfolio/models.py:52 templates/conferences/submission.html:30
+#: templates/portfolio/detail.html:22
 msgid "Notes"
 msgstr "Notes"
 
@@ -1520,7 +1527,8 @@ msgstr "Publié"
 
 #: apps/conferences/models.py:245 apps/meetings/models.py:104
 #: apps/objectives/models.py:142 apps/objectives/models.py:243
-#: apps/travel/models.py:252 apps/vault/models.py:221
+#: apps/portfolio/models.py:76 apps/travel/models.py:252
+#: apps/vault/models.py:221
 msgid "confidentiality"
 msgstr "confidentialité"
 
@@ -1613,17 +1621,19 @@ msgid "conference notification"
 msgstr "notification de conférence"
 
 #: apps/conferences/services.py:118 apps/meetings/services.py:110
-#: apps/objectives/services.py:159 apps/travel/services.py:726
+#: apps/objectives/services.py:159 apps/portfolio/services.py:79
+#: apps/travel/services.py:726
 msgid "This text is invalid."
 msgstr "Ce texte n'est pas valide."
 
 #: apps/conferences/services.py:121 apps/meetings/services.py:113
-#: apps/objectives/services.py:162 apps/travel/services.py:729
+#: apps/objectives/services.py:162 apps/portfolio/services.py:82
+#: apps/travel/services.py:729
 msgid "The text contains a control character."
 msgstr "Le texte contient un caractère de contrôle."
 
 #: apps/conferences/services.py:124 apps/meetings/services.py:116
-#: apps/objectives/services.py:165
+#: apps/objectives/services.py:165 apps/portfolio/services.py:85
 #, python-format
 msgid "Between %(min)d and %(max)d characters."
 msgstr "Entre %(min)d et %(max)d caractères."
@@ -1637,7 +1647,7 @@ msgid "The address must start with https://."
 msgstr "L'adresse doit commencer par https://."
 
 #: apps/conferences/services.py:149 apps/meetings/services.py:140
-#: apps/travel/services.py:741
+#: apps/portfolio/services.py:147 apps/travel/services.py:741
 msgid "Unknown confidentiality level."
 msgstr "Niveau de confidentialité inconnu."
 
@@ -1692,7 +1702,8 @@ msgstr "Une année entre 2000 et 2100."
 
 #: apps/conferences/services.py:329 apps/core/timezones.py:52
 #: apps/meetings/services.py:215 apps/meetings/timing.py:61
-#: apps/objectives/services.py:182
+#: apps/objectives/services.py:182 apps/portfolio/services.py:126
+#: apps/portfolio/services.py:539
 msgid "A date is required."
 msgstr "Une date est obligatoire."
 
@@ -1863,7 +1874,8 @@ msgid "Preprint recorded."
 msgstr "Prépublication enregistrée."
 
 #: apps/conferences/views.py:741 apps/meetings/views.py:487
-#: apps/objectives/views.py:414 apps/travel/views.py:642
+#: apps/objectives/views.py:414 apps/portfolio/views.py:200
+#: apps/travel/views.py:642
 msgid "Confidentiality changed."
 msgstr "Confidentialité modifiée."
 
@@ -1964,7 +1976,9 @@ msgstr "Un export par heure."
 
 #: apps/export/services.py:61
 msgid "The export would be too large. Try again with the latest versions only."
-msgstr "L'export serait trop volumineux. Réessayez avec les dernières versions seulement."
+msgstr ""
+"L'export serait trop volumineux. Réessayez avec les dernières versions "
+"seulement."
 
 #: apps/export/views.py:88
 msgid "Give a date."
@@ -2545,9 +2559,11 @@ msgstr "Description"
 msgid "Success criterion"
 msgstr "Critère de réussite"
 
-#: apps/objectives/forms.py:54 apps/travel/forms.py:212
-#: templates/objectives/dashboard.html:54
-#: templates/objectives/dashboard.html:66 templates/travel/mission.html:56
+#: apps/objectives/forms.py:54 apps/portfolio/forms.py:37
+#: apps/travel/forms.py:212 templates/objectives/dashboard.html:54
+#: templates/objectives/dashboard.html:66 templates/portfolio/_table.html:2
+#: templates/portfolio/adum.html:18 templates/portfolio/detail.html:10
+#: templates/portfolio/trainings.html:11 templates/travel/mission.html:56
 msgid "Category"
 msgstr "Catégorie"
 
@@ -2608,7 +2624,8 @@ msgstr "Recherche"
 msgid "Publication"
 msgstr "Publication"
 
-#: apps/objectives/models.py:92
+#: apps/objectives/models.py:92 templates/portfolio/_table.html:2
+#: templates/portfolio/detail.html:2
 msgid "Training"
 msgstr "Formation"
 
@@ -2637,7 +2654,7 @@ msgid "Not achieved"
 msgstr "Non atteint"
 
 #: apps/objectives/models.py:134 apps/objectives/models.py:240
-#: apps/travel/models.py:481
+#: apps/portfolio/models.py:71 apps/travel/models.py:481
 msgid "category"
 msgstr "catégorie"
 
@@ -2706,7 +2723,8 @@ msgstr "points hebdomadaires"
 msgid "A reason of at least %(min)d characters is required."
 msgstr "Un motif d'au moins %(min)d caractères est obligatoire."
 
-#: apps/objectives/services.py:192 apps/travel/services.py:1598
+#: apps/objectives/services.py:192 apps/portfolio/services.py:141
+#: apps/travel/services.py:1598
 msgid "Unknown category."
 msgstr "Catégorie inconnue."
 
@@ -2788,7 +2806,8 @@ msgstr "Objectif approuvé."
 msgid "Changes acknowledged."
 msgstr "Prise de connaissance enregistrée."
 
-#: apps/objectives/views.py:444
+#: apps/objectives/views.py:444 apps/portfolio/services.py:593
+#: apps/portfolio/services.py:606
 msgid "Unknown year."
 msgstr "Année inconnue."
 
@@ -2800,6 +2819,230 @@ msgstr "%(count)d objectif(s) approuvé(s)."
 #: apps/objectives/views.py:494
 msgid "Progress recorded."
 msgstr "Avancement enregistré."
+
+#: apps/portfolio/forms.py:18
+msgid ""
+"Public: also read by the CSI members, who check your training. A training "
+"internal to ST: Internal ST."
+msgstr "Public : lu aussi par les membres du CSI, qui vérifient votre formation. Une formation interne à ST : Interne ST."
+
+#: apps/portfolio/forms.py:21
+msgid "Categories to be confirmed by the doctoral school."
+msgstr "Catégories à confirmer par l'école doctorale."
+
+#: apps/portfolio/forms.py:34 apps/portfolio/models.py:51
+#: templates/portfolio/adum.html:18
+msgid "Provider"
+msgstr "Organisme"
+
+#: apps/portfolio/forms.py:40 templates/portfolio/_table.html:2
+#: templates/portfolio/adum.html:18 templates/portfolio/detail.html:11
+#: templates/portfolio/trainings.html:11
+msgid "Hours"
+msgstr "Heures"
+
+#: apps/portfolio/forms.py:42
+msgid "In half hours, for example 3 or 12,5."
+msgstr "En demi-heures, par exemple 3 ou 12,5."
+
+#: apps/portfolio/forms.py:44 templates/portfolio/adum.html:18
+msgid "Start"
+msgstr "Début"
+
+#: apps/portfolio/forms.py:45 templates/portfolio/adum.html:18
+msgid "End"
+msgstr "Fin"
+
+#: apps/portfolio/forms.py:46
+msgid "Certificate"
+msgstr "Attestation"
+
+#: apps/portfolio/forms.py:52
+msgid "Read by you only."
+msgstr "Lu par vous seul·e."
+
+#: apps/portfolio/forms.py:66 apps/travel/choices.py:63
+msgid "None"
+msgstr "Aucun"
+
+#: apps/portfolio/forms.py:92
+msgid "Next re-registration"
+msgstr "Prochaine réinscription"
+
+#: apps/portfolio/forms.py:96
+msgid ""
+"The date given by the university; you receive a reminder 30 and 7 days "
+"before."
+msgstr "La date donnée par l'université ; vous recevez un rappel 30 et 7 jours avant."
+
+#: apps/portfolio/models.py:33
+msgid "Doctoral school training"
+msgstr "Formation de l'école doctorale"
+
+#: apps/portfolio/models.py:34
+msgid "Scientific training"
+msgstr "Formation scientifique"
+
+#: apps/portfolio/models.py:35
+msgid "Transversal training"
+msgstr "Formation transversale"
+
+#: apps/portfolio/models.py:36
+msgid "Research ethics and integrity"
+msgstr "Éthique et intégrité scientifique"
+
+#: apps/portfolio/models.py:37
+msgid "Other training"
+msgstr "Autre formation"
+
+#: apps/portfolio/models.py:43
+msgid "To enter in ADUM"
+msgstr "À saisir dans ADUM"
+
+#: apps/portfolio/models.py:44
+msgid "Entered in ADUM"
+msgstr "Saisie dans ADUM"
+
+#: apps/portfolio/models.py:72
+msgid "hours"
+msgstr "heures"
+
+#: apps/portfolio/models.py:73
+msgid "start date"
+msgstr "date de début"
+
+#: apps/portfolio/models.py:74
+msgid "end date"
+msgstr "date de fin"
+
+#: apps/portfolio/models.py:88
+msgid "certificate"
+msgstr "attestation"
+
+#: apps/portfolio/models.py:91 templates/portfolio/detail.html:25
+msgid "ADUM"
+msgstr "ADUM"
+
+#: apps/portfolio/models.py:101
+msgid "training"
+msgstr "formation"
+
+#: apps/portfolio/models.py:102
+msgid "trainings"
+msgstr "formations"
+
+#: apps/portfolio/models.py:138
+msgid "next re-registration"
+msgstr "prochaine réinscription"
+
+#: apps/portfolio/models.py:141 apps/portfolio/models.py:142
+msgid "portfolio settings"
+msgstr "réglages du portfolio"
+
+#: apps/portfolio/models.py:149
+msgid "Re-registration reminder"
+msgstr "Rappel de réinscription"
+
+#: apps/portfolio/models.py:153
+msgid "30 days before"
+msgstr "30 jours avant"
+
+#: apps/portfolio/models.py:154
+msgid "7 days before"
+msgstr "7 jours avant"
+
+#: apps/portfolio/models.py:158 apps/travel/choices.py:139
+msgctxt "notification"
+msgid "Pending"
+msgstr "En attente"
+
+#: apps/portfolio/models.py:161 apps/travel/choices.py:142
+msgid "Not sent: no longer concerned"
+msgstr "Non envoyé : destinataire plus concerné"
+
+#: apps/portfolio/models.py:200
+msgid "portfolio notification"
+msgstr "notification du portfolio"
+
+#: apps/portfolio/services.py:106
+msgid "Hours: a multiple of half an hour, from 0.5 to 300."
+msgstr "Heures : un multiple d'une demi-heure, de 0,5 à 300."
+
+#: apps/portfolio/services.py:128
+msgid "The end comes before the start."
+msgstr "La fin précède le début."
+
+#: apps/portfolio/services.py:132
+#, python-format
+msgid "Dates between %(low)s and %(high)s."
+msgstr "Dates entre le %(low)s et le %(high)s."
+
+#: apps/portfolio/services.py:155 apps/portfolio/services.py:157
+msgid "Unknown document."
+msgstr "Document inconnu."
+
+#: apps/portfolio/services.py:203
+msgid "The thesis is finished: its trainings are frozen."
+msgstr "La thèse est terminée : ses formations sont figées."
+
+#: apps/portfolio/services.py:453 apps/portfolio/services.py:500
+msgid "The training changed meanwhile: try again."
+msgstr "La formation a changé entre-temps : réessayez."
+
+#: apps/portfolio/services.py:519
+msgid "Unknown ADUM state."
+msgstr "État ADUM inconnu."
+
+#: apps/portfolio/services.py:542
+msgid "This date is outside the thesis."
+msgstr "Cette date est hors de la thèse."
+
+#: apps/portfolio/services.py:656
+msgctxt "ADUM column"
+msgid "Title"
+msgstr "Intitulé"
+
+#: apps/portfolio/services.py:657
+msgctxt "ADUM column"
+msgid "Provider"
+msgstr "Organisme"
+
+#: apps/portfolio/services.py:658
+msgctxt "ADUM column"
+msgid "Category"
+msgstr "Catégorie"
+
+#: apps/portfolio/services.py:659
+msgctxt "ADUM column"
+msgid "Hours"
+msgstr "Heures"
+
+#: apps/portfolio/services.py:660
+msgctxt "ADUM column"
+msgid "Start"
+msgstr "Début"
+
+#: apps/portfolio/services.py:661
+msgctxt "ADUM column"
+msgid "End"
+msgstr "Fin"
+
+#: apps/portfolio/services.py:662
+msgctxt "ADUM column"
+msgid "Level"
+msgstr "Niveau"
+
+#: apps/portfolio/views.py:106
+msgid "Training added."
+msgstr "Formation ajoutée."
+
+#: apps/portfolio/views.py:172
+msgid "Training saved."
+msgstr "Formation enregistrée."
+
+#: apps/portfolio/views.py:295 apps/travel/views.py:285
+msgid "Settings saved."
+msgstr "Réglages enregistrés."
 
 #: apps/travel/choices.py:14
 msgid "Remote work"
@@ -2852,10 +3095,6 @@ msgstr "Covoiturage (passager)"
 #: apps/travel/choices.py:59
 msgid "Urban transit"
 msgstr "Transports en commun"
-
-#: apps/travel/choices.py:63
-msgid "None"
-msgstr "Aucun"
 
 #: apps/travel/choices.py:64
 msgid "Hotel"
@@ -3003,15 +3242,6 @@ msgstr "Après le retour"
 #: apps/travel/choices.py:135
 msgid "Two weeks after the return"
 msgstr "Deux semaines après le retour"
-
-#: apps/travel/choices.py:139
-msgctxt "notification"
-msgid "Pending"
-msgstr "En attente"
-
-#: apps/travel/choices.py:142
-msgid "Not sent: no longer concerned"
-msgstr "Non envoyé : destinataire plus concerné"
 
 #: apps/travel/forms.py:46 templates/travel/split.html:20
 msgid "Kind"
@@ -3502,10 +3732,6 @@ msgstr "Cette année est hors de la thèse."
 msgid "%(n)d days updated."
 msgstr "%(n)d jours mis à jour."
 
-#: apps/travel/views.py:285
-msgid "Settings saved."
-msgstr "Réglages enregistrés."
-
 #: apps/travel/views.py:409
 #, python-format
 msgid "Meeting: %(kind)s, %(when)s"
@@ -3624,54 +3850,65 @@ msgstr "Accueil"
 msgid "Activity"
 msgstr "Activité"
 
-#: apps/ui/navigation.py:51 templates/accounts/csi_file.html:3
+#: apps/ui/navigation.py:48 apps/ui/tabs.py:109 apps/ui/tabs.py:111
+#: templates/portfolio/detail.html:6 templates/portfolio/trainings.html:2
+#: templates/portfolio/trainings.html:5 templates/portfolio/trainings.html:11
+msgid "Trainings"
+msgstr "Formations"
+
+#: apps/ui/navigation.py:53 templates/accounts/csi_file.html:3
 #: templates/accounts/csi_file.html:5
 msgid "CSI file"
 msgstr "Dossier CSI"
 
-#: apps/ui/tabs.py:60 templates/meetings/register.html:2
+#: apps/ui/tabs.py:71 templates/meetings/register.html:2
 #: templates/meetings/register.html:5
 msgid "Decision register"
 msgstr "Registre des décisions"
 
-#: apps/ui/tabs.py:67 templates/conferences/edition.html:8
+#: apps/ui/tabs.py:78 templates/conferences/edition.html:8
 #: templates/conferences/submission.html:34
 msgid "Deadlines"
 msgstr "Échéances"
 
-#: apps/ui/tabs.py:72 templates/conferences/submissions.html:2
+#: apps/ui/tabs.py:83 templates/conferences/submissions.html:2
 #: templates/conferences/submissions.html:5
 msgid "Submissions"
 msgstr "Soumissions"
 
-#: apps/ui/tabs.py:81
+#: apps/ui/tabs.py:92
 msgctxt "module tab"
 msgid "Calendar"
 msgstr "Calendrier"
 
-#: apps/ui/tabs.py:82 templates/travel/missions.html:2
+#: apps/ui/tabs.py:93 templates/travel/missions.html:2
 #: templates/travel/missions.html:5
 msgid "Missions"
 msgstr "Missions"
 
-#: apps/ui/tabs.py:83 templates/travel/split.html:2
+#: apps/ui/tabs.py:94 templates/travel/split.html:2
 #: templates/travel/split.html:5
 msgid "ST / LIRMM time"
 msgstr "Temps ST / LIRMM"
 
-#: apps/ui/tabs.py:84 templates/travel/budget.html:9
+#: apps/ui/tabs.py:95 templates/travel/budget.html:9
 msgid "Budget"
 msgstr "Budget"
 
-#: apps/ui/tabs.py:85
+#: apps/ui/tabs.py:96 apps/ui/tabs.py:114
 msgctxt "module tab"
 msgid "Settings"
 msgstr "Réglages"
 
-#: apps/ui/tabs.py:88
+#: apps/ui/tabs.py:99
 msgctxt "module tab"
 msgid "To decide"
 msgstr "À décider"
+
+#: apps/ui/tabs.py:112 templates/portfolio/adum.html:2
+#: templates/portfolio/adum.html:5
+msgid "ADUM summary"
+msgstr "Récapitulatif ADUM"
 
 #: apps/ui/templatetags/ui.py:74
 #, python-format
@@ -4239,6 +4476,7 @@ msgstr "Du nouveau vous concerne sur la plateforme :"
 #: templates/export/email/notification_body.txt:5
 #: templates/lifecycle/email/notification_body.txt:5
 #: templates/meetings/email/notification_body.txt:5
+#: templates/portfolio/email/notification_body.txt:5
 #: templates/travel/email/notification_body.txt:5
 msgid "This message contains no detail: sign in to see it."
 msgstr ""
@@ -4313,6 +4551,7 @@ msgstr ""
 #: templates/conferences/submission_form.html:8
 #: templates/conferences/venue.html:21 templates/conferences/venue_form.html:8
 #: templates/meetings/form.html:14 templates/objectives/form.html:18
+#: templates/portfolio/form.html:10 templates/portfolio/settings.html:9
 #: templates/travel/mission.html:63 templates/travel/mission_form.html:10
 #: templates/travel/month.html:28
 msgid "Save"
@@ -4650,7 +4889,8 @@ msgid "Not ST work"
 msgstr "Pas des travaux ST"
 
 #: templates/conferences/submission.html:10 templates/meetings/detail.html:14
-#: templates/objectives/detail.html:5 templates/travel/mission.html:5
+#: templates/objectives/detail.html:5 templates/portfolio/detail.html:6
+#: templates/travel/mission.html:5
 msgid "Edit"
 msgstr "Modifier"
 
@@ -4666,9 +4906,10 @@ msgstr "Pas des travaux ST : aucun accord nécessaire"
 #: templates/conferences/submission.html:70
 #: templates/conferences/submission.html:118 templates/feeds/_block.html:16
 #: templates/objectives/dashboard.html:86 templates/objectives/detail.html:39
-#: templates/objectives/detail.html:80 templates/travel/mission.html:51
-#: templates/travel/mission.html:91 templates/travel/settings.html:18
-#: templates/travel/settings.html:29 templates/travel/settings.html:39
+#: templates/objectives/detail.html:80 templates/portfolio/detail.html:35
+#: templates/travel/mission.html:51 templates/travel/mission.html:91
+#: templates/travel/settings.html:18 templates/travel/settings.html:29
+#: templates/travel/settings.html:39
 msgid "Asks for your second factor."
 msgstr "Demande votre second facteur."
 
@@ -4761,6 +5002,7 @@ msgstr "Modifier la soumission"
 #: templates/conferences/submission_form.html:6
 #: templates/conferences/venue_form.html:6 templates/meetings/duplicate.html:6
 #: templates/meetings/form.html:6 templates/objectives/form.html:5
+#: templates/portfolio/form.html:6
 msgid "Back"
 msgstr "Retour"
 
@@ -4822,14 +5064,18 @@ msgstr ""
 msgid ""
 "The industrial tutor agreed that your exports include INTERNAL_ST for 30 "
 "days:"
-msgstr "Le tuteur industriel a accepté que vos exports contiennent INTERNAL_ST pendant 30 jours :"
+msgstr ""
+"Le tuteur industriel a accepté que vos exports contiennent INTERNAL_ST "
+"pendant 30 jours :"
 
 #: templates/export/email/notification_body.txt:1
 #, python-format
 msgid ""
 "An export of your data was made on %(date)s at %(time)s. If it was not you, "
 "tell your director and change your password:"
-msgstr "Un export de vos données a été fait le %(date)s à %(time)s. Si ce n'est pas vous, prévenez votre directeur et changez votre mot de passe :"
+msgstr ""
+"Un export de vos données a été fait le %(date)s à %(time)s. Si ce n'est pas "
+"vous, prévenez votre directeur et changez votre mot de passe :"
 
 #: templates/export/email/notification_subject.txt:1
 msgid "CIFRE thesis: an ST agreement to your export"
@@ -4861,7 +5107,10 @@ msgid ""
 "The file holds your documents in clear, CONFIDENTIAL ones included. Keep it "
 "on an encrypted disk (FileVault on a Mac, BitLocker, LUKS) and never send it "
 "by e-mail."
-msgstr "Le fichier contient vos documents en clair, CONFIDENTIAL compris. Rangez-le sur un disque chiffré (FileVault sur Mac, BitLocker, LUKS) et ne l'envoyez jamais par courriel."
+msgstr ""
+"Le fichier contient vos documents en clair, CONFIDENTIAL compris. Rangez-le "
+"sur un disque chiffré (FileVault sur Mac, BitLocker, LUKS) et ne l'envoyez "
+"jamais par courriel."
 
 #: templates/export/page.html:11
 msgid "What the export holds, and what it does not"
@@ -4870,18 +5119,21 @@ msgstr "Ce que contient l'export, et ce qu'il ne contient pas"
 #: templates/export/page.html:12
 msgid ""
 "It holds the documents (latest version, or every version), the objectives, "
-"meetings, administrative file, conferences and missions, with their texts "
-"decrypted, the comments of your supervisors (their name and role only), your "
-"own lines of the audit log and a manifest with the SHA-256 digest of each "
-"file."
-msgstr "Il contient les documents (dernière version, ou toutes les versions), les objectifs, réunions, dossier administratif, conférences et missions, avec leurs textes déchiffrés, les commentaires de vos encadrants (leur nom et leur rôle seulement), vos propres lignes du journal d'audit et un manifeste avec l'empreinte SHA-256 de chaque fichier."
+"meetings, administrative file, conferences, missions and trainings, with "
+"their texts decrypted, the comments of your supervisors (their name and role "
+"only), your own lines of the audit log and a manifest with the SHA-256 "
+"digest of each file."
+msgstr "Il contient les documents (dernière version, ou toutes les versions), les objectifs, réunions, dossier administratif, conférences, missions et formations, textes déchiffrés, les commentaires de vos encadrants (leur nom et leur rôle seulement), vos propres lignes du journal d'audit et un manifeste avec l'empreinte SHA-256 de chaque fichier."
 
 #: templates/export/page.html:13
 msgid ""
 "It never holds second factor secrets, links tokens, passwords, the addresses "
 "of the other members, the lines of the audit log of the others, nor "
 "INTERNAL_ST without an agreement of ST."
-msgstr "Il ne contient jamais les secrets du second facteur, les jetons des liens, les mots de passe, les adresses des autres membres, les lignes du journal d'audit des autres, ni INTERNAL_ST sans accord de ST."
+msgstr ""
+"Il ne contient jamais les secrets du second facteur, les jetons des liens, "
+"les mots de passe, les adresses des autres membres, les lignes du journal "
+"d'audit des autres, ni INTERNAL_ST sans accord de ST."
 
 #: templates/export/page.html:15
 #, python-format
@@ -4896,7 +5148,9 @@ msgstr "La confidentialité ST est terminée : INTERNAL_ST est inclus."
 msgid ""
 "INTERNAL_ST is left out: the ST confidentiality is not over and no ST "
 "agreement is in force."
-msgstr "INTERNAL_ST est exclu : la confidentialité ST n'est pas terminée et aucun accord ST n'est en vigueur."
+msgstr ""
+"INTERNAL_ST est exclu : la confidentialité ST n'est pas terminée et aucun "
+"accord ST n'est en vigueur."
 
 #: templates/export/page.html:17 templates/lifecycle/page.html:81
 msgid "Export my data"
@@ -4906,13 +5160,15 @@ msgstr "Exporter mes données"
 msgid ""
 "Asks for your second factor. One export an hour; you receive an e-mail for "
 "each export."
-msgstr "Demande votre second facteur. Un export par heure ; vous recevez un courriel pour chaque export."
+msgstr ""
+"Demande votre second facteur. Un export par heure ; vous recevez un courriel "
+"pour chaque export."
 
 #: templates/export/page.html:21
 msgid "Every version of each document"
 msgstr "Toutes les versions de chaque document"
 
-#: templates/export/page.html:22
+#: templates/export/page.html:22 templates/portfolio/adum.html:39
 msgid "Yes, download"
 msgstr "Oui, télécharger"
 
@@ -4943,7 +5199,9 @@ msgstr "avec INTERNAL_ST"
 #: templates/export/page.html:43
 msgid ""
 "An export you did not make? Tell your director and change your password."
-msgstr "Un export que vous n'avez pas fait ? Prévenez votre directeur et changez votre mot de passe."
+msgstr ""
+"Un export que vous n'avez pas fait ? Prévenez votre directeur et changez "
+"votre mot de passe."
 
 #: templates/export/page.html:45
 msgid "No export yet."
@@ -4962,20 +5220,24 @@ msgstr "Fait le %(date)s."
 msgid ""
 "manifest.json: every file of this archive with its size and SHA-256 digest "
 "(format these-export/1)."
-msgstr "manifest.json : chaque fichier de cette archive avec sa taille et son empreinte SHA-256 (format these-export/1)."
+msgstr ""
+"manifest.json : chaque fichier de cette archive avec sa taille et son "
+"empreinte SHA-256 (format these-export/1)."
 
 #: templates/export/readme.txt:5
 msgid ""
 "documents.json and documents/: your documents, decrypted, by number; the "
 "names of the files are built by the platform."
-msgstr "documents.json et documents/ : vos documents, déchiffrés, par numéro ; les noms des fichiers sont construits par la plateforme."
+msgstr ""
+"documents.json et documents/ : vos documents, déchiffrés, par numéro ; les "
+"noms des fichiers sont construits par la plateforme."
 
 #: templates/export/readme.txt:6
 msgid ""
 "these.json, equipe.json, objectifs.json, reunions.json, dossier-"
-"administratif.json, conferences.json, deplacements.json: your data, texts "
-"decrypted."
-msgstr "these.json, equipe.json, objectifs.json, reunions.json, dossier-administratif.json, conferences.json, deplacements.json : vos données, textes déchiffrés."
+"administratif.json, conferences.json, deplacements.json, portfolio.json: "
+"your data, texts decrypted."
+msgstr "these.json, equipe.json, objectifs.json, reunions.json, dossier-administratif.json, conferences.json, deplacements.json, portfolio.json : vos données, textes déchiffrés."
 
 #: templates/export/readme.txt:7
 msgid "journal/mes-evenements.json: your own lines of the audit log."
@@ -4986,12 +5248,18 @@ msgid ""
 "Left out: second factor secrets, links tokens, passwords, the addresses of "
 "the other members, the lines of the audit log of the others, and INTERNAL_ST "
 "without an agreement of ST (their number is in manifest.json)."
-msgstr "Exclus : les secrets du second facteur, les jetons des liens, les mots de passe, les adresses des autres membres, les lignes du journal d'audit des autres, et INTERNAL_ST sans accord de ST (leur nombre est dans manifest.json)."
+msgstr ""
+"Exclus : les secrets du second facteur, les jetons des liens, les mots de "
+"passe, les adresses des autres membres, les lignes du journal d'audit des "
+"autres, et INTERNAL_ST sans accord de ST (leur nombre est dans "
+"manifest.json)."
 
 #: templates/export/readme.txt:10
 msgid ""
 "This archive holds your documents in clear: keep it on an encrypted disk."
-msgstr "Cette archive contient vos documents en clair : rangez-la sur un disque chiffré."
+msgstr ""
+"Cette archive contient vos documents en clair : rangez-la sur un disque "
+"chiffré."
 
 #: templates/export/st.html:2 templates/export/st.html:4
 #: templates/lifecycle/page.html:82
@@ -5009,13 +5277,16 @@ msgstr "Fin de la confidentialité ST"
 #: templates/export/st.html:9
 #, python-format
 msgid "Until %(date)s: INTERNAL_ST is included in the exports after this date."
-msgstr "Jusqu'au %(date)s : INTERNAL_ST est inclus dans les exports après cette date."
+msgstr ""
+"Jusqu'au %(date)s : INTERNAL_ST est inclus dans les exports après cette date."
 
 #: templates/export/st.html:9
 msgid ""
 "No end known: INTERNAL_ST stays out of the exports, unless you agree for 30 "
 "days."
-msgstr "Aucune fin connue : INTERNAL_ST reste hors des exports, sauf accord de votre part pour 30 jours."
+msgstr ""
+"Aucune fin connue : INTERNAL_ST reste hors des exports, sauf accord de votre "
+"part pour 30 jours."
 
 #: templates/export/st.html:11
 msgid "Last day of the ST confidentiality (empty: none known)"
@@ -5038,7 +5309,10 @@ msgid ""
 "For 30 days, the exports of the PhD student include INTERNAL_ST (documents, "
 "meetings, missions, texts). You can revoke it at any time. Asks for your "
 "second factor."
-msgstr "Pendant 30 jours, les exports du doctorant contiennent INTERNAL_ST (documents, réunions, missions, textes). Vous pouvez le révoquer à tout moment. Demande votre second facteur."
+msgstr ""
+"Pendant 30 jours, les exports du doctorant contiennent INTERNAL_ST "
+"(documents, réunions, missions, textes). Vous pouvez le révoquer à tout "
+"moment. Demande votre second facteur."
 
 #: templates/export/st.html:24
 msgid "Yes, agree"
@@ -5634,6 +5908,7 @@ msgid "Past"
 msgstr "Passées"
 
 #: templates/meetings/list.html:18 templates/meetings/register.html:8
+#: templates/portfolio/adum.html:12
 msgid "Filter"
 msgstr "Filtrer"
 
@@ -5867,6 +6142,173 @@ msgstr ""
 msgid "Create the objective"
 msgstr "Créer l'objectif"
 
+#: templates/portfolio/_table.html:2 templates/portfolio/detail.html:12
+#: templates/travel/mission.html:8 templates/travel/missions.html:11
+#: templates/travel/orders.html:9
+msgid "Dates"
+msgstr "Dates"
+
+#: templates/portfolio/adum.html:5
+msgid "To copy into your ADUM portfolio"
+msgstr "À reporter dans votre portfolio ADUM"
+
+#: templates/portfolio/adum.html:9
+msgid "Academic year"
+msgstr "Année universitaire"
+
+#: templates/portfolio/adum.html:11
+msgid "Include the internal trainings"
+msgstr "Inclure les formations internes"
+
+#: templates/portfolio/adum.html:14
+msgid ""
+"Columns and order to be confirmed by the doctoral school. Entering a "
+"training in ADUM discloses it outside the platform."
+msgstr "Colonnes et ordre à confirmer par l'école doctorale. Saisir une formation dans ADUM, c'est la divulguer hors de la plateforme."
+
+#: templates/portfolio/adum.html:15
+#, python-format
+msgid "%(n)s internal training of this year is left out."
+msgid_plural "%(n)s internal trainings of this year are left out."
+msgstr[0] "%(n)s formation interne de cette année est laissée de côté."
+msgstr[1] "%(n)s formations internes de cette année sont laissées de côté."
+
+#: templates/portfolio/adum.html:22
+msgid "internal level: to check before entering it"
+msgstr "niveau interne : à vérifier avant saisie"
+
+#: templates/portfolio/adum.html:31 templates/portfolio/trainings.html:15
+msgid "Total"
+msgstr "Total"
+
+#: templates/portfolio/adum.html:34
+msgid "Download as CSV"
+msgstr "Télécharger en CSV"
+
+#: templates/portfolio/adum.html:36
+msgid ""
+"Asks for your second factor. The file holds the titles in clear: keep it on "
+"an encrypted disk."
+msgstr "Demande votre second facteur. Le fichier contient les intitulés en clair : rangez-le sur un disque chiffré."
+
+#: templates/portfolio/adum.html:44
+msgid "No finished training in this year."
+msgstr "Aucune formation terminée dans cette année."
+
+#: templates/portfolio/detail.html:12
+msgid "to come"
+msgstr "à venir"
+
+#: templates/portfolio/detail.html:16
+msgid "Provider:"
+msgstr "Organisme :"
+
+#: templates/portfolio/detail.html:17
+msgid "Certificate:"
+msgstr "Attestation :"
+
+#: templates/portfolio/detail.html:18
+msgid "ADUM:"
+msgstr "ADUM :"
+
+#: templates/portfolio/detail.html:27
+msgid "Mark as not entered in ADUM"
+msgstr "Marquer comme non saisie dans ADUM"
+
+#: templates/portfolio/detail.html:27
+msgid "Mark as entered in ADUM"
+msgstr "Marquer comme saisie dans ADUM"
+
+#: templates/portfolio/detail.html:34 templates/vault/document_detail.html:36
+msgid "Change the level"
+msgstr "Changer le niveau"
+
+#: templates/portfolio/email/notification_body.txt:1
+msgid ""
+"Your re-registration is coming up: check that your trainings are up to date "
+"on the platform:"
+msgstr "Votre réinscription approche : vérifiez que vos formations sont à jour sur la plateforme :"
+
+#: templates/portfolio/email/notification_subject.txt:1
+msgid "CIFRE thesis: your re-registration is coming up"
+msgstr "Thèse CIFRE : votre réinscription approche"
+
+#: templates/portfolio/form.html:2 templates/portfolio/form.html:6
+msgid "Edit a training"
+msgstr "Modifier une formation"
+
+#: templates/portfolio/form.html:2 templates/portfolio/form.html:6
+msgid "New training"
+msgstr "Nouvelle formation"
+
+#: templates/portfolio/form.html:8
+msgid ""
+"The title, the provider and the notes are encrypted. A certificate is a "
+"document of the Documents module: add it there first."
+msgstr "L'intitulé, l'organisme et les notes sont chiffrés. Une attestation est un document du module Documents : ajoutez-la d'abord là."
+
+#: templates/portfolio/form.html:10
+msgid "Add the training"
+msgstr "Ajouter la formation"
+
+#: templates/portfolio/settings.html:2 templates/portfolio/settings.html:5
+msgid "Portfolio settings"
+msgstr "Réglages du portfolio"
+
+#: templates/portfolio/settings.html:7
+msgid ""
+"The re-registration calendar of the university is to be confirmed with the "
+"doctoral school."
+msgstr "Le calendrier de réinscription de l'université est à confirmer avec l'école doctorale."
+
+#: templates/portfolio/trainings.html:5
+msgid "The platform prepares, ADUM records."
+msgstr "La plateforme prépare, ADUM enregistre."
+
+#: templates/portfolio/trainings.html:5
+msgid "Add a training"
+msgstr "Ajouter une formation"
+
+#: templates/portfolio/trainings.html:8
+msgid "Hours followed"
+msgstr "Heures suivies"
+
+#: templates/portfolio/trainings.html:9
+msgid "Computed on the trainings you can read."
+msgstr "Calculé sur les formations que vous pouvez lire."
+
+#: templates/portfolio/trainings.html:17
+msgid ""
+"Categories and number of hours required: to be confirmed by the doctoral "
+"school."
+msgstr "Catégories et nombre d'heures exigés : à confirmer par l'école doctorale."
+
+#: templates/portfolio/trainings.html:18
+msgid "Research ethics and integrity training: done."
+msgstr "Formation à l'éthique et à l'intégrité scientifique : faite."
+
+#: templates/portfolio/trainings.html:18
+msgid ""
+"Research ethics and integrity training: not done yet. It is required to "
+"defend."
+msgstr "Formation à l'éthique et à l'intégrité scientifique : pas encore faite. Elle est obligatoire pour soutenir."
+
+#: templates/portfolio/trainings.html:22
+msgid "Trainings followed"
+msgstr "Formations suivies"
+
+#: templates/portfolio/trainings.html:23
+msgid "No training followed yet."
+msgstr "Aucune formation suivie pour l'instant."
+
+#: templates/portfolio/trainings.html:28
+msgid "To come"
+msgstr "À venir"
+
+#: templates/portfolio/trainings.html:29
+msgid "Not counted until they are over."
+msgstr "Comptées seulement une fois terminées."
+
 #: templates/travel/_links.html:5
 msgid "No mission linked."
 msgstr "Aucune mission liée."
@@ -6019,11 +6461,6 @@ msgstr "Thèse CIFRE : les frais d'une mission sont incomplets"
 #: templates/travel/email/notification_subject.txt:1
 msgid "CIFRE thesis: the ST / LIRMM time settings have changed"
 msgstr "Thèse CIFRE : les réglages du temps ST / LIRMM ont changé"
-
-#: templates/travel/mission.html:8 templates/travel/missions.html:11
-#: templates/travel/orders.html:9
-msgid "Dates"
-msgstr "Dates"
 
 #: templates/travel/mission.html:14
 msgid "Place:"
@@ -6410,10 +6847,6 @@ msgid ""
 msgstr ""
 "Changer le niveau rechiffre toutes les versions ; un second facteur récent "
 "est demandé."
-
-#: templates/vault/document_detail.html:36
-msgid "Change the level"
-msgstr "Changer le niveau"
 
 #: templates/vault/document_detail.html:41
 msgid "Explicit access"

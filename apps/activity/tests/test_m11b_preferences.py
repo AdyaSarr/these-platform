@@ -139,6 +139,8 @@ def test_the_classification_of_the_sheet() -> None:
             "ORDER_PENDING": C.DEADLINE, "ORDER_REQUESTED": C.ACTION, "ORDER_DECIDED": C.INFO,
             "RULES_CHANGED": C.INFO,
         },
+        # M9a: the re-registration reminder, to the student.
+        "portfolio": {"REREGISTRATION": C.DEADLINE},
     }  # fmt: skip
     for key, table in expected.items():
         assert dict(CATEGORY_OF[key]) == table, key

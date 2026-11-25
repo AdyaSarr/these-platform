@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% load i18n ui %}
+{% block title %}{% if training %}{% translate "Edit a training" %}{% else %}{% translate "New training" %}{% endif %}{% endblock %}
+{% block content %}
+{% module_tabs "portfolio" %}
+{% if training %}{% url 'portfolio:detail' thesis_id=thesis.pk training_id=training.pk as back_url %}{% else %}{% url 'portfolio:trainings' thesis_id=thesis.pk as back_url %}{% endif %}
+{% page_header parent_url=back_url parent_label=_("Back") %}{% if training %}{% translate "Edit a training" %}{% else %}{% translate "New training" %}{% endif %}{% endpage_header %}
+{% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
+<p class="muted">{% translate "The title, the provider and the notes are encrypted. A certificate is a document of the Documents module: add it there first." %}</p>
+<form class="stack" method="post">{% csrf_token %}{% include "conferences/_form.html" %}
+  <button type="submit" class="btn-primary">{% if training %}{% translate "Save" %}{% else %}{% translate "Add the training" %}{% endif %}</button>
+</form>
+{% endblock %}

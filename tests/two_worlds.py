@@ -146,6 +146,7 @@ class Shared:
     items: list[Any] = field(default_factory=list)
     venue: Any = None
     edition: Any = None
+    trainings: dict[L, Any] = field(default_factory=dict)  # M9a, one per level
 
 
 @dataclass
@@ -157,6 +158,17 @@ class Hidden:
     objectives: list[Any] = field(default_factory=list)
     missions: list[Any] = field(default_factory=list)
     items: list[Any] = field(default_factory=list)
+    trainings: list[Any] = field(default_factory=list)
+
+
+def _training(team: SimpleNamespace, level: L, title: str, *, start: dt.date,
+              category: str = "SCIENTIFIC") -> Any:  # fmt: skip
+    from apps.portfolio import services as portfolio
+
+    return portfolio.create_training(
+        thesis=team.thesis, user=team.student, title=title, provider="Organisme fictif",
+        category=category, hours="3,5", start_date=start, end_date=start, level=level,
+    )  # fmt: skip
 
 
 def _meeting(team: SimpleNamespace, level: L, starts_at: dt.datetime, attendees: list[Any],
@@ -235,6 +247,12 @@ def build_shared(team: SimpleNamespace) -> Shared:
         recent_mfa=True,
     )  # fmt: skip
     lifecycle.withdraw_closure(request=request, user=team.student)
+    # M9a: one finished training per level (PUBLIC: integrity, as the CSI checks it).
+    for day, level in enumerate(L, start=4):
+        shared.trainings[level] = _training(
+            team, level, "Formation partagée fictive", start=_D(2027, 1, day),
+            category="INTEGRITY" if level is L.PUBLIC else "SCIENTIFIC",
+        )  # fmt: skip
     return shared
 
 
@@ -284,6 +302,21 @@ def build_hidden(team: SimpleNamespace, shared: Shared, role: Role, world: str) 
         out.missions.append(h.mission(team, destination, payer, start=_D(2027, 2, day)))
     for section in hidden_sections(role):
         out.items.append(h.item(team, section, [R.DIRECTOR]))
+    # M9a: trainings of a hidden level, finished (in the totals) and to come; an
+    # integrity one too (it must not turn « not done » into « done »).
+    for n in range(copies):
+        for level in hidden_levels(role, Action.TRAINING_READ):
+            out.trainings.append(
+                _training(
+                    team,
+                    level,
+                    f"Formation cachée {world}{n}",
+                    start=_D(2027, 1, 12 + shift),
+                    category="INTEGRITY",
+                )
+            )
+            out.trainings.append(_training(team, level, f"Formation cachée à venir {world}{n}",
+                                           start=_D(2027, 3, 2 + shift)))  # fmt: skip
     return out
 
 

@@ -19,7 +19,7 @@ pytestmark = pytest.mark.django_db(transaction=True)
 DATA_FILES = [
     "LISEZMOI.txt", "conferences.json", "deplacements.json", "documents.json",
     "dossier-administratif.json", "equipe.json", "journal/mes-evenements.json",
-    "manifest.json", "objectifs.json", "reunions.json", "these.json",
+    "manifest.json", "objectifs.json", "portfolio.json", "reunions.json", "these.json",
 ]  # fmt: skip
 SAFE_NAME = re.compile(r"[a-z0-9][a-z0-9/-]*\.[a-z0-9]+")
 

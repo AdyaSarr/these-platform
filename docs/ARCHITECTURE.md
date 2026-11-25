@@ -106,6 +106,12 @@ avant la soutenance, la fin d'adhésion et le cycle de vie
 module (gardes, rappels, courriels, résumés) sont dans une seule table :
 `apps/accounts/statuses.py`.
 
+Formations (M9a) : `TRAINING_READ` au doctorant, au directeur, au co-encadrant
+LIRMM, au tuteur et au membre du CSI (qui ne lit que `PUBLIC`), jamais au
+co-encadrant entreprise ; `TRAINING_WRITE` et `PORTFOLIO_EXPORT` (récapitulatif
+ADUM) au doctorant seul. Le CSI ne voit ni attestation, ni note, ni état ADUM.
+App `apps/portfolio`.
+
 Déplacements (M7) : le co-encadrant LIRMM ne voit que les jours au LIRMM et les
 missions vers le LIRMM ; le co-encadrant entreprise, symétriquement, que les jours
 à Rousset et les missions vers Rousset (ni télétravail, ni conférences, ni congés,

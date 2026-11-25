@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "apps.feeds",
     "apps.lifecycle",
     "apps.export",
+    "apps.portfolio",
     "apps.ui",  # visual layer: navigation, theme, icons (presentation only)
     # Authentication: sign-in, password reset, mandatory second factor (M1).
     "allauth",

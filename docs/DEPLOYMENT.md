@@ -14,7 +14,8 @@ avec la commande donnée ; « vérifié le … » ne vaut que pour la version ci
 Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
 
 - [x] **CI obligatoire avant tout déploiement.** `.github/workflows/ci.yml`, à chaque
-      push et pull request : `uv sync --frozen`, ruff, `ruff format --check`, mypy,
+      pull request et à chaque push sur `main` (une seule exécution par pull
+      request ; job limité à 40 min, suite à 30, merge_gate à 5) : `uv sync --frozen`, ruff, `ruff format --check`, mypy,
       bandit, pip-audit, `makemigrations --check`, `scripts/test_all.sh` (dernière
       ligne `test_all: exit=0 parallel=0 serial=0` et deux lignes de résumé sans
       échec exigées ; `detect-secrets` y tourne par `tests/test_audit.py`), puis
@@ -534,6 +535,16 @@ Chaque case est bloquante : on ne déploie pas tant qu'une seule reste vide.
       contrainte d'unicité) ; à l'envoi, destinataire revérifié et rappel encore dû
       (mission annulée, accord décidé, justificatif déposé entre-temps : rien
       n'est envoyé). *Vérifier* : la sortie ne contient que des nombres.
+
+- [ ] **Rappel de réinscription (M9a) : un timer quotidien.**
+      *Timer systemd*, chaque jour à 07 h 00 Europe/Paris (`Persistent=true`) :
+      ```
+      manage.py portfolio_reminders
+      ```
+      Fenêtres J-30 et J-7 avant la date de réinscription saisie par le doctorant,
+      en dates de Paris, au doctorant seul. La relancer n'envoie rien deux fois
+      (`PortfolioNotification`, contrainte d'unicité) ; à l'envoi, date et
+      destinataire revérifiés. *Vérifier* : la sortie ne contient que des nombres.
 
 - [ ] **Résumé hebdomadaire des objectifs (M4) : timer à désactiver (M11b).**
       Le résumé du lundi est fondu dans les résumés d'activité (`activity_digests`) ;

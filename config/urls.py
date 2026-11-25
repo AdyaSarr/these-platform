@@ -74,6 +74,7 @@ urlpatterns: list[URLPattern | URLResolver] = [
     path("t/<uuid:thesis_id>/activity/", include("apps.activity.urls")),
     path("t/<uuid:thesis_id>/lifecycle/", include("apps.lifecycle.urls")),
     path("t/<uuid:thesis_id>/export/", include("apps.export.urls")),
+    path("t/<uuid:thesis_id>/portfolio/", include("apps.portfolio.urls")),
     path("", include("apps.feeds.urls")),
     # Invitation acceptance (apps/accounts/invitation_views.py). "accept/" and
     # "logout/" first: the <str:token> route would match them otherwise.

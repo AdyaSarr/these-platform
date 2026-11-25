@@ -1,0 +1,38 @@
+{% extends "base.html" %}{% load i18n ui %}
+{% block title %}{% translate "Training" %}{% endblock %}
+{% block content %}
+{% module_tabs "portfolio" %}
+{% url 'portfolio:trainings' thesis_id=thesis.pk as trainings_url %}
+{% page_header parent_url=trainings_url parent_label=_("Trainings") %}{{ row.title }}{% actions %}{% if can_write %}{% url 'portfolio:edit' thesis_id=thesis.pk training_id=training.pk as edit_url %}{% include "ui/action.html" with url=edit_url label=_("Edit") icon="pencil" %}{% endif %}{% endpage_header %}
+{% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
+
+<dl class="stats">
+  <div><dt>{% translate "Category" %}</dt><dd>{{ training.get_category_display }}</dd></div>
+  <div><dt>{% translate "Hours" %}</dt><dd>{{ training.hours|floatformat:"-1" }}&nbsp;h</dd></div>
+  <div><dt>{% translate "Dates" %}</dt><dd>{{ training.start_date|date:"d/m/Y" }}{% if training.end_date != training.start_date %} – {{ training.end_date|date:"d/m/Y" }}{% endif %}{% if not row.done %} <span class="mark">{% translate "to come" %}</span>{% endif %}</dd></div>
+  <div><dt>{% translate "Confidentiality" %}</dt><dd>{% level_badge training.level %}</dd></div>
+</dl>
+<ul>
+  {% if row.provider %}<li>{% translate "Provider:" %} {{ row.provider }}</li>{% endif %}
+  {% if row.certificate %}<li>{% translate "Certificate:" %} <a href="{% url 'vault:document' thesis_id=thesis.pk document_id=row.certificate.pk %}">{{ row.certificate.title }}</a></li>{% endif %}
+  {% if can_write %}<li>{% translate "ADUM:" %} {{ training.get_adum_status_display }}</li>{% endif %}
+</ul>
+
+{% if can_write %}
+{% if row.notes %}<h2>{% translate "Notes" %}</h2><p>{{ row.notes|linebreaksbr }}</p>{% endif %}
+
+<section aria-labelledby="adum-title">
+<h2 id="adum-title">{% translate "ADUM" %}</h2>
+<form method="post" action="{% url 'portfolio:adum_status' thesis_id=thesis.pk training_id=training.pk %}">{% csrf_token %}
+  {% if entered %}<input type="hidden" name="status" value="TO_ENTER"><button type="submit">{% translate "Mark as not entered in ADUM" %}</button>{% else %}<input type="hidden" name="status" value="ENTERED"><button type="submit" class="btn-primary">{% translate "Mark as entered in ADUM" %}</button>{% endif %}
+</form>
+</section>
+
+<section aria-labelledby="level-title">
+<h2 id="level-title">{% translate "Confidentiality" %}</h2>
+<form class="stack" method="post" action="{% url 'portfolio:level' thesis_id=thesis.pk training_id=training.pk %}">{% csrf_token %}{% with form=level_form %}{% include "conferences/_form.html" %}{% endwith %}
+  <button type="submit" class="btn-primary">{% translate "Change the level" %}</button>
+  <span class="muted">{% translate "Asks for your second factor." %}</span></form>
+</section>
+{% endif %}
+{% endblock %}

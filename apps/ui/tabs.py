@@ -38,6 +38,17 @@ def _decides_approvals(request: HttpRequest, thesis: Any) -> bool:
     return any(role in roles for role in DECIDER_ROLE.values())
 
 
+def _can(action_name: str) -> Callable[[HttpRequest, Any], bool]:
+    """The tab of a page guarded by ``action_name`` (the view's own action)."""
+
+    def check(request: HttpRequest, thesis: Any) -> bool:
+        from apps.accounts.permissions import Action, can
+
+        return can(request.user, Action(action_name), thesis)
+
+    return check
+
+
 @dataclass(frozen=True)
 class Tab:
     label: str | Promise
@@ -89,6 +100,21 @@ MODULES: dict[str, Module] = {
                 "orders",
                 ("orders",),
                 only_if=_decides_approvals,
+            ),
+        ),
+    ),
+    # M9a: the summary and the settings are the student's (PORTFOLIO_EXPORT,
+    # TRAINING_WRITE): the tabs follow the views' own actions.
+    "portfolio": Module(
+        _("Trainings"),
+        (
+            Tab(_("Trainings"), "trainings", ("trainings", "new", "detail", "edit")),
+            Tab(_("ADUM summary"), "adum", ("adum",), only_if=_can("PORTFOLIO_EXPORT")),
+            Tab(
+                pgettext_lazy("module tab", "Settings"),
+                "settings",
+                ("settings",),
+                only_if=_can("TRAINING_WRITE"),
             ),
         ),
     ),

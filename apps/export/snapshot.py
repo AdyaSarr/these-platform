@@ -40,6 +40,7 @@ DATA_FILES = (
     "dossier-administratif.json",
     "conferences.json",
     "deplacements.json",
+    "portfolio.json",
     "journal/mes-evenements.json",
 )
 # Keys of the student's own journal lines that are exported; any other is dropped
@@ -894,6 +895,44 @@ def _deplacements(c: _Context, meeting_ids: set[str], submission_ids: set[str]) 
     }
 
 
+def _portfolio(c: _Context) -> dict[str, Any]:
+    """The trainings (M9a), texts decrypted, at the exported levels; the date of the
+    next re-registration."""
+    from apps.portfolio.models import PortfolioPolicy, Training
+
+    policy = PortfolioPolicy.objects.filter(thesis=c.thesis).first()
+    out: dict[str, Any] = {
+        "reinscription": _iso(policy.reregistration_date) if policy else None,
+        "formations": [],
+    }
+    if Action.TRAINING_READ not in allowed_actions(c.user, c.thesis):
+        return out
+    rows = list(
+        Training.objects.readable_by(c.user, c.thesis)
+        .filter(level__in=c.level_values)
+        .order_by("start_date", "created_at", "pk")
+    )
+    texts = c.texts(rows, ("title", "provider", "notes"))
+    for t in rows:
+        c.note_confidential(t, t.level)
+        out["formations"].append(
+            {
+                "id": str(t.pk),
+                "intitule": texts.get((t.pk, "title"), ""),
+                "organisme": texts.get((t.pk, "provider"), ""),
+                "notes": texts.get((t.pk, "notes"), ""),
+                "categorie": t.category,
+                "heures": str(t.hours),
+                "debut": _iso(t.start_date),
+                "fin": _iso(t.end_date),
+                "niveau": t.level,
+                "etat_adum": t.adum_status,
+                "attestation": c.document(t.certificate_id),
+            }
+        )
+    return out
+
+
 def _journal(c: _Context) -> list[dict[str, Any]]:
     from apps.vault.models import AuditEvent
 
@@ -920,6 +959,7 @@ def _st_counts(c: _Context, all_versions: bool) -> int:
     from apps.conferences.models import Submission
     from apps.meetings.models import Meeting
     from apps.objectives.models import Objective
+    from apps.portfolio.models import Training
     from apps.travel.models import Mission, TravelBudget
 
     st = L.INTERNAL_ST
@@ -927,7 +967,7 @@ def _st_counts(c: _Context, all_versions: bool) -> int:
         return 0
     only = frozenset({st})
     count = len(c.vault.export_documents(c.user, c.thesis, all_versions=all_versions, levels=only))
-    for model in (Meeting, Submission, Objective):
+    for model in (Meeting, Submission, Objective, Training):
         count += model.objects.readable_by(c.user, c.thesis).filter(level=st.value).count()
     count += Mission.objects.visible_to(c.user, c.thesis).filter(level=st.value).count()
     count += TravelBudget.objects.filter(thesis=c.thesis, level=st.value).count()
@@ -963,6 +1003,7 @@ def take(user: Any, thesis: Thesis, *, all_versions: bool, now: dt.datetime) -> 
                 {m["id"] for m in reunions["reunions"]},
                 {s["id"] for s in conferences["soumissions"]},
             ),
+            "portfolio.json": _portfolio(c),
             "journal/mes-evenements.json": _journal(c),
         }
     )

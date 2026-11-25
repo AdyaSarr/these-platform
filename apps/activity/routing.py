@@ -62,6 +62,8 @@ CATEGORY_OF: dict[str, dict[str, str]] = {
         "ORDER_DECIDED": C.INFO,
         "RULES_CHANGED": C.INFO,
     },
+    # M9a: the re-registration reminder, to the student.
+    "portfolio": {"REREGISTRATION": C.DEADLINE},
     # The activity's own e-mails carry their category (ActivityNotification.category).
     "activity": {"EVENT": C.INFO},
 }
@@ -118,6 +120,9 @@ SOURCES: dict[str, Source] = {
                "apps.conferences.notifications"),
         Source("travel", "travel.TravelNotification", "thesis",
                "apps.travel.tasks.send_travel_notification", "apps.travel.notifications"),
+        Source("portfolio", "portfolio.PortfolioNotification", "thesis",
+               "apps.portfolio.tasks.send_portfolio_notification",
+               "apps.portfolio.notifications"),
         Source("activity", "activity.ActivityNotification", "thesis",
                "apps.activity.tasks.send_activity_notification", "apps.activity.notifications"),
     )
@@ -225,6 +230,10 @@ def describe(source: Source, row: Any) -> tuple[str, str]:
             dates = f"{short_date(mission.start_date)} \u2013 {short_date(mission.end_date)}"
             kind = joined(kind, dates, mission.get_destination_display())
         return kind, travel_url(row)
+    if source.key == "portfolio":
+        from apps.portfolio.tasks import _url as portfolio_url
+
+        return joined(kind, short_date(row.due_on)), portfolio_url(row)
     from .labels import name_of, objects_of
 
     event = row.event

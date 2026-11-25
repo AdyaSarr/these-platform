@@ -8,8 +8,10 @@
 # Third-party actions are pinned by commit; no cache.
 name: CI
 
+# push on main only: a branch is checked by its pull request (one run, not two).
 on:
   push:
+    branches: [main]
   pull_request:
 
 permissions:
@@ -22,7 +24,8 @@ concurrency:
 jobs:
   checks:
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    # A hang fails fast (full suite 15 to 21 min, merge_gate under a minute, 2026-11).
+    timeout-minutes: 40
     env:
       # docker-compose.yml (the same pinned images as on a development machine).
       POSTGRES_DB: theses
@@ -86,6 +89,7 @@ jobs:
         run: uv run python manage.py makemigrations --check --dry-run --settings=config.settings.test
 
       - name: Full suite (scripts/test_all.sh)
+        timeout-minutes: 30
         run: |
           mkdir -p var
           status=0
@@ -103,6 +107,7 @@ jobs:
 
       - name: merge_gate (main and pull requests; they pass only at the end of a module)
         if: github.ref == 'refs/heads/main' || github.event_name == 'pull_request'
+        timeout-minutes: 5
         run: |
           status=0
           uv run pytest -m merge_gate > var/merge-gate.log 2>&1 || status=$?

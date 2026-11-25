@@ -103,6 +103,12 @@ class Action(StrEnum):
     THESIS_EXPORT = "THESIS_EXPORT"
     SET_ST_CONFIDENTIALITY = "SET_ST_CONFIDENTIALITY"
     GRANT_ST_EXPORT = "GRANT_ST_EXPORT"
+    # Trainings (M9a): read by the supervision but the company co-supervisor, and by
+    # the CSI member (PUBLIC only, by its levels); written by the student, who alone
+    # makes the ADUM summary (PORTFOLIO_EXPORT, a read).
+    TRAINING_READ = "TRAINING_READ"
+    TRAINING_WRITE = "TRAINING_WRITE"
+    PORTFOLIO_EXPORT = "PORTFOLIO_EXPORT"
 
 
 _A = Action
@@ -126,6 +132,7 @@ ROLE_ACTIONS: Mapping[Role, frozenset[Action]] = MappingProxyType(
                 _A.ADMIN_FILE_READ, _A.ADMIN_FILE_WRITE, _A.CIFRE_FILE_READ,  # écrire
                 _A.REQUEST_CLOSURE,                                     # M13a
                 _A.THESIS_EXPORT,                                       # M13b
+                _A.TRAINING_READ, _A.TRAINING_WRITE, _A.PORTFOLIO_EXPORT,  # M9a
             }
         ),
         Role.DIRECTOR: frozenset(
@@ -140,6 +147,7 @@ ROLE_ACTIONS: Mapping[Role, frozenset[Action]] = MappingProxyType(
                 _A.ADMIN_FILE_READ, _A.CIFRE_FILE_READ,                 # lire
                 _A.VALIDATE_OBJECTIVES, _A.VALIDATE_CSI, _A.VALIDATE_ANRT,  # objectifs, CSI, ANRT
                 _A.DECLARE_DEFENSE, _A.REQUEST_CLOSURE,                 # M13a
+                _A.TRAINING_READ,                                       # M9a
             }
         ),
         Role.CO_SUPERVISOR: frozenset(
@@ -150,6 +158,7 @@ ROLE_ACTIONS: Mapping[Role, frozenset[Action]] = MappingProxyType(
                 _A.CONFERENCE_READ, _A.CONFERENCE_WRITE, _A.SUBMISSION_READ,  # M6
                 _A.TRAVEL_READ,                                         # M7: LIRMM only
                 _A.DOCUMENT_READ, _A.DOCUMENT_COMMENT,                  # lire, commenter
+                _A.TRAINING_READ,                                       # M9a
             }                                                       # admin : —
         ),
         Role.INDUSTRIAL_TUTOR: frozenset(
@@ -164,6 +173,7 @@ ROLE_ACTIONS: Mapping[Role, frozenset[Action]] = MappingProxyType(
                 _A.CIFRE_FILE_READ,                                     # partie CIFRE
                 _A.VALIDATE_ANRT, _A.VALIDATE_PUBLICATION,              # ANRT, publications
                 _A.SET_ST_CONFIDENTIALITY, _A.GRANT_ST_EXPORT,          # M13b: côté ST
+                _A.TRAINING_READ,                                       # M9a: by level
             }
         ),
         # Same row as the LIRMM co-supervisor, on the company side: travel filtered
@@ -185,6 +195,7 @@ ROLE_ACTIONS: Mapping[Role, frozenset[Action]] = MappingProxyType(
                 _A.CSI_FILE_READ,                                       # dossier CSI
                 _A.CSI_REPORT_READ,                                     # rapport CSI
                 _A.CSI_OPINION_WRITE,                                   # avis CSI
+                _A.TRAINING_READ,               # M9a: checks the training (PUBLIC only)
             }
         ),
         # "une réunion", "projet partagé": per-object grants (M5, M2), nothing here.
@@ -222,6 +233,7 @@ READ_ACTIONS: frozenset[Action] = frozenset(
         _A.CONFERENCE_READ, _A.SUBMISSION_READ, _A.TRAVEL_READ, _A.DOCUMENT_READ,
         _A.ADMIN_FILE_READ, _A.CIFRE_FILE_READ, _A.CSI_FILE_READ, _A.CSI_REPORT_READ,
         _A.THESIS_EXPORT,  # M13b: the right of access does not depend on the status
+        _A.TRAINING_READ, _A.PORTFOLIO_EXPORT,  # M9a: the ADUM summary is a read
     }
 )  # fmt: skip
 _WRITES = frozenset(Action) - READ_ACTIONS

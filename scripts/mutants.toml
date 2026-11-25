@@ -237,3 +237,105 @@ old = '''stem = slugify(title).replace("_", "-")[:60].strip("-") or "document"
 new = '''stem = title or "document"
     name = f"documents/{n:04d}-{stem}-v{version}.{extension.lower()}"'''
 tests = ["apps/export/tests/test_content.py::test_entry_names_are_built_by_us"]
+
+# --------------------------------------------------------------------------- M9a (portfolio)
+
+[[mutant]]
+id = "M23-formations-liste-sans-niveau"
+claim = "M9a, fiche M09, critères 1 et 2 : la liste et les totaux ne lisent que les formations lisibles (readable_by)"
+file = "apps/portfolio/services.py"
+old = '''Training.objects.readable_by(user, thesis)
+        .select_related("certificate")
+        .order_by("-end_date"'''
+new = '''Training.objects.filter(thesis=thesis)
+        .select_related("certificate")
+        .order_by("-end_date"'''
+tests = [
+    "apps/portfolio/tests/test_services.py::test_the_totals_count_only_what_the_reader_reads",
+    "apps/portfolio/tests/test_two_worlds.py",
+]
+
+[[mutant]]
+id = "M24-formations-mention-absente"
+claim = "M9a, fiche M09, critère 1 : la mention « Calculé sur les formations que vous pouvez lire »"
+file = "apps/portfolio/services.py"
+old = 'return not set(ConfidentialityLevel) <= readable_levels(user, thesis)'
+new = 'return False'
+tests = [
+    "apps/portfolio/tests/test_views.py::test_the_mention_on_the_totals_follows_the_roles",
+    "apps/portfolio/tests/test_services.py::test_the_totals_count_only_what_the_reader_reads",
+]
+
+[[mutant]]
+id = "M25-formations-a-venir-comptees"
+claim = "M9a, fiche M09, critère 1 : une formation à venir n'entre dans aucun total"
+file = "apps/portfolio/services.py"
+old = '''        if not _is_done(t, today):
+            continue
+'''
+new = ''
+tests = ["apps/portfolio/tests/test_services.py::test_a_training_to_come_is_not_counted"]
+
+[[mutant]]
+id = "M26-formations-attestation-illisible"
+claim = "M9a, fiche M09, critère 3 : aucun signal d'une attestation que le lecteur ne lit pas"
+file = "apps/portfolio/services.py"
+old = 'if certificate is not None and not can_access_document(user, certificate):'
+new = 'if False:'
+tests = [
+    "apps/portfolio/tests/test_services.py::test_a_certificate_is_shown_only_to_whoever_reads_it",
+    "apps/portfolio/tests/test_views.py::test_the_csi_member_sees_the_public_trainings_totals_and_integrity_only",
+]
+
+[[mutant]]
+id = "M27-adum-csv-formules"
+claim = "M9a, fiche M09, critère 5 : le CSV neutralise les formules"
+file = "apps/portfolio/services.py"
+old = '''return f"'{value}" if value.startswith(FORMULA_STARTS) else value'''
+new = 'return value'
+tests = ["apps/portfolio/tests/test_adum.py::test_a_formula_is_neutralized"]
+
+[[mutant]]
+id = "M28-adum-csv-sans-second-facteur"
+claim = "M9a, fiche M09, critère 5 : le CSV exige un second facteur récent (le service, pas seulement la vue)"
+file = "apps/portfolio/services.py"
+old = '''    _require(user, Action.PORTFOLIO_EXPORT, thesis, "adum_csv")
+    _require_mfa(recent_mfa)'''
+new = '''    _require(user, Action.PORTFOLIO_EXPORT, thesis, "adum_csv")'''
+tests = ["apps/portfolio/tests/test_adum.py::test_the_csv_needs_a_second_factor_and_is_journaled_without_text"]
+
+[[mutant]]
+id = "M29-adum-internes-par-defaut"
+claim = "M9a, fiche M09, critère 5 : formations PUBLIC seulement par défaut dans le récapitulatif"
+file = "apps/portfolio/services.py"
+old = 'if include_internal or t.level == ConfidentialityLevel.PUBLIC]'
+new = 'if True]'
+tests = ["apps/portfolio/tests/test_adum.py::test_the_internal_trainings_are_left_out_by_default"]
+
+[[mutant]]
+id = "M30-rappel-date-changee"
+claim = "M9a, fiche M09, critère 6 : une date changée n'est pas rappelée (still_due)"
+file = "apps/portfolio/notifications.py"
+old = 'current is not None and current == row.due_on and current'
+new = 'current is not None and current'
+tests = ["apps/portfolio/tests/test_reminders.py::test_a_changed_date_is_not_reminded_and_a_new_one_is"]
+
+[[mutant]]
+id = "M31-rappel-ancien-doctorant"
+claim = "M9a, fiche M09, critère 6 : un ancien doctorant n'est plus rappelé (concerned)"
+file = "apps/portfolio/notifications.py"
+old = '''    if not getattr(user, "is_active", False):
+        return False
+    return ('''
+new = '''    return True
+    return ('''
+tests = ["apps/portfolio/tests/test_reminders.py::test_a_former_student_is_no_longer_reminded"]
+
+[[mutant]]
+id = "M32-export-formations-niveaux"
+claim = "M9a, fiche M09, critère 8 : portfolio.json suit les niveaux exportés (INTERNAL_ST avec l'accord ST)"
+file = "apps/export/snapshot.py"
+old = '''Training.objects.readable_by(c.user, c.thesis)
+        .filter(level__in=c.level_values)'''
+new = 'Training.objects.readable_by(c.user, c.thesis)'
+tests = ["apps/portfolio/tests/test_export.py::test_the_trainings_are_exported_at_the_exported_levels"]

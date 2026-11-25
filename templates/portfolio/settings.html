@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% load i18n ui %}
+{% block title %}{% translate "Portfolio settings" %}{% endblock %}
+{% block content %}
+{% module_tabs "portfolio" %}
+{% page_header %}{% translate "Portfolio settings" %}{% endpage_header %}
+{% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
+<p class="muted">{% translate "The re-registration calendar of the university is to be confirmed with the doctoral school." %}</p>
+<form class="stack" method="post">{% csrf_token %}{% include "conferences/_form.html" %}
+  <button type="submit" class="btn-primary">{% translate "Save" %}</button>
+</form>
+{% endblock %}

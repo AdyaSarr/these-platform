@@ -20,7 +20,7 @@ pytestmark = pytest.mark.django_db
 
 EXPECTED_ORDER = [
     "home", "activity", "admin_file", "objectives", "meetings", "conferences", "travel",
-    "documents", "team", "csi",
+    "portfolio", "documents", "team", "csi",
 ]  # fmt: skip
 
 

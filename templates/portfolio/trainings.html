@@ -1,0 +1,33 @@
+{% extends "base.html" %}{% load i18n ui %}
+{% block title %}{% translate "Trainings" %}{% endblock %}
+{% block content %}
+{% module_tabs "portfolio" %}
+{% page_header %}{% translate "Trainings" %}{% subtitle %}{% translate "The platform prepares, ADUM records." %}{% actions %}{% if listing.can_write %}{% url 'portfolio:new' thesis_id=thesis.pk as new_url %}{% include "ui/action.html" with url=new_url label=_("Add a training") icon="plus" primary=True %}{% endif %}{% endpage_header %}
+
+<section aria-labelledby="totals-title">
+<h2 id="totals-title">{% translate "Hours followed" %}</h2>
+{% if listing.partial %}<p class="muted">{% translate "Computed on the trainings you can read." %}</p>{% endif %}
+<table class="table">
+  <thead><tr><th scope="col">{% translate "Category" %}</th><th scope="col">{% translate "Trainings" %}</th><th scope="col">{% translate "Hours" %}</th></tr></thead>
+  <tbody>
+  {% for total in listing.totals %}<tr><td>{{ total.category.label }}</td><td>{{ total.count }}</td><td>{{ total.hours|floatformat:"-1" }}&nbsp;h</td></tr>{% endfor %}
+  </tbody>
+  <tfoot><tr><th scope="row">{% translate "Total" %}</th><td></td><td>{{ listing.total_hours|floatformat:"-1" }}&nbsp;h</td></tr></tfoot>
+</table>
+<p class="muted">{% translate "Categories and number of hours required: to be confirmed by the doctoral school." %}</p>
+{% if listing.integrity_done %}<p>{% icon "circle-check" %} {% translate "Research ethics and integrity training: done." %}</p>{% else %}<p class="message message-warning" role="note">{% translate "Research ethics and integrity training: not done yet. It is required to defend." %}</p>{% endif %}
+</section>
+
+<section aria-labelledby="done-title">
+<h2 id="done-title">{% translate "Trainings followed" %}</h2>
+{% if listing.done %}{% include "portfolio/_table.html" with rows=listing.done %}{% else %}{% translate "No training followed yet." as message %}{% include "ui/empty.html" with message=message %}{% endif %}
+</section>
+
+{% if listing.upcoming %}
+<section aria-labelledby="upcoming-title">
+<h2 id="upcoming-title">{% translate "To come" %}</h2>
+<p class="muted">{% translate "Not counted until they are over." %}</p>
+{% include "portfolio/_table.html" with rows=listing.upcoming %}
+</section>
+{% endif %}
+{% endblock %}
