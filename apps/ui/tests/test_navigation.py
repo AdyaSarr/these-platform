@@ -44,11 +44,20 @@ def test_items_in_order() -> None:
 
 def test_whoever_sees_an_item_may_open_its_page() -> None:
     for item in _nav():
-        url = reverse(item.url_name, kwargs={"thesis_id": uuid.uuid4()})
-        guard = _required_action(url)
         for role, actions in ROLE_ACTIONS.items():
-            if item.action in actions:
-                assert guard in actions, (item.key, role)
+            url_name = item.target(frozenset(actions))  # M9b: an alternative page
+            if url_name is None:
+                continue
+            guard = _required_action(reverse(url_name, kwargs={"thesis_id": uuid.uuid4()}))
+            assert guard in actions, (item.key, role)
+
+
+def test_the_company_co_supervisor_opens_the_portfolio_on_teaching() -> None:
+    """M9b: the trainings are not theirs, teaching and outreach are."""
+    (item,) = [i for i in _nav() if i.key == "portfolio"]
+    actions = frozenset(ROLE_ACTIONS[Role.INDUSTRIAL_CO_SUPERVISOR])
+    assert item.target(actions) == "portfolio:teachings"
+    assert item.target(frozenset(ROLE_ACTIONS[Role.DIRECTOR])) == "portfolio:trainings"
 
 
 def test_an_item_shows_no_more_than_the_dashboard_card_of_its_module() -> None:
@@ -72,7 +81,8 @@ def test_sidebar_shows_the_allowed_modules_only(role: Role) -> None:
     client, thesis = signed_in(role)
     response = client.get(reverse(_page_of(role), kwargs={"thesis_id": thesis.pk}))
     assert response.status_code == 200
-    expected = [item.key for item in _nav() if item.action in ROLE_ACTIONS[role]]
+    actions = frozenset(ROLE_ACTIONS[role])
+    expected = [item.key for item in _nav() if item.target(actions) is not None]
     assert nav_keys(response.content.decode()) == expected
 
 

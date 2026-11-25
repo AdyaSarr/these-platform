@@ -112,6 +112,16 @@ co-encadrant entreprise ; `TRAINING_WRITE` et `PORTFOLIO_EXPORT` (récapitulatif
 ADUM) au doctorant seul. Le CSI ne voit ni attestation, ni note, ni état ADUM.
 App `apps/portfolio`.
 
+Portfolio (M9b) : les détails de publication se lisent comme leur soumission
+(`SUBMISSION_READ` et son niveau, jamais un niveau recopié) et s'écrivent par le
+doctorant (`SUBMISSION_WRITE`), aussi après la soutenance (`portfolio_publications`).
+`TEACHING_READ` et `OUTREACH_READ` : directeur, co-encadrant LIRMM, tuteur et
+co-encadrant entreprise selon le niveau, jamais le CSI ni l'invité ; écritures
+(`TEACHING_WRITE`, `OUTREACH_WRITE`) au doctorant. Compétences et projet
+professionnel : `CAREER_NOTE_READ` et `CAREER_NOTE_WRITE` au doctorant seul, scellés
+au niveau fixe `CONFIDENTIAL`. Textes scellés au niveau d'une soumission hors de sa
+table : registre `apps/conferences/sealed.py`, rempli par `AppConfig.ready()`.
+
 Déplacements (M7) : le co-encadrant LIRMM ne voit que les jours au LIRMM et les
 missions vers le LIRMM ; le co-encadrant entreprise, symétriquement, que les jours
 à Rousset et les missions vers Rousset (ni télétravail, ni conférences, ni congés,

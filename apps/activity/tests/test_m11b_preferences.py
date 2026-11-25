@@ -133,6 +133,7 @@ def test_the_classification_of_the_sheet() -> None:
         "conferences": {
             "DEADLINE": C.DEADLINE, "REQUEST_DUE": C.DEADLINE, "APPROVAL_PENDING": C.DEADLINE,
             "APPROVAL_REQUESTED": C.ACTION, "APPROVAL_DECIDED": C.INFO, "POLICY_CHANGED": C.INFO,
+            "APPROVAL_WAITING": C.DEADLINE,  # M9b: an approval awaited without deadline
         },
         "travel": {
             "ORDER_TO_REQUEST": C.DEADLINE, "RECEIPTS_MISSING": C.DEADLINE,

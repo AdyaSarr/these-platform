@@ -39,7 +39,8 @@ from .models import (
 
 MAX_ATTEMPTS = 3
 K = NotificationKind
-TUTOR_KINDS = frozenset({K.APPROVAL_PENDING, K.APPROVAL_REQUESTED})
+TUTOR_KINDS = frozenset({K.APPROVAL_PENDING, K.APPROVAL_REQUESTED, K.APPROVAL_WAITING})
+LINKED_KINDS = frozenset({K.REQUEST_DUE, K.APPROVAL_PENDING, K.APPROVAL_WAITING})
 
 # --------------------------------------------------------------------------- send-time check
 # Checked by the sending task under the row's lock (apps.core.delivery): the
@@ -63,7 +64,7 @@ def _addressee(user: Any, roles: frozenset[Role], submission: Submission) -> boo
 
 def _submission(row: ConferenceNotification) -> Submission | None:
     """The submission the row is about (its link, or its approval's)."""
-    if row.kind in (K.REQUEST_DUE, K.APPROVAL_PENDING):
+    if row.kind in LINKED_KINDS:
         link = row.link_id
         if link is None:  # always set for these kinds (notify's callers)
             return None
@@ -113,8 +114,9 @@ def still_due(row: ConferenceNotification) -> bool:
     """The deadline or the approval still calls for it: a deadline of the same
     instant, not cancelled, not passed, still relevant to a live submission of
     the recipient; a request due date of the same day, not passed, no approval
-    requested; an approval still awaited, of the same reference deadline. A
-    decision and a policy change happened: always due."""
+    requested; an approval still awaited, of the same reference deadline, or (M9b)
+    without one, on the same version. A decision and a policy change happened:
+    always due."""
     from . import reminders, services
 
     now = timezone.now()
@@ -124,7 +126,23 @@ def still_due(row: ConferenceNotification) -> bool:
         approval = _approval(row)
         return approval is not None and approval.decision == ApprovalDecision.PENDING
     link = row.link_id
-    if link is None:  # DEADLINE, REQUEST_DUE and APPROVAL_PENDING always have one
+    if link is None:  # DEADLINE and the LINKED_KINDS always have one
+        return False
+    if row.kind == K.APPROVAL_WAITING:
+        # Still PENDING, still without a reference deadline, the same request on the
+        # same version (the event names both), of a week already begun.
+        today = timezone.localdate()
+        for approval in StApproval.objects.filter(
+            submission_id=link, thesis_id=row.thesis_id, decision=ApprovalDecision.PENDING
+        ).select_related("submission"):
+            kind = services.REFERENCE_DEADLINE.get(ApprovalPurpose(approval.purpose))
+            if kind and services.reference_deadline(approval.submission, kind) is not None:
+                continue
+            week = reminders.waiting_week(approval, today)
+            if week is not None and any(
+                reminders.waiting_event(approval, n) == row.target_id for n in range(week + 1)
+            ):
+                return True
         return False
     if row.kind == K.DEADLINE:
         deadline = next(

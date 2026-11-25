@@ -581,6 +581,57 @@ class _Run:
         portfolio.set_reregistration_date(thesis=self.t, user=self.users[Role.PHD_STUDENT],
                                           day=_day(self.anchor, 9, 15))  # fmt: skip
 
+    def m9b_communications(self) -> None:
+        """M9b: a seminar without edition and a talk aimed at it; a poster at the SFCA
+        (the same ST approval circuit: both wait for a request)."""
+        student = self.users[Role.PHD_STUDENT]
+        self._venue("semf", "SEMINAR", "SEMF", "Séminaire fictif de l'équipe")
+        conferences.create_submission(
+            thesis=self.t, user=student, venue=self.venues["semf"], edition=None,
+            title="Exposé fictif sur le banc de simulation", level=Level.CONFIDENTIAL,
+            presentation_kind="TALK",
+        )  # fmt: skip
+        target = self.editions["sfca"]
+        conferences.create_submission(
+            thesis=self.t, user=student, venue=target.venue, edition=target,
+            title="Poster fictif sur une contre-mesure", level=Level.CONFIDENTIAL,
+            presentation_kind="POSTER",
+        )  # fmt: skip
+
+    def m9b_portfolio(self) -> None:
+        """M9b: the details of the accepted paper, teaching and outreach of several
+        levels, the student's skills and professional project."""
+        student = self.users[Role.PHD_STUDENT]
+        portfolio.set_publication_details(
+            submission=self.submissions["a"], user=student,
+            values={"adum_category": "CONFERENCE_PAPER", "presented_on": None,
+                    "doi": "10.12345/fictif.sfca.2027", "hal_id": "", "volume": "",
+                    "pages": "1-18", "bibtex_key": "fictif:sfca"},
+        )  # fmt: skip
+        portfolio.create_teaching(
+            thesis=self.t, user=student, course="Travaux dirigés fictifs de cryptographie",
+            institution="Université fictive", kind="TD", hours="16",
+            start_date=_day(self.anchor, 2, 1), end_date=_day(self.anchor, 3, 20),
+        )  # fmt: skip
+        portfolio.create_teaching(
+            thesis=self.t, user=student, course="Formation interne fictive aux outils de test",
+            institution="Entreprise fictive", kind="OTHER", hours="3,5",
+            start_date=_day(self.anchor, 3, 5), end_date=_day(self.anchor, 3, 5),
+            level=Level.INTERNAL_ST,
+        )  # fmt: skip
+        portfolio.create_outreach(
+            thesis=self.t, user=student, title="Atelier fictif de la fête de la science",
+            audience="Collégiens fictifs", kind="SCIENCE_FESTIVAL", date=_day(self.anchor, 3, 8),
+        )  # fmt: skip
+        portfolio.create_skill(
+            thesis=self.t, user=student, title="Mesures fictives par canal auxiliaire",
+            evidence="Banc de simulation (fictif)", category="TECHNICAL",
+        )  # fmt: skip
+        portfolio.set_career_note(
+            thesis=self.t, user=student,
+            text="Projet professionnel fictif, la recherche industrielle en sécurité matérielle.",
+        )  # fmt: skip
+
     def store_note(self) -> None:
         self.note = self.store("Note de travail (fictive)", Level.CONFIDENTIAL)
 
@@ -1188,6 +1239,8 @@ class _Run:
             lambda: self.submit("cvec_certificate", "Attestation CVEC (fictive)"),
         )
         s("a-accepted", at(4, 3, 10), lambda: self.set_status("a", "ACCEPTED"))
+        s("m9b-communications", at(4, 4, 10), self.m9b_communications)
+        s("m9b-portfolio", at(4, 4, 11), self.m9b_portfolio)
         s(
             "academic-file-validated",
             at(4, 6, 14),

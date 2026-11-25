@@ -15,8 +15,12 @@ Who: deadlines of the editions aimed at by a live submission, by its status
 (abstract and paper before submitting, rebuttal once submitted, final version
 and registration once accepted) -> the student and the internal co-authors;
 request due dates -> the student; approvals awaiting a decision -> the tutors
-(J-7 and J-1 of the reference deadline). Active internal members of an open
-thesis only; the e-mail is a link (CLAUDE.md rule 7).
+(J-7 and J-1 of the reference deadline); M9b: approvals awaited WITHOUT a
+reference deadline (a journal, a venue without an edition, a preprint) -> the
+tutors, on the Paris date « request + review period », then every 7 days while
+PENDING (one event per week: a missed run sends the week's reminder on the next
+one). Active internal members of an open thesis only; the e-mail is a link
+(CLAUDE.md rule 7).
 """
 
 from __future__ import annotations
@@ -61,12 +65,31 @@ RELEVANT: dict[str, frozenset[str]] = {
 TUTOR_WINDOWS = frozenset({Window.J7, Window.J1})
 
 
+WAITING_PERIOD_DAYS = 7
+
+
 @dataclass(frozen=True)
 class RunResult:
     deadlines: int
     request_dues: int
     pending: int
     requeued: int
+    waiting: int = 0
+
+
+def waiting_week(approval: StApproval, today: dt.date) -> int | None:
+    """The week (0, 1, ...) of the reminders of an approval awaited without a
+    reference deadline, from the Paris date of the request + its frozen review
+    period; None before."""
+    first = timezones.local_date(approval.created_at, "Europe/Paris") + dt.timedelta(
+        days=approval.review_days
+    )
+    days = (today - first).days
+    return days // WAITING_PERIOD_DAYS if days >= 0 else None
+
+
+def waiting_event(approval: StApproval, week: int) -> uuid.UUID:
+    return event("waiting", approval.pk, approval.version_id, week)
 
 
 def window_for(days: int) -> str | None:
@@ -105,7 +128,7 @@ def run(now: dt.datetime | None = None) -> RunResult:
     # Failed e-mails of earlier runs first: a row created below is tried once per run.
     requeued = requeue_failed()
     paris_today = timezones.local_date(now, "Europe/Paris")
-    deadlines = request_dues = pending = 0
+    deadlines = request_dues = pending = waiting = 0
     for thesis in Thesis.objects.filter(status__in=OPEN_THESIS).order_by("pk"):
         students = members_with_role(thesis, Role.PHD_STUDENT)
         live = Submission.objects.filter(thesis=thesis, status__in=list(RELEVANT)).order_by("pk")
@@ -148,7 +171,18 @@ def run(now: dt.datetime | None = None) -> RunResult:
         ).select_related("submission"):
             kind = services.REFERENCE_DEADLINE.get(ApprovalPurpose(approval.purpose))
             reference = services.reference_deadline(approval.submission, kind) if kind else None
-            if reference is None or reference.due_at < now:
+            if reference is None:
+                week = waiting_week(approval, paris_today)
+                if week is not None:
+                    waiting += notify(
+                        thesis,
+                        NotificationKind.APPROVAL_WAITING,
+                        waiting_event(approval, week),
+                        tutors,
+                        link_id=approval.submission_id,
+                    )
+                continue
+            if reference.due_at < now:
                 continue
             window = _deadline_window(reference, now)
             if window not in TUTOR_WINDOWS:
@@ -161,4 +195,4 @@ def run(now: dt.datetime | None = None) -> RunResult:
                 window=window or "",
                 link_id=approval.submission_id,
             )
-    return RunResult(deadlines, request_dues, pending, requeued)
+    return RunResult(deadlines, request_dues, pending, requeued, waiting)

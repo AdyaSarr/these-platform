@@ -5,14 +5,21 @@
 {% page_header %}{% translate "ADUM summary" %}{% subtitle %}{% translate "To copy into your ADUM portfolio" %}{% endpage_header %}
 {% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
 {% if summary %}
+{% url 'portfolio:adum_csv' thesis_id=thesis.pk as csv_url %}
 <form class="filter-row" method="get">
   <p><label for="adum-year">{% translate "Academic year" %}</label>
     <select id="adum-year" name="year">{% for year in summary.years %}<option value="{{ year.number }}"{% if year.number == summary.year.number %} selected{% endif %}>{{ year.academic_start|date:"Y" }}–{{ year.academic_end|date:"Y" }}</option>{% endfor %}</select>
-    <label><input type="checkbox" name="internal" value="1"{% if summary.include_internal %} checked{% endif %}> {% translate "Include the internal trainings" %}</label>
+    <label><input type="checkbox" name="internal" value="1"{% if summary.include_internal %} checked{% endif %}> {% translate "Include the internal items" %}</label>
+    <label><input type="checkbox" name="accepted" value="1"{% if summary.include_accepted %} checked{% endif %}> {% translate "Include the accepted submissions" %}</label>
     <button type="submit">{% translate "Filter" %}</button></p>
 </form>
-<p class="muted">{% translate "Columns and order to be confirmed by the doctoral school. Entering a training in ADUM discloses it outside the platform." %}</p>
+<p class="muted">{% translate "Columns and order to be confirmed by the doctoral school. Entering an item in ADUM discloses it outside the platform." %}</p>
 {% if summary.left_out %}<p class="muted">{% blocktranslate count n=summary.left_out %}{{ n }} internal training of this year is left out.{% plural %}{{ n }} internal trainings of this year are left out.{% endblocktranslate %}</p>{% endif %}
+{% if summary.left_out_other %}<p class="muted">{% blocktranslate count n=summary.left_out_other %}{{ n }} other internal item of this year is left out.{% plural %}{{ n }} other internal items of this year are left out.{% endblocktranslate %}</p>{% endif %}
+{% if summary.accepted_left_out %}<p class="muted">{% blocktranslate count n=summary.accepted_left_out %}{{ n }} accepted submission, not published yet, is left out.{% plural %}{{ n }} accepted submissions, not published yet, are left out.{% endblocktranslate %}</p>{% endif %}
+
+<section aria-labelledby="trainings-title">
+<h2 id="trainings-title">{% translate "Trainings" %}</h2>
 {% if summary.rows %}
 <table class="table">
   <thead><tr><th scope="col">{% translate "Title" %}</th><th scope="col">{% translate "Provider" %}</th><th scope="col">{% translate "Category" %}</th><th scope="col">{% translate "Hours" %}</th><th scope="col">{% translate "Start" %}</th><th scope="col">{% translate "End" %}</th></tr></thead>
@@ -30,18 +37,62 @@
   </tbody>
   <tfoot><tr><th scope="row" colspan="3">{% translate "Total" %}</th><td>{{ summary.hours|floatformat:"-1" }}</td><td colspan="2"></td></tr></tfoot>
 </table>
-<details class="confirm">
-  <summary class="btn btn-secondary">{% icon "download" %}{% translate "Download as CSV" %}</summary>
-  <div class="confirm-panel">
-    <p>{% translate "Asks for your second factor. The file holds the titles in clear: keep it on an encrypted disk." %}</p>
-    <form method="post" action="{% url 'portfolio:adum_csv' thesis_id=thesis.pk %}">{% csrf_token %}
-      <input type="hidden" name="year" value="{{ summary.year.number }}">{% if summary.include_internal %}<input type="hidden" name="internal" value="1">{% endif %}
-      <button type="submit" class="btn btn-primary">{% translate "Yes, download" %}</button>
-    </form>
-  </div>
-</details>
+{% translate "Download as CSV" as label %}{% include "portfolio/_adum_download.html" with action=csv_url section="" %}
 {% else %}
 {% translate "No finished training in this year." as message %}{% include "ui/empty.html" with message=message %}
+{% endif %}
+</section>
+
+<section aria-labelledby="publications-title">
+<h2 id="publications-title">{% translate "Publications" %}</h2>
+{% if summary.publications %}{% include "portfolio/_adum_papers.html" with rows=summary.publications %}
+{% translate "Download as CSV" as label %}{% include "portfolio/_adum_download.html" with action=csv_url section="publications" %}
+{% else %}{% translate "No publication in this year." as message %}{% include "ui/empty.html" with message=message %}{% endif %}
+</section>
+
+<section aria-labelledby="communications-title">
+<h2 id="communications-title">{% translate "Communications" %}</h2>
+{% if summary.communications %}{% include "portfolio/_adum_papers.html" with rows=summary.communications %}
+{% translate "Download as CSV" as label %}{% include "portfolio/_adum_download.html" with action=csv_url section="communications" %}
+{% else %}{% translate "No communication in this year." as message %}{% include "ui/empty.html" with message=message %}{% endif %}
+</section>
+
+<section aria-labelledby="teaching-title">
+<h2 id="teaching-title">{% translate "Teaching" %}</h2>
+{% if summary.teachings %}
+<table class="table">
+  <thead><tr><th scope="col">{% translate "Course" %}</th><th scope="col">{% translate "Institution" %}</th><th scope="col">{% translate "Type" %}</th><th scope="col">{% translate "Hours" %}</th><th scope="col">{% translate "Start" %}</th><th scope="col">{% translate "End" %}</th></tr></thead>
+  <tbody>
+  {% for row in summary.teachings %}
+    <tr><td>{{ row.main }}{% if row.internal %} <span class="mark">{% translate "internal level: to check before entering it" %}</span>{% endif %}</td><td>{{ row.second }}</td><td>{{ row.obj.get_kind_display }}</td><td>{{ row.obj.hours|floatformat:"-1" }}</td><td>{{ row.obj.start_date|date:"d/m/Y" }}</td><td>{{ row.obj.end_date|date:"d/m/Y" }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% translate "Download as CSV" as label %}{% include "portfolio/_adum_download.html" with action=csv_url section="teaching" %}
+{% else %}{% translate "No teaching finished in this year." as message %}{% include "ui/empty.html" with message=message %}{% endif %}
+</section>
+
+<section aria-labelledby="outreach-title">
+<h2 id="outreach-title">{% translate "Outreach" %}</h2>
+{% if summary.outreach %}
+<table class="table">
+  <thead><tr><th scope="col">{% translate "Title" %}</th><th scope="col">{% translate "Audience and place" %}</th><th scope="col">{% translate "Type" %}</th><th scope="col">{% translate "Date" %}</th></tr></thead>
+  <tbody>
+  {% for row in summary.outreach %}
+    <tr><td>{{ row.main }}{% if row.internal %} <span class="mark">{% translate "internal level: to check before entering it" %}</span>{% endif %}</td><td>{{ row.second }}</td><td>{{ row.obj.get_kind_display }}</td><td>{{ row.obj.date|date:"d/m/Y" }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% translate "Download as CSV" as label %}{% include "portfolio/_adum_download.html" with action=csv_url section="outreach" %}
+{% else %}{% translate "No outreach action in this year." as message %}{% include "ui/empty.html" with message=message %}{% endif %}
+</section>
+
+{% if summary.publishable %}
+<section aria-labelledby="bibtex-title">
+<h2 id="bibtex-title">{% translate "BibTeX" %}</h2>
+<p class="muted">{% translate "Every published submission (all years), with the options above." %}</p>
+{% url 'portfolio:adum_bibtex' thesis_id=thesis.pk as bibtex_url %}{% translate "Download as BibTeX" as label %}{% include "portfolio/_adum_download.html" with action=bibtex_url section="" %}
+</section>
 {% endif %}
 {% endif %}
 {% endblock %}

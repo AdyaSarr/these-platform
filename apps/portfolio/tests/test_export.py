@@ -49,3 +49,50 @@ def test_with_the_st_agreement_internal_st_is_exported(team: SimpleNamespace) ->
     export.grant_st_consent(thesis=team.thesis, user=team.tutor, recent_mfa=True)
     data = x.read(x.run(team), "portfolio.json")
     assert [t["intitule"] for t in data["formations"]] == ["Atelier ST fictif"]
+
+
+# --------------------------------------------------------------------------- M9b
+
+
+def test_m9b_in_the_export_at_the_exported_levels(team: SimpleNamespace) -> None:
+    article = h.publication(team, title="Article public fictif")
+    h.details(team, article, doi="10.12345/public", presented_on=h.D(2027, 1, 14))
+    hidden = h.publication(team, L.INTERNAL_ST, title="Article ST fictif")
+    h.details(team, hidden, volume="TEMOIN-FUITE-VOLUME-ST")
+    h.teaching(team, course="Cours public fictif", hours="12,5", notes="Note fictive")
+    h.teaching(team, L.INTERNAL_ST, course="TEMOIN-FUITE-COURS-ST")
+    h.outreach(team, L.CONFIDENTIAL, title="Action confidentielle fictive")
+    h.outreach(team, L.INTERNAL_ST, title="TEMOIN-FUITE-ACTION-ST")
+    h.skill(team, title="Compétence fictive", evidence="Preuve fictive")
+    services.set_career_note(thesis=team.thesis, user=team.student, text="Projet fictif")
+    archive = x.run(team)
+    data = x.read(archive, "portfolio.json")
+    (details,) = data["publications"]
+    assert details["soumission"] == str(article.pk) and details["doi"] == "10.12345/public"
+    assert details["presentee_le"] == "2027-01-14" and details["categorie_adum"]
+    (course,) = data["enseignements"]
+    assert course["intitule"] == "Cours public fictif" and course["heures"] == "12.5"
+    assert course["notes"] == "Note fictive" and course["type"] == "TD"
+    assert [o["intitule"] for o in data["diffusion"]] == ["Action confidentielle fictive"]
+    assert data["competences"] == [
+        {
+            "id": data["competences"][0]["id"],
+            "intitule": "Compétence fictive",
+            "preuves": "Preuve fictive",
+            "categorie": "TECHNICAL",
+        }
+    ]
+    assert data["projet_professionnel"] == "Projet fictif"
+    assert "TEMOIN-FUITE" not in x.everything(archive)
+
+
+def test_m9b_internal_st_with_the_st_agreement(team: SimpleNamespace) -> None:
+    from apps.export import services as export
+
+    h.teaching(team, L.INTERNAL_ST, course="Cours ST fictif")
+    hidden = h.publication(team, L.INTERNAL_ST, title="Article ST fictif")
+    h.details(team, hidden, volume="7")
+    export.grant_st_consent(thesis=team.thesis, user=team.tutor, recent_mfa=True)
+    data = x.read(x.run(team), "portfolio.json")
+    assert [t["intitule"] for t in data["enseignements"]] == ["Cours ST fictif"]
+    assert [p["volume"] for p in data["publications"]] == ["7"]

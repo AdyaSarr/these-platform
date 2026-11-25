@@ -1,0 +1,11 @@
+{% extends "base.html" %}{% load i18n ui %}
+{% block title %}{{ heading }}{% endblock %}
+{% block content %}
+{% module_tabs "portfolio" %}
+{% page_header parent_url=back_url parent_label=_("Back") %}{{ heading }}{% endpage_header %}
+{% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
+<p class="muted">{% if intro %}{{ intro }} {% endif %}{% translate "The texts are encrypted; what counts (type, hours, dates, level) is in clear." %}</p>
+<form class="stack" method="post">{% csrf_token %}{% include "conferences/_form.html" %}
+  <button type="submit" class="btn-primary">{% translate "Save" %}</button>
+</form>
+{% endblock %}

@@ -905,6 +905,7 @@ def _portfolio(c: _Context) -> dict[str, Any]:
         "reinscription": _iso(policy.reregistration_date) if policy else None,
         "formations": [],
     }
+    out.update(_portfolio_m9b(c))
     if Action.TRAINING_READ not in allowed_actions(c.user, c.thesis):
         return out
     rows = list(
@@ -930,6 +931,93 @@ def _portfolio(c: _Context) -> dict[str, Any]:
                 "attestation": c.document(t.certificate_id),
             }
         )
+    return out
+
+
+def _portfolio_m9b(c: _Context) -> dict[str, Any]:
+    """M9b: the publication details of the exported submissions, teaching and
+    outreach at the exported levels, the student's skills and professional project
+    (sealed at CONFIDENTIAL: exported with the student's levels)."""
+    from apps.conferences.models import Submission
+    from apps.portfolio.models import (
+        DETAILS_TEXTS,
+        OUTREACH_TEXTS,
+        SKILL_TEXTS,
+        TEACHING_TEXTS,
+        CareerNote,
+        Outreach,
+        PublicationDetails,
+        SkillNote,
+        Teaching,
+    )
+
+    actions = allowed_actions(c.user, c.thesis)
+    out: dict[str, Any] = {"publications": [], "enseignements": [], "diffusion": [],
+                           "competences": [], "projet_professionnel": None}  # fmt: skip
+    if Action.SUBMISSION_READ in actions:
+        exported = Submission.objects.readable_by(c.user, c.thesis).filter(level__in=c.level_values)
+        details = list(
+            PublicationDetails.objects.filter(submission__in=exported)
+            .select_related("submission")
+            .order_by("created_at", "pk")
+        )
+        texts = c.texts(details, DETAILS_TEXTS)
+        for d in details:
+            c.note_confidential(d, d.level)
+            out["publications"].append(
+                {"id": str(d.pk), "soumission": str(d.submission_id),
+                 "categorie_adum": d.adum_category, "presentee_le": _iso(d.presented_on),
+                 "doi": texts.get((d.pk, "doi"), ""), "hal": texts.get((d.pk, "hal_id"), ""),
+                 "volume": texts.get((d.pk, "volume"), ""),
+                 "pages": texts.get((d.pk, "pages"), ""),
+                 "cle_bibtex": texts.get((d.pk, "bibtex_key"), "")}
+            )  # fmt: skip
+    if Action.TEACHING_READ in actions:
+        rows = list(
+            Teaching.objects.readable_by(c.user, c.thesis)
+            .filter(level__in=c.level_values)
+            .order_by("start_date", "created_at", "pk")
+        )
+        texts = c.texts(rows, TEACHING_TEXTS)
+        for t in rows:
+            c.note_confidential(t, t.level)
+            out["enseignements"].append(
+                {"id": str(t.pk), "intitule": texts.get((t.pk, "course"), ""),
+                 "etablissement": texts.get((t.pk, "institution"), ""),
+                 "notes": texts.get((t.pk, "notes"), ""), "type": t.kind,
+                 "heures": str(t.hours), "debut": _iso(t.start_date), "fin": _iso(t.end_date),
+                 "niveau": t.level}
+            )  # fmt: skip
+    if Action.OUTREACH_READ in actions:
+        actions_rows = list(
+            Outreach.objects.readable_by(c.user, c.thesis)
+            .filter(level__in=c.level_values)
+            .order_by("date", "created_at", "pk")
+        )
+        texts = c.texts(actions_rows, OUTREACH_TEXTS)
+        for o in actions_rows:
+            c.note_confidential(o, o.level)
+            out["diffusion"].append(
+                {"id": str(o.pk), "intitule": texts.get((o.pk, "title"), ""),
+                 "public": texts.get((o.pk, "audience"), ""),
+                 "notes": texts.get((o.pk, "notes"), ""), "type": o.kind,
+                 "date": _iso(o.date), "niveau": o.level}
+            )  # fmt: skip
+    if Action.CAREER_NOTE_READ in actions:
+        skills = list(
+            SkillNote.objects.readable_by(c.user, c.thesis).order_by("category", "created_at", "pk")
+        )
+        notes = list(CareerNote.objects.readable_by(c.user, c.thesis))
+        texts = c.texts(skills, SKILL_TEXTS) | c.texts(notes, ("text",))
+        for k in skills:
+            c.note_confidential(k, k.level)
+            out["competences"].append(
+                {"id": str(k.pk), "intitule": texts.get((k.pk, "title"), ""),
+                 "preuves": texts.get((k.pk, "evidence"), ""), "categorie": k.category}
+            )  # fmt: skip
+        for note in notes:
+            c.note_confidential(note, note.level)
+            out["projet_professionnel"] = texts.get((note.pk, "text"), "")
     return out
 
 
@@ -959,7 +1047,7 @@ def _st_counts(c: _Context, all_versions: bool) -> int:
     from apps.conferences.models import Submission
     from apps.meetings.models import Meeting
     from apps.objectives.models import Objective
-    from apps.portfolio.models import Training
+    from apps.portfolio.models import Outreach, Teaching, Training
     from apps.travel.models import Mission, TravelBudget
 
     st = L.INTERNAL_ST
@@ -967,7 +1055,7 @@ def _st_counts(c: _Context, all_versions: bool) -> int:
         return 0
     only = frozenset({st})
     count = len(c.vault.export_documents(c.user, c.thesis, all_versions=all_versions, levels=only))
-    for model in (Meeting, Submission, Objective, Training):
+    for model in (Meeting, Submission, Objective, Training, Teaching, Outreach):
         count += model.objects.readable_by(c.user, c.thesis).filter(level=st.value).count()
     count += Mission.objects.visible_to(c.user, c.thesis).filter(level=st.value).count()
     count += TravelBudget.objects.filter(thesis=c.thesis, level=st.value).count()

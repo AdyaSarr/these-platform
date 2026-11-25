@@ -75,12 +75,29 @@ def test_readable_by_is_the_action_and_the_level(team: SimpleNamespace, role: Ro
     from apps.portfolio.tests.helpers import training
 
     trainings = {level: training(team, level) for level in L}  # M9a
+    from apps.portfolio.models import CareerNote, Outreach, PublicationDetails, SkillNote, Teaching
+    from apps.portfolio.tests import helpers as p
+
+    teachings = {level: p.teaching(team, level) for level in L}  # M9b
+    actions = {level: p.outreach(team, level) for level in L}
+    # The details follow their submission's level: never a level of their own.
+    details = {level: p.details(team, submissions[level]) for level in L}
+    skills = {L.CONFIDENTIAL: p.skill(team)}  # the fixed level of the student's notes
+    from apps.portfolio import services as portfolio
+
+    portfolio.set_career_note(thesis=team.thesis, user=team.student, text="Projet fictif")
+    careers = {L.CONFIDENTIAL: CareerNote.objects.get(thesis=team.thesis)}
     user = _user(team, role)
     for model, objects, action in (
         (Meeting, meetings, Action.MEETING_READ),
         (Submission, submissions, Action.SUBMISSION_READ),
         (Objective, objectives, Action.OBJECTIVE_READ),
         (Training, trainings, Action.TRAINING_READ),
+        (Teaching, teachings, Action.TEACHING_READ),
+        (Outreach, actions, Action.OUTREACH_READ),
+        (PublicationDetails, details, Action.SUBMISSION_READ),
+        (SkillNote, skills, Action.CAREER_NOTE_READ),
+        (CareerNote, careers, Action.CAREER_NOTE_READ),
     ):
         seen = set(model.objects.readable_by(user, team.thesis).values_list("pk", flat=True))
         expected = {

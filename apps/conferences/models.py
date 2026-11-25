@@ -58,6 +58,26 @@ class VenueKind(models.TextChoices):
     CONFERENCE = "CONFERENCE", _("Conference")
     WORKSHOP = "WORKSHOP", _("Workshop")
     JOURNAL = "JOURNAL", _("Journal")
+    # M9b: communications; their edition is optional (a seminar has none, a PhD
+    # students' day may have one, with its deadlines).
+    SEMINAR = "SEMINAR", _("Seminar")
+    PHD_DAY = "PHD_DAY", _("PhD students' day")
+    OTHER = "OTHER", _("Other venue")
+
+
+# A submission to one of these is aimed at an edition; a journal has none; the others
+# may have one (M9b).
+NEEDS_EDITION = frozenset({VenueKind.CONFERENCE, VenueKind.WORKSHOP})
+NO_EDITION = frozenset({VenueKind.JOURNAL})
+
+
+class PresentationKind(models.TextChoices):
+    """The form of a communication (M9b): a poster is a form, not a venue."""
+
+    PAPER = "PAPER", _("Paper")
+    POSTER = "POSTER", _("Poster")
+    TALK = "TALK", _("Talk")
+    INVITED_TALK = "INVITED_TALK", _("Invited talk")
 
 
 class Venue(TimeStampedModel):
@@ -93,6 +113,14 @@ class Venue(TimeStampedModel):
     @property
     def is_journal(self) -> bool:
         return self.kind == VenueKind.JOURNAL
+
+    @property
+    def needs_edition(self) -> bool:
+        return self.kind in NEEDS_EDITION
+
+    @property
+    def has_editions(self) -> bool:
+        return self.kind not in NO_EDITION
 
 
 class Edition(TimeStampedModel):
@@ -251,6 +279,9 @@ class Submission(TimeStampedModel):
         _("status"), max_length=20, choices=SubmissionStatus.choices, default="PREPARING"
     )
     st_work = models.BooleanField(_("concerns ST work"), default=True)
+    presentation_kind = models.CharField(
+        _("form"), max_length=20, choices=PresentationKind.choices, default="PAPER"
+    )
     submitted_version = models.ForeignKey(
         "vault.DocumentVersion", on_delete=models.PROTECT, null=True, blank=True, related_name="+"
     )
@@ -271,6 +302,7 @@ class Submission(TimeStampedModel):
         constraints: ClassVar[list[models.BaseConstraint]] = [
             _in("level", ConfidentialityLevel.values, "conferences_submission_level"),
             _in("status", SubmissionStatus.values, "conferences_submission_status"),
+            _in("presentation_kind", PresentationKind.values, "conferences_submission_form"),
             models.CheckConstraint(
                 condition=Q(st_work=False) | Q(level__in=ST_LEVELS),
                 name="conferences_submission_st_level",
@@ -512,6 +544,8 @@ class NotificationKind(models.TextChoices):
     APPROVAL_REQUESTED = "APPROVAL_REQUESTED", _("ST approval requested")
     APPROVAL_DECIDED = "APPROVAL_DECIDED", _("ST approval decided")
     POLICY_CHANGED = "POLICY_CHANGED", _("ST review period changed")
+    # M9b: an approval awaited without a reference deadline, every week.
+    APPROVAL_WAITING = "APPROVAL_WAITING", _("ST approval still awaited")
 
 
 class Window(models.TextChoices):

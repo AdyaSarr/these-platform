@@ -1,0 +1,15 @@
+{% load i18n ui %}<table class="table">
+  <thead><tr><th scope="col">{{ pages.one }}</th><th scope="col">{% translate "Type" %}</th>{% if pages.with_hours %}<th scope="col">{% translate "Hours" %}</th>{% endif %}<th scope="col">{% translate "Dates" %}</th><th scope="col">{% translate "Confidentiality" %}</th></tr></thead>
+  <tbody>
+  {% for row, url in rows %}
+    <tr>
+      <td><a href="{{ url }}">{{ row.main }}</a>{% if row.second %}<br><span class="muted">{{ row.second }}</span>{% endif %}</td>
+      <td>{{ row.obj.get_kind_display }}</td>
+      {% if pages.with_hours %}<td>{{ row.obj.hours|floatformat:"-1" }}&nbsp;h</td>
+      <td>{{ row.obj.start_date|date:"SHORT_DATE_FORMAT" }}{% if row.obj.end_date != row.obj.start_date %} – {{ row.obj.end_date|date:"SHORT_DATE_FORMAT" }}{% endif %}</td>
+      {% else %}<td>{{ row.obj.date|date:"SHORT_DATE_FORMAT" }}</td>{% endif %}
+      <td>{% level_badge row.obj.level %}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>

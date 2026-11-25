@@ -114,6 +114,15 @@ EXPECTED: dict[Action, set[Role]] = {
     A.TRAINING_READ: (_SUPERVISION - {R.INDUSTRIAL_CO_SUPERVISOR}) | {R.CSI_MEMBER},
     A.TRAINING_WRITE: {R.PHD_STUDENT},
     A.PORTFOLIO_EXPORT: {R.PHD_STUDENT},
+    # Teaching and outreach (M9b): the whole supervision by level, the company
+    # co-supervisor included; never the CSI member. The student writes.
+    A.TEACHING_READ: _SUPERVISION,
+    A.TEACHING_WRITE: {R.PHD_STUDENT},
+    A.OUTREACH_READ: _SUPERVISION,
+    A.OUTREACH_WRITE: {R.PHD_STUDENT},
+    # Skills and professional project (M9b): the student alone, reading and writing.
+    A.CAREER_NOTE_READ: {R.PHD_STUDENT},
+    A.CAREER_NOTE_WRITE: {R.PHD_STUDENT},
 }
 
 EXPECTED_LEVELS: dict[Level, set[Role]] = {

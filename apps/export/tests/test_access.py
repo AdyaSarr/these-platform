@@ -87,13 +87,18 @@ def test_a_recent_second_factor_is_required(team: SimpleNamespace) -> None:
 
 
 def test_once_an_hour(team: SimpleNamespace, time_machine: Any) -> None:
+    """Frozen instants (tick=False): the limit is measured from the first export's
+    own start, whatever the setup took or the load of the machine."""
+    first = h.NOW + dt.timedelta(hours=1)
+    time_machine.move_to(first, tick=False)
     b"".join(_start(team).chunks())
+    assert ExportRecord.objects.get().started_at == first
     with pytest.raises(export.ExportRateLimitedError):
         _start(team)
-    time_machine.move_to(h.NOW + dt.timedelta(minutes=59), tick=True)
+    time_machine.move_to(first + dt.timedelta(minutes=59, seconds=59), tick=False)
     with pytest.raises(export.ExportRateLimitedError):
         _start(team)
-    time_machine.move_to(h.NOW + dt.timedelta(minutes=60, seconds=1), tick=True)
+    time_machine.move_to(first + dt.timedelta(hours=1), tick=False)  # exactly one hour later
     b"".join(_start(team).chunks())
     assert ExportRecord.objects.count() == 2
 

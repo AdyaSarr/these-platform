@@ -1,0 +1,24 @@
+{% extends "base.html" %}{% load i18n ui %}
+{% block title %}{{ pages.one }}{% endblock %}
+{% block content %}
+{% module_tabs "portfolio" %}
+{% page_header parent_url=back_url parent_label=pages.title %}{{ row.main }}{% actions %}{% if can_write %}{% include "ui/action.html" with url=edit_url label=_("Edit") icon="pencil" %}{% endif %}{% endpage_header %}
+{% if error %}<p class="message message-error" role="alert">{{ error }}</p>{% endif %}
+<dl class="stats">
+  <div><dt>{% translate "Type" %}</dt><dd>{{ obj.get_kind_display }}</dd></div>
+  {% if pages.with_hours %}<div><dt>{% translate "Hours" %}</dt><dd>{{ obj.hours|floatformat:"-1" }}&nbsp;h</dd></div>
+  <div><dt>{% translate "Dates" %}</dt><dd>{{ obj.start_date|date:"d/m/Y" }}{% if obj.end_date != obj.start_date %} – {{ obj.end_date|date:"d/m/Y" }}{% endif %}{% if not row.done %} <span class="mark">{% translate "to come" %}</span>{% endif %}</dd></div>
+  {% else %}<div><dt>{% translate "Date" %}</dt><dd>{{ obj.date|date:"d/m/Y" }}{% if not row.done %} <span class="mark">{% translate "to come" %}</span>{% endif %}</dd></div>{% endif %}
+  <div><dt>{% translate "Confidentiality" %}</dt><dd>{% level_badge obj.level %}</dd></div>
+</dl>
+{% if row.second %}<p>{{ row.second }}</p>{% endif %}
+{% if can_write %}
+{% if row.texts.notes %}<h2>{% translate "Notes" %}</h2><p>{{ row.texts.notes|linebreaksbr }}</p>{% endif %}
+<section aria-labelledby="level-title">
+<h2 id="level-title">{% translate "Confidentiality" %}</h2>
+<form class="stack" method="post" action="{{ level_url }}">{% csrf_token %}{% with form=level_form %}{% include "conferences/_form.html" %}{% endwith %}
+  <button type="submit" class="btn-primary">{% translate "Change the level" %}</button>
+  <span class="muted">{% translate "Asks for your second factor." %}</span></form>
+</section>
+{% endif %}
+{% endblock %}

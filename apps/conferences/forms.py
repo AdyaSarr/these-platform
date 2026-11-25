@@ -19,10 +19,12 @@ from apps.vault.models import DocumentVersion
 
 from . import services
 from .models import (
+    NEEDS_EDITION,
     ApprovalPurpose,
     DeadlineKind,
     Edition,
     PreprintPlatform,
+    PresentationKind,
     RefusalReason,
     SubmissionStatus,
     Venue,
@@ -62,7 +64,8 @@ def member_choices(thesis: Thesis) -> list[tuple[str, str]]:
 
 
 def target_choices(thesis: Thesis) -> list[tuple[str, str]]:
-    """« Edition » or « journal » targets: ``edition:<id>`` or ``journal:<id>``."""
+    """An edition, or a venue without one: ``edition:<id>`` or ``venue:<id>`` (a
+    journal; M9b: a seminar, a PhD students' day, another venue)."""
     choices: list[tuple[str, str]] = []
     for edition in (
         Edition.objects.filter(thesis=thesis)
@@ -70,8 +73,12 @@ def target_choices(thesis: Thesis) -> list[tuple[str, str]]:
         .order_by("venue__acronym", "year")
     ):
         choices.append((f"edition:{edition.pk}", f"{edition.venue.acronym} {edition.year}"))
-    for venue in Venue.objects.filter(thesis=thesis, kind=VenueKind.JOURNAL).order_by("acronym"):
-        choices.append((f"journal:{venue.pk}", f"{venue.acronym} ({venue.get_kind_display()})"))
+    for venue in (
+        Venue.objects.filter(thesis=thesis)
+        .exclude(kind__in=list(NEEDS_EDITION))
+        .order_by("acronym", "kind")
+    ):
+        choices.append((f"venue:{venue.pk}", f"{venue.acronym} ({venue.get_kind_display()})"))
     return choices
 
 
@@ -81,8 +88,10 @@ def resolve_target(thesis: Thesis, raw: str) -> tuple[Venue, Edition | None]:
         edition = Edition.objects.filter(pk=pk, thesis=thesis).select_related("venue").first()
         if edition is not None:
             return edition.venue, edition
-    if kind == "journal":
-        venue = Venue.objects.filter(pk=pk, thesis=thesis, kind=VenueKind.JOURNAL).first()
+    if kind == "venue":
+        venue = (
+            Venue.objects.filter(pk=pk, thesis=thesis).exclude(kind__in=list(NEEDS_EDITION)).first()
+        )
         if venue is not None:
             return venue, None
     raise ValidationError(_("Unknown target."), code="target")
@@ -122,7 +131,14 @@ class DeadlineForm(forms.Form):
 class SubmissionForm(forms.Form):
     """Creation (with the level) or edition (the level has its own form)."""
 
-    target = forms.ChoiceField(label=_("Conference edition or journal"))
+    target = forms.ChoiceField(label=_("Edition or venue without edition"))
+    presentation_kind = forms.ChoiceField(
+        label=_("Form"),
+        choices=PresentationKind.choices,
+        initial=PresentationKind.PAPER,
+        required=False,
+        help_text=_("A poster at a conference: the conference, form « Poster »."),
+    )
     title = forms.CharField(label=_("Title"), max_length=_limit("title"), help_text=SEALED_HELP)
     abstract = forms.CharField(
         label=_("Abstract"), max_length=_limit("abstract"), required=False, widget=_textarea(5)

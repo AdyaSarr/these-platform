@@ -105,10 +105,41 @@ MODULES: dict[str, Module] = {
     ),
     # M9a: the summary and the settings are the student's (PORTFOLIO_EXPORT,
     # TRAINING_WRITE): the tabs follow the views' own actions.
+    # M9b: one tab per part, each following its own read action (the company
+    # co-supervisor reads teaching and outreach, not the trainings).
     "portfolio": Module(
-        _("Trainings"),
+        _("Portfolio"),
         (
-            Tab(_("Trainings"), "trainings", ("trainings", "new", "detail", "edit")),
+            Tab(
+                _("Trainings"),
+                "trainings",
+                ("trainings", "new", "detail", "edit"),
+                only_if=_can("TRAINING_READ"),
+            ),
+            Tab(
+                _("Publications"),
+                "publications",
+                ("publications", "publication", "edit_publication"),
+                only_if=_can("SUBMISSION_READ"),
+            ),
+            Tab(
+                _("Teaching"),
+                "teachings",
+                ("teachings", "new_teaching", "teaching", "edit_teaching"),
+                only_if=_can("TEACHING_READ"),
+            ),
+            Tab(
+                _("Outreach"),
+                "outreach_list",
+                ("outreach_list", "new_outreach", "outreach", "edit_outreach"),
+                only_if=_can("OUTREACH_READ"),
+            ),
+            Tab(
+                _("Skills"),
+                "skills",
+                ("skills", "new_skill", "edit_skill", "career"),
+                only_if=_can("CAREER_NOTE_READ"),
+            ),
             Tab(_("ADUM summary"), "adum", ("adum",), only_if=_can("PORTFOLIO_EXPORT")),
             Tab(
                 pgettext_lazy("module tab", "Settings"),

@@ -166,18 +166,141 @@ réinscription. Suit `c.levels` (`INTERNAL_ST` seulement avec l'accord ST).
 - [x] `demo_seed` : formations fictives de plusieurs catégories et niveaux, une à
       venir, une date de réinscription.
 
-## M9b — Publications, enseignement, diffusion, compétences (à détailler)
+## M9b — Publications, enseignement, diffusion, compétences
 
-- **Types de lieu M6** : poster, séminaire, exposé invité, journée des doctorants,
-  autre ; même circuit d'accord ST (`st_work` vrai par défaut, levé par le tuteur
-  seul, second facteur, journal). M6 est terminé : lister les assertions existantes
-  touchées (`VenueKind`, formulaire des revues, importateur JSON, tests de
-  `apps/conferences/tests/`, `demo_seed`) **avant** de les modifier.
-- `PublicationDetails(submission OneToOne)` : catégorie ADUM (ED7), DOI, identifiant
-  HAL, volume et pages, clé BibTeX (scellés au niveau de la soumission, comme l'URL
-  de prépublication) ; aucun niveau propre ; lecture par
-  `Submission.objects.readable_by` et `sees(SUBMISSION_READ)`. Statut
-  `portfolio_publications` sur `_AND_DEFENDED`. Export BibTeX seul.
-- `Teaching`, `Outreach` : niveau, heures, intitulés scellés.
-- `SkillNote`, `CareerNote` : **doctorant seul**.
-- Récapitulatif ADUM étendu à ces sections ; le CSI n'en voit rien.
+Plan validé le 2026-11-25 (`docs/decisions.md`, cinq lignes M9b), réponses Q1 à Q8.
+
+### Dans M6 (module terminé, modifié et signalé)
+
+- **Types de lieu** : `SEMINAR`, `PHD_DAY`, `OTHER` ajoutés ; leur édition est
+  **facultative** (`Venue.needs_edition` : conférence, atelier ; `has_editions` :
+  tout sauf la revue). Avec une édition : échéances, rappels, date limite de demande
+  d'accord et flux iCal comme une conférence ; sans édition : comme une revue (pas de
+  `request_due`, aucun rappel d'échéance, aucun événement iCal).
+- **Forme** : `Submission.presentation_kind` en clair (`PAPER`, `POSTER`, `TALK`,
+  `INVITED_TALK`, `PAPER` par défaut), modifiable même quand la cible est verrouillée,
+  reprise par « soumettre ailleurs ». **Le poster n'est pas un lieu** (Q6) : un poster à
+  CHES = lieu CHES + forme `POSTER`.
+- **Même circuit d'accord ST**, inchangé : `st_work` vrai par défaut, levé par le
+  tuteur seul (second facteur, journal), accord `GRANTED` sur la version exacte.
+- **Relance `APPROVAL_WAITING`** (Q5) : un accord attendu sans échéance de référence
+  (revue, lieu sans édition, prépublication) est rappelé au tuteur à la date de Paris
+  « demande + délai figé », puis chaque semaine tant qu'il est `PENDING` ; par
+  `deliver_once` (concerné : tuteur actif qui lit le niveau ; encore dû : toujours
+  `PENDING`, toujours sans échéance, même demande sur la même version). Catégorie
+  « Échéances ».
+- **Registre des textes scellés au niveau de la soumission** (`apps/conferences/sealed.py`) :
+  `change_level` rescelle tout ce qui est enregistré ; M6 n'importe jamais le portfolio.
+- Formulaire : la cible `venue:<id>` (lieu sans édition) remplace `journal:<id>` ;
+  champ « Forme ». Page de la soumission : la forme et un lien vers ses détails.
+
+Assertions de M6 relevées avant modification : aucune n'est contredite
+(`test_a_journal_has_no_edition` des services et de l'import, le refus `edition`
+d'un atelier sans édition, `test_a_journal_request_has_no_due_date`, `test_venues`,
+`test_no_free_text_column_on_submissions`, la sortie de `conferences_reminders`, qui
+commence toujours par le nombre de rappels d'échéance). Modifiés : le tableau des
+catégories de `apps/activity/tests/test_m11b_preferences.py` (une ligne
+`APPROVAL_WAITING`), `apps/conferences/tests/test_two_worlds.py` (étendu).
+
+### Modèles (`apps/portfolio/`)
+
+- `PublicationDetails(thesis, submission OneToOne, adum_category, presented_on)` :
+  catégorie ADUM (ED7, proposée d'après le lieu et la forme : `suggested_category`) et
+  date de la communication en clair ; **aucun niveau propre** (la propriété `level` lit
+  celui de la soumission). Lecture : `SUBMISSION_READ` et le niveau de la soumission
+  (`ReadableQuerySet.level_field = "submission__level"`, `sees`).
+- `Teaching(thesis, kind, hours, start_date, end_date, level)` : types `CM`, `TD`,
+  `TP`, `SUPERVISION`, `OTHER` (ED6) ; heures en demi-heures de 0,5 à 300 ; dates
+  bornées comme les formations.
+- `Outreach(thesis, kind, date, level)` : `SCIENCE_FESTIVAL`, `SCHOOL`,
+  `PUBLIC_TALK`, `PRESS`, `ARTICLE`, `OTHER` (ED6).
+- `SkillNote(thesis, category)` (ED8) et `CareerNote(thesis OneToOne)` : au niveau fixe
+  `PERSONAL_LEVEL = CONFIDENTIAL` (Q1 ; `ReadableQuerySet.fixed_level`).
+
+Rien n'est supprimé ; un texte vidé est effacé du coffre.
+
+### Textes scellés (suite de la plage 0x06xx)
+
+| Code | Emplacement | Niveau |
+|---|---|---|
+| 0x0604 à 0x0608 | `PublicationDetails.doi`, `hal_id`, `volume`, `pages`, `bibtex_key` | de la soumission |
+| 0x0609 à 0x060B | `Teaching.course`, `institution`, `notes` | de l'enseignement |
+| 0x060C à 0x060E | `Outreach.title`, `audience`, `notes` | de l'action |
+| 0x060F, 0x0610 | `SkillNote.title`, `evidence` | `CONFIDENTIAL` |
+| 0x0611 | `CareerNote.text` | `CONFIDENTIAL` |
+
+Validation stricte des détails : DOI `10.<4 à 9 chiffres>/…` sans espace (200), HAL
+`[a-z]+-<8 chiffres>(v<n>)?`, pages `12`, `12-15` ou `e12--e15` (32), volume une
+ligne (32), clé BibTeX `[A-Za-z0-9:_-]{1,64}` ; aucun caractère de contrôle.
+
+### Droits
+
+| Action | Doctorant | Directeur | Co-enc. LIRMM | Tuteur | Co-enc. entreprise | CSI | Invité |
+|---|---|---|---|---|---|---|---|
+| détails : `SUBMISSION_READ` (selon le niveau de la soumission) | ✓ | ✓ | ✓ | ✓ | ✓ | — | — |
+| détails : `SUBMISSION_WRITE` (`SETUP`, `ACTIVE`, `DEFENDED`) | ✓ | — | — | — | — | — | — |
+| `TEACHING_READ`, `OUTREACH_READ` (selon le niveau) | ✓ | ✓ | ✓ | ✓ | ✓ | — | — |
+| `TEACHING_WRITE`, `OUTREACH_WRITE` (`SETUP`, `ACTIVE`) | ✓ | — | — | — | — | — | — |
+| `CAREER_NOTE_READ` (tout statut), `CAREER_NOTE_WRITE` (`SETUP`, `ACTIVE`) | ✓ | — | — | — | — | — | — |
+
+Notes de l'enseignement et de la diffusion : le doctorant seul. Totaux d'heures et de
+nombres par type, sur les éléments terminés et lisibles, avec la mention « Calculé
+sur … que vous pouvez lire » pour un lecteur qui ne lit pas tous les niveaux. Les
+compétences et le projet professionnel n'apparaissent nulle part ailleurs (aucun
+compteur, aucun onglet visible, aucun événement du fil, ni le récapitulatif ADUM, ni
+le BibTeX). La barre latérale ouvre le portfolio du co-encadrant entreprise sur
+l'enseignement (`NavItem.alternatives`).
+
+### Récapitulatif ADUM étendu et BibTeX
+
+- Sections : formations (M9a, inchangées), **publications** (catégories
+  `JOURNAL_ARTICLE`, `CONFERENCE_PAPER`), **communications** (les autres),
+  **enseignement** (terminés, fin dans l'année), **diffusion** (date dans l'année,
+  passée).
+- Soumissions `PUBLISHED` par défaut, datées par `presented_on` ou, à défaut, la date de
+  Paris de la publication ; case « Inclure les soumissions acceptées » (Q4), marquées
+  « à paraître », rattachées par `presented_on` ou, sans date, à l'année en cours.
+- `PUBLIC` par défaut, case pour l'interne marqué « niveau interne : à vérifier avant
+  saisie » ; nombres écartés affichés (internes, acceptées).
+- CSV par section (`section`, liste fermée) : mêmes règles que M9a (second facteur,
+  cellules neutralisées, `;`, BOM, CRLF). Journal : `year`, `rows`, `internal` (forme
+  de M9a pour les formations), plus `section` et `accepted` pour les autres sections.
+- **BibTeX** (`POST adum/bibtex/`, doctorant seul, second facteur, journal
+  `PORTFOLIO_EXPORTED` `section=bibtex`, nombres seulement) : toutes les soumissions
+  publiées (les acceptées sur demande), `PUBLIC` par défaut ; `@article`,
+  `@inproceedings` ou `@misc` selon la catégorie ; clé de l'utilisateur ou `pub-<n>`,
+  suffixée en cas de doublon ; chaque caractère spécial (`\ { } $ & % # _ ~ ^`)
+  remplacé par sa commande LaTeX, caractères de contrôle et de format retirés, une
+  ligne par champ ; `application/x-bibtex`, nom fixe, `no-store`, `nosniff`.
+
+### Export M13b
+
+`portfolio.json` : `publications` (détails des soumissions exportées), `enseignements`
+et `diffusion` (selon `c.levels`, `INTERNAL_ST` seulement avec l'accord ST),
+`competences` et `projet_professionnel`. `coverage.py` : les cinq modèles exportés.
+
+### Critères d'acceptation (M9b)
+- [x] Nouveaux types de lieu à édition facultative, forme de la communication, même
+      circuit d'accord ST pour chaque type et chaque forme (tests).
+- [x] Une communication sans édition n'a ni date limite de demande, ni rappel
+      d'échéance, ni événement iCal ; avec une édition, comme une conférence (tests).
+- [x] Relance `APPROVAL_WAITING` à demande + délai puis chaque semaine, une fois par
+      semaine, `SKIPPED` si décidée ou retirée, un lien seulement (tests).
+- [x] Changer le niveau d'une soumission rescelle ses détails ; tout modèle scellé au
+      niveau d'une soumission est enregistré ; M6 n'importe pas le portfolio (tests).
+- [x] Détails : lus comme la soumission, écrits par le doctorant, permis en `DEFENDED`,
+      refusés en `CLOSED`, validation stricte (tests).
+- [x] Enseignement et diffusion : lecture par niveau pour l'encadrement, co-encadrant
+      entreprise compris ; refus au CSI et à l'invité ; notes au doctorant (tests).
+- [x] Compétences et projet professionnel : le doctorant seul, nulle part ailleurs
+      (tests).
+- [x] Aucun texte en clair en base (témoins `TEMOIN-FUITE-…`) ; aucun événement du fil.
+- [x] Récapitulatif ADUM étendu (`PUBLIC` et `PUBLISHED` par défaut, cases, marques,
+      CSV par section neutralisé, second facteur, journal en nombres) ; BibTeX avec
+      champs hostiles (tests).
+- [x] Deux mondes sur toutes les routes GET de `portfolio` et de `conferences`, avec
+      contrôle positif ; un objet caché répond comme un identifiant inconnu (tests).
+- [x] `portfolio.json` selon les niveaux exportés (tests) ; matrice des statuts.
+- [x] Mutants de `scripts/mutants.toml` (M9b) tués.
+- [x] `demo_seed` : séminaire, poster, détails, enseignement, diffusion, compétences,
+      projet professionnel fictifs.
